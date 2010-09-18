@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Font Name="Tahoma" Size="8.25" />
+  <Class Name="Evaluant.Calculator.Domain.BinaryExpresssion">
+    <Position X="3.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Domain\BinaryExpression.cs</FileName>
+      <HashCode>AIAAAAAAAAAIAAAACAAAAAAAAAABgAAAAYAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="LeftExpression" />
+      <Property Name="RightExpression" />
+      <Property Name="Type" />
+    </ShowAsAssociation>
+    <Members>
+      <Field Name="leftExpression" Hidden="true" />
+      <Field Name="rightExpression" Hidden="true" />
+      <Field Name="type" Hidden="true" />
+    </Members>
+    <AssociationLine Name="LeftExpression" Type="Evaluant.Calculator.Domain.LogicalExpression" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="3.5" Y="1.75" />
+        <Point X="3.5" Y="0.675" />
+        <Point X="5.25" Y="0.675" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.11" Y="0.071" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="RightExpression" Type="Evaluant.Calculator.Domain.LogicalExpression" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="3.75" Y="1.75" />
+        <Point X="3.75" Y="0.874" />
+        <Point X="5.25" Y="0.874" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.067" Y="-0.221" />
+      </MemberNameLabel>
+    </AssociationLine>
+  </Class>
+  <Class Name="Evaluant.Calculator.Domain.LogicalExpression" Collapsed="true">
+    <Position X="5.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Domain\LogicalExpression.cs</FileName>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Evaluant.Calculator.Domain.UnaryExpression">
+    <Position X="7.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Domain\UnaryExpression.cs</FileName>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAABABAAAQAQAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Expression" />
+      <Property Name="Type" />
+    </ShowAsAssociation>
+    <Members>
+      <Field Name="expression" Hidden="true" />
+      <Field Name="type" Hidden="true" />
+    </Members>
+    <AssociationLine Name="Expression" Type="Evaluant.Calculator.Domain.LogicalExpression" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="8.25" Y="1.75" />
+        <Point X="8.25" Y="0.755" />
+        <Point X="6.75" Y="0.755" />
+      </Path>
+    </AssociationLine>
+  </Class>
+  <Class Name="Evaluant.Calculator.Domain.Value">
+    <Position X="5.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Domain\Value.cs</FileName>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAABAAAIAQAACAAAAAA=</HashCode>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Type" />
+    </ShowAsAssociation>
+    <Members>
+      <Field Name="text" Hidden="true" />
+      <Field Name="type" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+  </Class>
+  <Enum Name="Evaluant.Calculator.Domain.BinaryExpressionType">
+    <Position X="3.25" Y="4.25" Width="1.75" />
+    <TypeIdentifier>
+      <FileName>Domain\BinaryExpression.cs</FileName>
+      <HashCode>IAAAAAAAAAAAAAAggAAAAAABCAAAAEYgASAACAQAAAA=</HashCode>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Evaluant.Calculator.Domain.UnaryExpressionType">
+    <Position X="7.25" Y="4.25" Width="1.75" />
+    <TypeIdentifier>
+      <FileName>Domain\UnaryExpression.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABACAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Evaluant.Calculator.Domain.ValueType">
+    <Position X="5.25" Y="4.25" Width="1.75" />
+    <TypeIdentifier>
+      <FileName>Domain\Value.cs</FileName>
+      <HashCode>AAAAAAAAAQAAAAAAQAAAAAAAAAAAAgQAAAAAAAAgAAA=</HashCode>
+    </TypeIdentifier>
+  </Enum>
+</ClassDiagram>

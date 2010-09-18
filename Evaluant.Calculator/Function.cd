@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Font Name="Tahoma" Size="8.25" />
+  <Class Name="Evaluant.Calculator.Domain.Parameter">
+    <Position X="2.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Domain\Parameter.cs</FileName>
+      <NewMemberFileName>Domain\Function.cs</NewMemberFileName>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+    <Members>
+      <Method Name="Parameter" Hidden="true" />
+      <Field Name="identifier" Hidden="true" />
+    </Members>
+  </Class>
+  <Class Name="Evaluant.Calculator.Domain.LogicalExpression" Collapsed="true">
+    <Position X="2.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Domain\LogicalExpression.cs</FileName>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+</ClassDiagram>
