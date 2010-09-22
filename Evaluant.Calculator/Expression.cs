@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using Antlr.Runtime.Tree;
 using NCalc.Domain;
 using Antlr.Runtime;
 using System.Diagnostics;
@@ -17,7 +15,7 @@ namespace NCalc
         /// <summary>
         /// Textual representation of the expression to evaluate.
         /// </summary>
-        protected string expression;
+        protected string OriginalExpression;
 
         public Expression(string expression) : this(expression, EvaluateOptions.None)
         {
@@ -29,7 +27,7 @@ namespace NCalc
                 throw new 
                     ArgumentException("Expression can't be empty", "expression");
 
-            this.expression = expression;
+            OriginalExpression = expression;
             Options = options;
         }
 
@@ -48,22 +46,21 @@ namespace NCalc
         }
 
         #region Cache management
-        private static bool cacheEnabled = true;
-        private static object synLock = new object();
-        private static Dictionary<string, WeakReference> compiledExpressions = new Dictionary<string, WeakReference>();
-        private static ReaderWriterLock rwl = new ReaderWriterLock();
+        private static bool _cacheEnabled = true;
+        private static Dictionary<string, WeakReference> _compiledExpressions = new Dictionary<string, WeakReference>();
+        private static readonly ReaderWriterLock Rwl = new ReaderWriterLock();
 
         public static bool CacheEnabled
         {
-            get { return cacheEnabled; }
+            get { return _cacheEnabled; }
             set 
             { 
-                cacheEnabled = value;
+                _cacheEnabled = value;
 
                 if (!CacheEnabled)
                 {
                     // Clears cache
-                    compiledExpressions = new Dictionary<string, WeakReference>();
+                    _compiledExpressions = new Dictionary<string, WeakReference>();
                 }
             }
         }
@@ -73,12 +70,12 @@ namespace NCalc
         /// </summary>
         private static void CleanCache()
         {
-            List<string> keysToRemove = new List<string>();
+            var keysToRemove = new List<string>();
 
             try
             {
-                rwl.AcquireWriterLock(Timeout.Infinite);
-                foreach (var de in compiledExpressions)
+                Rwl.AcquireWriterLock(Timeout.Infinite);
+                foreach (var de in _compiledExpressions)
                 {
                     if (!de.Value.IsAlive)
                     {
@@ -89,13 +86,13 @@ namespace NCalc
 
                 foreach (string key in keysToRemove)
                 {
-                    compiledExpressions.Remove(key);
+                    _compiledExpressions.Remove(key);
                     Trace.TraceInformation("Cache entry released: " + key);
                 }
             }
             finally
             {
-                rwl.ReleaseReaderLock();
+                Rwl.ReleaseReaderLock();
             }
         }
 
@@ -105,16 +102,16 @@ namespace NCalc
         {
             LogicalExpression logicalExpression = null;
 
-            if (cacheEnabled && !nocache)
+            if (_cacheEnabled && !nocache)
             {
                 try
                 {
-                    rwl.AcquireReaderLock(Timeout.Infinite);
+                    Rwl.AcquireReaderLock(Timeout.Infinite);
 
-                    if (compiledExpressions.ContainsKey(expression))
+                    if (_compiledExpressions.ContainsKey(expression))
                     {
                         Trace.TraceInformation("Expression retrieved from cache: " + expression);
-                        var wr = compiledExpressions[expression];
+                        var wr = _compiledExpressions[expression];
                         logicalExpression = wr.Target as LogicalExpression;
                     
                         if (wr.IsAlive && logicalExpression != null)
@@ -125,14 +122,14 @@ namespace NCalc
                 }
                 finally
                 {
-                    rwl.ReleaseReaderLock();
+                    Rwl.ReleaseReaderLock();
                 }
             }
 
             if (logicalExpression == null)
             {
-                NCalcLexer lexer = new NCalcLexer(new ANTLRStringStream(expression));
-                NCalcParser parser = new NCalcParser(new CommonTokenStream(lexer));
+                var lexer = new NCalcLexer(new ANTLRStringStream(expression));
+                var parser = new NCalcParser(new CommonTokenStream(lexer));
 
                 logicalExpression = parser.ncalcExpression().value;
 
@@ -141,16 +138,16 @@ namespace NCalc
                     throw new EvaluationException(String.Join(Environment.NewLine, parser.Errors.ToArray()));
                 }
 
-                if (cacheEnabled && !nocache)
+                if (_cacheEnabled && !nocache)
                 {
                     try
                     {
-                        rwl.AcquireWriterLock(Timeout.Infinite);
-                        compiledExpressions[expression] = new WeakReference(logicalExpression);
+                        Rwl.AcquireWriterLock(Timeout.Infinite);
+                        _compiledExpressions[expression] = new WeakReference(logicalExpression);
                     }
                     finally
                     {
-                        rwl.ReleaseWriterLock();
+                        Rwl.ReleaseWriterLock();
                     }
 
                     CleanCache();
@@ -173,7 +170,7 @@ namespace NCalc
             {
                 if (ParsedExpression == null)
                 {
-                    ParsedExpression = Expression.Compile(expression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
+                    ParsedExpression = Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
                 }
 
                 // In case HasErrors() is called multiple times for the same expression
@@ -190,8 +187,8 @@ namespace NCalc
 
         public LogicalExpression ParsedExpression { get; private set; }
 
-        protected Dictionary<string, IEnumerator> parameterEnumerators;
-        protected Dictionary<string, object> parametersBackup;
+        protected Dictionary<string, IEnumerator> ParameterEnumerators;
+        protected Dictionary<string, object> ParametersBackup;
 
         public object Evaluate()
         {
@@ -202,11 +199,11 @@ namespace NCalc
 
             if (ParsedExpression == null)
             {
-                ParsedExpression = Compile(expression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
+                ParsedExpression = Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
             }
 
 
-            EvaluationVisitor visitor = new EvaluationVisitor(Options);
+            var visitor = new EvaluationVisitor(Options);
             visitor.EvaluateFunction += EvaluateFunction;
             visitor.EvaluateParameter += EvaluateParameter;
             visitor.Parameters = Parameters;
@@ -215,13 +212,13 @@ namespace NCalc
             if ((Options & EvaluateOptions.IterateParameters) == EvaluateOptions.IterateParameters)
             {
                 int size = -1;
-                parametersBackup = new Dictionary<string, object>();
+                ParametersBackup = new Dictionary<string, object>();
                 foreach (string key in Parameters.Keys)
                 {
-                    parametersBackup.Add(key, Parameters[key]);
+                    ParametersBackup.Add(key, Parameters[key]);
                 }
 
-                parameterEnumerators = new Dictionary<string, IEnumerator>();
+                ParameterEnumerators = new Dictionary<string, IEnumerator>();
 
                 foreach (object parameter in Parameters.Values)
                 {
@@ -246,19 +243,19 @@ namespace NCalc
 
                 foreach (string key in Parameters.Keys)
                 {
-                    IEnumerable parameter = Parameters[key] as IEnumerable;
+                    var parameter = Parameters[key] as IEnumerable;
                     if (parameter != null)
                     {
-                        parameterEnumerators.Add(key, parameter.GetEnumerator());
+                        ParameterEnumerators.Add(key, parameter.GetEnumerator());
                     }
                 }
 
-                List<object> results = new List<object>();
+                var results = new List<object>();
                 for (int i = 0; i < size; i++)
                 {
-                    foreach (string key in parameterEnumerators.Keys)
+                    foreach (string key in ParameterEnumerators.Keys)
                     {
-                        IEnumerator enumerator = parameterEnumerators[key];
+                        IEnumerator enumerator = ParameterEnumerators[key];
                         enumerator.MoveNext();
                         Parameters[key] = enumerator.Current;
                     }
@@ -269,31 +266,21 @@ namespace NCalc
 
                 return results;
             }
-            else
-            {
-                ParsedExpression.Accept(visitor);
-                return visitor.Result;
-            }
 
+            ParsedExpression.Accept(visitor);
+            return visitor.Result;
+            
         }
 
         public event EvaluateFunctionHandler EvaluateFunction;
         public event EvaluateParameterHandler EvaluateParameter;
 
-        private Dictionary<string, object> parameters;
+        private Dictionary<string, object> _parameters;
 
         public Dictionary<string, object> Parameters
         {
-            get 
-            { 
-                if(parameters == null)
-                {
-                    parameters = new Dictionary<string, object>();
-                }
-
-                return parameters; 
-            }
-            set { parameters = value; }
+            get { return _parameters ?? (_parameters = new Dictionary<string, object>()); }
+            set { _parameters = value; }
         }
 
     }

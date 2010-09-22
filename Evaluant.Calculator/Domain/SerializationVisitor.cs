@@ -1,25 +1,20 @@
 ﻿using System;
 using System.Text;
-using System.Collections;
 using System.Globalization;
 
 namespace NCalc.Domain
 {
     public class SerializationVisitor : LogicalExpressionVisitor
     {
-        private NumberFormatInfo numberFormatInfo;
+        private readonly NumberFormatInfo _numberFormatInfo;
 
         public SerializationVisitor()
         {
-            numberFormatInfo = new NumberFormatInfo();
-            numberFormatInfo.NumberDecimalSeparator = ".";
+            Result = new StringBuilder();
+            _numberFormatInfo = new NumberFormatInfo {NumberDecimalSeparator = "."};
         }
 
-        protected StringBuilder result = new StringBuilder();
-        public StringBuilder Result
-        {
-            get { return result; }
-        }
+        public StringBuilder Result { get; protected set; }
 
         public override void Visit(LogicalExpression expression)
         {
@@ -30,11 +25,11 @@ namespace NCalc.Domain
         {
             EncapsulateNoValue(expression.LeftExpression);
 
-            result.Append("? ");
+            Result.Append("? ");
 
             EncapsulateNoValue(expression.MiddleExpression);
 
-            result.Append(": ");
+            Result.Append(": ");
 
             EncapsulateNoValue(expression.RightExpression);
         }
@@ -46,75 +41,75 @@ namespace NCalc.Domain
             switch (expression.Type)
             {
                 case BinaryExpressionType.And:
-                    result.Append("and ");
+                    Result.Append("and ");
                     break;
 
                 case BinaryExpressionType.Or:
-                    result.Append("or ");
+                    Result.Append("or ");
                     break;
 
                 case BinaryExpressionType.Div:
-                    result.Append("/ ");
+                    Result.Append("/ ");
                     break;
 
                 case BinaryExpressionType.Equal:
-                    result.Append("= ");
+                    Result.Append("= ");
                     break;
 
                 case BinaryExpressionType.Greater:
-                    result.Append("> ");
+                    Result.Append("> ");
                     break;
 
                 case BinaryExpressionType.GreaterOrEqual:
-                    result.Append(">= ");
+                    Result.Append(">= ");
                     break;
 
                 case BinaryExpressionType.Lesser:
-                    result.Append("< ");
+                    Result.Append("< ");
                     break;
 
                 case BinaryExpressionType.LesserOrEqual:
-                    result.Append("<= ");
+                    Result.Append("<= ");
                     break;
 
                 case BinaryExpressionType.Minus:
-                    result.Append("- ");
+                    Result.Append("- ");
                     break;
 
                 case BinaryExpressionType.Modulo:
-                    result.Append("% ");
+                    Result.Append("% ");
                     break;
 
                 case BinaryExpressionType.NotEqual:
-                    result.Append("!= ");
+                    Result.Append("!= ");
                     break;
 
                 case BinaryExpressionType.Plus:
-                    result.Append("+ ");
+                    Result.Append("+ ");
                     break;
 
                 case BinaryExpressionType.Times:
-                    result.Append("* ");
+                    Result.Append("* ");
                     break;
 
                 case BinaryExpressionType.BitwiseAnd:
-                    result.Append("& ");
+                    Result.Append("& ");
                     break;
 
                 case BinaryExpressionType.BitwiseOr:
-                    result.Append("| ");
+                    Result.Append("| ");
                     break;
 
                 case BinaryExpressionType.BitwiseXOr:
-                    result.Append("~ ");
+                    Result.Append("~ ");
                     break;
 
                 case BinaryExpressionType.LeftShift:
-                    result.Append("<< ");
+                    Result.Append("<< ");
                     break;
 
                 case BinaryExpressionType.RightShift:
-                    result.Append(">> ");
+                    Result.Append(">> ");
                     break;
             }
 
@@ -126,15 +121,15 @@ namespace NCalc.Domain
             switch (expression.Type)
             {
                 case UnaryExpressionType.Not:
-                    result.Append("!");
+                    Result.Append("!");
                     break;
 
                 case UnaryExpressionType.Negate:
-                    result.Append("-");
+                    Result.Append("-");
                     break;
 
                 case UnaryExpressionType.BitwiseNot:
-                    result.Append("~");
+                    Result.Append("~");
                     break;
             }
 
@@ -146,49 +141,49 @@ namespace NCalc.Domain
             switch (expression.Type)
             {
                 case ValueType.Boolean:
-                    result.Append(expression.Value.ToString()).Append(" ");
+                    Result.Append(expression.Value.ToString()).Append(" ");
                     break;
 
                 case ValueType.DateTime:
-                    result.Append("#").Append(expression.Value.ToString()).Append("#").Append(" ");
+                    Result.Append("#").Append(expression.Value.ToString()).Append("#").Append(" ");
                     break;
 
                 case ValueType.Float:
-                    result.Append(decimal.Parse(expression.Value.ToString()).ToString(numberFormatInfo)).Append(" ");
+                    Result.Append(decimal.Parse(expression.Value.ToString()).ToString(_numberFormatInfo)).Append(" ");
                     break;
 
                 case ValueType.Integer:
-                    result.Append(expression.Value.ToString()).Append(" ");
+                    Result.Append(expression.Value.ToString()).Append(" ");
                     break;
 
                 case ValueType.String:
-                    result.Append("'").Append(expression.Value.ToString()).Append("'").Append(" ");
+                    Result.Append("'").Append(expression.Value.ToString()).Append("'").Append(" ");
                     break;
             }
         }
 
         public override void Visit(Function function)
         {
-            result.Append(function.Identifier.Name);
+            Result.Append(function.Identifier.Name);
 
-            result.Append("(");
+            Result.Append("(");
 
             for(int i=0; i<function.Expressions.Length; i++)
             {
                 function.Expressions[i].Accept(this);
                 if (i < function.Expressions.Length-1)
                 {
-                    result.Remove(result.Length - 1, 1);
-                    result.Append(", ");
+                    Result.Remove(Result.Length - 1, 1);
+                    Result.Append(", ");
                 }
             }
 
-            result.Append(") ");
+            Result.Append(") ");
         }
 
         public override void Visit(Identifier parameter)
         {
-            result.Append("[").Append(parameter.Name).Append("] ");
+            Result.Append("[").Append(parameter.Name).Append("] ");
         }
 
         protected void EncapsulateNoValue(LogicalExpression expression)
@@ -199,10 +194,10 @@ namespace NCalc.Domain
             }
             else
             {
-                result.Append("(");
+                Result.Append("(");
                 expression.Accept(this);
-                result.Remove(result.Length - 1, 1);
-                result.Append(")");
+                Result.Remove(Result.Length - 1, 1);
+                Result.Append(")");
             }
         }
 

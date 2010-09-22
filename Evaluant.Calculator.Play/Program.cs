@@ -1,6 +1,4 @@
 using System;
-using NCalc.Domain;
-using System.Collections;
 
 namespace NCalc.Play
 {
@@ -13,7 +11,7 @@ namespace NCalc.Play
 		{
 
 
-			string[] expressions = new string[]
+			var expressions = new[]
 			{
 				"2 * (3 + 5)",
 				"2 * (2*(2*(2+1)))",

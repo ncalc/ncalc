@@ -6,8 +6,8 @@ namespace NCalc.Domain
 	{
         public ValueExpression(object value, ValueType type)
         {
-            this.Value = value;
-            this.Type = type;
+            Value = value;
+            Type = type;
         }
 
         public ValueExpression(object value)
@@ -15,17 +15,17 @@ namespace NCalc.Domain
             switch (System.Type.GetTypeCode(value.GetType()))
             {
                 case TypeCode.Boolean :
-                    this.Type = ValueType.Boolean;
+                    Type = ValueType.Boolean;
                     break;
 
                 case TypeCode.DateTime :
-                    this.Type = ValueType.DateTime;
+                    Type = ValueType.DateTime;
                     break;
 
                 case TypeCode.Decimal:
                 case TypeCode.Double:
                 case TypeCode.Single:
-                    this.Type = ValueType.Float;
+                    Type = ValueType.Float;
                     break;
 
                 case TypeCode.Byte:
@@ -36,48 +36,48 @@ namespace NCalc.Domain
                 case TypeCode.UInt16:
                 case TypeCode.UInt32:
                 case TypeCode.UInt64:
-                    this.Type = ValueType.Integer;
+                    Type = ValueType.Integer;
                     break;
 
                 case TypeCode.String:
-                    this.Type = ValueType.String;
+                    Type = ValueType.String;
                     break;
 
                 default:
-                    throw new EvaluationException("This value could not be handled: " + value.ToString());
+                    throw new EvaluationException("This value could not be handled: " + value);
             }
 
-            this.Value = value;
+            Value = value;
         }
 
         public ValueExpression(string value)
         {
-            this.Value = value;
-            this.Type = ValueType.String;
+            Value = value;
+            Type = ValueType.String;
         }
 
         public ValueExpression(int value)
         {
-            this.Value = value;
-            this.Type = ValueType.Integer;
+            Value = value;
+            Type = ValueType.Integer;
         }
 
         public ValueExpression(float value)
         {
-            this.Value = value;
-            this.Type = ValueType.Float;
+            Value = value;
+            Type = ValueType.Float;
         }
 
         public ValueExpression(DateTime value)
         {
-            this.Value = value;
-            this.Type = ValueType.DateTime;
+            Value = value;
+            Type = ValueType.DateTime;
         }
 
         public ValueExpression(bool value)
         {
-            this.Value = value;
-            this.Type = ValueType.Boolean;
+            Value = value;
+            Type = ValueType.Boolean;
         }
 
         public object Value { get; set; }

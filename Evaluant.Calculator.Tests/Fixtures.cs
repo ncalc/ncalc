@@ -591,6 +591,12 @@ namespace NCalc.Tests
             e = new Expression("x/2");
             e.Parameters["x"] = 2m;
             Assert.AreEqual(typeof(decimal), e.Evaluate().GetType());
+
+            e = new Expression("a / b * 100");
+            e.Parameters["a"] = 20M;
+            e.Parameters["b"] = 20M;
+            Assert.AreEqual(100M, e.Evaluate());
+
         }
     }
 }

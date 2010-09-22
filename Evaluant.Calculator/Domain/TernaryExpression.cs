@@ -1,43 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NCalc.Domain
+﻿namespace NCalc.Domain
 {
 	public class TernaryExpression : LogicalExpression
 	{
         public TernaryExpression(LogicalExpression leftExpression, LogicalExpression middleExpression, LogicalExpression rightExpression)
 		{
-            this.leftExpression = leftExpression;
-            this.middleExpression = middleExpression;
-            this.rightExpression = rightExpression;
+            this.LeftExpression = leftExpression;
+            this.MiddleExpression = middleExpression;
+            this.RightExpression = rightExpression;
 		}
 
-        private LogicalExpression leftExpression;
+	    public LogicalExpression LeftExpression { get; set; }
 
-        public LogicalExpression LeftExpression
-		{
-			get { return leftExpression; }
-			set { leftExpression = value; }
-		}
+	    public LogicalExpression MiddleExpression { get; set; }
 
-        private LogicalExpression middleExpression;
+	    public LogicalExpression RightExpression { get; set; }
 
-        public LogicalExpression MiddleExpression
-        {
-            get { return middleExpression; }
-            set { middleExpression = value; }
-        }
-
-        private LogicalExpression rightExpression;
-
-        public LogicalExpression RightExpression
-		{
-			get { return rightExpression; }
-			set { rightExpression = value; }
-		}
-
-        public override void Accept(LogicalExpressionVisitor visitor)
+	    public override void Accept(LogicalExpressionVisitor visitor)
         {
             visitor.Visit(this);
         }

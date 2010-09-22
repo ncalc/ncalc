@@ -1,41 +1,21 @@
-using System;
-
 namespace NCalc.Domain
 {
 	public class BinaryExpression : LogicalExpression
 	{
 		public BinaryExpression(BinaryExpressionType type, LogicalExpression leftExpression, LogicalExpression rightExpression)
 		{
-            this.type = type;
-            this.leftExpression = leftExpression;
-            this.rightExpression = rightExpression;
+            Type = type;
+            LeftExpression = leftExpression;
+            RightExpression = rightExpression;
 		}
 
-		private LogicalExpression leftExpression;
-		
-        public LogicalExpression LeftExpression
-		{
-			get { return leftExpression; }
-			set { leftExpression = value; }
-		}
+	    public LogicalExpression LeftExpression { get; set; }
 
-		private LogicalExpression rightExpression;
-		
-        public LogicalExpression RightExpression
-		{
-			get { return rightExpression; }
-			set { rightExpression = value; }
-		}
+	    public LogicalExpression RightExpression { get; set; }
 
-		private BinaryExpressionType type;
-		
-        public BinaryExpressionType Type
-		{
-			get { return type; }
-			set { type = value; }
-		}
+	    public BinaryExpressionType Type { get; set; }
 
-        public override void Accept(LogicalExpressionVisitor visitor)
+	    public override void Accept(LogicalExpressionVisitor visitor)
         {
             visitor.Visit(this);
         }

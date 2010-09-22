@@ -1,32 +1,18 @@
-using System;
-
 namespace NCalc.Domain
 {
 	public class Function : LogicalExpression
 	{
 		public Function(Identifier identifier, LogicalExpression[] expressions)
 		{
-            this.identifier = identifier;
-            this.expressions = expressions;
+            Identifier = identifier;
+            Expressions = expressions;
 		}
 
-        private Identifier identifier;
+	    public Identifier Identifier { get; set; }
 
-        public Identifier Identifier
-        {
-            get { return identifier; }
-            set { identifier = value; }
-        }
+	    public LogicalExpression[] Expressions { get; set; }
 
-        private LogicalExpression[] expressions;
-
-        public LogicalExpression[] Expressions
-        {
-            get { return expressions; }
-            set { expressions = value; }
-        }
-
-        public override void Accept(LogicalExpressionVisitor visitor)
+	    public override void Accept(LogicalExpressionVisitor visitor)
         {
             visitor.Visit(this);
         }

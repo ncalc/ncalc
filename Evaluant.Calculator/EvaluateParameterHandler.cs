@@ -1,7 +1,4 @@
-﻿using System;
-using System.Text;
-
-namespace NCalc
+﻿namespace NCalc
 {
     public delegate void EvaluateParameterHandler(string name, ParameterArgs args);
 }

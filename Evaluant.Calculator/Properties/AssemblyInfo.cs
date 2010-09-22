@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("NCalc")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Evaluant")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("NCalc")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("1.3.4.0")]
-[assembly: AssemblyFileVersion("1.3.4.0")]
+[assembly: AssemblyVersion("1.3.6.0")]
+[assembly: AssemblyFileVersion("1.3.6.0")]
