@@ -178,6 +178,10 @@ namespace NCalc.Domain
                 }
             }
 
+            // trim spaces before adding a closing paren
+            while (Result[Result.Length - 1] == ' ')
+                Result.Remove(Result.Length - 1, 1);
+
             Result.Append(") ");
         }
 
@@ -196,8 +200,12 @@ namespace NCalc.Domain
             {
                 Result.Append("(");
                 expression.Accept(this);
-                Result.Remove(Result.Length - 1, 1);
-                Result.Append(")");
+                
+                // trim spaces before adding a closing paren
+                while(Result[Result.Length - 1] == ' ')
+                    Result.Remove(Result.Length - 1, 1);
+                
+                Result.Append(") ");
             }
         }
 

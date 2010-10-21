@@ -229,7 +229,7 @@ namespace NCalc.Domain
             SerializationVisitor serializer = new SerializationVisitor();
             this.Accept(serializer);
 
-            return serializer.Result.ToString();
+            return serializer.Result.ToString().TrimEnd(' ');
         }
 
         public virtual void Accept(LogicalExpressionVisitor visitor)
