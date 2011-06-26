@@ -570,6 +570,12 @@ namespace NCalc.Tests
             Assert.AreEqual(40000000000 + 1f, new Expression("40000000000+1").Evaluate());
         }
 
+        [TestMethod]
+        public void ShouldCompareLongValues()
+        {
+            Assert.AreEqual(false, new Expression("(0=1500000)||(((0+2200000000)-1500000)<0)").Evaluate());
+        }
+
         [TestMethod, ExpectedException(typeof(InvalidOperationException))]
         public void ShouldDisplayErrorIfUncompatibleTypes()
         {

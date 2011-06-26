@@ -12,3 +12,7 @@ glob:*.orig
 glob:*.suo
 glob:TestResults
 glob:*.itrace.csdef
+syntax: glob
+*.csproj.user
+*.dotCover
+*.vsmdi

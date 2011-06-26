@@ -28,7 +28,9 @@ namespace NCalc.Domain
             throw new Exception("The method or operation is not implemented.");
         }
 
-        /// <summary>
+        private static Type[] CommonTypes = new[] { typeof(Int64), typeof(Double), typeof(Boolean), typeof(String), typeof(Decimal) };
+
+    /// <summary>
         /// Gets the the most precise type.
         /// </summary>
         /// <param name="a">Type a.</param>
@@ -36,7 +38,7 @@ namespace NCalc.Domain
         /// <returns></returns>
         private static Type GetMostPreciseType(Type a, Type b)
         {
-            foreach (Type t in new [] { typeof(String), typeof(Decimal), typeof(Double), typeof(Int32), typeof(Boolean) })
+            foreach (Type t in CommonTypes)
             {
                 if (a == t || b == t)
                 {
