@@ -606,6 +606,15 @@ namespace NCalc.Tests
             Assert.AreEqual(100M, e.Evaluate());
 
         }
+
+        [TestMethod]
+        public void ShouldShortCircuitBooleanExpressions()
+        {
+            var e = new Expression("([a] != 0) && ([b]/[a]>2)");
+            e.Parameters["a"] = 0;
+
+            Assert.AreEqual(false, e.Evaluate());
+        }
     }
 }
 
