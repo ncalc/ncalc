@@ -615,6 +615,15 @@ namespace NCalc.Tests
 
             Assert.AreEqual(false, e.Evaluate());
         }
+
+        [TestMethod]
+        public void ShouldAddDoubleAndDecimal()
+        {
+            var e = new Expression("1.8 + Abs([var1])");
+            e.Parameters["var1"] = 9.2;
+
+            Assert.AreEqual(11M, e.Evaluate());
+        }
     }
 }
 
