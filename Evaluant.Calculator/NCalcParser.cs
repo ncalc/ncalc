@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using NCalc.Domain;
 using System;
 
-using System.Collections.Generic;
 using Antlr.Runtime;
 using Stack = System.Collections.Generic.Stack<object>;
 using List = System.Collections.IList;
