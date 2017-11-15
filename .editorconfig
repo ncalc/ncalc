@@ -1,0 +1,10 @@
+﻿# EditorConfig: http://EditorConfig.org
+# VS extension: https://visualstudiogallery.msdn.microsoft.com/c8bccfe2-650c-4b42-bc5c-845e21f96328
+
+# top-most EditorConfig file
+root = true
+
+# 4 space indentation
+[*.cs]
+indent_style = space
+indent_size = 4

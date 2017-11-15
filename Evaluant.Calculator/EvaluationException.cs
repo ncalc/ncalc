@@ -13,6 +13,5 @@ namespace NCalc
             : base(message, innerException)
         {
         }
-
     }
 }

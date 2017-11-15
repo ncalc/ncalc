@@ -4,13 +4,13 @@ namespace NCalc
 {
     public class FunctionArgs : EventArgs
     {
-
         private object _result;
+
         public object Result
         {
             get { return _result; }
-            set 
-            { 
+            set
+            {
                 _result = value;
                 HasResult = true;
             }
