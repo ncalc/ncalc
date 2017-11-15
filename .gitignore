@@ -1,10 +1,8 @@
 /.vs
-/Evaluant.Calculator.Play/bin/Debug
-/Evaluant.Calculator.Play/obj/Debug
-/Evaluant.Calculator.Play/obj/Release
-/Evaluant.Calculator.Tests/bin/Debug
-/Evaluant.Calculator.Tests/obj/Debug
-/Evaluant.Calculator.Tests/obj/Release
-/Evaluant.Calculator/bin/Debug
-/Evaluant.Calculator/obj/Debug
-/Evaluant.Calculator/obj/Release
+/Evaluant.Calculator.Play/bin
+/Evaluant.Calculator.Play/obj
+/Evaluant.Calculator.Tests/bin
+/Evaluant.Calculator.Tests/obj
+/Evaluant.Calculator/bin
+/Evaluant.Calculator/obj
+/TestResults

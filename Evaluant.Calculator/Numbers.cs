@@ -27,9 +27,9 @@ namespace NCalc
                 case TypeCode.Boolean:
                     switch (typeCodeB)
                     {
-                        case TypeCode.Boolean: throw new InvalidOperationException("Operator '+' can't be applied to operands of types 'bool' and 'bool'"); 
-                        case TypeCode.Byte: throw new InvalidOperationException("Operator '+' can't be applied to operands of types 'bool' and 'byte'"); 
-                        case TypeCode.SByte: throw new InvalidOperationException("Operator '+' can't be applied to operands of types 'bool' and 'byte'"); 
+                        case TypeCode.Boolean: throw new InvalidOperationException("Operator '+' can't be applied to operands of types 'bool' and 'bool'");
+                        case TypeCode.Byte: throw new InvalidOperationException("Operator '+' can't be applied to operands of types 'bool' and 'byte'");
+                        case TypeCode.SByte: throw new InvalidOperationException("Operator '+' can't be applied to operands of types 'bool' and 'byte'");
                         case TypeCode.Int16: throw new InvalidOperationException("Operator '+' can't be applied to operands of types 'bool' and 'byte'");
                         case TypeCode.UInt16: throw new InvalidOperationException("Operator '+' can't be applied to operands of types 'bool' and 'byte'");
                         case TypeCode.Int32: throw new InvalidOperationException("Operator '+' can't be applied to operands of types 'bool' and 'byte'");
@@ -434,7 +434,7 @@ namespace NCalc
                         case TypeCode.UInt64: return (Double)a - (UInt64)b;
                         case TypeCode.Single: return (Double)a - (Single)b;
                         case TypeCode.Double: return (Double)a - (Double)b;
-                        case TypeCode.Decimal: throw new InvalidOperationException("Operator '-' can't be applied to operands of types 'double' and 'decimal'");
+                        case TypeCode.Decimal: return Convert.ToDecimal(a) - (Decimal)b;
                     }
                     break;
 
@@ -450,7 +450,7 @@ namespace NCalc
                         case TypeCode.Int64: return (Decimal)a - (Int64)b;
                         case TypeCode.UInt64: return (Decimal)a - (UInt64)b;
                         case TypeCode.Single: throw new InvalidOperationException("Operator '-' can't be applied to operands of types 'decimal' and 'float'");
-                        case TypeCode.Double: throw new InvalidOperationException("Operator '-' can't be applied to operands of types 'decimal' and 'double'");
+                        case TypeCode.Double: return (Decimal)a - Convert.ToDecimal(b);
                         case TypeCode.Decimal: return (Decimal)a - (Decimal)b;
                     }
                     break;
@@ -633,7 +633,7 @@ namespace NCalc
                         case TypeCode.UInt64: return (Double)a * (UInt64)b;
                         case TypeCode.Single: return (Double)a * (Single)b;
                         case TypeCode.Double: return (Double)a * (Double)b;
-                        case TypeCode.Decimal: throw new InvalidOperationException("Operator '*' can't be applied to operands of types 'double' and 'decimal'");
+                        case TypeCode.Decimal: return Convert.ToDecimal(a) * (Decimal)b;
                     }
                     break;
 
@@ -649,7 +649,7 @@ namespace NCalc
                         case TypeCode.Int64: return (Decimal)a * (Int64)b;
                         case TypeCode.UInt64: return (Decimal)a * (UInt64)b;
                         case TypeCode.Single: throw new InvalidOperationException("Operator '*' can't be applied to operands of types 'decimal' and 'float'");
-                        case TypeCode.Double: throw new InvalidOperationException("Operator '*' can't be applied to operands of types 'decimal' and 'double'");
+                        case TypeCode.Double: return (Decimal)a * Convert.ToDecimal(b);
                         case TypeCode.Decimal: return (Decimal)a * (Decimal)b;
                     }
                     break;
@@ -832,7 +832,7 @@ namespace NCalc
                         case TypeCode.UInt64: return (Double)a / (UInt64)b;
                         case TypeCode.Single: return (Double)a / (Single)b;
                         case TypeCode.Double: return (Double)a / (Double)b;
-                        case TypeCode.Decimal: throw new InvalidOperationException("Operator '/' can't be applied to operands of types 'double' and 'decimal'");
+                        case TypeCode.Decimal: return Convert.ToDecimal(a) / (Decimal)b;
                     }
                     break;
 
@@ -848,7 +848,7 @@ namespace NCalc
                         case TypeCode.Int64: return (Decimal)a / (Int64)b;
                         case TypeCode.UInt64: return (Decimal)a / (UInt64)b;
                         case TypeCode.Single: throw new InvalidOperationException("Operator '/' can't be applied to operands of types 'decimal' and 'float'");
-                        case TypeCode.Double: throw new InvalidOperationException("Operator '/' can't be applied to operands of types 'decimal' and 'double'");
+                        case TypeCode.Double: return Convert.ToDecimal(a) / (Decimal)b;
                         case TypeCode.Decimal: return (Decimal)a / (Decimal)b;
                     }
                     break;

@@ -135,21 +135,21 @@ namespace NCalc.Tests
         }
 
         [TestMethod]
-		public void ExpressionShouldEvaluateParameters()
-		{
-			var e = new Expression("Round(Pow(Pi, 2) + Pow([Pi Squared], 2) + [X], 2)");
-		    
-			e.Parameters["Pi Squared"] = new Expression("Pi * [Pi]");
-			e.Parameters["X"] = 10;
+        public void ExpressionShouldEvaluateParameters()
+        {
+            var e = new Expression("Round(Pow(Pi, 2) + Pow([Pi Squared], 2) + [X], 2)");
 
-			e.EvaluateParameter += delegate(string name, ParameterArgs args)
-				{
-					if (name == "Pi")
-						args.Result = 3.14;
-				};
+            e.Parameters["Pi Squared"] = new Expression("Pi * [Pi]");
+            e.Parameters["X"] = 10;
 
-			Assert.AreEqual(117.07, e.Evaluate());
-		}
+            e.EvaluateParameter += delegate(string name, ParameterArgs args)
+                {
+                    if (name == "Pi")
+                        args.Result = 3.14;
+                };
+
+            Assert.AreEqual(117.07, e.Evaluate());
+        }
 
         [TestMethod]
         public void ShouldEvaluateConditionnal()
@@ -245,7 +245,7 @@ namespace NCalc.Tests
             {
                 Assert.AreEqual(pair.Value, new Expression(pair.Key).Evaluate(), pair.Key + " failed");
             }
-            
+
         }
 
         [TestMethod]
@@ -586,7 +586,7 @@ namespace NCalc.Tests
         }
 
         [TestMethod]
-        public void ShouldNotConvertRealTypes() 
+        public void ShouldNotConvertRealTypes()
         {
             var e = new Expression("x/2");
             e.Parameters["x"] = 2F;
@@ -623,6 +623,33 @@ namespace NCalc.Tests
             e.Parameters["var1"] = 9.2;
 
             Assert.AreEqual(11M, e.Evaluate());
+        }
+
+        [TestMethod]
+        public void ShouldSubtractDoubleAndDecimal()
+        {
+            var e = new Expression("1.8 - Abs([var1])");
+            e.Parameters["var1"] = 0.8;
+
+            Assert.AreEqual(1M, e.Evaluate());
+        }
+
+        [TestMethod]
+        public void ShouldMultiplyDoubleAndDecimal()
+        {
+            var e = new Expression("1.8 * Abs([var1])");
+            e.Parameters["var1"] = 9.2;
+
+            Assert.AreEqual(16.56M, e.Evaluate());
+        }
+
+        [TestMethod]
+        public void ShouldDivideDoubleAndDecimal()
+        {
+            var e = new Expression("1.8 / Abs([var1])");
+            e.Parameters["var1"] = 0.5;
+
+            Assert.AreEqual(3.6M, e.Evaluate());
         }
     }
 }
