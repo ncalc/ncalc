@@ -1,0 +1,14 @@
+﻿version: 1.0.{build}
+
+clone_folder: c:\projects\ncalc
+
+before_build:
+- choco install opencover.portable
+- choco install codecov
+
+build:
+  verbosity: minimal
+
+test_script:
+- OpenCover.Console.exe -register:user -target:"vstest.console.exe" -targetargs:"/logger:Appveyor c:\projects\ncalc\Evaluant.Calculator.Tests\bin\Debug\NCalc.Tests.dll" -output:".\NCalcUnitTestCoverage.xml"
+- codecov -f "NCalcUnitTestCoverage.xml"
