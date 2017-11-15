@@ -3,6 +3,7 @@
 clone_folder: c:\projects\ncalc
 
 before_build:
+- nuget restore
 - choco install opencover.portable
 - choco install codecov
 

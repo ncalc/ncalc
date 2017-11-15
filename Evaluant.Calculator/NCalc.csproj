@@ -32,6 +32,8 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -102,7 +104,44 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets" Condition="Exists('..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets'))" />
+  </Target>
+
+	<!-- ILRepack -->
+	<Target Name="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+	
+	<ItemGroup>
+		<InputAssemblies Include="$(OutputPath)\NCalc.dll" />
+		<InputAssemblies Include="$(OutputPath)\Antlr3.Runtime.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Must be a fully qualified name -->
+		<DoNotInternalizeAssemblies Include="ExampleAssemblyToMerge3" />
+	</ItemGroup>
+
+	<ILRepack 
+		Parallel="true"
+		Internalize="true"
+		InternalizeExclude="@(DoNotInternalizeAssemblies)"
+		InputAssemblies="@(InputAssemblies)"
+		TargetKind="SameAsPrimaryAssembly"
+		DebugInfo="true"
+		OutputFile="$(OutputPath)\$(AssemblyName).dll"
+	/>
+
+	</Target>
+	<!-- /ILRepack -->
+
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
