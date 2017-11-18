@@ -22,7 +22,6 @@ using Antlr.Runtime.Tree;
 using RewriteRuleITokenStream = Antlr.Runtime.Tree.RewriteRuleTokenStream;
 
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "3.3.0.7239")]
-[System.CLSCompliant(false)]
 public partial class NCalcParser : Antlr.Runtime.Parser
 {
 	internal static readonly string[] tokenNames = new string[] {
@@ -83,8 +82,8 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 			new bool[]
 			{
 				false, // invalid decision
-				false, false, false, false, false, false, false, false, false, false, 
-				false, false, false, false, false, false, false, false, false, false, 
+				false, false, false, false, false, false, false, false, false, false,
+				false, false, false, false, false, false, false, false, false, false,
 				false, false, false
 			};
 	#else
@@ -103,7 +102,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 		OnCreated();
 	}
-		
+
 	// Implement this function in your helper file to use a custom tree adaptor
 	partial void CreateTreeAdaptor(ref ITreeAdaptor adaptor);
 
@@ -129,7 +128,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 	private static NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
 
 	private string extractString(string text) {
-	    
+
 	    StringBuilder sb = new StringBuilder(text);
 	    int startIndex = 1; // Skip initial quote
 	    int slashIndex = -1;
@@ -143,7 +142,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 	              string hcode = String.Concat(sb[slashIndex+4], sb[slashIndex+5]);
 	              string lcode = String.Concat(sb[slashIndex+2], sb[slashIndex+3]);
 	              char unicodeChar = Encoding.Unicode.GetChars(new byte[] { System.Convert.ToByte(hcode, 16), System.Convert.ToByte(lcode, 16)} )[0];
-	              sb.Remove(slashIndex, 6).Insert(slashIndex, unicodeChar); 
+	              sb.Remove(slashIndex, 6).Insert(slashIndex, unicodeChar);
 	              break;
 	            case 'n': sb.Remove(slashIndex, 2).Insert(slashIndex, '\n'); break;
 	            case 'r': sb.Remove(slashIndex, 2).Insert(slashIndex, '\r'); break;
@@ -166,14 +165,14 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 	public List<string> Errors { get; private set; }
 
 	public override void DisplayRecognitionError(String[] tokenNames, RecognitionException e) {
-	    
+
 	    base.DisplayRecognitionError(tokenNames, e);
-	    
+
 	    if(Errors == null)
 	    {
 	    	Errors = new List<string>();
 	    }
-	    
+
 	    String hdr = GetErrorHeader(e);
 	    String msg = GetErrorMessage(e, tokenNames);
 	    Errors.Add(msg + " at " + hdr);
@@ -190,6 +189,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_ncalcExpression();
@@ -230,9 +230,9 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, logicalExpression1.Tree);
 			DebugLocation(78, 25);
-			EOF2=(IToken)Match(input,EOF,Follow._EOF_in_ncalcExpression58); 
+			EOF2=(IToken)Match(input,EOF,Follow._EOF_in_ncalcExpression58);
 			DebugLocation(78, 27);
-			retval.value = (logicalExpression1!=null?logicalExpression1.value:default(LogicalExpression)); 
+			retval.value = (logicalExpression1!=null?logicalExpression1.value:default(LogicalExpression));
 
 			}
 
@@ -267,6 +267,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_logicalExpression();
@@ -311,7 +312,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(82, 31);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(82, 57);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:82:57: ( '?' middle= conditionalExpression ':' right= conditionalExpression )?
 			int alt1=2;
@@ -331,7 +332,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:82:59: '?' middle= conditionalExpression ':' right= conditionalExpression
 				{
 				DebugLocation(82, 59);
-				char_literal3=(IToken)Match(input,41,Follow._41_in_logicalExpression84); 
+				char_literal3=(IToken)Match(input,41,Follow._41_in_logicalExpression84);
 				char_literal3_tree = (CommonTree)adaptor.Create(char_literal3);
 				adaptor.AddChild(root_0, char_literal3_tree);
 
@@ -342,7 +343,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 				adaptor.AddChild(root_0, middle.Tree);
 				DebugLocation(82, 92);
-				char_literal4=(IToken)Match(input,31,Follow._31_in_logicalExpression90); 
+				char_literal4=(IToken)Match(input,31,Follow._31_in_logicalExpression90);
 				char_literal4_tree = (CommonTree)adaptor.Create(char_literal4);
 				adaptor.AddChild(root_0, char_literal4_tree);
 
@@ -353,7 +354,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 				adaptor.AddChild(root_0, right.Tree);
 				DebugLocation(82, 124);
-				 retval.value = new TernaryExpression((left!=null?left.value:default(LogicalExpression)), (middle!=null?middle.value:default(LogicalExpression)), (right!=null?right.value:default(LogicalExpression))); 
+				 retval.value = new TernaryExpression((left!=null?left.value:default(LogicalExpression)), (middle!=null?middle.value:default(LogicalExpression)), (right!=null?right.value:default(LogicalExpression)));
 
 				}
 				break;
@@ -395,6 +396,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_conditionalExpression();
@@ -439,7 +441,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(89, 30);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(89, 56);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:89:56: ( ( '||' | 'or' ) right= conditionalExpression )*
 			try { DebugEnterSubRule(2);
@@ -478,7 +480,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 					}
 
 					DebugLocation(90, 18);
-					 type = BinaryExpressionType.Or; 
+					 type = BinaryExpressionType.Or;
 					DebugLocation(91, 9);
 					PushFollow(Follow._conditionalExpression_in_conditionalExpression146);
 					right=conditionalExpression();
@@ -486,7 +488,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(91, 32);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -535,6 +537,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_booleanAndExpression();
@@ -579,7 +582,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(99, 29);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(99, 55);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:99:55: ( ( '&&' | 'and' ) right= bitwiseOrExpression )*
 			try { DebugEnterSubRule(3);
@@ -618,7 +621,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 					}
 
 					DebugLocation(100, 19);
-					 type = BinaryExpressionType.And; 
+					 type = BinaryExpressionType.And;
 					DebugLocation(101, 9);
 					PushFollow(Follow._bitwiseOrExpression_in_booleanAndExpression205);
 					right=bitwiseOrExpression();
@@ -626,7 +629,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(101, 30);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -675,6 +678,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_bitwiseOrExpression();
@@ -719,7 +723,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(109, 30);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(109, 56);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:109:56: ( '|' right= bitwiseOrExpression )*
 			try { DebugEnterSubRule(4);
@@ -743,12 +747,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 					// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:110:4: '|' right= bitwiseOrExpression
 					{
 					DebugLocation(110, 4);
-					char_literal7=(IToken)Match(input,46,Follow._46_in_bitwiseOrExpression246); 
+					char_literal7=(IToken)Match(input,46,Follow._46_in_bitwiseOrExpression246);
 					char_literal7_tree = (CommonTree)adaptor.Create(char_literal7);
 					adaptor.AddChild(root_0, char_literal7_tree);
 
 					DebugLocation(110, 8);
-					 type = BinaryExpressionType.BitwiseOr; 
+					 type = BinaryExpressionType.BitwiseOr;
 					DebugLocation(111, 9);
 					PushFollow(Follow._bitwiseOrExpression_in_bitwiseOrExpression256);
 					right=bitwiseOrExpression();
@@ -756,7 +760,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(111, 30);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -805,6 +809,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_bitwiseXOrExpression();
@@ -849,7 +854,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(119, 30);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(119, 56);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:119:56: ( '^' right= bitwiseAndExpression )*
 			try { DebugEnterSubRule(5);
@@ -873,12 +878,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 					// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:120:4: '^' right= bitwiseAndExpression
 					{
 					DebugLocation(120, 4);
-					char_literal8=(IToken)Match(input,42,Follow._42_in_bitwiseXOrExpression299); 
+					char_literal8=(IToken)Match(input,42,Follow._42_in_bitwiseXOrExpression299);
 					char_literal8_tree = (CommonTree)adaptor.Create(char_literal8);
 					adaptor.AddChild(root_0, char_literal8_tree);
 
 					DebugLocation(120, 8);
-					 type = BinaryExpressionType.BitwiseXOr; 
+					 type = BinaryExpressionType.BitwiseXOr;
 					DebugLocation(121, 9);
 					PushFollow(Follow._bitwiseAndExpression_in_bitwiseXOrExpression309);
 					right=bitwiseAndExpression();
@@ -886,7 +891,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(121, 31);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -935,6 +940,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_bitwiseAndExpression();
@@ -979,7 +985,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(129, 28);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(129, 54);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:129:54: ( '&' right= equalityExpression )*
 			try { DebugEnterSubRule(6);
@@ -1003,12 +1009,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 					// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:130:4: '&' right= equalityExpression
 					{
 					DebugLocation(130, 4);
-					char_literal9=(IToken)Match(input,23,Follow._23_in_bitwiseAndExpression350); 
+					char_literal9=(IToken)Match(input,23,Follow._23_in_bitwiseAndExpression350);
 					char_literal9_tree = (CommonTree)adaptor.Create(char_literal9);
 					adaptor.AddChild(root_0, char_literal9_tree);
 
 					DebugLocation(130, 8);
-					 type = BinaryExpressionType.BitwiseAnd; 
+					 type = BinaryExpressionType.BitwiseAnd;
 					DebugLocation(131, 9);
 					PushFollow(Follow._equalityExpression_in_bitwiseAndExpression360);
 					right=equalityExpression();
@@ -1016,7 +1022,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(131, 29);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -1065,6 +1071,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_equalityExpression();
@@ -1111,7 +1118,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(139, 30);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(139, 56);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:139:56: ( ( ( '==' | '=' ) | ( '!=' | '<>' ) ) right= relationalExpression )*
 			try { DebugEnterSubRule(8);
@@ -1179,7 +1186,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						}
 
 						DebugLocation(140, 20);
-						 type = BinaryExpressionType.Equal; 
+						 type = BinaryExpressionType.Equal;
 
 						}
 						break;
@@ -1203,7 +1210,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						}
 
 						DebugLocation(141, 21);
-						 type = BinaryExpressionType.NotEqual; 
+						 type = BinaryExpressionType.NotEqual;
 
 						}
 						break;
@@ -1218,7 +1225,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(142, 31);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -1267,6 +1274,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_relationalExpression();
@@ -1317,7 +1325,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(150, 25);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(150, 51);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:150:51: ( ( '<' | '<=' | '>' | '>=' ) right= shiftExpression )*
 			try { DebugEnterSubRule(10);
@@ -1384,12 +1392,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:151:6: '<'
 						{
 						DebugLocation(151, 6);
-						char_literal12=(IToken)Match(input,32,Follow._32_in_relationalExpression485); 
+						char_literal12=(IToken)Match(input,32,Follow._32_in_relationalExpression485);
 						char_literal12_tree = (CommonTree)adaptor.Create(char_literal12);
 						adaptor.AddChild(root_0, char_literal12_tree);
 
 						DebugLocation(151, 10);
-						 type = BinaryExpressionType.Lesser; 
+						 type = BinaryExpressionType.Lesser;
 
 						}
 						break;
@@ -1398,12 +1406,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:152:6: '<='
 						{
 						DebugLocation(152, 6);
-						string_literal13=(IToken)Match(input,34,Follow._34_in_relationalExpression495); 
+						string_literal13=(IToken)Match(input,34,Follow._34_in_relationalExpression495);
 						string_literal13_tree = (CommonTree)adaptor.Create(string_literal13);
 						adaptor.AddChild(root_0, string_literal13_tree);
 
 						DebugLocation(152, 11);
-						 type = BinaryExpressionType.LesserOrEqual; 
+						 type = BinaryExpressionType.LesserOrEqual;
 
 						}
 						break;
@@ -1412,12 +1420,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:153:6: '>'
 						{
 						DebugLocation(153, 6);
-						char_literal14=(IToken)Match(input,38,Follow._38_in_relationalExpression506); 
+						char_literal14=(IToken)Match(input,38,Follow._38_in_relationalExpression506);
 						char_literal14_tree = (CommonTree)adaptor.Create(char_literal14);
 						adaptor.AddChild(root_0, char_literal14_tree);
 
 						DebugLocation(153, 10);
-						 type = BinaryExpressionType.Greater; 
+						 type = BinaryExpressionType.Greater;
 
 						}
 						break;
@@ -1426,12 +1434,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:154:6: '>='
 						{
 						DebugLocation(154, 6);
-						string_literal15=(IToken)Match(input,39,Follow._39_in_relationalExpression516); 
+						string_literal15=(IToken)Match(input,39,Follow._39_in_relationalExpression516);
 						string_literal15_tree = (CommonTree)adaptor.Create(string_literal15);
 						adaptor.AddChild(root_0, string_literal15_tree);
 
 						DebugLocation(154, 11);
-						 type = BinaryExpressionType.GreaterOrEqual; 
+						 type = BinaryExpressionType.GreaterOrEqual;
 
 						}
 						break;
@@ -1446,7 +1454,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(155, 26);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -1495,6 +1503,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_shiftExpression();
@@ -1541,7 +1550,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(163, 28);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(163, 54);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:163:54: ( ( '<<' | '>>' ) right= additiveExpression )*
 			try { DebugEnterSubRule(12);
@@ -1594,12 +1603,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:164:6: '<<'
 						{
 						DebugLocation(164, 6);
-						string_literal16=(IToken)Match(input,33,Follow._33_in_shiftExpression571); 
+						string_literal16=(IToken)Match(input,33,Follow._33_in_shiftExpression571);
 						string_literal16_tree = (CommonTree)adaptor.Create(string_literal16);
 						adaptor.AddChild(root_0, string_literal16_tree);
 
 						DebugLocation(164, 11);
-						 type = BinaryExpressionType.LeftShift; 
+						 type = BinaryExpressionType.LeftShift;
 
 						}
 						break;
@@ -1608,12 +1617,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:165:6: '>>'
 						{
 						DebugLocation(165, 6);
-						string_literal17=(IToken)Match(input,40,Follow._40_in_shiftExpression581); 
+						string_literal17=(IToken)Match(input,40,Follow._40_in_shiftExpression581);
 						string_literal17_tree = (CommonTree)adaptor.Create(string_literal17);
 						adaptor.AddChild(root_0, string_literal17_tree);
 
 						DebugLocation(165, 11);
-						 type = BinaryExpressionType.RightShift; 
+						 type = BinaryExpressionType.RightShift;
 
 						}
 						break;
@@ -1628,7 +1637,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(166, 29);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -1677,6 +1686,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_additiveExpression();
@@ -1723,7 +1733,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(174, 34);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(174, 60);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:174:60: ( ( '+' | '-' ) right= multiplicativeExpression )*
 			try { DebugEnterSubRule(14);
@@ -1776,12 +1786,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:175:6: '+'
 						{
 						DebugLocation(175, 6);
-						char_literal18=(IToken)Match(input,27,Follow._27_in_additiveExpression636); 
+						char_literal18=(IToken)Match(input,27,Follow._27_in_additiveExpression636);
 						char_literal18_tree = (CommonTree)adaptor.Create(char_literal18);
 						adaptor.AddChild(root_0, char_literal18_tree);
 
 						DebugLocation(175, 10);
-						 type = BinaryExpressionType.Plus; 
+						 type = BinaryExpressionType.Plus;
 
 						}
 						break;
@@ -1790,12 +1800,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:176:6: '-'
 						{
 						DebugLocation(176, 6);
-						char_literal19=(IToken)Match(input,29,Follow._29_in_additiveExpression646); 
+						char_literal19=(IToken)Match(input,29,Follow._29_in_additiveExpression646);
 						char_literal19_tree = (CommonTree)adaptor.Create(char_literal19);
 						adaptor.AddChild(root_0, char_literal19_tree);
 
 						DebugLocation(176, 10);
-						 type = BinaryExpressionType.Minus; 
+						 type = BinaryExpressionType.Minus;
 
 						}
 						break;
@@ -1810,7 +1820,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(177, 35);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -1859,6 +1869,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_multiplicativeExpression();
@@ -1907,7 +1918,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 			adaptor.AddChild(root_0, left.Tree);
 			DebugLocation(185, 25);
-			 retval.value = (left!=null?left.value:default(LogicalExpression)); 
+			 retval.value = (left!=null?left.value:default(LogicalExpression));
 			DebugLocation(185, 52);
 			// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:185:52: ( ( '*' | '/' | '%' ) right= unaryExpression )*
 			try { DebugEnterSubRule(16);
@@ -1969,12 +1980,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:186:6: '*'
 						{
 						DebugLocation(186, 6);
-						char_literal20=(IToken)Match(input,26,Follow._26_in_multiplicativeExpression701); 
+						char_literal20=(IToken)Match(input,26,Follow._26_in_multiplicativeExpression701);
 						char_literal20_tree = (CommonTree)adaptor.Create(char_literal20);
 						adaptor.AddChild(root_0, char_literal20_tree);
 
 						DebugLocation(186, 10);
-						 type = BinaryExpressionType.Times; 
+						 type = BinaryExpressionType.Times;
 
 						}
 						break;
@@ -1983,12 +1994,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:187:6: '/'
 						{
 						DebugLocation(187, 6);
-						char_literal21=(IToken)Match(input,30,Follow._30_in_multiplicativeExpression711); 
+						char_literal21=(IToken)Match(input,30,Follow._30_in_multiplicativeExpression711);
 						char_literal21_tree = (CommonTree)adaptor.Create(char_literal21);
 						adaptor.AddChild(root_0, char_literal21_tree);
 
 						DebugLocation(187, 10);
-						 type = BinaryExpressionType.Div; 
+						 type = BinaryExpressionType.Div;
 
 						}
 						break;
@@ -1997,12 +2008,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 						// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:188:6: '%'
 						{
 						DebugLocation(188, 6);
-						char_literal22=(IToken)Match(input,21,Follow._21_in_multiplicativeExpression721); 
+						char_literal22=(IToken)Match(input,21,Follow._21_in_multiplicativeExpression721);
 						char_literal22_tree = (CommonTree)adaptor.Create(char_literal22);
 						adaptor.AddChild(root_0, char_literal22_tree);
 
 						DebugLocation(188, 10);
-						 type = BinaryExpressionType.Modulo; 
+						 type = BinaryExpressionType.Modulo;
 
 						}
 						break;
@@ -2017,7 +2028,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, right.Tree);
 					DebugLocation(189, 26);
-					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression))); 
+					 retval.value = new BinaryExpression(type, retval.value, (right!=null?right.value:default(LogicalExpression)));
 
 					}
 					break;
@@ -2066,6 +2077,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_unaryExpression();
@@ -2159,7 +2171,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 				adaptor.AddChild(root_0, primaryExpression23.Tree);
 				DebugLocation(195, 22);
-				 retval.value = (primaryExpression23!=null?primaryExpression23.value:default(LogicalExpression)); 
+				 retval.value = (primaryExpression23!=null?primaryExpression23.value:default(LogicalExpression));
 
 				}
 				break;
@@ -2191,7 +2203,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 				adaptor.AddChild(root_0, primaryExpression25.Tree);
 				DebugLocation(196, 40);
-				 retval.value = new UnaryExpression(UnaryExpressionType.Not, (primaryExpression25!=null?primaryExpression25.value:default(LogicalExpression))); 
+				 retval.value = new UnaryExpression(UnaryExpressionType.Not, (primaryExpression25!=null?primaryExpression25.value:default(LogicalExpression)));
 
 				}
 				break;
@@ -2207,7 +2219,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:197:9: '~'
 				{
 				DebugLocation(197, 9);
-				char_literal26=(IToken)Match(input,48,Follow._48_in_unaryExpression791); 
+				char_literal26=(IToken)Match(input,48,Follow._48_in_unaryExpression791);
 				char_literal26_tree = (CommonTree)adaptor.Create(char_literal26);
 				adaptor.AddChild(root_0, char_literal26_tree);
 
@@ -2221,7 +2233,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 				adaptor.AddChild(root_0, primaryExpression27.Tree);
 				DebugLocation(197, 32);
-				 retval.value = new UnaryExpression(UnaryExpressionType.BitwiseNot, (primaryExpression27!=null?primaryExpression27.value:default(LogicalExpression))); 
+				 retval.value = new UnaryExpression(UnaryExpressionType.BitwiseNot, (primaryExpression27!=null?primaryExpression27.value:default(LogicalExpression)));
 
 				}
 				break;
@@ -2232,7 +2244,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(198, 8);
-				char_literal28=(IToken)Match(input,29,Follow._29_in_unaryExpression805); 
+				char_literal28=(IToken)Match(input,29,Follow._29_in_unaryExpression805);
 				char_literal28_tree = (CommonTree)adaptor.Create(char_literal28);
 				adaptor.AddChild(root_0, char_literal28_tree);
 
@@ -2243,7 +2255,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 				adaptor.AddChild(root_0, primaryExpression29.Tree);
 				DebugLocation(198, 30);
-				 retval.value = new UnaryExpression(UnaryExpressionType.Negate, (primaryExpression29!=null?primaryExpression29.value:default(LogicalExpression))); 
+				 retval.value = new UnaryExpression(UnaryExpressionType.Negate, (primaryExpression29!=null?primaryExpression29.value:default(LogicalExpression)));
 
 				}
 				break;
@@ -2280,6 +2292,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public LogicalExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_primaryExpression();
@@ -2357,7 +2370,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(202, 4);
-				char_literal30=(IToken)Match(input,24,Follow._24_in_primaryExpression829); 
+				char_literal30=(IToken)Match(input,24,Follow._24_in_primaryExpression829);
 				char_literal30_tree = (CommonTree)adaptor.Create(char_literal30);
 				adaptor.AddChild(root_0, char_literal30_tree);
 
@@ -2368,12 +2381,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 				adaptor.AddChild(root_0, logicalExpression31.Tree);
 				DebugLocation(202, 26);
-				char_literal32=(IToken)Match(input,25,Follow._25_in_primaryExpression833); 
+				char_literal32=(IToken)Match(input,25,Follow._25_in_primaryExpression833);
 				char_literal32_tree = (CommonTree)adaptor.Create(char_literal32);
 				adaptor.AddChild(root_0, char_literal32_tree);
 
 				DebugLocation(202, 31);
-				 retval.value = (logicalExpression31!=null?logicalExpression31.value:default(LogicalExpression)); 
+				 retval.value = (logicalExpression31!=null?logicalExpression31.value:default(LogicalExpression));
 
 				}
 				break;
@@ -2390,7 +2403,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 				adaptor.AddChild(root_0, expr.Tree);
 				DebugLocation(203, 16);
-				 retval.value = (expr!=null?expr.value:default(ValueExpression)); 
+				 retval.value = (expr!=null?expr.value:default(ValueExpression));
 
 				}
 				break;
@@ -2407,7 +2420,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 				adaptor.AddChild(root_0, identifier33.Tree);
 				DebugLocation(204, 15);
-				retval.value = (LogicalExpression) (identifier33!=null?identifier33.value:default(Identifier)); 
+				retval.value = (LogicalExpression) (identifier33!=null?identifier33.value:default(Identifier));
 				DebugLocation(204, 66);
 				// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:204:66: ( arguments )?
 				int alt18=2;
@@ -2433,7 +2446,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 
 					adaptor.AddChild(root_0, arguments34.Tree);
 					DebugLocation(204, 77);
-					retval.value = new Function((identifier33!=null?identifier33.value:default(Identifier)), ((arguments34!=null?arguments34.value:default(List<LogicalExpression>))).ToArray()); 
+					retval.value = new Function((identifier33!=null?identifier33.value:default(Identifier)), ((arguments34!=null?arguments34.value:default(List<LogicalExpression>))).ToArray());
 
 					}
 					break;
@@ -2477,6 +2490,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public ValueExpression value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_value();
@@ -2567,12 +2581,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(208, 5);
-				INTEGER35=(IToken)Match(input,INTEGER,Follow._INTEGER_in_value876); 
+				INTEGER35=(IToken)Match(input,INTEGER,Follow._INTEGER_in_value876);
 				INTEGER35_tree = (CommonTree)adaptor.Create(INTEGER35);
 				adaptor.AddChild(root_0, INTEGER35_tree);
 
 				DebugLocation(208, 14);
-				 try { retval.value = new ValueExpression(int.Parse((INTEGER35!=null?INTEGER35.Text:null))); } catch(System.OverflowException) { retval.value = new ValueExpression(long.Parse((INTEGER35!=null?INTEGER35.Text:null))); } 
+				 try { retval.value = new ValueExpression(int.Parse((INTEGER35!=null?INTEGER35.Text:null))); } catch(System.OverflowException) { retval.value = new ValueExpression(long.Parse((INTEGER35!=null?INTEGER35.Text:null))); }
 
 				}
 				break;
@@ -2583,12 +2597,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(209, 4);
-				FLOAT36=(IToken)Match(input,FLOAT,Follow._FLOAT_in_value884); 
+				FLOAT36=(IToken)Match(input,FLOAT,Follow._FLOAT_in_value884);
 				FLOAT36_tree = (CommonTree)adaptor.Create(FLOAT36);
 				adaptor.AddChild(root_0, FLOAT36_tree);
 
 				DebugLocation(209, 11);
-				 retval.value = new ValueExpression(double.Parse((FLOAT36!=null?FLOAT36.Text:null), NumberStyles.Float, numberFormatInfo)); 
+				 retval.value = new ValueExpression(double.Parse((FLOAT36!=null?FLOAT36.Text:null), NumberStyles.Float, numberFormatInfo));
 
 				}
 				break;
@@ -2599,12 +2613,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(210, 4);
-				STRING37=(IToken)Match(input,STRING,Follow._STRING_in_value892); 
+				STRING37=(IToken)Match(input,STRING,Follow._STRING_in_value892);
 				STRING37_tree = (CommonTree)adaptor.Create(STRING37);
 				adaptor.AddChild(root_0, STRING37_tree);
 
 				DebugLocation(210, 12);
-				 retval.value = new ValueExpression(extractString((STRING37!=null?STRING37.Text:null))); 
+				 retval.value = new ValueExpression(extractString((STRING37!=null?STRING37.Text:null)));
 
 				}
 				break;
@@ -2615,12 +2629,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(211, 5);
-				DATETIME38=(IToken)Match(input,DATETIME,Follow._DATETIME_in_value901); 
+				DATETIME38=(IToken)Match(input,DATETIME,Follow._DATETIME_in_value901);
 				DATETIME38_tree = (CommonTree)adaptor.Create(DATETIME38);
 				adaptor.AddChild(root_0, DATETIME38_tree);
 
 				DebugLocation(211, 14);
-				 retval.value = new ValueExpression(DateTime.Parse((DATETIME38!=null?DATETIME38.Text:null).Substring(1, (DATETIME38!=null?DATETIME38.Text:null).Length-2))); 
+				 retval.value = new ValueExpression(DateTime.Parse((DATETIME38!=null?DATETIME38.Text:null).Substring(1, (DATETIME38!=null?DATETIME38.Text:null).Length-2)));
 
 				}
 				break;
@@ -2631,12 +2645,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(212, 4);
-				TRUE39=(IToken)Match(input,TRUE,Follow._TRUE_in_value908); 
+				TRUE39=(IToken)Match(input,TRUE,Follow._TRUE_in_value908);
 				TRUE39_tree = (CommonTree)adaptor.Create(TRUE39);
 				adaptor.AddChild(root_0, TRUE39_tree);
 
 				DebugLocation(212, 10);
-				 retval.value = new ValueExpression(true); 
+				 retval.value = new ValueExpression(true);
 
 				}
 				break;
@@ -2647,12 +2661,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(213, 4);
-				FALSE40=(IToken)Match(input,FALSE,Follow._FALSE_in_value916); 
+				FALSE40=(IToken)Match(input,FALSE,Follow._FALSE_in_value916);
 				FALSE40_tree = (CommonTree)adaptor.Create(FALSE40);
 				adaptor.AddChild(root_0, FALSE40_tree);
 
 				DebugLocation(213, 11);
-				 retval.value = new ValueExpression(false); 
+				 retval.value = new ValueExpression(false);
 
 				}
 				break;
@@ -2689,6 +2703,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public Identifier value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_identifier();
@@ -2747,12 +2762,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(217, 5);
-				ID41=(IToken)Match(input,ID,Follow._ID_in_identifier934); 
+				ID41=(IToken)Match(input,ID,Follow._ID_in_identifier934);
 				ID41_tree = (CommonTree)adaptor.Create(ID41);
 				adaptor.AddChild(root_0, ID41_tree);
 
 				DebugLocation(217, 8);
-				 retval.value = new Identifier((ID41!=null?ID41.Text:null)); 
+				 retval.value = new Identifier((ID41!=null?ID41.Text:null));
 
 				}
 				break;
@@ -2763,12 +2778,12 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(218, 5);
-				NAME42=(IToken)Match(input,NAME,Follow._NAME_in_identifier942); 
+				NAME42=(IToken)Match(input,NAME,Follow._NAME_in_identifier942);
 				NAME42_tree = (CommonTree)adaptor.Create(NAME42);
 				adaptor.AddChild(root_0, NAME42_tree);
 
 				DebugLocation(218, 10);
-				 retval.value = new Identifier((NAME42!=null?NAME42.Text:null).Substring(1, (NAME42!=null?NAME42.Text:null).Length-2)); 
+				 retval.value = new Identifier((NAME42!=null?NAME42.Text:null).Substring(1, (NAME42!=null?NAME42.Text:null).Length-2));
 
 				}
 				break;
@@ -2805,6 +2820,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public List<LogicalExpression> value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_expressionList();
@@ -2873,7 +2889,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 					// C:\\Users\\sebros\\My Projects\\NCalc\\Grammar\\NCalc.g:225:64: ',' follow= logicalExpression
 					{
 					DebugLocation(225, 64);
-					char_literal43=(IToken)Match(input,28,Follow._28_in_expressionList973); 
+					char_literal43=(IToken)Match(input,28,Follow._28_in_expressionList973);
 					char_literal43_tree = (CommonTree)adaptor.Create(char_literal43);
 					adaptor.AddChild(root_0, char_literal43_tree);
 
@@ -2900,7 +2916,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(22); }
 
 			DebugLocation(226, 2);
-			 retval.value = expressions; 
+			 retval.value = expressions;
 
 			}
 
@@ -2935,6 +2951,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 		public List<LogicalExpression> value;
 		private CommonTree _tree;
 		public CommonTree Tree { get { return _tree; } set { _tree = value; } }
+		object IAstRuleReturnScope.Tree { get { return _tree; } }
 	}
 
 	partial void Enter_arguments();
@@ -2974,7 +2991,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 			root_0 = (CommonTree)adaptor.Nil();
 
 			DebugLocation(233, 4);
-			char_literal44=(IToken)Match(input,24,Follow._24_in_arguments1006); 
+			char_literal44=(IToken)Match(input,24,Follow._24_in_arguments1006);
 			char_literal44_tree = (CommonTree)adaptor.Create(char_literal44);
 			adaptor.AddChild(root_0, char_literal44_tree);
 
@@ -3012,7 +3029,7 @@ public partial class NCalcParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(23); }
 
 			DebugLocation(233, 62);
-			char_literal46=(IToken)Match(input,25,Follow._25_in_arguments1017); 
+			char_literal46=(IToken)Match(input,25,Follow._25_in_arguments1017);
 			char_literal46_tree = (CommonTree)adaptor.Create(char_literal46);
 			adaptor.AddChild(root_0, char_literal46_tree);
 
