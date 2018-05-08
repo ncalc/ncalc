@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Evaluant.Calculator\NCalc.csproj">
-      <Project>{5F014003-50D8-49E0-8AFE-91D38DCCC97C}</Project>
+      <Project>{252e5f34-fa82-488a-939d-ef8ddaab7d2a}</Project>
       <Name>NCalc</Name>
     </ProjectReference>
   </ItemGroup>
