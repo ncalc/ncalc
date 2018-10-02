@@ -15,12 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Antlr3.Runtime" Version="3.5.2-beta2" />
+    <PackageReference Include="Antlr3.Runtime" Version="3.5.2-rc1" />
     <PackageReference Include="ILRepack.MSBuild.Task" Version="1.0.9" />
   </ItemGroup>
 
   <!-- ILRepack -->
-  <Import Project="..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets" Condition="Exists('..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets')" />
+  <Import Project="$(NuGetPackageRoot)\ILRepack.MSBuild.Task\1.0.9\build\ILRepack.MSBuild.Task.targets" Condition="Exists('$(NuGetPackageRoot)\ILRepack.MSBuild.Task\1.0.9\build\ILRepack.MSBuild.Task.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>
@@ -30,7 +30,7 @@
         The missing file is {0}.
       </ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\ILRepack.MSBuild.Task\1.0.9\build\ILRepack.MSBuild.Task.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\ILRepack.MSBuild.Task\1.0.9\build\ILRepack.MSBuild.Task.targets'))" />
   </Target>
 
   <Target Name="ILRepack" Condition=" '$(Configuration)' == 'Release' " AfterTargets="Build">
@@ -44,13 +44,7 @@
       <DoNotInternalizeAssemblies Include="NCalc" />
 	</ItemGroup>
 
-    <ILRepack
-       Parallel="true"
-       Internalize="false"
-       InternalizeExclude="@(DoNotInternalizeAssemblies)"
-       InputAssemblies="@(InputAssemblies)"
-       TargetKind="Dll"
-       OutputFile="$(OutputPath)\$(AssemblyName).dll" />
+    <ILRepack Parallel="true" Internalize="false" InternalizeExclude="@(DoNotInternalizeAssemblies)" InputAssemblies="@(InputAssemblies)" TargetKind="Dll" OutputFile="$(OutputPath)\$(AssemblyName).dll" />
 
   </Target>
   <!-- /ILRepack -->

@@ -1,5 +1,7 @@
 ﻿version: 1.0.{build}
 
+image: Visual Studio 2017
+
 clone_folder: c:\projects\ncalc
 
 before_build:
@@ -8,6 +10,7 @@ before_build:
 - choco install codecov
 
 build:
+  project: NCalc.sln
   verbosity: minimal
 
 test_script:
