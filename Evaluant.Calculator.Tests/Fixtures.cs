@@ -94,6 +94,7 @@ namespace NCalc.Tests
             Assert.AreEqual(1d, new Expression("Floor(1.5)").Evaluate());
             Assert.AreEqual(-1d, new Expression("IEEERemainder(3,2)").Evaluate());
             Assert.AreEqual(0d, new Expression("Log(1,10)").Evaluate());
+            Assert.AreEqual(0d, new Expression("Ln(1)").Evaluate());
             Assert.AreEqual(0d, new Expression("Log10(1)").Evaluate());
             Assert.AreEqual(9d, new Expression("Pow(3,2)").Evaluate());
             Assert.AreEqual(3.22d, new Expression("Round(3.222,2)").Evaluate());
