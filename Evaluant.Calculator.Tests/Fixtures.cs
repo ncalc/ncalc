@@ -568,7 +568,7 @@ namespace NCalc.Tests
         [TestMethod]
         public void ShouldHandleLongValues()
         {
-            Assert.AreEqual(40000000000 + 1f, new Expression("40000000000+1").Evaluate());
+            Assert.AreEqual(40_000_000_000 + 1, new Expression("40000000000+1").Evaluate());
         }
 
         [TestMethod]
@@ -651,6 +651,16 @@ namespace NCalc.Tests
             e.Parameters["var1"] = 0.5;
 
             Assert.AreEqual(3.6M, e.Evaluate());
+        }
+
+        [TestMethod]
+        public void IncorrectCalculation_NCalcAsync_Issue_4()
+        {
+            Expression e = new Expression("(1604326026000-1604325747000)/60000");
+            var evalutedResult = e.Evaluate();
+
+            Assert.IsInstanceOfType(evalutedResult, typeof(double));
+            Assert.AreEqual(4.65, (double)evalutedResult, 0.001);
         }
     }
 }
