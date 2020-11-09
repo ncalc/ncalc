@@ -4,9 +4,9 @@
     <TargetFrameworks>net35;netstandard2.0</TargetFrameworks>
     <Authors>Sebastien Ros</Authors>
     <Copyright>Sebastien Ros</Copyright>
-    <AssemblyVersion>1.3.9.0</AssemblyVersion>
-    <FileVersion>1.3.9.0</FileVersion>
-    <Version>1.3.9</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <Version>2.0.0</Version>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
@@ -15,38 +15,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Antlr3.Runtime" Version="3.5.2-rc1" />
-    <PackageReference Include="ILRepack.MSBuild.Task" Version="1.0.9" />
+    <PackageReference Include="Antlr3.Runtime" Version="3.5.1" />
   </ItemGroup>
 
-  <!-- ILRepack -->
-  <Import Project="$(NuGetPackageRoot)\ILRepack.MSBuild.Task\1.0.9\build\ILRepack.MSBuild.Task.targets" Condition="Exists('$(NuGetPackageRoot)\ILRepack.MSBuild.Task\1.0.9\build\ILRepack.MSBuild.Task.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net35' ">
+    <DefineConstants>$(DefineConstants);</DefineConstants>
+    <FrameworkPathOverride>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
+  </PropertyGroup>
+
+  <Target Name="ILRepack" AfterTargets="Build">
     <PropertyGroup>
-      <ErrorText>
-        This project references NuGet package(s) that are missing on this computer. 
-        Use NuGet Package Restore to download them.  
-        For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.
-        The missing file is {0}.
-      </ErrorText>
+      <OutPath>$(ProjectDir)$(OutDir)</OutPath>
+      <OutFile>$(OutPath)NCalc.dll</OutFile>
+      <InFiles>$(OutPath)NCalc.dll $(OutPath)Antlr3.Runtime.dll</InFiles>
     </PropertyGroup>
-    <Error Condition="!Exists('$(NuGetPackageRoot)\ILRepack.MSBuild.Task\1.0.9\build\ILRepack.MSBuild.Task.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\ILRepack.MSBuild.Task\1.0.9\build\ILRepack.MSBuild.Task.targets'))" />
+    <Exec IgnoreExitCode="True" Command='$(ILRepack) /out:$(OutFile) $(InFiles) /verbose /noRepackRes'/>
   </Target>
-
-  <Target Name="ILRepack" Condition=" '$(Configuration)' == 'Release' " AfterTargets="Build">
-
-    <ItemGroup>
-      <InputAssemblies Include="$(OutputPath)\*.dll" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <!-- Must be a fully qualified name -->
-      <DoNotInternalizeAssemblies Include="NCalc" />
-	</ItemGroup>
-
-    <ILRepack Parallel="true" Internalize="false" InternalizeExclude="@(DoNotInternalizeAssemblies)" InputAssemblies="@(InputAssemblies)" TargetKind="Dll" OutputFile="$(OutputPath)\$(AssemblyName).dll" />
-
-  </Target>
-  <!-- /ILRepack -->
-
+  
 </Project>
