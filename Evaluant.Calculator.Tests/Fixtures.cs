@@ -662,6 +662,32 @@ namespace NCalc.Tests
             Assert.IsInstanceOfType(evalutedResult, typeof(double));
             Assert.AreEqual(4.65, (double)evalutedResult, 0.001);
         }
+
+        [TestMethod]
+        public void Should_Throw_Exception_On_Lexer_Errors_Issue_6()
+        {
+            // https://github.com/ncalc/ncalc-async/issues/6
+
+            try
+            {
+                Expression.Compile("\"0\"", true);
+                Assert.Fail("Expected EvaluationExpression to be thrown");
+            }
+            catch (EvaluationException e)
+            {
+                Assert.AreEqual("line 1:1 no viable alternative at character '\"'", e.Message);
+            }
+
+            try
+            {
+                Expression.Compile("Format(\"{0:(###) ###-####}\", \"9999999999\")", true);
+                Assert.Fail("Expected EvaluationExpression to be thrown");
+            }
+            catch (EvaluationException e)
+            {
+               Assert.AreEqual("line 1:8 no viable alternative at character '\"'", e.Message);
+            }
+        }
     }
 }
 
