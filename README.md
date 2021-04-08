@@ -84,3 +84,20 @@ e.EvaluateParameter += delegate(string name, ParameterArgs args)
 
 Debug.Assert(117.07 == e.Evaluate());
 ```
+
+## Related projects
+
+### [NCalc-Async](https://github.com/ncalc/ncalc-async/)
+
+Pure asynchronous implementation of NCalc by [Peter Liljenberg](https://github.com/petli).
+
+### [PanoramicData.NCalcExtensions](https://github.com/panoramicdata/PanoramicData.NCalcExtensions)
+
+Extension functions for NCalc to handle many general functions,  
+including string functions, switch, if, in, typeOf, cast etc.  
+Developed by David, Dan and all at [Panoramic Data](https://github.com/panoramicdata).
+
+### [Jint](https://github.com/sebastienros/jint)
+
+Javascript Interpreter for .NET by [Sébastien Ros](https://github.com/sebastienros), the author of NCalc library.  
+Run on any modern .NET platform as it supports .NET Standard 2.0 and .NET 4.6.1 targets (and up).
