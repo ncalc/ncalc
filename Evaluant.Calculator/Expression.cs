@@ -283,5 +283,15 @@ namespace NCalc
             set { _parameters = value; }
         }
 
+        /// <summary>
+        /// Returns parameters list
+        /// </summary>
+        public string[] GetParameters()
+        {
+            var extractionVisitor = new ParameterExtractionVisitor();
+            var nocache = (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache;
+            Compile(OriginalExpression, nocache).Accept(extractionVisitor);
+            return new List<string>(extractionVisitor.Parameters).ToArray();
+        }
     }
 }
