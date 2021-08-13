@@ -64,10 +64,46 @@ namespace NCalc.Domain
             }
             else
             {
-                mpt = GetMostPreciseType(a.GetType(), b?.GetType());
+                var typeA = a.GetType();
+                var typeB = b?.GetType();
+                if (b != null)
+                {
+                    var shouldRound = (_options & EvaluateOptions.RoundFloatsTo7Decimals) != 0 
+                                      || typeA == typeof(float) || typeB == typeof(float);
+                    if (shouldRound && IsFloatOrDoubleEqual(a, b, 0.0000001) == true) 
+                        return 0;
+                }
+                
+                mpt = GetMostPreciseType(typeA, typeB);
             }
             
             return Comparer.Default.Compare(Convert.ChangeType(a, mpt), Convert.ChangeType(b, mpt));
+        }
+
+        private static bool? IsFloatOrDoubleEqual(object a, object b, double threshold)
+        {
+            double? numA = a switch
+            {
+                double d => d,
+                float f => f,
+                _ => null
+            };
+            if (numA != null)
+            {
+                double? numB = b switch
+                {
+                    double d => d,
+                    float f => f,
+                    _ => null
+                };
+
+                if (numB != null)
+                {
+                    return Math.Abs(numA.Value - numB.Value) < threshold;
+                }
+            }
+
+            return null;
         }
 
         public override void Visit(TernaryExpression expression)

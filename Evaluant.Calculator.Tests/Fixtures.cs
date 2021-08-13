@@ -688,6 +688,22 @@ namespace NCalc.Tests
                Assert.AreEqual("line 1:8 no viable alternative at character '\"'", e.Message);
             }
         }
+
+        [TestMethod]
+        public void ShouldCompareFloatAndDouble()
+        {
+            var e = new Expression("f == 0.33");
+            e.Parameters["f"] = 0.33f;
+            Assert.AreEqual(true, e.Evaluate());
+        }
+        
+        [TestMethod]
+        public void ShouldCompareDoubleRounded()
+        {
+            var e = new Expression("d == 0.12345678", EvaluateOptions.RoundFloatsTo7Decimals);
+            e.Parameters["d"] = 0.1234567;
+            Assert.AreEqual(true, e.Evaluate());
+        }
     }
 }
 
