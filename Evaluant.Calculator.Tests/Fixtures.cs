@@ -700,5 +700,14 @@ namespace NCalc.Tests
             Assert.AreEqual(1m, e.Evaluate());
         }
 
+        [TestMethod]
+        public void Should_Divide_Decimal_By_Single()
+        {
+            var e = new Expression("x / y");
+            e.Parameters["x"] = 1m;
+            e.Parameters["y"] = 1f;
+
+            Assert.AreEqual(1m, e.Evaluate());
+        }
     }
 }
