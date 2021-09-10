@@ -688,6 +688,17 @@ namespace NCalc.Tests
                Assert.AreEqual("line 1:8 no viable alternative at character '\"'", e.Message);
             }
         }
+
+        [TestMethod]
+        public void Should_Divide_Decimal_By_Double_Issue_16()
+        {
+            // https://github.com/ncalc/ncalc/issues/16
+
+            var e = new Expression("x / 1.0");
+            e.Parameters["x"] = 1m;
+
+            Assert.AreEqual(1m, e.Evaluate());
+        }
+
     }
 }
-
