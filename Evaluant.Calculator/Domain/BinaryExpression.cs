@@ -41,6 +41,7 @@ namespace NCalc.Domain
         BitwiseXOr,
         LeftShift,
         RightShift,
-        Unknown
-	}
+        Unknown,
+        Exponentiation
+    }
 }

@@ -44,7 +44,10 @@ namespace NCalc.Tests
         {
             Assert.AreEqual(123456, new Expression("123456").Evaluate());
             Assert.AreEqual(new DateTime(2001, 01, 01), new Expression("#01/01/2001#").Evaluate());
+            Assert.AreEqual(0.2d, new Expression(".2").Evaluate());
             Assert.AreEqual(123.456d, new Expression("123.456").Evaluate());
+            Assert.AreEqual(123d, new Expression("123.").Evaluate());
+            Assert.AreEqual(12300d, new Expression("123.E2").Evaluate());
             Assert.AreEqual(true, new Expression("true").Evaluate());
             Assert.AreEqual("true", new Expression("'true'").Evaluate());
             Assert.AreEqual("azerty", new Expression("'azerty'").Evaluate());
@@ -213,6 +216,12 @@ namespace NCalc.Tests
                                   {
                                       {"!true", false},
                                       {"not false", true},
+                                      {"Not false", true},
+                                      {"NOT false", true},
+                                      {"-10", -10},
+                                      {"+20", 20},
+                                      {"2**-1", 0.5},
+                                      {"2**+2", 4.0},
                                       {"2 * 3", 6},
                                       {"6 / 2", 3d},
                                       {"7 % 2", 1},
@@ -235,9 +244,14 @@ namespace NCalc.Tests
                                       {"2 >> 1", 1},
                                       {"2 << 1", 4},
                                       {"true && false", false},
-                                      {"true and false", false},
+                                      {"True and False", false},
+                                      {"tRue aNd faLse", false},
+                                      {"TRUE ANd fALSE", false},
+                                      {"true AND FALSE", false},
                                       {"true || false", true},
                                       {"true or false", true},
+                                      {"true Or false", true},
+                                      {"true OR false", true},
                                       {"if(true, 0, 1)", 0},
                                       {"if(false, 0, 1)", 1}
                                   };
@@ -259,6 +273,13 @@ namespace NCalc.Tests
 
             Assert.AreEqual(9d, new Expression("1 + 2 + 3 * 4 / 2").Evaluate());
             Assert.AreEqual(13.5, new Expression("18/2/2*3").Evaluate());
+
+            Assert.AreEqual(-1d, new Expression("-1 ** 2").Evaluate());
+            Assert.AreEqual(1d, new Expression("(-1) ** 2").Evaluate());
+            Assert.AreEqual(512d, new Expression("2 ** 3 ** 2").Evaluate());
+            Assert.AreEqual(64d, new Expression("(2 ** 3) ** 2").Evaluate());
+            Assert.AreEqual(18d, new Expression("2 * 3 ** 2").Evaluate());
+            Assert.AreEqual(8d, new Expression("2 ** 4 / 2").Evaluate());
         }
 
         [TestMethod]
@@ -272,7 +293,7 @@ namespace NCalc.Tests
         {
             try
             {
-                new Expression("4. + 2").Evaluate();
+                new Expression(". + 2").Evaluate();
                 Assert.Fail();
             }
             catch (EvaluationException e)
@@ -342,7 +363,7 @@ namespace NCalc.Tests
             Assert.IsTrue(e.HasErrors());
             Assert.IsNotNull(e.Error);
 
-            e = new Expression("+ b ");
+            e = new Expression("* b ");
             Assert.IsNull(e.Error);
             Assert.IsTrue(e.HasErrors());
             Assert.IsNotNull(e.Error);

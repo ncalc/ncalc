@@ -212,6 +212,10 @@ namespace NCalc.Domain
                 case BinaryExpressionType.RightShift:
                     Result = Convert.ToUInt16(left()) >> Convert.ToUInt16(right());
                     break;
+
+                case BinaryExpressionType.Exponentiation:
+                    Result = Math.Pow(Convert.ToDouble(left()), Convert.ToDouble(right()));
+                    break;
             }
         }
 
@@ -232,6 +236,10 @@ namespace NCalc.Domain
 
                 case UnaryExpressionType.BitwiseNot:
                     Result = ~Convert.ToUInt16(Result);
+                    break;
+
+                case UnaryExpressionType.Positive:
+                    // No-op
                     break;
             }
         }

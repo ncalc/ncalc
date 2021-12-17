@@ -1,9 +1,10 @@
-﻿using NCalc;
-
-public partial class NCalcLexer
+﻿namespace NCalc
 {
-    public override void EmitErrorMessage(string msg)
+    public partial class NCalcLexer
     {
-        throw new EvaluationException(msg);
+        public override void EmitErrorMessage(string msg)
+        {
+            throw new EvaluationException(msg);
+        }
     }
 }
