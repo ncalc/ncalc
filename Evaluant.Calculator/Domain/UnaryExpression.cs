@@ -22,6 +22,7 @@ namespace NCalc.Domain
 	{
 		Not,
         Negate,
-        BitwiseNot
-	}
+        BitwiseNot,
+        Positive
+    }
 }
