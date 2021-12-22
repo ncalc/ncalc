@@ -1,10 +1,10 @@
 /.vs
-/Evaluant.Calculator.Play/bin
-/Evaluant.Calculator.Play/obj
-/Evaluant.Calculator.Tests/bin
-/Evaluant.Calculator.Tests/obj
-/Evaluant.Calculator/bin
-/Evaluant.Calculator/obj
+/test/NCalc.Play/bin
+/test/NCalc.Play/obj
+/test/NCalc.Tests/bin
+/test/NCalc.Tests/obj
+/src/NCalc/bin
+/src/NCalc/obj
 /TestResults
 /packages
 /.axoCover
