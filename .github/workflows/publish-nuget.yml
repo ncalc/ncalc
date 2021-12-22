@@ -29,4 +29,4 @@ jobs:
     - name: Pack
       run: dotnet pack -c Release --no-build
     - name: Publish
-      run: dotnet nuget push src/NCalc/bin/Release/NCalcSync.*nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
+      run: dotnet nuget push src/NCalc/bin/Release/NCalcSync.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
