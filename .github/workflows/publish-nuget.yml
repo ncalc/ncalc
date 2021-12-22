@@ -1,0 +1,32 @@
+name: Publish to Nuget
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: | 
+          3.1.x
+          5.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build -c Release --no-restore 
+    - name: Test
+      run: dotnet test -c Release --no-build --verbosity normal
+    - name: Pack
+      run: dotnet pack -c Release --no-build
+    - name: Publish
+      run: dotnet nuget push src/NCalc/bin/Release/NCalcSync.*nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
