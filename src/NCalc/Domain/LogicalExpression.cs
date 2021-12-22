@@ -10,7 +10,6 @@ namespace NCalc.Domain
 
         private static string extractString(string text)
         {
-
             StringBuilder sb = new StringBuilder(text);
             int startIndex = 1; // Skip initial quote
             int slashIndex = -1;

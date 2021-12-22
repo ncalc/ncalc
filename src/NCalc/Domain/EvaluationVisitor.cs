@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 namespace NCalc.Domain
 {
-
-
     public class EvaluationVisitor : LogicalExpressionVisitor
     {
         private delegate T Func<T>();
@@ -34,7 +32,7 @@ namespace NCalc.Domain
 
         private static Type[] CommonTypes = new[] { typeof(Int64), typeof(Double), typeof(Boolean), typeof(String), typeof(Decimal) };
 
-    /// <summary>
+        /// <summary>
         /// Gets the the most precise type.
         /// </summary>
         /// <param name="a">Type a.</param>
@@ -193,21 +191,17 @@ namespace NCalc.Domain
                     Result = Convert.ToUInt16(left()) & Convert.ToUInt16(right());
                     break;
 
-
                 case BinaryExpressionType.BitwiseOr:
                     Result = Convert.ToUInt16(left()) | Convert.ToUInt16(right());
                     break;
-
 
                 case BinaryExpressionType.BitwiseXOr:
                     Result = Convert.ToUInt16(left()) ^ Convert.ToUInt16(right());
                     break;
 
-
                 case BinaryExpressionType.LeftShift:
                     Result = Convert.ToUInt16(left()) << Convert.ToUInt16(right());
                     break;
-
 
                 case BinaryExpressionType.RightShift:
                     Result = Convert.ToUInt16(left()) >> Convert.ToUInt16(right());
@@ -707,6 +701,5 @@ namespace NCalc.Domain
         }
 
         public Dictionary<string, object> Parameters { get; set; }
-
     }
 }

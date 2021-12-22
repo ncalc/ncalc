@@ -100,4 +100,4 @@ Developed by David, Dan and all at [Panoramic Data](https://github.com/panoramic
 ### [Jint](https://github.com/sebastienros/jint)
 
 Javascript Interpreter for .NET by [Sébastien Ros](https://github.com/sebastienros), the author of NCalc library.  
-Run on any modern .NET platform as it supports .NET Standard 2.0 and .NET 4.6.1 targets (and up).
+Runs on any modern .NET platform as it supports .NET Standard 2.0 and .NET 4.6.1 targets (and up).

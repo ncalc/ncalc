@@ -208,6 +208,5 @@ namespace NCalc.Domain
                 Result.Append(") ");
             }
         }
-
     }
 }
