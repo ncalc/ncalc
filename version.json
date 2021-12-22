@@ -3,7 +3,7 @@
   "version": "3.1.0-alpha",
   "publicReleaseRefSpec": [
     "^refs/heads/master$",
-    "^refs/heads/v\\d+(?:\\.\\d+)?$",
+    "^refs/heads/release/v\\d+(?:\\.\\d+)?$",
     "^refs/tags/v\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
   ],
   "cloudBuild": {
