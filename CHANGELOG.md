@@ -1,4 +1,4 @@
-# 3.0:
+# 3.0
 
 Several syntax changes to the grammar:
 
