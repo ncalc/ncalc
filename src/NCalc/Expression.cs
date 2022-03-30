@@ -206,7 +206,7 @@ namespace NCalc
         protected Dictionary<string, IEnumerator> ParameterEnumerators;
         protected Dictionary<string, object> ParametersBackup;
 
-        public object Evaluate()
+        public virtual object Evaluate()
         {
             if (HasErrors())
             {
