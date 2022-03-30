@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace NCalc.Domain
 {
@@ -9,12 +10,18 @@ namespace NCalc.Domain
         private delegate T Func<T>();
 
         private readonly EvaluateOptions _options = EvaluateOptions.None;
+        private readonly CultureInfo _cultureInfo;
 
         private bool IgnoreCase { get { return (_options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase; } }
 
-        public EvaluationVisitor(EvaluateOptions options)
+        public EvaluationVisitor(EvaluateOptions options) : this(options, CultureInfo.CurrentCulture)
+        {
+        }
+
+        public EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         {
             _options = options;
+            _cultureInfo = cultureInfo;
         }
 
         public object Result { get; private set; }
@@ -65,14 +72,14 @@ namespace NCalc.Domain
                 mpt = GetMostPreciseType(a.GetType(), b?.GetType());
             }
             
-            return Comparer.Default.Compare(Convert.ChangeType(a, mpt), Convert.ChangeType(b, mpt));
+            return Comparer.Default.Compare(Convert.ChangeType(a, mpt, _cultureInfo), Convert.ChangeType(b, mpt));
         }
 
         public override void Visit(TernaryExpression expression)
         {
             // Evaluates the left expression and saves the value
             expression.LeftExpression.Accept(this);
-            bool left = Convert.ToBoolean(Result);
+            bool left = Convert.ToBoolean(Result, _cultureInfo);
 
             if (left)
             {
@@ -105,7 +112,7 @@ namespace NCalc.Domain
                                      return leftValue;
                                  };
 
-            // simulate Lazy<Func<>> behavior for late evaluation
+            // simulate Lazy<Func<>> behavior for late evaluations
             object rightValue = null;
             Func<object> right = () =>
             {
@@ -120,17 +127,17 @@ namespace NCalc.Domain
             switch (expression.Type)
             {
                 case BinaryExpressionType.And:
-                    Result = Convert.ToBoolean(left()) && Convert.ToBoolean(right());
+                    Result = Convert.ToBoolean(left(), _cultureInfo) && Convert.ToBoolean(right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.Or:
-                    Result = Convert.ToBoolean(left()) || Convert.ToBoolean(right());
+                    Result = Convert.ToBoolean(left(), _cultureInfo) || Convert.ToBoolean(right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.Div:
                     Result = IsReal(left()) || IsReal(right())
                                  ? Numbers.Divide(left(), right())
-                                 : Numbers.Divide(Convert.ToDouble(left()), right());
+                                 : Numbers.Divide(Convert.ToDouble(left(), _cultureInfo), right());
                     break;
 
                 case BinaryExpressionType.Equal:
@@ -188,27 +195,27 @@ namespace NCalc.Domain
                     break;
 
                 case BinaryExpressionType.BitwiseAnd:
-                    Result = Convert.ToUInt16(left()) & Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) & Convert.ToUInt16(right());
                     break;
 
                 case BinaryExpressionType.BitwiseOr:
-                    Result = Convert.ToUInt16(left()) | Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) | Convert.ToUInt16(right());
                     break;
 
                 case BinaryExpressionType.BitwiseXOr:
-                    Result = Convert.ToUInt16(left()) ^ Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) ^ Convert.ToUInt16(right());
                     break;
 
                 case BinaryExpressionType.LeftShift:
-                    Result = Convert.ToUInt16(left()) << Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) << Convert.ToUInt16(right());
                     break;
 
                 case BinaryExpressionType.RightShift:
-                    Result = Convert.ToUInt16(left()) >> Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) >> Convert.ToUInt16(right());
                     break;
 
                 case BinaryExpressionType.Exponentiation:
-                    Result = Math.Pow(Convert.ToDouble(left()), Convert.ToDouble(right()));
+                    Result = Math.Pow(Convert.ToDouble(left(), _cultureInfo), Convert.ToDouble(right()));
                     break;
             }
         }
@@ -221,7 +228,7 @@ namespace NCalc.Domain
             switch (expression.Type)
             {
                 case UnaryExpressionType.Not:
-                    Result = !Convert.ToBoolean(Result);
+                    Result = !Convert.ToBoolean(Result, _cultureInfo);
                     break;
 
                 case UnaryExpressionType.Negate:
@@ -229,7 +236,7 @@ namespace NCalc.Domain
                     break;
 
                 case UnaryExpressionType.BitwiseNot:
-                    Result = ~Convert.ToUInt16(Result);
+                    Result = ~Convert.ToUInt16(Result, _cultureInfo);
                     break;
 
                 case UnaryExpressionType.Positive:
@@ -255,7 +262,7 @@ namespace NCalc.Domain
             // Evaluating every value could produce unexpected behaviour
             for (int i = 0; i < function.Expressions.Length; i++ )
             {
-                args.Parameters[i] =  new Expression(function.Expressions[i], _options);
+                args.Parameters[i] =  new Expression(function.Expressions[i], _options, _cultureInfo);
                 args.Parameters[i].EvaluateFunction += EvaluateFunction;
                 args.Parameters[i].EvaluateParameter += EvaluateParameter;
 
@@ -284,7 +291,7 @@ namespace NCalc.Domain
                         throw new ArgumentException("Abs() takes exactly 1 argument");
 
                     Result = Math.Abs(Convert.ToDecimal(
-                        Evaluate(function.Expressions[0]))
+                        Evaluate(function.Expressions[0]), _cultureInfo)
                         );
 
                     break;
@@ -299,7 +306,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Acos() takes exactly 1 argument");
 
-                    Result = Math.Acos(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Acos(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -313,7 +320,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Asin() takes exactly 1 argument");
 
-                    Result = Math.Asin(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Asin(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -327,7 +334,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Atan() takes exactly 1 argument");
 
-                    Result = Math.Atan(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Atan(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -341,7 +348,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Ceiling() takes exactly 1 argument");
 
-                    Result = Math.Ceiling(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Ceiling(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -356,7 +363,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Cos() takes exactly 1 argument");
 
-                    Result = Math.Cos(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Cos(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -370,7 +377,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Exp() takes exactly 1 argument");
 
-                    Result = Math.Exp(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Exp(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -384,7 +391,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Floor() takes exactly 1 argument");
 
-                    Result = Math.Floor(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Floor(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -398,7 +405,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 2)
                         throw new ArgumentException("IEEERemainder() takes exactly 2 arguments");
 
-                    Result = Math.IEEERemainder(Convert.ToDouble(Evaluate(function.Expressions[0])), Convert.ToDouble(Evaluate(function.Expressions[1])));
+                    Result = Math.IEEERemainder(Convert.ToDouble(Evaluate(function.Expressions[0])), Convert.ToDouble(Evaluate(function.Expressions[1]), _cultureInfo));
 
                     break;
 
@@ -412,7 +419,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Ln() takes exactly 1 argument");
 
-                    Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -426,7 +433,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 2)
                         throw new ArgumentException("Log() takes exactly 2 arguments");
 
-                    Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0])), Convert.ToDouble(Evaluate(function.Expressions[1])));
+                    Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo), Convert.ToDouble(Evaluate(function.Expressions[1]), _cultureInfo));
 
                     break;
 
@@ -440,7 +447,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Log10() takes exactly 1 argument");
 
-                    Result = Math.Log10(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Log10(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -454,7 +461,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 2)
                         throw new ArgumentException("Pow() takes exactly 2 arguments");
 
-                    Result = Math.Pow(Convert.ToDouble(Evaluate(function.Expressions[0])), Convert.ToDouble(Evaluate(function.Expressions[1])));
+                    Result = Math.Pow(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo), Convert.ToDouble(Evaluate(function.Expressions[1]), _cultureInfo));
 
                     break;
 
@@ -470,7 +477,7 @@ namespace NCalc.Domain
 
                     MidpointRounding rounding = (_options & EvaluateOptions.RoundAwayFromZero) == EvaluateOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
 
-                    Result = Math.Round(Convert.ToDouble(Evaluate(function.Expressions[0])), Convert.ToInt16(Evaluate(function.Expressions[1])), rounding);
+                    Result = Math.Round(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo), Convert.ToInt16(Evaluate(function.Expressions[1]), _cultureInfo), rounding);
 
                     break;
 
@@ -484,7 +491,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Sign() takes exactly 1 argument");
 
-                    Result = Math.Sign(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Sign(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -498,7 +505,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Sin() takes exactly 1 argument");
 
-                    Result = Math.Sin(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Sin(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -512,7 +519,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Sqrt() takes exactly 1 argument");
 
-                    Result = Math.Sqrt(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Sqrt(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -526,7 +533,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Tan() takes exactly 1 argument");
 
-                    Result = Math.Tan(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Tan(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -540,7 +547,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Truncate() takes exactly 1 argument");
 
-                    Result = Math.Truncate(Convert.ToDouble(Evaluate(function.Expressions[0])));
+                    Result = Math.Truncate(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo));
 
                     break;
 
@@ -586,7 +593,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 3)
                         throw new ArgumentException("if() takes exactly 3 arguments");
 
-                    bool cond = Convert.ToBoolean(Evaluate(function.Expressions[0]));
+                    bool cond = Convert.ToBoolean(Evaluate(function.Expressions[0]), _cultureInfo);
 
                     Result = cond ? Evaluate(function.Expressions[1]) : Evaluate(function.Expressions[2]);
                     break;

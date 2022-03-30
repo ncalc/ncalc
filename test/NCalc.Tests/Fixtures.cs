@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
 using System.Collections;
+using System.Globalization;
 
 namespace NCalc.Tests
 {
@@ -729,6 +730,37 @@ namespace NCalc.Tests
             e.Parameters["y"] = 1f;
 
             Assert.AreEqual(1m, e.Evaluate());
+        }
+
+        [TestMethod]
+        public void ShouldParseInvariantCulture()
+        {
+            var originalCulture = (CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
+            try
+            {
+                var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+                culture.NumberFormat.NumberDecimalSeparator = ",";
+                Thread.CurrentThread.CurrentCulture = culture;
+                bool expectionThrown = false;
+                try
+                {
+                    var expr = new Expression("[a]<2.0") { Parameters = { ["a"] = "1.7" } };
+                    expr.Evaluate();
+                }
+                catch (FormatException)
+                {
+                    expectionThrown = true;
+                }
+
+                Assert.IsTrue(expectionThrown);
+
+                var e = new Expression("[a]<2.0", CultureInfo.InvariantCulture) { Parameters = { ["a"] = "1.7" } };
+                Assert.AreEqual(true, e.Evaluate());
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
         }
     }
 }

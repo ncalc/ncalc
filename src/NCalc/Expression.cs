@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using NCalc.Domain;
 using Antlr.Runtime;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 
 namespace NCalc
@@ -17,11 +18,24 @@ namespace NCalc
         /// </summary>
         protected string OriginalExpression;
 
-        public Expression(string expression) : this(expression, EvaluateOptions.None)
+        /// <summary>
+        /// Get or set the culture info
+        /// </summary>
+        protected CultureInfo CultureInfo;
+
+        public Expression(string expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
         {
         }
 
-        public Expression(string expression, EvaluateOptions options)
+        public Expression(string expression, CultureInfo cultureInfo) : this(expression, EvaluateOptions.None, cultureInfo)
+        {
+        }
+
+        public Expression(string expression, EvaluateOptions options) : this(expression, options, CultureInfo.CurrentCulture)
+        {
+        }
+
+        public Expression(string expression, EvaluateOptions options, CultureInfo cultureInfo)
         {
             if (String.IsNullOrEmpty(expression))
                 throw new 
@@ -29,13 +43,14 @@ namespace NCalc
 
             OriginalExpression = expression;
             Options = options;
+            CultureInfo = cultureInfo;
         }
 
-        public Expression(LogicalExpression expression) : this(expression, EvaluateOptions.None)
+        public Expression(LogicalExpression expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
         {
         }
 
-        public Expression(LogicalExpression expression, EvaluateOptions options)
+        public Expression(LogicalExpression expression, EvaluateOptions options, CultureInfo cultureInfo)
         {
             if (expression == null)
                 throw new
@@ -43,6 +58,7 @@ namespace NCalc
 
             ParsedExpression = expression;
             Options = options;
+            CultureInfo = cultureInfo;
         }
 
         #region Cache management
@@ -203,7 +219,7 @@ namespace NCalc
             }
 
 
-            var visitor = new EvaluationVisitor(Options);
+            var visitor = new EvaluationVisitor(Options, CultureInfo);
             visitor.EvaluateFunction += EvaluateFunction;
             visitor.EvaluateParameter += EvaluateParameter;
             visitor.Parameters = Parameters;
