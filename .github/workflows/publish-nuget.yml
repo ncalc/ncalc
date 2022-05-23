@@ -27,6 +27,6 @@ jobs:
     - name: Test
       run: dotnet test -c Release --no-build --verbosity normal
     - name: Pack
-      run: dotnet pack -c Release --no-build
+      run: dotnet pack -c Release --no-build -p:PublicRelease=true
     - name: Publish
-      run: dotnet nuget push src/NCalc/bin/Release/NCalcSync.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
+      run: dotnet nuget push src/NCalc/bin/Release/NCalcSync*.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
