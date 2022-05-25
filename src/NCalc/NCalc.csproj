@@ -16,6 +16,11 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
+  <!-- TRACE symbol seems to be always defined by default, let's undefine it for the Release builds -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>$(DefineConstants.Replace("TRACE", "NOTRACE"))</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' != 'net35' ">
     <Compile Remove="Properties\ExcludeFromCodeCoverageAttribute35.cs" />
   </ItemGroup>
