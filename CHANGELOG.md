@@ -1,3 +1,11 @@
+# 3.2
+
+* [Disable tracing for Release builds](https://github.com/ncalc/ncalc/issues/51)
+
+# 3.1
+
+* [CultureInfo support](https://github.com/ncalc/ncalc/pull/46)
+
 # 3.0
 
 Several syntax changes to the grammar:
