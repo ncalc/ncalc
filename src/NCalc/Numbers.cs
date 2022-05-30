@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Globalization;
 
 namespace NCalc
 {
     public class Numbers
     {
-        private static object ConvertIfString(object s)
+        private static object ConvertIfString(object s, CultureInfo cultureInfo)
         {
-            if (s is String|| s is char)
+            if (s is String || s is char)
             {
-                return Decimal.Parse(s.ToString());
+                return Decimal.Parse(s.ToString(), cultureInfo);
             }
 
             return s;
@@ -16,8 +17,13 @@ namespace NCalc
 
         public static object Add(object a, object b)
         {
-            a = ConvertIfString(a);
-            b = ConvertIfString(b);
+            return Add(a, b, CultureInfo.CurrentCulture);
+        }
+
+        public static object Add(object a, object b, CultureInfo cultureInfo)
+        {
+            a = ConvertIfString(a, cultureInfo);
+            b = ConvertIfString(b, cultureInfo);
 
             TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
             TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
@@ -244,8 +250,13 @@ namespace NCalc
 
         public static object Soustract(object a, object b)
         {
-            a = ConvertIfString(a);
-            b = ConvertIfString(b);
+            return Soustract(a, b, CultureInfo.CurrentCulture);
+        }
+
+        public static object Soustract(object a, object b, CultureInfo cultureInfo)
+        {
+            a = ConvertIfString(a, cultureInfo);
+            b = ConvertIfString(b, cultureInfo);
 
             TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
             TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
@@ -458,10 +469,16 @@ namespace NCalc
 
             return null;
         }
+
         public static object Multiply(object a, object b)
         {
-            a = ConvertIfString(a);
-            b = ConvertIfString(b);
+            return Multiply(a, b, CultureInfo.CurrentCulture);
+        }
+
+        public static object Multiply(object a, object b, CultureInfo cultureInfo)
+        {
+            a = ConvertIfString(a, cultureInfo);
+            b = ConvertIfString(b, cultureInfo);
 
             TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
             TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
@@ -657,10 +674,16 @@ namespace NCalc
 
             return null;
         }
+        
         public static object Divide(object a, object b)
         {
-            a = ConvertIfString(a);
-            b = ConvertIfString(b);
+            return Divide(a, b, CultureInfo.CurrentCulture);
+        }
+
+        public static object Divide(object a, object b, CultureInfo cultureInfo)
+        {
+            a = ConvertIfString(a, cultureInfo);
+            b = ConvertIfString(b, cultureInfo);
 
             TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
             TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
@@ -859,8 +882,13 @@ namespace NCalc
 
         public static object Modulo(object a, object b)
         {
-            a = ConvertIfString(a);
-            b = ConvertIfString(b);
+            return Modulo(a, b, CultureInfo.CurrentCulture);
+        }
+
+        public static object Modulo(object a, object b, CultureInfo cultureInfo)
+        {
+            a = ConvertIfString(a, cultureInfo);
+            b = ConvertIfString(b, cultureInfo);
 
             TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
             TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
@@ -1056,10 +1084,16 @@ namespace NCalc
 
             return null;
         }
+
         public static object Max(object a, object b)
         {
-            a = ConvertIfString(a);
-            b = ConvertIfString(b);
+            return Max(a, b, CultureInfo.CurrentCulture);
+        }
+
+        public static object Max(object a, object b, CultureInfo cultureInfo)
+        {
+            a = ConvertIfString(a, cultureInfo);
+            b = ConvertIfString(b, cultureInfo);
 
             if (a == null && b == null)
             {
@@ -1106,10 +1140,16 @@ namespace NCalc
 
             return null;
         }
+
         public static object Min(object a, object b)
         {
-            a = ConvertIfString(a);
-            b = ConvertIfString(b);
+            return Min(a, b, CultureInfo.CurrentCulture);
+        }
+
+        public static object Min(object a, object b, CultureInfo cultureInfo)
+        {
+            a = ConvertIfString(a, cultureInfo);
+            b = ConvertIfString(b, cultureInfo);
 
             if (a == null && b == null)
             {

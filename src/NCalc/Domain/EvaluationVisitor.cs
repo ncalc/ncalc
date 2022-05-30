@@ -72,7 +72,7 @@ namespace NCalc.Domain
                 mpt = GetMostPreciseType(a.GetType(), b?.GetType());
             }
             
-            return Comparer.Default.Compare(Convert.ChangeType(a, mpt, _cultureInfo), Convert.ChangeType(b, mpt));
+            return Comparer.Default.Compare(Convert.ChangeType(a, mpt, _cultureInfo), Convert.ChangeType(b, mpt, _cultureInfo));
         }
 
         public override void Visit(TernaryExpression expression)
@@ -136,8 +136,8 @@ namespace NCalc.Domain
 
                 case BinaryExpressionType.Div:
                     Result = IsReal(left()) || IsReal(right())
-                                 ? Numbers.Divide(left(), right())
-                                 : Numbers.Divide(Convert.ToDouble(left(), _cultureInfo), right());
+                                 ? Numbers.Divide(left(), right(), _cultureInfo)
+                                 : Numbers.Divide(Convert.ToDouble(left(), _cultureInfo), right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.Equal:
@@ -166,11 +166,11 @@ namespace NCalc.Domain
                     break;
 
                 case BinaryExpressionType.Minus:
-                    Result = Numbers.Soustract(left(), right());
+                    Result = Numbers.Soustract(left(), right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.Modulo:
-                    Result = Numbers.Modulo(left(), right());
+                    Result = Numbers.Modulo(left(), right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.NotEqual:
@@ -185,37 +185,37 @@ namespace NCalc.Domain
                     }
                     else
                     {
-                        Result = Numbers.Add(left(), right());
+                        Result = Numbers.Add(left(), right(), _cultureInfo);
                     }
 
                     break;
 
                 case BinaryExpressionType.Times:
-                    Result = Numbers.Multiply(left(), right());
+                    Result = Numbers.Multiply(left(), right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.BitwiseAnd:
-                    Result = Convert.ToUInt16(left(), _cultureInfo) & Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) & Convert.ToUInt16(right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.BitwiseOr:
-                    Result = Convert.ToUInt16(left(), _cultureInfo) | Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) | Convert.ToUInt16(right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.BitwiseXOr:
-                    Result = Convert.ToUInt16(left(), _cultureInfo) ^ Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) ^ Convert.ToUInt16(right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.LeftShift:
-                    Result = Convert.ToUInt16(left(), _cultureInfo) << Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) << Convert.ToUInt16(right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.RightShift:
-                    Result = Convert.ToUInt16(left(), _cultureInfo) >> Convert.ToUInt16(right());
+                    Result = Convert.ToUInt16(left(), _cultureInfo) >> Convert.ToUInt16(right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.Exponentiation:
-                    Result = Math.Pow(Convert.ToDouble(left(), _cultureInfo), Convert.ToDouble(right()));
+                    Result = Math.Pow(Convert.ToDouble(left(), _cultureInfo), Convert.ToDouble(right(), _cultureInfo));
                     break;
             }
         }
@@ -232,7 +232,7 @@ namespace NCalc.Domain
                     break;
 
                 case UnaryExpressionType.Negate:
-                    Result = Numbers.Soustract(0, Result);
+                    Result = Numbers.Soustract(0, Result, _cultureInfo);
                     break;
 
                 case UnaryExpressionType.BitwiseNot:
@@ -564,7 +564,7 @@ namespace NCalc.Domain
                     object maxleft = Evaluate(function.Expressions[0]);
                     object maxright = Evaluate(function.Expressions[1]);
 
-                    Result = Numbers.Max(maxleft, maxright);
+                    Result = Numbers.Max(maxleft, maxright, _cultureInfo);
                     break;
 
                 #endregion
@@ -580,7 +580,7 @@ namespace NCalc.Domain
                     object minleft = Evaluate(function.Expressions[0]);
                     object minright = Evaluate(function.Expressions[1]);
 
-                    Result = Numbers.Min(minleft, minright);
+                    Result = Numbers.Min(minleft, minright, _cultureInfo);
                     break;
 
                 #endregion
