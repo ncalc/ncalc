@@ -107,6 +107,10 @@ namespace NCalc.Tests
             Assert.AreEqual(2d, new Expression("Sqrt(4)").Evaluate());
             Assert.AreEqual(0d, new Expression("Tan(0)").Evaluate());
             Assert.AreEqual(1d, new Expression("Truncate(1.7)").Evaluate());
+            Assert.AreEqual(-Math.PI/2, (double) new Expression("Atan2(-1,0)").Evaluate(), 1e-16);
+            Assert.AreEqual(Math.PI/2, (double) new Expression("Atan2(1,0)").Evaluate(), 1e-16);
+            Assert.AreEqual(Math.PI, (double) new Expression("Atan2(0,-1)").Evaluate(), 1e-16);
+            Assert.AreEqual(0, (double) new Expression("Atan2(0,1)").Evaluate(), 1e-16);
         }
 
         [TestMethod]

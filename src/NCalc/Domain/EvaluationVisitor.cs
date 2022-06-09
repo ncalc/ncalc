@@ -340,6 +340,20 @@ namespace NCalc.Domain
 
                 #endregion
 
+                #region Atan2
+                case "atan2":
+
+                    CheckCase("Atan2", function.Identifier.Name);
+
+                    if (function.Expressions.Length != 2)
+                        throw new ArgumentException("Atan2() takes exactly 2 argument");
+
+                    Result = Math.Atan2(Convert.ToDouble(Evaluate(function.Expressions[0]), _cultureInfo), Convert.ToDouble(Evaluate(function.Expressions[1]), _cultureInfo));
+
+                    break;
+
+                #endregion
+
                 #region Ceiling
                 case "ceiling":
 
