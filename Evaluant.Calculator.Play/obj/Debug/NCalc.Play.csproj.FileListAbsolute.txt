@@ -1,0 +1,10 @@
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\bin\Debug\Play.exe
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\bin\Debug\Play.pdb
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\bin\Debug\NCalc.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\bin\Debug\Antlr3.Runtime.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\bin\Debug\NCalc.pdb
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\obj\Debug\NCalc.Play.csproj.AssemblyReference.cache
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\obj\Debug\NCalc.Play.csproj.CoreCompileInputs.cache
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\obj\Debug\NCalc.Play.csproj.CopyComplete
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\obj\Debug\Play.exe
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Play\obj\Debug\Play.pdb

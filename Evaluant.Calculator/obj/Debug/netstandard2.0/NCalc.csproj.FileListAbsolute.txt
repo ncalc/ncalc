@@ -1,0 +1,11 @@
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\bin\Debug\netstandard2.0\NCalc.deps.json
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\bin\Debug\netstandard2.0\NCalc.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\bin\Debug\netstandard2.0\NCalc.pdb
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\bin\Debug\netstandard2.0\Antlr3.Runtime.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\obj\Debug\netstandard2.0\NCalc.csproj.AssemblyReference.cache
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\obj\Debug\netstandard2.0\NCalc.AssemblyInfoInputs.cache
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\obj\Debug\netstandard2.0\NCalc.AssemblyInfo.cs
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\obj\Debug\netstandard2.0\NCalc.csproj.CoreCompileInputs.cache
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\obj\Debug\netstandard2.0\NCalc.csproj.CopyComplete
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\obj\Debug\netstandard2.0\NCalc.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator\obj\Debug\netstandard2.0\NCalc.pdb

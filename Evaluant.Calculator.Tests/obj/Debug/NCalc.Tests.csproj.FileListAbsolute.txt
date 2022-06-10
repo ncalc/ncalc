@@ -1,0 +1,12 @@
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\bin\Debug\NCalc.Tests.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\bin\Debug\NCalc.Tests.pdb
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\bin\Debug\Antlr3.Runtime.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\bin\Debug\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\bin\Debug\NCalc.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\bin\Debug\NCalc.pdb
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\bin\Debug\Antlr3.Runtime.xml
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\obj\Debug\NCalc.Tests.csproj.AssemblyReference.cache
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\obj\Debug\NCalc.Tests.csproj.CoreCompileInputs.cache
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\obj\Debug\NCalc.Tests.csproj.CopyComplete
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\obj\Debug\NCalc.Tests.dll
+C:\Users\bykie\source\repos\ncalc\Evaluant.Calculator.Tests\obj\Debug\NCalc.Tests.pdb
