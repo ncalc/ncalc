@@ -5,6 +5,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
 using System.Collections;
 using System.Globalization;
+using System.Linq;
+using BinaryExpression = NCalc.Domain.BinaryExpression;
+using UnaryExpression = NCalc.Domain.UnaryExpression;
 
 namespace NCalc.Tests
 {
@@ -294,7 +297,7 @@ namespace NCalc.Tests
         }
 
         [TestMethod]
-        public void ShouldThrowAnExpcetionWhenInvalidNumber()
+        public void ShouldThrowAnExceptionWhenInvalidNumber()
         {
             try
             {
@@ -745,7 +748,7 @@ namespace NCalc.Tests
                 var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
                 culture.NumberFormat.NumberDecimalSeparator = ",";
                 Thread.CurrentThread.CurrentCulture = culture;
-                bool expectionThrown = false;
+                var exceptionThrown = false;
                 try
                 {
                     var expr = new Expression("[a]<2.0") { Parameters = { ["a"] = "1.7" } };
@@ -753,10 +756,10 @@ namespace NCalc.Tests
                 }
                 catch (FormatException)
                 {
-                    expectionThrown = true;
+                    exceptionThrown = true;
                 }
 
-                Assert.IsTrue(expectionThrown);
+                Assert.IsTrue(exceptionThrown);
 
                 var e = new Expression("[a]<2.0", CultureInfo.InvariantCulture) { Parameters = { ["a"] = "1.7" } };
                 Assert.AreEqual(true, e.Evaluate());
@@ -764,6 +767,322 @@ namespace NCalc.Tests
             finally
             {
                 Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
+        }
+
+        [TestMethod]
+        public void Should_Add_All_Numeric_Types_Issue_58()
+        {
+            // https://github.com/ncalc/ncalc/issues/58
+            var expectedResult = 100;
+            var operand = "+";
+            var lhsValue = "50";
+            var rhsValue = "50";
+
+            var allTypes = new List<TypeCode>()
+            {
+                TypeCode.Boolean, TypeCode.Byte, TypeCode.SByte, TypeCode.Int16, TypeCode.UInt16, TypeCode.Int32,
+                TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Single, TypeCode.Double, TypeCode.Decimal
+            };
+
+            var exceptionThrown = false;
+
+            var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>();
+
+            // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
+            shouldNotWork[TypeCode.Boolean] = allTypes;
+            shouldNotWork[TypeCode.Byte] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.SByte] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.Int16] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt16] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Int32] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt32] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Int64] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt64] = new List<TypeCode>
+                { TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64 };
+            shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean };
+
+            // These should all work and return a value
+            foreach (var typecodeA in allTypes)
+            {
+                var toTest = allTypes.Except(shouldNotWork[typecodeA]);
+                foreach (var typecodeB in toTest)
+                {
+                    var expr = $"x {operand} y";
+                    try
+                    {
+                        var result = new Expression(expr, CultureInfo.InvariantCulture)
+                            {
+                                Parameters =
+                                {
+                                    ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                                    ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                                } 
+                            }
+                            .Evaluate();
+                        Assert.IsTrue(Convert.ToInt64(result) == expectedResult,
+                            $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Assert.Fail($"{expr}: {typecodeA}, {typecodeB} should not throw an exception but {ex} was thrown");
+                    }
+                }
+
+                // These should throw exceptions
+
+                foreach (var typecodeB in shouldNotWork[typecodeA])
+                {
+                    var expr = $"x {operand} y";
+                    Assert.ThrowsException<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
+                        {
+                            Parameters =
+                            {
+                                ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                                ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                            }
+                        }
+                        .Evaluate(),$"{expr}: {typecodeA}, {typecodeB}");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Should_Subtract_All_Numeric_Types_Issue_58()
+        {
+            // https://github.com/ncalc/ncalc/issues/58
+            var expectedResult = 0;
+            var operand = "-";
+            var lhsValue = 50;
+            var rhsValue = 50;
+
+            var allTypes = new List<TypeCode>()
+            {
+                TypeCode.Boolean, TypeCode.Byte, TypeCode.SByte, TypeCode.Int16, TypeCode.UInt16, TypeCode.Int32,
+                TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Single, TypeCode.Double, TypeCode.Decimal
+            };
+
+            var exceptionThrown = false;
+
+            var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>();
+
+            // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
+            shouldNotWork[TypeCode.Boolean] = allTypes;
+            shouldNotWork[TypeCode.Byte] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.SByte] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.Int16] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt16] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Int32] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt32] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Int64] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt64] = new List<TypeCode>
+                { TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64 };
+            shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean, TypeCode.Decimal };
+            shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean };
+
+            // These should all work and return a value
+            foreach (var typecodeA in allTypes)
+            {
+                var toTest = allTypes.Except(shouldNotWork[typecodeA]);
+                foreach (var typecodeB in toTest)
+                {
+                    var expr = $"x {operand} y";
+                    try
+                    {
+                        var result = new Expression(expr, CultureInfo.InvariantCulture)
+                            {
+                                Parameters =
+                                {
+                                    ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                                    ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                                }
+                            }
+                            .Evaluate();
+                        Assert.IsTrue(Convert.ToInt64(result) == expectedResult,
+                            $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Assert.Fail($"{expr}: {typecodeA}, {typecodeB} should not throw an exception but {ex} was thrown");
+                    }
+                }
+
+                // These should throw exceptions
+
+                foreach (var typecodeB in shouldNotWork[typecodeA])
+                {
+                    var expr = $"x {operand} y";
+                    Assert.ThrowsException<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
+                        {
+                            Parameters =
+                            {
+                                ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                                ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                            }
+                        }
+                        .Evaluate(),$"{expr}: {typecodeA}, {typecodeB}");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Should_Multiply_All_Numeric_Types_Issue_58()
+        {
+            // https://github.com/ncalc/ncalc/issues/58
+            var expectedResult = 64;
+            var operand = "*";
+            var lhsValue = 8;
+            var rhsValue = 8;
+
+            var allTypes = new List<TypeCode>()
+            {
+                TypeCode.Boolean, TypeCode.Byte, TypeCode.SByte, TypeCode.Int16, TypeCode.UInt16, TypeCode.Int32,
+                TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Single, TypeCode.Double, TypeCode.Decimal
+            };
+
+            var exceptionThrown = false;
+
+            var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>();
+
+            // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
+            shouldNotWork[TypeCode.Boolean] = allTypes;
+            shouldNotWork[TypeCode.Byte] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.SByte] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.Int16] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt16] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Int32] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt32] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Int64] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt64] = new List<TypeCode>
+                { TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64 };
+            shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean };
+
+            // These should all work and return a value
+            foreach (var typecodeA in allTypes)
+            {
+                var toTest = allTypes.Except(shouldNotWork[typecodeA]);
+                foreach (var typecodeB in toTest)
+                {
+                    var expr = $"x {operand} y";
+                    try
+                    {
+                        var result = new Expression(expr, CultureInfo.InvariantCulture)
+                            {
+                                Parameters =
+                                {
+                                    ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                                    ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                                }
+                            }
+                            .Evaluate();
+                        Assert.IsTrue(Convert.ToInt64(result) == expectedResult,
+                            $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Assert.Fail($"{expr}: {typecodeA}, {typecodeB} should not throw an exception but {ex} was thrown");
+                    }
+                }
+
+                // These should throw exceptions
+
+                foreach (var typecodeB in shouldNotWork[typecodeA])
+                {
+                    var expr = $"x {operand} y";
+                    Assert.ThrowsException<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
+                        {
+                            Parameters =
+                            {
+                                ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                                ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                            }
+                        }
+                        .Evaluate(),$"{expr}: {typecodeA}, {typecodeB}");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Should_Modulo_All_Numeric_Types_Issue_58()
+        {
+            // https://github.com/ncalc/ncalc/issues/58
+            var expectedResult = 0;
+            var operand = "/";
+            var lhsValue = 50;
+            var rhsValue = 50;
+
+            var allTypes = new List<TypeCode>()
+            {
+                TypeCode.Boolean, TypeCode.Byte, TypeCode.SByte, TypeCode.Int16, TypeCode.UInt16, TypeCode.Int32,
+                TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Single, TypeCode.Double, TypeCode.Decimal
+            };
+
+            var exceptionThrown = false;
+
+            var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>();
+
+            // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
+            shouldNotWork[TypeCode.Boolean] = allTypes;
+            shouldNotWork[TypeCode.Byte] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.SByte] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.Int16] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt16] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Int32] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt32] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Int64] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
+            shouldNotWork[TypeCode.UInt64] = new List<TypeCode>
+                { TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64 };
+            shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean };
+
+            // These should all work and return a value
+            foreach (var typecodeA in allTypes)
+            {
+                var toTest = allTypes.Except(shouldNotWork[typecodeA]);
+                foreach (var typecodeB in toTest)
+                {
+                    var expr = $"x {operand} y";
+                    try
+                    {
+                        var result = new Expression(expr, CultureInfo.InvariantCulture)
+                            {
+                                Parameters =
+                                {
+                                    ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                                    ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                                }
+                            }
+                            .Evaluate();
+                        Assert.IsTrue(Convert.ToInt64(result) == expectedResult,
+                            $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Assert.Fail($"{expr}: {typecodeA}, {typecodeB} should not throw an exception but {ex} was thrown");
+                    }
+                }
+
+                // These should throw exceptions
+
+                foreach (var typecodeB in shouldNotWork[typecodeA])
+                {
+                    var expr = $"x {operand} y";
+                    Assert.ThrowsException<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
+                        {
+                            Parameters =
+                            {
+                                ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                                ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                            }
+                        }
+                        .Evaluate(),$"{expr}: {typecodeA}, {typecodeB}");
+                }
             }
         }
 
