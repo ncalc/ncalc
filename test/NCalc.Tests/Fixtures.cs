@@ -840,8 +840,8 @@ namespace NCalc.Tests
                         {
                             Parameters =
                             {
-                                ["x"] = Convert.ChangeType(lhsValue, typecodeA),
-                                ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                                ["x"] = Convert.ChangeType(1, typecodeA),
+                                ["y"] = Convert.ChangeType(1, typecodeB)
                             }
                         }
                         .Evaluate(),$"{expr}: {typecodeA}, {typecodeB}");
@@ -1012,7 +1012,7 @@ namespace NCalc.Tests
         {
             // https://github.com/ncalc/ncalc/issues/58
             var expectedResult = 0;
-            var operand = "/";
+            var operand = "%";
             var lhsValue = 50;
             var rhsValue = 50;
 
@@ -1037,9 +1037,9 @@ namespace NCalc.Tests
             shouldNotWork[TypeCode.Int64] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
             shouldNotWork[TypeCode.UInt64] = new List<TypeCode>
                 { TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64 };
-            shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean };
-            shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean };
-            shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean };
+            shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean, TypeCode.Decimal };
+            shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean, TypeCode.Decimal };
+            shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean, TypeCode.Single, TypeCode.Double };
 
             // These should all work and return a value
             foreach (var typecodeA in allTypes)

@@ -877,7 +877,7 @@ namespace NCalc
                     switch (typeCodeB)
                     {
                         case TypeCode.Boolean: throw new InvalidOperationException("Operator '%' can't be applied to operands of types 'byte' and 'bool'");
-                        case TypeCode.Byte: return (Byte)a % (SByte)b;
+                        case TypeCode.Byte: return (Byte)a % (Byte)b;
                         case TypeCode.SByte: return (Byte)a % (SByte)b;
                         case TypeCode.Int16: return (Byte)a % (Int16)b;
                         case TypeCode.UInt16: return (Byte)a % (UInt16)b;
@@ -928,7 +928,7 @@ namespace NCalc
                     switch (typeCodeB)
                     {
                         case TypeCode.Boolean: throw new InvalidOperationException("Operator '%' can't be applied to operands of types 'ushort' and 'bool'");
-                        case TypeCode.Byte: return (UInt16)a % (SByte)b;
+                        case TypeCode.Byte: return (UInt16)a % (Byte)b;
                         case TypeCode.SByte: return (UInt16)a % (SByte)b;
                         case TypeCode.Int16: return (UInt16)a % (Int16)b;
                         case TypeCode.UInt16: return (UInt16)a % (UInt16)b;
@@ -996,7 +996,7 @@ namespace NCalc
                     switch (typeCodeB)
                     {
                         case TypeCode.Boolean: throw new InvalidOperationException("Operator '%' can't be applied to operands of types 'ulong' and 'bool'");
-                        case TypeCode.Byte: throw new InvalidOperationException("Operator '%' can't be applied to operands of types 'ulong' and 'byte'");
+                        case TypeCode.Byte: return (UInt64)a % (Byte)b;
                         case TypeCode.SByte: throw new InvalidOperationException("Operator '%' can't be applied to operands of types 'ulong' and 'sbyte'");
                         case TypeCode.Int16: throw new InvalidOperationException("Operator '%' can't be applied to operands of types 'ulong' and 'short'");
                         case TypeCode.UInt16: return (UInt64)a % (UInt16)b;
