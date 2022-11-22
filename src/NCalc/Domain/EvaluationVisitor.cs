@@ -166,7 +166,7 @@ namespace NCalc.Domain
                     break;
 
                 case BinaryExpressionType.Minus:
-                    Result = Numbers.Soustract(left(), right(), _cultureInfo);
+                    Result = Numbers.Subtract(left(), right(), _cultureInfo);
                     break;
 
                 case BinaryExpressionType.Modulo:
@@ -232,7 +232,7 @@ namespace NCalc.Domain
                     break;
 
                 case UnaryExpressionType.Negate:
-                    Result = Numbers.Soustract(0, Result, _cultureInfo);
+                    Result = Numbers.Subtract(0, Result, _cultureInfo);
                     break;
 
                 case UnaryExpressionType.BitwiseNot:
