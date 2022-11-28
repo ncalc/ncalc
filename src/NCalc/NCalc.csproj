@@ -11,7 +11,6 @@
     <RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
     <PackageTags>ncalc; sync; core</PackageTags>
     <PackageIcon>NCalc.png</PackageIcon>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions. This version targets .NET Standard 2.0 framework.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <IncludeSymbols>true</IncludeSymbols>
@@ -41,8 +40,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Resources\NCalc.png" Pack="true" PackagePath="\" />
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="Resources\NCalc.png" Pack="true" PackagePath="" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
