@@ -10,6 +10,8 @@
     <PackageProjectUrl>https://github.com/ncalc/ncalc</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
     <PackageTags>ncalc; sync; core</PackageTags>
+    <PackageIcon>NCalc.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions. This version targets .NET Standard 2.0 framework.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <IncludeSymbols>true</IncludeSymbols>
@@ -36,6 +38,17 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net35' ">
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <FrameworkPathOverride>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Resources\NCalc.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
 </Project>

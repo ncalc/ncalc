@@ -1,10 +1,23 @@
+# 3.6
+
+* [Add arithmetic support for multiple operators and types](https://github.com/ncalc/ncalc/pull/59) by [Justin Baugh](https://github.com/baughj)
+* [Using OrdinalIgnoreCase instead of ToLower() checks](https://github.com/ncalc/ncalc/pull/55) by [Andrey Bykiev](https://github.com/Bykiev)
+
+# 3.5
+
+* [Added Atan2 built-in function](https://github.com/ncalc/ncalc/pull/53) by [YuJiaHao](https://github.com/YuJiaHao)
+
+# 3.4 
+
+* [Improved custom CultureInfo support](https://github.com/ncalc/ncalc/pull/52) by [rholek](https://github.com/rholek)
+
 # 3.2
 
-* [Disable tracing for Release builds](https://github.com/ncalc/ncalc/issues/51)
+* [Disable tracing for Release builds](https://github.com/ncalc/ncalc/issues/51) by [Shifty15](https://github.com/Shifty15)
 
 # 3.1
 
-* [CultureInfo support](https://github.com/ncalc/ncalc/pull/46)
+* [CultureInfo support](https://github.com/ncalc/ncalc/pull/46) by [Shifty15](https://github.com/Shifty15)
 
 # 3.0
 
