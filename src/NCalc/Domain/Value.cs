@@ -4,6 +4,8 @@ namespace NCalc.Domain
 {
     public class ValueExpression : LogicalExpression
     {
+        public ValueExpression() {}
+        
         public ValueExpression(object value, ValueType type)
         {
             Value = value;
