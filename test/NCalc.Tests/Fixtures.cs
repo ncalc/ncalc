@@ -114,6 +114,8 @@ namespace NCalc.Tests
             Assert.AreEqual(Math.PI/2, (double) new Expression("Atan2(1,0)").Evaluate(), 1e-16);
             Assert.AreEqual(Math.PI, (double) new Expression("Atan2(0,-1)").Evaluate(), 1e-16);
             Assert.AreEqual(0, (double) new Expression("Atan2(0,1)").Evaluate(), 1e-16);
+            Assert.AreEqual(10, new Expression("Max(1,10)").Evaluate());
+            Assert.AreEqual(1, new Expression("Min(1,10)").Evaluate());
         }
 
         [TestMethod]
