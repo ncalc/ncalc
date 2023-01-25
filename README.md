@@ -101,3 +101,7 @@ Developed by David, Dan and all at [Panoramic Data](https://github.com/panoramic
 
 Javascript Interpreter for .NET by [Sébastien Ros](https://github.com/sebastienros), the author of NCalc library.  
 Runs on any modern .NET platform as it supports .NET Standard 2.0 and .NET 4.6.1 targets (and up).
+
+### [NCalcJS](https://github.com/thomashambach/ncalcjs)
+
+A Typescript/Javascript port of NCalc.
