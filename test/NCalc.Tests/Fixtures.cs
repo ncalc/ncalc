@@ -699,25 +699,11 @@ namespace NCalc.Tests
         {
             // https://github.com/ncalc/ncalc-async/issues/6
 
-            try
-            {
-                Expression.Compile("\"0\"", true);
-                Assert.Fail("Expected EvaluationExpression to be thrown");
-            }
-            catch (EvaluationException e)
-            {
-                Assert.AreEqual("line 1:1 no viable alternative at character '\"'", e.Message);
-            }
+            var result1 = Assert.ThrowsException<EvaluationException>(() => Expression.Compile("\"0\"", true));
+            Assert.AreEqual($"token recognition error at: '\"' at 1:1{Environment.NewLine}token recognition error at: '\"' at 1:3", result1.Message);
 
-            try
-            {
-                Expression.Compile("Format(\"{0:(###) ###-####}\", \"9999999999\")", true);
-                Assert.Fail("Expected EvaluationExpression to be thrown");
-            }
-            catch (EvaluationException e)
-            {
-               Assert.AreEqual("line 1:8 no viable alternative at character '\"'", e.Message);
-            }
+            var result2 = Assert.ThrowsException<EvaluationException>(() => Expression.Compile("Format(\"{0:(###) ###-####}\", \"9999999999\")", true));
+            Assert.IsTrue(result2.Message.Contains("was not recognized as a valid DateTime."));
         }
 
         [TestMethod]
