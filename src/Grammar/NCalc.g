@@ -2,14 +2,10 @@ grammar NCalc;
 
 options
 {
-	output=AST;
-	ASTLabelType=CommonTree;
 	language=CSharp3;
 }
 
 @header {
-using System;
-using System.Text;
 using System.Globalization;
 using NCalc.Domain;
 }
@@ -40,7 +36,7 @@ private string extractString(string text) {
             case 't': sb.Remove(slashIndex, 2).Insert(slashIndex, '\t'); break;
             case '\'': sb.Remove(slashIndex, 2).Insert(slashIndex, '\''); break;
             case '\\': sb.Remove(slashIndex, 2).Insert(slashIndex, '\\'); break;
-            default: throw new RecognitionException("Unvalid escape sequence: \\" + escapeType);
+            default: throw new RecognitionException(null, CharStreams.fromString("Invalid escape sequence: \\" + escapeType));
         }
 
         startIndex = slashIndex + 1;
@@ -53,24 +49,6 @@ private string extractString(string text) {
     return sb.ToString();
 }
 
-public List<string> Errors { get; private set; }
-
-public override void DisplayRecognitionError(String[] tokenNames, RecognitionException e) {
-    
-    base.DisplayRecognitionError(tokenNames, e);
-    
-    if(Errors == null)
-    {
-    	Errors = new List<string>();
-    }
-    
-    String hdr = GetErrorHeader(e);
-    String msg = GetErrorMessage(e, tokenNames);
-    Errors.Add(msg + " at " + hdr);
-}
-
-public LogicalExpression GetExpression() => ncalcExpression().value;
-
 }
 
 @init {
@@ -80,169 +58,169 @@ public LogicalExpression GetExpression() => ncalcExpression().value;
 @lexer::namespace { NCalc }
 @parser::namespace { NCalc }
 
-ncalcExpression returns [LogicalExpression value]
-	: logicalExpression EOF! {$value = $logicalExpression.value; }
+ncalcExpression returns [LogicalExpression retValue]
+	: logicalExpression EOF { $retValue = $logicalExpression.retValue; }
 	;
 
-logicalExpression returns [LogicalExpression value]
-	:	left=conditionalExpression { $value = $left.value; } ( '?' middle=conditionalExpression ':' right=conditionalExpression { $value = new TernaryExpression($left.value, $middle.value, $right.value); })? 
+logicalExpression returns [LogicalExpression retValue]
+	:	left=conditionalExpression { $retValue = $left.retValue; } ( '?' middle=conditionalExpression ':' right=conditionalExpression { $retValue = new TernaryExpression($left.retValue, $middle.retValue, $right.retValue); })? 
 	;
 
-conditionalExpression returns [LogicalExpression value]
+conditionalExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	:	left=booleanAndExpression { $value = $left.value; } (
+	:	left=booleanAndExpression { $retValue = $left.retValue; } (
 			('||' | OR) { type = BinaryExpressionType.Or; } 
-			right=conditionalExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=conditionalExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 		
-booleanAndExpression returns [LogicalExpression value]
+booleanAndExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	:	left=bitwiseOrExpression { $value = $left.value; } (
+	:	left=bitwiseOrExpression { $retValue = $left.retValue; } (
 			('&&' | AND) { type = BinaryExpressionType.And; } 
-			right=bitwiseOrExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=bitwiseOrExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 
-bitwiseOrExpression returns [LogicalExpression value]
+bitwiseOrExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	:	left=bitwiseXOrExpression { $value = $left.value; } (
+	:	left=bitwiseXOrExpression { $retValue = $left.retValue; } (
 			'|' { type = BinaryExpressionType.BitwiseOr; } 
-			right=bitwiseOrExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=bitwiseOrExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 		
-bitwiseXOrExpression returns [LogicalExpression value]
+bitwiseXOrExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	:	left=bitwiseAndExpression { $value = $left.value; } (
+	:	left=bitwiseAndExpression { $retValue = $left.retValue; } (
 			'^' { type = BinaryExpressionType.BitwiseXOr; } 
-			right=bitwiseAndExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=bitwiseAndExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 
-bitwiseAndExpression returns [LogicalExpression value]
+bitwiseAndExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	:	left=equalityExpression { $value = $left.value; } (
+	:	left=equalityExpression { $retValue = $left.retValue; } (
 			'&' { type = BinaryExpressionType.BitwiseAnd; } 
-			right=equalityExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=equalityExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 		
-equalityExpression returns [LogicalExpression value]
+equalityExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	:	left=relationalExpression { $value = $left.value; } (
+	:	left=relationalExpression { $retValue = $left.retValue; } (
 			( ('==' | '=' ) { type = BinaryExpressionType.Equal; } 
 			| ('!=' | '<>' ) { type = BinaryExpressionType.NotEqual; } ) 
-			right=relationalExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=relationalExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 	
-relationalExpression returns [LogicalExpression value]
+relationalExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	:	left=shiftExpression { $value = $left.value; } (
+	:	left=shiftExpression { $retValue = $left.retValue; } (
 			( '<' { type = BinaryExpressionType.Lesser; } 
 			| '<=' { type = BinaryExpressionType.LesserOrEqual; }  
 			| '>' { type = BinaryExpressionType.Greater; } 
 			| '>=' { type = BinaryExpressionType.GreaterOrEqual; } ) 
-			right=shiftExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=shiftExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 
-shiftExpression returns [LogicalExpression value]
+shiftExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	: left=additiveExpression { $value = $left.value; } (
+	: left=additiveExpression { $retValue = $left.retValue; } (
 			( '<<' { type = BinaryExpressionType.LeftShift; } 
 			| '>>' { type = BinaryExpressionType.RightShift; }  )
-			right=additiveExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=additiveExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 
-additiveExpression returns [LogicalExpression value]
+additiveExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	:	left=multiplicativeExpression { $value = $left.value; } (
+	:	left=multiplicativeExpression { $retValue = $left.retValue; } (
 			( '+' { type = BinaryExpressionType.Plus; } 
 			| '-' { type = BinaryExpressionType.Minus; } ) 
-			right=multiplicativeExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=multiplicativeExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 
-multiplicativeExpression returns [LogicalExpression value]
+multiplicativeExpression returns [LogicalExpression retValue]
 @init {
 BinaryExpressionType type = BinaryExpressionType.Unknown;
 }
-	:	left=unaryExpression { $value = $left.value; } (
+	:	left=unaryExpression { $retValue = $left.retValue; } (
 			( '*' { type = BinaryExpressionType.Times; } 
 			| '/' { type = BinaryExpressionType.Div; } 
 			| '%' { type = BinaryExpressionType.Modulo; } ) 
-			right=unaryExpression { $value = new BinaryExpression(type, $value, $right.value); } 
+			right=unaryExpression { $retValue = new BinaryExpression(type, $retValue, $right.retValue); } 
 			)* 
 	;
 	
-unaryExpression returns [LogicalExpression value]
-	:	exponentialExpression { $value = $exponentialExpression.value; }
-    |	('!' | NOT) exponentialExpression { $value = new UnaryExpression(UnaryExpressionType.Not, $exponentialExpression.value); }
-    |	('~') exponentialExpression { $value = new UnaryExpression(UnaryExpressionType.BitwiseNot, $exponentialExpression.value); }
-    |	'-' exponentialExpression { $value = new UnaryExpression(UnaryExpressionType.Negate, $exponentialExpression.value); }
-    |	'+' exponentialExpression { $value = new UnaryExpression(UnaryExpressionType.Positive, $exponentialExpression.value); }
+unaryExpression returns [LogicalExpression retValue]
+	:	exponentialExpression { $retValue = $exponentialExpression.retValue; }
+    |	('!' | NOT) exponentialExpression { $retValue = new UnaryExpression(UnaryExpressionType.Not, $exponentialExpression.retValue); }
+    |	('~') exponentialExpression { $retValue = new UnaryExpression(UnaryExpressionType.BitwiseNot, $exponentialExpression.retValue); }
+    |	'-' exponentialExpression { $retValue = new UnaryExpression(UnaryExpressionType.Negate, $exponentialExpression.retValue); }
+    |	'+' exponentialExpression { $retValue = new UnaryExpression(UnaryExpressionType.Positive, $exponentialExpression.retValue); }
    	;
 		
-exponentialExpression returns [LogicalExpression value]
-	: 	left=primaryExpression { $value = $left.value; } (
-			'**' right=unaryExpression { $value = new BinaryExpression(BinaryExpressionType.Exponentiation, $value, $right.value); }
+exponentialExpression returns [LogicalExpression retValue]
+	: 	left=primaryExpression { $retValue = $left.retValue; } (
+			'**' right=unaryExpression { $retValue = new BinaryExpression(BinaryExpressionType.Exponentiation, $retValue, $right.retValue); }
 			)*
 	;
 
-primaryExpression returns [LogicalExpression value]
-	:	'(' logicalExpression ')' 	{ $value = $logicalExpression.value; }
-	|	expr=value		{ $value = $expr.value; }
-	|	identifier {$value = (LogicalExpression) $identifier.value; } (arguments {$value = new Function($identifier.value, ($arguments.value).ToArray()); })?
+primaryExpression returns [LogicalExpression retValue]
+	:	'(' logicalExpression ')' 	{ $retValue = $logicalExpression.retValue; }
+	|	expr=value		{ $retValue = $expr.retValue; }
+	|	identifier {$retValue = (LogicalExpression) $identifier.retValue; } (arguments {$retValue = new Function($identifier.retValue, ($arguments.retValue).ToArray()); })?
 	;
 
-value returns [ValueExpression value]
-	: 	INTEGER		{ try { $value = new ValueExpression(int.Parse($INTEGER.text)); } catch(System.OverflowException) { $value = new ValueExpression(long.Parse($INTEGER.text)); } }
-	|	FLOAT		{ $value = new ValueExpression(double.Parse($FLOAT.text, NumberStyles.Float, numberFormatInfo)); }
-	|	STRING		{ $value = new ValueExpression(extractString($STRING.text)); }
-	| 	DATETIME	{ $value = new ValueExpression(DateTime.Parse($DATETIME.text.Substring(1, $DATETIME.text.Length-2))); }
-	|	TRUE		{ $value = new ValueExpression(true); }
-	|	FALSE		{ $value = new ValueExpression(false); }
+value returns [ValueExpression retValue]
+	: 	INTEGER		{ try { $retValue = new ValueExpression(int.Parse($INTEGER.text)); } catch(System.OverflowException) { $retValue = new ValueExpression(long.Parse($INTEGER.text)); } }
+	|	FLOAT		{ $retValue = new ValueExpression(double.Parse($FLOAT.text, NumberStyles.Float, numberFormatInfo)); }
+	|	STRING		{ $retValue = new ValueExpression(extractString($STRING.text)); }
+	| 	DATETIME	{ $retValue = new ValueExpression(DateTime.Parse($DATETIME.text.Substring(1, $DATETIME.text.Length-2))); }
+	|	TRUE		{ $retValue = new ValueExpression(true); }
+	|	FALSE		{ $retValue = new ValueExpression(false); }
 	;
 
-identifier returns[Identifier value]
-	: 	ID { $value = new Identifier($ID.text); }
-	| 	NAME { $value = new Identifier($NAME.text.Substring(1, $NAME.text.Length-2)); }
+identifier returns[Identifier retValue]
+	: 	ID { $retValue = new Identifier($ID.text); }
+	| 	NAME { $retValue = new Identifier($NAME.text.Substring(1, $NAME.text.Length-2)); }
 	;
 
-expressionList returns [List<LogicalExpression> value]
+expressionList returns [List<LogicalExpression> retValue]
 @init {
 List<LogicalExpression> expressions = new List<LogicalExpression>();
 }
-	:	first=logicalExpression {expressions.Add($first.value);}  ( ',' follow=logicalExpression {expressions.Add($follow.value);})* 
-	{ $value = expressions; }
+	:	first=logicalExpression {expressions.Add($first.retValue);}  ( ',' follow=logicalExpression {expressions.Add($follow.retValue);})* 
+	{ $retValue = expressions; }
 	;
 	
-arguments returns [List<LogicalExpression> value]
+arguments returns [List<LogicalExpression> retValue]
 @init {
-$value = new List<LogicalExpression>();
+$retValue = new List<LogicalExpression>();
 }
-	:	'(' ( expressionList {$value = $expressionList.value;} )? ')' 
+	:	'(' ( expressionList {$retValue = $expressionList.retValue;} )? ')' 
 	;			
 
 TRUE:	T R U E ;
@@ -266,14 +244,14 @@ FLOAT
 	;
 
 STRING
-    	:  	'\'' ( EscapeSequence | (options {greedy=false;} : ~('\u0000'..'\u001f' | '\\' | '\'' ) ) )* '\''
+    	:  	'\'' ( EscapeSequence | ( ~('\u0000'..'\u001f' | '\\' | '\'' ) ).*? )* '\''
     	;
 
 DATETIME 
- 	:	'#' (options {greedy=false;} : ~('#')*) '#'
+ 	:	'#' ( ~('#')*) '#'
         ;
 
-NAME	:	'[' (options {greedy=false;} : ~(']')*) ']'
+NAME	:	'[' ( ~(']')*) ']'
 	;
 	
 EXPONENT
@@ -311,8 +289,7 @@ fragment UnicodeEscape
     	;
 
 /* Ignore white spaces */	
-WS	:  (' '|'\r'|'\t'|'\u000C'|'\n') {$channel=Hidden;}
-	;
+WS : (' '|'\r'|'\t'|'\u000C'|'\n') -> skip;
 
 /* Allow case-insensitive operators by constructing them out of fragments.
  * Solution adapted from https://stackoverflow.com/a/22160240
