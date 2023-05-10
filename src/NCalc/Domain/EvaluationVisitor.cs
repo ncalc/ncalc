@@ -290,7 +290,7 @@ namespace NCalc.Domain
                     if (function.Expressions.Length != 1)
                         throw new ArgumentException("Abs() takes exactly 1 argument");
 
-                    Result = Math.Abs(Convert.ToDecimal(
+                    Result = Math.Abs(Convert.ToDouble(
                         Evaluate(function.Expressions[0]), _cultureInfo)
                         );
 
