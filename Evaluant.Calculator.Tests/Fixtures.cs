@@ -704,6 +704,13 @@ namespace NCalc.Tests
             e.Parameters["d"] = 0.1234567;
             Assert.AreEqual(true, e.Evaluate());
         }
+        [TestMethod]
+        public void ShouldCompareDoubleRounded1()
+        {
+            var e = new Expression(@"file_icon == 'surfaces\\图标\\物品\\召神符.dds'", EvaluateOptions.IgnoreCase);
+            e.Parameters["file_icon"] = "Surfaces\\图标\\物品\\召神符.dds";
+            Assert.AreEqual(true, e.Evaluate());
+        }
     }
 }
 
