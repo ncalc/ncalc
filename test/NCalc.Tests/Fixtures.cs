@@ -119,6 +119,12 @@ namespace NCalc.Tests
         }
 
         [TestMethod]
+        public void ShouldHandleTrailingDecimalPoint()
+        {
+            Assert.AreEqual(3.0, new Expression("1. + 2.").Evaluate());
+        }
+
+        [TestMethod]
         public void ExpressionShouldEvaluateCustomFunctions()
         {
             var e = new Expression("SecretOperation(3, 6)");
