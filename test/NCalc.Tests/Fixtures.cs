@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using BinaryExpression = NCalc.Domain.BinaryExpression;
 using UnaryExpression = NCalc.Domain.UnaryExpression;
+using Newtonsoft.Json;
 
 namespace NCalc.Tests
 {
@@ -1145,6 +1146,56 @@ namespace NCalc.Tests
                 }.Evaluate());
 
             }
+        }
+
+        // [Theory]
+        // [InlineData(@"(level > 1 AND level <= 3)", false, 3.2)]
+        // [InlineData(@"(level > 3 AND level <= 5)", true, 3.2)]
+        // [InlineData(@"(level > 1 AND level <= 3)", false, 3.1)]
+        // [InlineData(@"(level > 3 AND level <= 5)", true, 3.1)]
+        // [InlineData(@"(3 < level AND 5 >= level)", true, 3.1)]
+        // [InlineData(@"(3.2 < level AND 5.3 >= level)", true, 4)]
+        [TestMethod]
+        public void SerializeAndDeserialize_ShouldWork()
+        {
+            
+            ExecuteTest(@"(waterlevel > 1 AND waterlevel <= 3)", false, 3.2);
+            ExecuteTest(@"(waterlevel > 3 AND waterlevel <= 5)", true, 3.2);
+            ExecuteTest(@"(waterlevel > 1 AND waterlevel <= 3)", false, 3.1);
+            ExecuteTest(@"(waterlevel > 3 AND waterlevel <= 5)", true, 3.1);
+            // ExecuteTest(@"(3 < waterlevel AND 5 >= waterlevel)", true, 3.1);
+            // ExecuteTest(@"(3.2 < waterlevel AND 5.3 >= waterlevel)", true, 4);
+
+            void ExecuteTest(string expression, bool expected, double inputValue)
+            {
+                var compiled = Expression.Compile(expression, true);
+                var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
+                });
+
+                var deserialized = JsonConvert.DeserializeObject<LogicalExpression>(serialized, new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.All
+                });
+
+                Expression.CacheEnabled = false;
+                var exp = new Expression(deserialized);
+                exp.Parameters = new Dictionary<string, object> {
+                    {"waterlevel", inputValue}
+                };
+
+                object evaluated;
+                try {
+                    evaluated = exp.Evaluate();
+                } catch {
+                    evaluated = false;
+                }
+
+                // Assert
+                Assert.AreEqual(evaluated, expected, expression);
+            }
+
         }
     }
 }
