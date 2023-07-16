@@ -1156,8 +1156,8 @@ namespace NCalc.Tests
             ExecuteTest(@"(waterlevel > 3 AND waterlevel <= 5)", true, 3.2);
             ExecuteTest(@"(waterlevel > 1 AND waterlevel <= 3)", false, 3.1);
             ExecuteTest(@"(waterlevel > 3 AND waterlevel <= 5)", true, 3.1);
-            // ExecuteTest(@"(3 < waterlevel AND 5 >= waterlevel)", true, 3.1);
-            // ExecuteTest(@"(3.2 < waterlevel AND 5.3 >= waterlevel)", true, 4);
+            ExecuteTest(@"(3 < waterlevel AND 5 >= waterlevel)", true, 3.1);
+            ExecuteTest(@"(3.2 < waterlevel AND 5.3 >= waterlevel)", true, 4);
 
             void ExecuteTest(string expression, bool expected, double inputValue)
             {
