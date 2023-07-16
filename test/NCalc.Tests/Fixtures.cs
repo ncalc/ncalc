@@ -1148,13 +1148,6 @@ namespace NCalc.Tests
             }
         }
 
-        // [Theory]
-        // [InlineData(@"(level > 1 AND level <= 3)", false, 3.2)]
-        // [InlineData(@"(level > 3 AND level <= 5)", true, 3.2)]
-        // [InlineData(@"(level > 1 AND level <= 3)", false, 3.1)]
-        // [InlineData(@"(level > 3 AND level <= 5)", true, 3.1)]
-        // [InlineData(@"(3 < level AND 5 >= level)", true, 3.1)]
-        // [InlineData(@"(3.2 < level AND 5.3 >= level)", true, 4)]
         [TestMethod]
         public void SerializeAndDeserialize_ShouldWork()
         {
