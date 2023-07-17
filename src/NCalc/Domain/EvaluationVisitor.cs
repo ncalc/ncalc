@@ -37,7 +37,7 @@ namespace NCalc.Domain
             throw new Exception("The method or operation is not implemented.");
         }
 
-        private static Type[] CommonTypes = new[] { typeof(Int64), typeof(Double), typeof(Boolean), typeof(String), typeof(Decimal) };
+        private static Type[] CommonTypes = new[] { typeof(Double), typeof(Int64), typeof(Boolean), typeof(String), typeof(Decimal) };
 
         /// <summary>
         /// Gets the the most precise type.

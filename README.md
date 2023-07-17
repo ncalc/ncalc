@@ -85,6 +85,35 @@ e.EvaluateParameter += delegate(string name, ParameterArgs args)
 Debug.Assert(117.07 == e.Evaluate());
 ```
 
+**Caching in a distributed cache**
+
+This example uses [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/).
+
+Serializing
+```c#
+var compiled = Expression.Compile(expression, true);
+var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
+{
+    TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
+});
+```
+
+Deserializing
+```c#
+var deserialized = JsonConvert.DeserializeObject<LogicalExpression>(serialized, new JsonSerializerSettings
+{
+    TypeNameHandling = TypeNameHandling.All
+});
+
+Expression.CacheEnabled = false; // We cannot use NCalc's built in cache at the same time.
+var exp = new Expression(deserialized);
+exp.Parameters = new Dictionary<string, object> {
+    {"waterlevel", inputValue}
+};
+
+var evaluated = exp.Evaluate();
+```
+
 ## Related projects
 
 ### [NCalc-Async](https://github.com/ncalc/ncalc-async/)
