@@ -1,3 +1,14 @@
+# 3.8
+
+* [CompareUsingMostPreciseType chooses first option, not best](https://github.com/ncalc/ncalc/issues/76) by [@ThomasHambach](https://github.com/ThomasHambach)
+* [EvaluationVisitor.Result should be protected, not private](https://github.com/ncalc/ncalc/issues/79) by [Oleksandr Kovaliv](https://github.com/Kizuto3)
+
+# 3.7
+
+* [Add parameterless constructor to ValueExpression](https://github.com/ncalc/ncalc/pull/61) by [@ThomasHambach](https://github.com/ThomasHambach)
+* [Add Min and Max to unit tests](https://github.com/ncalc/ncalc/pull/63) by by [@ThomasHambach](https://github.com/ThomasHambach)
+* [Update from Antlr3.Runtime to Antlr4.Runtime.Standard 4.12.0](https://github.com/ncalc/ncalc-async/pull/18) by [@markcanary](https://github.com/markcanary)
+
 # 3.6
 
 * [Add arithmetic support for multiple operators and types](https://github.com/ncalc/ncalc/pull/59) by [Justin Baugh](https://github.com/baughj)
