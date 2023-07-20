@@ -24,7 +24,7 @@ namespace NCalc.Domain
             _cultureInfo = cultureInfo;
         }
 
-        public object Result { get; private set; }
+        public object Result { get; protected set; }
 
         private object Evaluate(LogicalExpression expression)
         {
