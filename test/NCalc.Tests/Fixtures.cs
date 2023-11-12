@@ -1188,7 +1188,15 @@ namespace NCalc.Tests
                 // Assert
                 Assert.AreEqual(evaluated, expected, expression);
             }
+        }
+        
+        [TestMethod]
+        public void Should_Use_Case_Insensitive_Comparer_Issue_85()
+        {
+            var eif = new Expression("PageState == 'LIST'", EvaluateOptions.CaseInsensitiveComparer);
+            eif.Parameters["PageState"] = "List";
 
+            Assert.AreEqual(true, eif.Evaluate());
         }
     }
 }

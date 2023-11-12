@@ -25,6 +25,11 @@ namespace NCalc
         //
         // Summary:
         //     When using Round(), if a number is halfway between two others, it is rounded toward the nearest number that is away from zero. 
-        RoundAwayFromZero = 16
+        RoundAwayFromZero = 16,
+        
+        //
+        // Summary:
+        //     Specifies the use of CaseInsensitiveComparer for comparasions.
+        CaseInsensitiveComparer = 32
     }
 }

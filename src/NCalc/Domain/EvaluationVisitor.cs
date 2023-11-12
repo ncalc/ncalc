@@ -7,12 +7,11 @@ namespace NCalc.Domain
 {
     public class EvaluationVisitor : LogicalExpressionVisitor
     {
-        private delegate T Func<T>();
+        private delegate T Func<out T>();
 
-        private readonly EvaluateOptions _options = EvaluateOptions.None;
+        private readonly EvaluateOptions _options;
         private readonly CultureInfo _cultureInfo;
-
-        private bool IgnoreCase { get { return (_options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase; } }
+        private bool IgnoreCase => (_options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
 
         public EvaluationVisitor(EvaluateOptions options) : this(options, CultureInfo.CurrentCulture)
         {
@@ -37,7 +36,7 @@ namespace NCalc.Domain
             throw new Exception("The method or operation is not implemented.");
         }
 
-        private static Type[] CommonTypes = new[] { typeof(Double), typeof(Int64), typeof(Boolean), typeof(String), typeof(Decimal) };
+        private static readonly Type[] CommonTypes =  { typeof(Double), typeof(Int64), typeof(Boolean), typeof(String), typeof(Decimal) };
 
         /// <summary>
         /// Gets the the most precise type.
@@ -72,7 +71,11 @@ namespace NCalc.Domain
                 mpt = GetMostPreciseType(a.GetType(), b?.GetType());
             }
 
-            return Comparer.Default.Compare(Convert.ChangeType(a, mpt, _cultureInfo), Convert.ChangeType(b, mpt, _cultureInfo));
+            bool isCaseSensitiveComparer = (_options & EvaluateOptions.CaseInsensitiveComparer) == 0;
+
+            var comparer = isCaseSensitiveComparer ? (IComparer)Comparer.Default : CaseInsensitiveComparer.Default;
+
+            return comparer.Compare(Convert.ChangeType(a, mpt, _cultureInfo), Convert.ChangeType(b, mpt, _cultureInfo));
         }
 
         public override void Visit(TernaryExpression expression)
@@ -181,7 +184,7 @@ namespace NCalc.Domain
                 case BinaryExpressionType.Plus:
                     if (left() is string)
                     {
-                        Result = String.Concat(left(), right());
+                        Result = string.Concat(left(), right());
                     }
                     else
                     {
@@ -662,7 +665,7 @@ namespace NCalc.Domain
 
             if (function != called)
             {
-                throw new ArgumentException(String.Format("Function not found {0}. Try {1} instead.", called, function));
+                throw new ArgumentException($"Function not found {called}. Try {function} instead.");
             }
         }
 
@@ -717,8 +720,7 @@ namespace NCalc.Domain
 
         private void OnEvaluateParameter(string name, ParameterArgs args)
         {
-            if (EvaluateParameter != null)
-                EvaluateParameter(name, args);
+            EvaluateParameter?.Invoke(name, args);
         }
 
         public Dictionary<string, object> Parameters { get; set; }
