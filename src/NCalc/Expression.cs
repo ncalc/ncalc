@@ -14,16 +14,16 @@ namespace NCalc
     public class Expression
     {
         public EvaluateOptions Options { get; set; }
-
+        
         /// <summary>
         /// Textual representation of the expression to evaluate.
         /// </summary>
-        protected string OriginalExpression;
+        protected string OriginalExpression { get; set; }
 
         /// <summary>
-        /// Get or set the culture info
+        /// Get or set the culture info.
         /// </summary>
-        protected CultureInfo CultureInfo;
+        protected CultureInfo CultureInfo { get; set; }
 
         public Expression(string expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
         {
@@ -126,10 +126,9 @@ namespace NCalc
                 {
                     Rwl.AcquireReaderLock(Timeout.Infinite);
 
-                    if (_compiledExpressions.ContainsKey(expression))
+                    if (_compiledExpressions.TryGetValue(expression, out var wr))
                     {
                         Trace.TraceInformation("Expression retrieved from cache: " + expression);
-                        var wr = _compiledExpressions[expression];
                         logicalExpression = wr.Target as LogicalExpression;
 
                         if (wr.IsAlive && logicalExpression != null)
@@ -324,9 +323,8 @@ namespace NCalc
 
         public Dictionary<string, object> Parameters
         {
-            get { return _parameters ?? (_parameters = new Dictionary<string, object>()); }
-            set { _parameters = value; }
+            get => _parameters ?? (_parameters = new Dictionary<string, object>());
+            set => _parameters = value;
         }
-
     }
 }
