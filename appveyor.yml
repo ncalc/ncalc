@@ -1,10 +1,13 @@
 ﻿version: 1.0.{build}
 
 image: Visual Studio 2022
+dotnet: 8.0.0
 
 clone_folder: c:\projects\ncalc
 
 before_build:
+- Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.ps1' -UseBasicParsing -OutFile "$env:temp\dotnet-install.ps1"
+& $env:temp\dotnet-install.ps1 -Architecture x64 -Version '8.0.0' -InstallDir "$env:ProgramFiles\dotnet"
 - nuget restore
 - choco install opencover.portable
 - choco install codecov
