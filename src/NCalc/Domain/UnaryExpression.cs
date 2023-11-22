@@ -1,28 +1,21 @@
-namespace NCalc.Domain
+namespace NCalc.Domain;
+
+public class UnaryExpression(UnaryExpressionType type, LogicalExpression expression) : LogicalExpression
 {
-    public class UnaryExpression : LogicalExpression
+    public LogicalExpression Expression { get; set; } = expression;
+
+    public UnaryExpressionType Type { get; set; } = type;
+
+    public override void Accept(LogicalExpressionVisitor visitor)
     {
-        public UnaryExpression(UnaryExpressionType type, LogicalExpression expression)
-        {
-            Type = type;
-            Expression = expression;
-        }
-
-        public LogicalExpression Expression { get; set; }
-
-        public UnaryExpressionType Type { get; set; }
-
-        public override void Accept(LogicalExpressionVisitor visitor)
-        {
-            visitor.Visit(this);
-        }
+        visitor.Visit(this);
     }
+}
 
-    public enum UnaryExpressionType
-    {
-        Not,
-        Negate,
-        BitwiseNot,
-        Positive
-    }
+public enum UnaryExpressionType
+{
+    Not,
+    Negate,
+    BitwiseNot,
+    Positive
 }
