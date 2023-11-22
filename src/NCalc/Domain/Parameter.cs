@@ -1,18 +1,12 @@
-namespace NCalc.Domain
+namespace NCalc.Domain;
+
+public class Identifier(string name) : LogicalExpression
 {
-    public class Identifier : LogicalExpression
+    public string Name { get; set; } = name;
+
+
+    public override void Accept(LogicalExpressionVisitor visitor)
     {
-        public Identifier(string name)
-        {
-            Name = name;
-        }
-
-        public string Name { get; set; }
-
-
-        public override void Accept(LogicalExpressionVisitor visitor)
-        {
-            visitor.Visit(this);
-        }
+        visitor.Visit(this);
     }
 }
