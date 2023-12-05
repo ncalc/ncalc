@@ -1,3 +1,8 @@
+# 3.9
+
+* [.NET 8 + C#12 + ReSharper refactors](https://github.com/ncalc/ncalc/pull/88) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Added EvaluateOptions.CaseInsensitiveComparer](https://github.com/ncalc/ncalc/pull/86) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+
 # 3.8
 
 * [CompareUsingMostPreciseType chooses first option, not best](https://github.com/ncalc/ncalc/issues/76) by [@ThomasHambach](https://github.com/ThomasHambach)
