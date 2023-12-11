@@ -24,6 +24,8 @@ public class Expression
     /// Get or set the culture info.
     /// </summary>
     protected CultureInfo CultureInfo { get; set; }
+    
+    protected EvaluationVisitor EvaluationVisitor { get; set; }
 
     public Expression(string expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
     {
@@ -46,6 +48,19 @@ public class Expression
         OriginalExpression = expression;
         Options = options;
         CultureInfo = cultureInfo;
+        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo);
+    }
+    
+    public Expression(string expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
+    {
+        if (string.IsNullOrEmpty(expression))
+            throw new
+                ArgumentException("Expression can't be empty", nameof(expression));
+
+        OriginalExpression = expression;
+        Options = options;
+        CultureInfo = cultureInfo;
+        EvaluationVisitor = evaluationVisitor;
     }
 
     public Expression(LogicalExpression expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
@@ -58,6 +73,15 @@ public class Expression
             ArgumentException("Expression can't be null", nameof(expression));
         Options = options;
         CultureInfo = cultureInfo;
+        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo);
+    }
+    public Expression(LogicalExpression expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
+    {
+        ParsedExpression = expression ?? throw new
+            ArgumentException("Expression can't be null", nameof(expression));
+        Options = options;
+        CultureInfo = cultureInfo;
+        EvaluationVisitor = evaluationVisitor;
     }
 
     #region Cache management
@@ -240,7 +264,7 @@ public class Expression
         }
 
 
-        var visitor = new EvaluationVisitor(Options, CultureInfo);
+        var visitor = EvaluationVisitor;
         visitor.EvaluateFunction += EvaluateFunction;
         visitor.EvaluateParameter += EvaluateParameter;
         visitor.Parameters = Parameters;
