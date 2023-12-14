@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace NCalc.Domain;
 
@@ -594,6 +595,31 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
             #endregion
 
+            #region ifs
+            case string n when n.Equals("ifs", StringComparison.OrdinalIgnoreCase):
+
+                CheckCase("ifs", function.Identifier.Name);
+                object result = null;
+
+                if (function.Expressions.Length < 3 || function.Expressions.Length % 2 != 1)
+                    throw new ArgumentException("ifs() takes at least 3 arguments, or an odd number of arguments");
+
+                foreach (var eval in function.Expressions.Where((_, i) => i % 2 == 0))
+                {
+                    var index = Array.IndexOf(function.Expressions, eval);
+                    var tf = Convert.ToBoolean(Evaluate(eval), cultureInfo);
+                    if (index == function.Expressions.Length - 1)
+                        Result = Evaluate(eval);
+                    else if (tf)
+                    {
+                        Result = Evaluate(function.Expressions[index + 1]);
+                        break;
+                    }
+                }
+
+                break;
+
+            #endregion
             #region if
             case string n when n.Equals("if", StringComparison.OrdinalIgnoreCase):
 
@@ -608,6 +634,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 break;
 
             #endregion
+
 
             #region in
             case string n when n.Equals("in", StringComparison.OrdinalIgnoreCase):

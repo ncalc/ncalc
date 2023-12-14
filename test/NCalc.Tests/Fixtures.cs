@@ -173,7 +173,7 @@ namespace NCalc.Tests
         }
 
         [TestMethod]
-        public void ShouldEvaluateConditionnal()
+        public void ShouldEvaluateConditional()
         {
             var eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)");
             eif.Parameters["divider"] = 5;
@@ -1197,6 +1197,46 @@ namespace NCalc.Tests
             eif.Parameters["PageState"] = "List";
 
             Assert.AreEqual(true, eif.Evaluate());
+        }
+
+        [TestMethod]
+        public void Should_Evaluate_Ifs()
+        {
+            // Test first case true, return next value
+            var eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)");
+            eifs.Parameters["divider"] = 5;
+            eifs.Parameters["divided"] = 5;
+
+            Assert.AreEqual(1d, eifs.Evaluate());
+
+            // Test first case false, no next case, return default value
+            eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)");
+            eifs.Parameters["divider"] = 0;
+            eifs.Parameters["divided"] = 5;
+
+            Assert.AreEqual(-1, eifs.Evaluate());
+
+            // Test first case false, next case true, return next value (eg 4th expr)
+
+            eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)");
+            eifs.Parameters["number"] = 5;
+            Assert.AreEqual(3, eifs.Evaluate());
+
+            // Test first case false, next case false, return default value (eg 5th expr)
+
+            eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)");
+            eifs.Parameters["number"] = 1337;
+
+            Assert.AreEqual(8, eifs.Evaluate());
+        }
+
+        [TestMethod]
+        public void Ifs_With_Improper_Arguments_Should_Throw_Exceptions()
+        {
+            Assert.ThrowsException<ArgumentException>(() => new Expression("ifs()").Evaluate());
+            Assert.ThrowsException<ArgumentException>(() => new Expression("ifs([divider] > 0)").Evaluate());
+            Assert.ThrowsException<ArgumentException>(() => new Expression("ifs([divider] > 0, [divider] / [divided])").Evaluate());
+            Assert.ThrowsException<ArgumentException>(() => new Expression("ifs([divider] > 0, [divider] / [divided], [divider < 0], [divider] + [divided])").Evaluate());
         }
     }
 }
