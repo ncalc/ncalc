@@ -599,7 +599,6 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             case string n when n.Equals("ifs", StringComparison.OrdinalIgnoreCase):
 
                 CheckCase("ifs", function.Identifier.Name);
-                object result = null;
 
                 if (function.Expressions.Length < 3 || function.Expressions.Length % 2 != 1)
                     throw new ArgumentException("ifs() takes at least 3 arguments, or an odd number of arguments");
