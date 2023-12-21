@@ -689,10 +689,9 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
     public event EvaluateFunctionHandler EvaluateFunction;
 
-    private void OnEvaluateFunction(string name, FunctionArgs args)
+    protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
-        if (EvaluateFunction != null)
-            EvaluateFunction(name, args);
+        EvaluateFunction?.Invoke(name, args);
     }
 
     public override void Visit(Identifier parameter)
@@ -736,7 +735,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
     public event EvaluateParameterHandler EvaluateParameter;
 
-    private void OnEvaluateParameter(string name, ParameterArgs args)
+    protected void OnEvaluateParameter(string name, ParameterArgs args)
     {
         EvaluateParameter?.Invoke(name, args);
     }
