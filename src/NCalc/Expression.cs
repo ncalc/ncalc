@@ -18,7 +18,7 @@ public class Expression
     /// <summary>
     /// Textual representation of the expression to evaluate.
     /// </summary>
-    protected string OriginalExpression { get; set; }
+    public string OriginalExpression { get; protected set; }
 
     /// <summary>
     /// Get or set the culture info.
