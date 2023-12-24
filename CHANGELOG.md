@@ -1,3 +1,10 @@
+# 3.10
+
+* [Make EvaluationVisitor sub-class friendly](https://github.com/ncalc/ncalc/pull/92) by [Nick](https://github.com/thetreatment)
+* [Add support for ifs(cond, val, default)](https://github.com/ncalc/ncalc/pull/91) by [Justin Baugh](https://github.com/baughj)
+* [Added EvaluationVisitor at ctor](https://github.com/ncalc/ncalc/pull/90) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Updated ANTLR runtime to v4.13.1](https://github.com/ncalc/ncalc/issues/81)
+
 # 3.9
 
 * [.NET 8 + C#12 + ReSharper refactors](https://github.com/ncalc/ncalc/pull/88) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
