@@ -184,7 +184,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
         Result.Append("[").Append(parameter.Name).Append("] ");
     }
 
-    protected void EncapsulateNoValue(LogicalExpression expression)
+    protected virtual void EncapsulateNoValue(LogicalExpression expression)
     {
         if (expression is ValueExpression)
         {
