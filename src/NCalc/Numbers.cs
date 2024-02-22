@@ -20,8 +20,8 @@ public static class Numbers
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
 
-        TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
-        TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
+        var typeCodeA = Type.GetTypeCode(a.GetType());
+        var typeCodeB = Type.GetTypeCode(b.GetType());
 
         switch (typeCodeA)
         {
@@ -230,8 +230,8 @@ public static class Numbers
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
 
-        TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
-        TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
+        var typeCodeA = Type.GetTypeCode(a.GetType());
+        var typeCodeB = Type.GetTypeCode(b.GetType());
 
         switch (typeCodeA)
         {
@@ -439,8 +439,8 @@ public static class Numbers
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
 
-        TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
-        TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
+        var typeCodeA = Type.GetTypeCode(a.GetType());
+        var typeCodeB = Type.GetTypeCode(b.GetType());
 
         switch (typeCodeA)
         {
@@ -650,8 +650,8 @@ public static class Numbers
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
 
-        TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
-        TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
+        var typeCodeA = Type.GetTypeCode(a.GetType());
+        var typeCodeB = Type.GetTypeCode(b.GetType());
 
         switch (typeCodeA)
         {
@@ -860,8 +860,8 @@ public static class Numbers
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
 
-        TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
-        TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
+        var typeCodeA = Type.GetTypeCode(a.GetType());
+        var typeCodeB = Type.GetTypeCode(b.GetType());
 
         switch (typeCodeA)
         {
@@ -1140,8 +1140,8 @@ public static class Numbers
             return a;
         }
 
-        TypeCode typeCodeA = Type.GetTypeCode(a.GetType());
-        TypeCode typeCodeB = Type.GetTypeCode(b.GetType());
+        var typeCodeA = Type.GetTypeCode(a.GetType());
+        var typeCodeB = Type.GetTypeCode(b.GetType());
 
         switch (typeCodeA)
         {

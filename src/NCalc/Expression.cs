@@ -181,12 +181,12 @@ public class Expression
             catch(Exception ex)
             {
                 var message = new StringBuilder(ex.Message);
-                if (errorListenerLexer.Errors.Any())
+                if (errorListenerLexer.Errors.Count != 0)
                 {
                     message.AppendLine();
                     message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
                 }
-                if (errorListenerParser.Errors.Any())
+                if (errorListenerParser.Errors.Count != 0)
                 {
                     message.AppendLine();
                     message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
@@ -194,11 +194,11 @@ public class Expression
 
                 throw new EvaluationException(message.ToString());
             }
-            if (errorListenerLexer.Errors.Any())
+            if (errorListenerLexer.Errors.Count != 0)
             {
                 throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
             }
-            if (errorListenerParser.Errors.Any())
+            if (errorListenerParser.Errors.Count != 0)
             {
                 throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
             }
@@ -297,14 +297,14 @@ public class Expression
             {
                 if (Parameters[key] is IEnumerable parameter)
                 {
-                    ParameterEnumerators.Add(key, parameter.GetEnumerator());
+                    ParameterEnumerators.Add(key,parameter.GetEnumerator());
                 }
             }
 
             var results = new List<object>();
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < size; i++)
             {
-                foreach (string key in ParameterEnumerators.Keys)
+                foreach (var key in ParameterEnumerators.Keys)
                 {
                     var enumerator = ParameterEnumerators[key];
                     enumerator.MoveNext();
