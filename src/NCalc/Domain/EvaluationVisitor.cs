@@ -259,8 +259,8 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         for (int i = 0; i < function.Expressions.Length; i++)
         {
             args.Parameters[i] = new Expression(function.Expressions[i], options, cultureInfo);
-            args.Parameters[i].EvaluateFunction += EvaluateFunction;
-            args.Parameters[i].EvaluateParameter += EvaluateParameter;
+            args.Parameters[i].EvaluateFunction += _evaluateFunction;
+            args.Parameters[i].EvaluateParameter += _evaluateParameter;
 
             // Assign the parameters of the Expression to the arguments so that custom Functions and Parameters can use them
             args.Parameters[i].Parameters = Parameters;
@@ -687,11 +687,22 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         }
     }
 
-    public event EvaluateFunctionHandler EvaluateFunction;
-
+    private EvaluateFunctionHandler _evaluateFunction;
+    public event EvaluateFunctionHandler EvaluateFunction
+    {
+        add
+        {
+            if (_evaluateFunction == null || !_evaluateFunction.GetInvocationList().Contains(value))
+            {
+                _evaluateFunction += value;
+            }
+        }
+        remove => _evaluateFunction -= value;
+    }
+    
     protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
-        EvaluateFunction?.Invoke(name, args);
+        _evaluateFunction?.Invoke(name, args);
     }
 
     public override void Visit(Identifier parameter)
@@ -710,8 +721,8 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                     expression.Parameters[p.Key] = p.Value;
                 }
 
-                expression.EvaluateFunction += EvaluateFunction;
-                expression.EvaluateParameter += EvaluateParameter;
+                expression.EvaluateFunction += _evaluateFunction;
+                expression.EvaluateParameter += _evaluateParameter;
 
                 Result = ((Expression)Parameters[parameter.Name]).Evaluate();
             }
@@ -733,11 +744,24 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         }
     }
 
-    public event EvaluateParameterHandler EvaluateParameter;
+  
+    private EvaluateParameterHandler _evaluateParameter;
+    public event EvaluateParameterHandler EvaluateParameter
+    {
+        add
+        {
+            if (_evaluateParameter == null || !_evaluateParameter.GetInvocationList().Contains(value))
+            {
+                _evaluateParameter += value;
+            }
+        }
+        remove => _evaluateParameter -= value;
+    }
+
 
     protected void OnEvaluateParameter(string name, ParameterArgs args)
     {
-        EvaluateParameter?.Invoke(name, args);
+        _evaluateParameter?.Invoke(name, args);
     }
 
     public Dictionary<string, object> Parameters { get; set; }
