@@ -1202,7 +1202,7 @@ namespace NCalc.Tests
         [TestMethod]
         public void Should_Get_Parameters_Issue_103()
         {
-            var eif = new Expression("PageState == 'LIST' && a == 1", EvaluateOptions.CaseInsensitiveComparer)
+            var eif = new Expression("PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3)", EvaluateOptions.CaseInsensitiveComparer)
                 {
                     Parameters =
                     {
@@ -1213,6 +1213,12 @@ namespace NCalc.Tests
             {
                 if (name == "PageState")
                     args.Result = "List";
+            };
+            
+            eif.EvaluateFunction += (name, args) =>
+            {
+                if (name == "customfunction")
+                    args.Result = "true";
             };
 
             var parameters = eif.GetParametersNames();
