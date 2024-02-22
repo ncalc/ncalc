@@ -172,6 +172,10 @@ public class Expression
 
             var parser = new NCalcParser(new CommonTokenStream(lexer));
             var errorListenerParser = new ErrorListenerParser();
+            
+            var lexerHasErrors = errorListenerLexer.Errors.Count != 0;
+            var parserHasErrors = errorListenerParser.Errors.Count != 0;
+            
             parser.AddErrorListener(errorListenerParser);
 
             try
@@ -181,12 +185,12 @@ public class Expression
             catch(Exception ex)
             {
                 var message = new StringBuilder(ex.Message);
-                if (errorListenerLexer.Errors.Count != 0)
+                if (lexerHasErrors)
                 {
                     message.AppendLine();
                     message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
                 }
-                if (errorListenerParser.Errors.Count != 0)
+                if (parserHasErrors)
                 {
                     message.AppendLine();
                     message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
@@ -194,11 +198,11 @@ public class Expression
 
                 throw new EvaluationException(message.ToString());
             }
-            if (errorListenerLexer.Errors.Count != 0)
+            if (lexerHasErrors)
             {
                 throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
             }
-            if (errorListenerParser.Errors.Count != 0)
+            if (parserHasErrors)
             {
                 throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
             }
