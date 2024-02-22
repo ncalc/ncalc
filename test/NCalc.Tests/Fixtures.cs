@@ -1198,6 +1198,28 @@ namespace NCalc.Tests
 
             Assert.AreEqual(true, eif.Evaluate());
         }
+        
+        [TestMethod]
+        public void Should_Get_Parameters_Issue_103()
+        {
+            var eif = new Expression("PageState == 'LIST' && a == 1", EvaluateOptions.CaseInsensitiveComparer)
+                {
+                    Parameters =
+                    {
+                        ["a"] = 1
+                    }
+                };
+            eif.EvaluateParameter += (name, args) =>
+            {
+                if (name == "PageState")
+                    args.Result = "List";
+            };
+
+            var parameters = eif.GetParametersNames();
+            Assert.IsTrue(parameters.Contains("a"));
+            Assert.IsTrue(parameters.Contains("PageState"));
+            Assert.IsTrue(parameters.Length == 2);
+        }
 
         [TestMethod]
         public void Should_Evaluate_Ifs()

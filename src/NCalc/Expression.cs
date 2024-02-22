@@ -322,6 +322,17 @@ public class Expression
         return visitor.Result;
 
     }
+    
+    /// <summary>
+    /// Returns an array with all parameters names from the expression.
+    /// </summary>
+    public string[] GetParametersNames()
+    {
+        var extractionVisitor = new ParameterExtractionVisitor();
+        var nocache = (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache;
+        Compile(OriginalExpression, nocache).Accept(extractionVisitor);
+        return new List<string>(extractionVisitor.Parameters).ToArray();
+    }
 
     public event EvaluateFunctionHandler EvaluateFunction;
     public event EvaluateParameterHandler EvaluateParameter;
