@@ -1252,8 +1252,7 @@ namespace NCalc.Tests
             for (var i = 0; i < 10; i++)
             {
                 counter = 0;
-                var result=expression.Evaluate();
-                Console.WriteLine($"{counter} {totalCounter}");
+                _ = expression.Evaluate();
             }
 
 
