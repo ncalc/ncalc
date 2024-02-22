@@ -6,7 +6,7 @@ namespace NCalc;
 
 public class ErrorListenerParser : IAntlrErrorListener<IToken>
 {
-    public readonly List<string> Errors = new();
+    public readonly List<string> Errors = [];
 
     public void SyntaxError(TextWriter output, IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine, string msg,
         RecognitionException e)
@@ -18,7 +18,7 @@ public class ErrorListenerParser : IAntlrErrorListener<IToken>
 
 public class ErrorListenerLexer : IAntlrErrorListener<int>
 {
-    public readonly List<string> Errors = new();
+    public readonly List<string> Errors = [];
 
     public void SyntaxError(TextWriter output, IRecognizer recognizer, int offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
     {
