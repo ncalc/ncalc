@@ -134,3 +134,11 @@ Runs on any modern .NET platform as it supports .NET Standard 2.0 and .NET 4.6.1
 ### [NCalcJS](https://github.com/thomashambach/ncalcjs)
 
 A Typescript/Javascript port of NCalc.
+
+### [NCalc101](https://ncalc101.magicsuite.net)
+
+NCalc 101 is a simple web application that allows you to try out the NCalc expression evaluator, developed by [Panoramic Data](https://github.com/panoramicdata)..
+
+### [JJMasterData.NCalc](https://md.jjconsulting.tech/articles/plugins/ncalc.html)
+
+Plugin of NCalc to [JJMasterData](https://github.com/jjconsulting/jjmasterdata), a runtime form generator from database metadata.
