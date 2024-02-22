@@ -26,7 +26,29 @@ public class Expression
     protected CultureInfo CultureInfo { get; set; }
     
     protected EvaluationVisitor EvaluationVisitor { get; set; }
+    
+    public event EvaluateFunctionHandler EvaluateFunction {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction -= value;
+        }
+    }
 
+    public event EvaluateParameterHandler EvaluateParameter {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter -= value;
+        }
+    }
+    
     public Expression(string expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
     {
     }
@@ -265,8 +287,6 @@ public class Expression
 
 
         var visitor = EvaluationVisitor;
-        visitor.EvaluateFunction += EvaluateFunction;
-        visitor.EvaluateParameter += EvaluateParameter;
         visitor.Parameters = Parameters;
 
         // if array evaluation, execute the same expression multiple times
@@ -334,8 +354,7 @@ public class Expression
         return new List<string>(extractionVisitor.Parameters).ToArray();
     }
 
-    public event EvaluateFunctionHandler EvaluateFunction;
-    public event EvaluateParameterHandler EvaluateParameter;
+
 
     private Dictionary<string, object> _parameters;
 
