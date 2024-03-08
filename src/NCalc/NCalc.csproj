@@ -45,6 +45,12 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\Grammar\NCalc.g">
+      <Link>NCalc.g</Link>
+    </Content>
+  </ItemGroup>
+
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>

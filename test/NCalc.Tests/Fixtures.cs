@@ -710,7 +710,7 @@ namespace NCalc.Tests
             Assert.AreEqual($"token recognition error at: '\"' at 1:1{Environment.NewLine}token recognition error at: '\"' at 1:3", result1.Message);
 
             var result2 = Assert.ThrowsException<EvaluationException>(() => Expression.Compile("Format(\"{0:(###) ###-####}\", \"9999999999\")", true));
-            Assert.IsTrue(result2.Message.Contains("was not recognized as a valid DateTime."));
+            Assert.IsTrue(result2.Message.Contains("token recognition error at: '\"'"));
         }
 
         [TestMethod]
@@ -1197,6 +1197,31 @@ namespace NCalc.Tests
             eif.Parameters["PageState"] = "List";
 
             Assert.AreEqual(true, eif.Evaluate());
+        }
+        
+        [TestMethod]
+        public void Should_Allow_Curly_Braces()
+        {
+            var eif = new Expression("{PageState} = 'List' && {foo}() = 'bar'", EvaluateOptions.CaseInsensitiveComparer);
+            eif.Parameters["PageState"] = "List";
+            eif.EvaluateFunction += (name, args) =>
+            {
+                if (name == "foo")
+                {
+                    args.Result = "Bar";
+                }
+            };
+            object result = null;
+            try
+            {
+                result = eif.Evaluate();
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Expected no exception, but got: " + ex.Message);
+            }
+            
+            Assert.IsTrue(result is bool b && b);
         }
 
         [TestMethod]
