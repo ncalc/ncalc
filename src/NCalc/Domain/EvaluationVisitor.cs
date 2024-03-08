@@ -100,17 +100,6 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         // simulate Lazy<Func<>> behavior for late evaluation
         object leftValue = null;
 
-        object Left()
-        {
-            if (leftValue == null)
-            {
-                expression.LeftExpression.Accept(this);
-                leftValue = Result;
-            }
-
-            return leftValue;
-        }
-
         // simulate Lazy<Func<>> behavior for late evaluations
         object rightValue = null;
 
@@ -209,13 +198,26 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 break;
         }
 
+        return;
+
+        object Left()
+        {
+            if (leftValue != null)
+                return leftValue;
+            
+            expression.LeftExpression.Accept(this);
+            leftValue = Result;
+
+            return leftValue;
+        }
+
         object Right()
         {
-            if (rightValue == null)
-            {
-                expression.RightExpression.Accept(this);
-                rightValue = Result;
-            }
+            if (rightValue != null) 
+                return rightValue;
+            
+            expression.RightExpression.Accept(this);
+            rightValue = Result;
 
             return rightValue;
         }
