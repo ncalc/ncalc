@@ -1,3 +1,10 @@
+# 3.11
+
+* [Evaluate function and parameters only once](https://github.com/ncalc/ncalc/pull/108) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Performance improvements: CA1860 and CA1834](https://github.com/ncalc/ncalc/pull/105) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Add GetParametersNames method to Expression.cs](https://github.com/ncalc/ncalc/pull/104) by [Gustavo Mauricio de Barros](https://github.com/gumbarros),
+[Added Expression.GetParameters() method](https://github.com/ncalc/ncalc/pull/104) by [Rodion Mostovoi](https://github.com/rodion-m)
+
 # 3.10
 
 * [Make EvaluationVisitor sub-class friendly](https://github.com/ncalc/ncalc/pull/92) by [Nick](https://github.com/thetreatment)
