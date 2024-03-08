@@ -29,7 +29,8 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         throw new Exception("The method or operation is not implemented.");
     }
 
-    private static readonly Type[] CommonTypes =  { typeof(double), typeof(long), typeof(bool), typeof(string), typeof(decimal) };
+    private static readonly Type[] CommonTypes =
+        [typeof(double), typeof(long), typeof(bool), typeof(string), typeof(decimal)];
 
     /// <summary>
     /// Gets the the most precise type.
@@ -98,121 +99,125 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
     {
         // simulate Lazy<Func<>> behavior for late evaluation
         object leftValue = null;
-        Func<object> left = () =>
+
+        object Left()
         {
             if (leftValue == null)
             {
                 expression.LeftExpression.Accept(this);
                 leftValue = Result;
             }
+
             return leftValue;
-        };
+        }
 
         // simulate Lazy<Func<>> behavior for late evaluations
         object rightValue = null;
-        Func<object> right = () =>
+
+        switch (expression.Type)
+        {
+            case BinaryExpressionType.And:
+                Result = Convert.ToBoolean(Left(), cultureInfo) && Convert.ToBoolean(Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.Or:
+                Result = Convert.ToBoolean(Left(), cultureInfo) || Convert.ToBoolean(Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.Div:
+                Result = IsReal(Left()) || IsReal(Right())
+                    ? Numbers.Divide(Left(), Right(), cultureInfo)
+                    : Numbers.Divide(Convert.ToDouble(Left(), cultureInfo), Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.Equal:
+                // Use the type of the left operand to make the comparison
+                Result = CompareUsingMostPreciseType(Left(), Right()) == 0;
+                break;
+
+            case BinaryExpressionType.Greater:
+                // Use the type of the left operand to make the comparison
+                Result = CompareUsingMostPreciseType(Left(), Right()) > 0;
+                break;
+
+            case BinaryExpressionType.GreaterOrEqual:
+                // Use the type of the left operand to make the comparison
+                Result = CompareUsingMostPreciseType(Left(), Right()) >= 0;
+                break;
+
+            case BinaryExpressionType.Lesser:
+                // Use the type of the left operand to make the comparison
+                Result = CompareUsingMostPreciseType(Left(), Right()) < 0;
+                break;
+
+            case BinaryExpressionType.LesserOrEqual:
+                // Use the type of the left operand to make the comparison
+                Result = CompareUsingMostPreciseType(Left(), Right()) <= 0;
+                break;
+
+            case BinaryExpressionType.Minus:
+                Result = Numbers.Subtract(Left(), Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.Modulo:
+                Result = Numbers.Modulo(Left(), Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.NotEqual:
+                // Use the type of the left operand to make the comparison
+                Result = CompareUsingMostPreciseType(Left(), Right()) != 0;
+                break;
+
+            case BinaryExpressionType.Plus:
+                if (Left() is string)
+                {
+                    Result = string.Concat(Left(), Right());
+                }
+                else
+                {
+                    Result = Numbers.Add(Left(), Right(), cultureInfo);
+                }
+
+                break;
+
+            case BinaryExpressionType.Times:
+                Result = Numbers.Multiply(Left(), Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.BitwiseAnd:
+                Result = Convert.ToUInt16(Left(), cultureInfo) & Convert.ToUInt16(Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.BitwiseOr:
+                Result = Convert.ToUInt16(Left(), cultureInfo) | Convert.ToUInt16(Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.BitwiseXOr:
+                Result = Convert.ToUInt16(Left(), cultureInfo) ^ Convert.ToUInt16(Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.LeftShift:
+                Result = Convert.ToUInt16(Left(), cultureInfo) << Convert.ToUInt16(Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.RightShift:
+                Result = Convert.ToUInt16(Left(), cultureInfo) >> Convert.ToUInt16(Right(), cultureInfo);
+                break;
+
+            case BinaryExpressionType.Exponentiation:
+                Result = Math.Pow(Convert.ToDouble(Left(), cultureInfo), Convert.ToDouble(Right(), cultureInfo));
+                break;
+        }
+
+        object Right()
         {
             if (rightValue == null)
             {
                 expression.RightExpression.Accept(this);
                 rightValue = Result;
             }
+
             return rightValue;
-        };
-
-        switch (expression.Type)
-        {
-            case BinaryExpressionType.And:
-                Result = Convert.ToBoolean(left(), cultureInfo) && Convert.ToBoolean(right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.Or:
-                Result = Convert.ToBoolean(left(), cultureInfo) || Convert.ToBoolean(right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.Div:
-                Result = IsReal(left()) || IsReal(right())
-                    ? Numbers.Divide(left(), right(), cultureInfo)
-                    : Numbers.Divide(Convert.ToDouble(left(), cultureInfo), right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.Equal:
-                // Use the type of the left operand to make the comparison
-                Result = CompareUsingMostPreciseType(left(), right()) == 0;
-                break;
-
-            case BinaryExpressionType.Greater:
-                // Use the type of the left operand to make the comparison
-                Result = CompareUsingMostPreciseType(left(), right()) > 0;
-                break;
-
-            case BinaryExpressionType.GreaterOrEqual:
-                // Use the type of the left operand to make the comparison
-                Result = CompareUsingMostPreciseType(left(), right()) >= 0;
-                break;
-
-            case BinaryExpressionType.Lesser:
-                // Use the type of the left operand to make the comparison
-                Result = CompareUsingMostPreciseType(left(), right()) < 0;
-                break;
-
-            case BinaryExpressionType.LesserOrEqual:
-                // Use the type of the left operand to make the comparison
-                Result = CompareUsingMostPreciseType(left(), right()) <= 0;
-                break;
-
-            case BinaryExpressionType.Minus:
-                Result = Numbers.Subtract(left(), right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.Modulo:
-                Result = Numbers.Modulo(left(), right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.NotEqual:
-                // Use the type of the left operand to make the comparison
-                Result = CompareUsingMostPreciseType(left(), right()) != 0;
-                break;
-
-            case BinaryExpressionType.Plus:
-                if (left() is string)
-                {
-                    Result = string.Concat(left(), right());
-                }
-                else
-                {
-                    Result = Numbers.Add(left(), right(), cultureInfo);
-                }
-
-                break;
-
-            case BinaryExpressionType.Times:
-                Result = Numbers.Multiply(left(), right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.BitwiseAnd:
-                Result = Convert.ToUInt16(left(), cultureInfo) & Convert.ToUInt16(right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.BitwiseOr:
-                Result = Convert.ToUInt16(left(), cultureInfo) | Convert.ToUInt16(right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.BitwiseXOr:
-                Result = Convert.ToUInt16(left(), cultureInfo) ^ Convert.ToUInt16(right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.LeftShift:
-                Result = Convert.ToUInt16(left(), cultureInfo) << Convert.ToUInt16(right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.RightShift:
-                Result = Convert.ToUInt16(left(), cultureInfo) >> Convert.ToUInt16(right(), cultureInfo);
-                break;
-
-            case BinaryExpressionType.Exponentiation:
-                Result = Math.Pow(Convert.ToDouble(left(), cultureInfo), Convert.ToDouble(right(), cultureInfo));
-                break;
         }
     }
 
@@ -276,333 +281,186 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             return;
         }
 
-        switch (function.Identifier.Name.ToLower())
+        ExecuteBuiltInFunction(function);
+    }
+
+    private void ExecuteBuiltInFunction(Function function)
+    {
+        var functionName = function.Identifier.Name.ToLower();
+
+        switch (functionName)
         {
-            #region Abs
-            case string n when n.Equals("abs", StringComparison.OrdinalIgnoreCase):
-
+            case "abs":
                 CheckCase("Abs", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Abs() takes exactly 1 argument");
-
-                Result = Math.Abs(Convert.ToDecimal(
-                    Evaluate(function.Expressions[0]), cultureInfo)
-                );
-
+                Result = Math.Abs(Convert.ToDecimal(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            #endregion
-
-            #region Acos
-            case string n when n.Equals("acos", StringComparison.OrdinalIgnoreCase):
-
+            case "acos":
                 CheckCase("Acos", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Acos() takes exactly 1 argument");
-
                 Result = Math.Acos(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Asin
-            case string n when n.Equals("asin", StringComparison.OrdinalIgnoreCase):
-
+            case "asin":
                 CheckCase("Asin", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Asin() takes exactly 1 argument");
-
                 Result = Math.Asin(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Atan
-            case string n when n.Equals("atan", StringComparison.OrdinalIgnoreCase):
-
+            case "atan":
                 CheckCase("Atan", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Atan() takes exactly 1 argument");
-
                 Result = Math.Atan(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Atan2
-            case string n when n.Equals("atan2", StringComparison.OrdinalIgnoreCase):
-
+            case "atan2":
                 CheckCase("Atan2", function.Identifier.Name);
-
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Atan2() takes exactly 2 argument");
-
-                Result = Math.Atan2(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo), Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
-
+                Result = Math.Atan2(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo),
+                    Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
                 break;
 
-            #endregion
-
-            #region Ceiling
-            case string n when n.Equals("ceiling", StringComparison.OrdinalIgnoreCase):
-
+            case "ceiling":
                 CheckCase("Ceiling", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Ceiling() takes exactly 1 argument");
-
                 Result = Math.Ceiling(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Cos
-
-            case string n when n.Equals("cos", StringComparison.OrdinalIgnoreCase):
-
+            case "cos":
                 CheckCase("Cos", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Cos() takes exactly 1 argument");
-
                 Result = Math.Cos(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Exp
-            case string n when n.Equals("exp", StringComparison.OrdinalIgnoreCase):
-
+            case "exp":
                 CheckCase("Exp", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Exp() takes exactly 1 argument");
-
                 Result = Math.Exp(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Floor
-            case string n when n.Equals("floor", StringComparison.OrdinalIgnoreCase):
-
+            case "floor":
                 CheckCase("Floor", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Floor() takes exactly 1 argument");
-
                 Result = Math.Floor(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region IEEERemainder
-            case string n when n.Equals("ieeeremainder", StringComparison.OrdinalIgnoreCase):
-
+            case "ieeeremainder":
                 CheckCase("IEEERemainder", function.Identifier.Name);
-
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("IEEERemainder() takes exactly 2 arguments");
-
-                Result = Math.IEEERemainder(Convert.ToDouble(Evaluate(function.Expressions[0])), Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
-
+                Result = Math.IEEERemainder(Convert.ToDouble(Evaluate(function.Expressions[0])),
+                    Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
                 break;
 
-            #endregion
-
-            #region Ln
-            case string n when n.Equals("ln", StringComparison.OrdinalIgnoreCase):
-
+            case "ln":
                 CheckCase("Ln", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Ln() takes exactly 1 argument");
-
                 Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Log
-            case string n when n.Equals("log", StringComparison.OrdinalIgnoreCase):
-
+            case "log":
                 CheckCase("Log", function.Identifier.Name);
-
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Log() takes exactly 2 arguments");
-
-                Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo), Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
-
+                Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo),
+                    Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
                 break;
 
-            #endregion
-
-            #region Log10
-            case string n when n.Equals("log10", StringComparison.OrdinalIgnoreCase):
-
+            case "log10":
                 CheckCase("Log10", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Log10() takes exactly 1 argument");
-
                 Result = Math.Log10(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Pow
-            case string n when n.Equals("pow", StringComparison.OrdinalIgnoreCase):
-
+            case "pow":
                 CheckCase("Pow", function.Identifier.Name);
-
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Pow() takes exactly 2 arguments");
-
-                Result = Math.Pow(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo), Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
-
+                Result = Math.Pow(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo),
+                    Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
                 break;
 
-            #endregion
-
-            #region Round
-            case string n when n.Equals("round", StringComparison.OrdinalIgnoreCase):
-
+            case "round":
                 CheckCase("Round", function.Identifier.Name);
-
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Round() takes exactly 2 arguments");
-
-                MidpointRounding rounding = (options & EvaluateOptions.RoundAwayFromZero) == EvaluateOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
-
-                Result = Math.Round(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo), Convert.ToInt16(Evaluate(function.Expressions[1]), cultureInfo), rounding);
-
+                MidpointRounding rounding =
+                    (options & EvaluateOptions.RoundAwayFromZero) == EvaluateOptions.RoundAwayFromZero
+                        ? MidpointRounding.AwayFromZero
+                        : MidpointRounding.ToEven;
+                Result = Math.Round(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo),
+                    Convert.ToInt16(Evaluate(function.Expressions[1]), cultureInfo), rounding);
                 break;
 
-            #endregion
-
-            #region Sign
-            case string n when n.Equals("sign", StringComparison.OrdinalIgnoreCase):
-
+            case "sign":
                 CheckCase("Sign", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Sign() takes exactly 1 argument");
-
                 Result = Math.Sign(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Sin
-            case string n when n.Equals("sin", StringComparison.OrdinalIgnoreCase):
-
+            case "sin":
                 CheckCase("Sin", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Sin() takes exactly 1 argument");
-
                 Result = Math.Sin(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Sqrt
-            case string n when n.Equals("sqrt", StringComparison.OrdinalIgnoreCase):
-
+            case "sqrt":
                 CheckCase("Sqrt", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Sqrt() takes exactly 1 argument");
-
                 Result = Math.Sqrt(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Tan
-            case string n when n.Equals("tan", StringComparison.OrdinalIgnoreCase):
-
+            case "tan":
                 CheckCase("Tan", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Tan() takes exactly 1 argument");
-
                 Result = Math.Tan(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Truncate
-            case string n when n.Equals("truncate", StringComparison.OrdinalIgnoreCase):
-
+            case "truncate":
                 CheckCase("Truncate", function.Identifier.Name);
-
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Truncate() takes exactly 1 argument");
-
                 Result = Math.Truncate(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
-
                 break;
 
-            #endregion
-
-            #region Max
-            case string n when n.Equals("max", StringComparison.OrdinalIgnoreCase):
-
+            case "max":
                 CheckCase("Max", function.Identifier.Name);
-
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Max() takes exactly 2 arguments");
-
                 object maxleft = Evaluate(function.Expressions[0]);
                 object maxright = Evaluate(function.Expressions[1]);
-
                 Result = Numbers.Max(maxleft, maxright, cultureInfo);
                 break;
 
-            #endregion
-
-            #region Min
-            case string n when n.Equals("min", StringComparison.OrdinalIgnoreCase):
-
+            case "min":
                 CheckCase("Min", function.Identifier.Name);
-
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Min() takes exactly 2 arguments");
-
                 object minleft = Evaluate(function.Expressions[0]);
                 object minright = Evaluate(function.Expressions[1]);
-
                 Result = Numbers.Min(minleft, minright, cultureInfo);
                 break;
 
-            #endregion
-
-            #region ifs
-            case string n when n.Equals("ifs", StringComparison.OrdinalIgnoreCase):
-
+            case "ifs":
                 CheckCase("ifs", function.Identifier.Name);
-
                 if (function.Expressions.Length < 3 || function.Expressions.Length % 2 != 1)
                     throw new ArgumentException("ifs() takes at least 3 arguments, or an odd number of arguments");
-
                 foreach (var eval in function.Expressions.Where((_, i) => i % 2 == 0))
                 {
                     var index = Array.IndexOf(function.Expressions, eval);
@@ -618,39 +476,23 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
                 break;
 
-            #endregion
-            #region if
-            case string n when n.Equals("if", StringComparison.OrdinalIgnoreCase):
-
+            case "if":
                 CheckCase("if", function.Identifier.Name);
-
                 if (function.Expressions.Length != 3)
                     throw new ArgumentException("if() takes exactly 3 arguments");
-
                 bool cond = Convert.ToBoolean(Evaluate(function.Expressions[0]), cultureInfo);
-
                 Result = cond ? Evaluate(function.Expressions[1]) : Evaluate(function.Expressions[2]);
                 break;
 
-            #endregion
-
-
-            #region in
-            case string n when n.Equals("in", StringComparison.OrdinalIgnoreCase):
-
+            case "in":
                 CheckCase("in", function.Identifier.Name);
-
                 if (function.Expressions.Length < 2)
                     throw new ArgumentException("in() takes at least 2 arguments");
-
                 object parameter = Evaluate(function.Expressions[0]);
-
                 bool evaluation = false;
-
-                // Goes through any values, and stop whe one is found
                 for (int i = 1; i < function.Expressions.Length; i++)
                 {
-                    object argument = Evaluate(function.Expressions[i]);
+                    var argument = Evaluate(function.Expressions[i]);
                     if (CompareUsingMostPreciseType(parameter, argument) == 0)
                     {
                         evaluation = true;
@@ -661,11 +503,8 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 Result = evaluation;
                 break;
 
-            #endregion
-
             default:
-                throw new ArgumentException("Function not found",
-                    function.Identifier.Name);
+                throw new ArgumentException("Function not found", function.Identifier.Name);
         }
     }
 
