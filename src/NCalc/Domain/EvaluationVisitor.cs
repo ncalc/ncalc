@@ -29,8 +29,9 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         throw new Exception("The method or operation is not implemented.");
     }
 
-    private static readonly Type[] CommonTypes =
-        [typeof(double), typeof(long), typeof(bool), typeof(string), typeof(decimal)];
+
+    private static readonly Type[] CommonTypes = [typeof(double), typeof(long), typeof(bool), typeof(string), typeof(decimal)];
+
 
     /// <summary>
     /// Gets the the most precise type.
@@ -40,7 +41,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
     /// <returns></returns>
     private static Type GetMostPreciseType(Type a, Type b)
     {
-        foreach (Type t in CommonTypes)
+        foreach (var t in CommonTypes)
         {
             if (a == t || b == t)
             {
@@ -525,9 +526,9 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             throw new ArgumentException($"Function not found {called}. Try {function} instead.");
         }
     }
-
+    
     public event EvaluateFunctionHandler EvaluateFunction;
-
+    
     protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
         EvaluateFunction?.Invoke(name, args);
@@ -571,6 +572,8 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             Result = args.Result;
         }
     }
+
+
 
     public event EvaluateParameterHandler EvaluateParameter;
 
