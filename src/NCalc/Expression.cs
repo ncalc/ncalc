@@ -42,7 +42,8 @@ public class Expression
         set
         {
             _options = value;
-            EvaluationVisitor.Options = value;
+            if (EvaluationVisitor != null) 
+                EvaluationVisitor.Options = value;
         }
     }
 
