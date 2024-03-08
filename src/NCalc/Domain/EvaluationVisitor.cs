@@ -14,6 +14,8 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
     private bool IgnoreCase => (Options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
 
+    public Dictionary<string, object> Parameters { get; set; }
+    
     public EvaluationVisitor(EvaluateOptions options) : this(options, CultureInfo.CurrentCulture)
     {
     }
@@ -744,6 +746,4 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
     {
         EvaluateParameter?.Invoke(name, args);
     }
-
-    public Dictionary<string, object> Parameters { get; set; }
 }

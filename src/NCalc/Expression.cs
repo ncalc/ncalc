@@ -47,11 +47,10 @@ public class Expression
         }
     }
 
-    private Dictionary<string, object> _parameters;
-
+    private Dictionary<string, object> _parameters = new();
     public Dictionary<string, object> Parameters
     {
-        get => _parameters ??= new Dictionary<string, object>();
+        get => _parameters;
         set
         {
             _parameters = value;
@@ -93,7 +92,10 @@ public class Expression
         OriginalExpression = expression;
         Options = options;
         CultureInfo = cultureInfo;
-        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo);
+        EvaluationVisitor = new EvaluationVisitor(Options, CultureInfo)
+        {
+            Parameters = Parameters
+        };
     }
     
     public Expression(string expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
@@ -118,7 +120,10 @@ public class Expression
             ArgumentException("Expression can't be null", nameof(expression));
         Options = options;
         CultureInfo = cultureInfo;
-        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo);
+        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo)
+        {
+            Parameters = Parameters
+        };
     }
     public Expression(LogicalExpression expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
     {
