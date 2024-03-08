@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Text;
 using System.Globalization;
+using System.Text;
 
 namespace NCalc.Domain;
 
@@ -115,15 +115,15 @@ public class SerializationVisitor : LogicalExpressionVisitor
         switch (expression.Type)
         {
             case UnaryExpressionType.Not:
-                Result.Append("!");
+                Result.Append('!');
                 break;
 
             case UnaryExpressionType.Negate:
-                Result.Append("-");
+                Result.Append('-');
                 break;
 
             case UnaryExpressionType.BitwiseNot:
-                Result.Append("~");
+                Result.Append('~');
                 break;
         }
 
@@ -135,23 +135,23 @@ public class SerializationVisitor : LogicalExpressionVisitor
         switch (expression.Type)
         {
             case ValueType.Boolean:
-                Result.Append(expression.Value.ToString()).Append(" ");
+                Result.Append(expression.Value).Append(' ');
                 break;
 
             case ValueType.DateTime:
-                Result.Append("#").Append(expression.Value.ToString()).Append("#").Append(" ");
+                Result.Append('#').Append(expression.Value).Append('#').Append(' ');
                 break;
 
             case ValueType.Float:
-                Result.Append(decimal.Parse(expression.Value.ToString()).ToString(_numberFormatInfo)).Append(" ");
+                Result.Append(decimal.Parse(expression.Value.ToString()).ToString(_numberFormatInfo)).Append(' ');
                 break;
 
             case ValueType.Integer:
-                Result.Append(expression.Value.ToString()).Append(" ");
+                Result.Append(expression.Value).Append(' ');
                 break;
 
             case ValueType.String:
-                Result.Append("'").Append(expression.Value.ToString()).Append("'").Append(" ");
+                Result.Append('\'').Append(expression.Value).Append('\'').Append(' ');
                 break;
         }
     }
@@ -160,7 +160,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
     {
         Result.Append(function.Identifier.Name);
 
-        Result.Append("(");
+        Result.Append('(');
 
         for(int i=0; i<function.Expressions.Length; i++)
         {
@@ -181,7 +181,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
 
     public override void Visit(Identifier parameter)
     {
-        Result.Append("[").Append(parameter.Name).Append("] ");
+        Result.Append('[').Append(parameter.Name).Append("] ");
     }
 
     protected virtual void EncapsulateNoValue(LogicalExpression expression)
@@ -192,7 +192,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
         }
         else
         {
-            Result.Append("(");
+            Result.Append('(');
             expression.Accept(this);
                 
             // trim spaces before adding a closing paren
