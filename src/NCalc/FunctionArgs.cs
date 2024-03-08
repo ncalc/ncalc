@@ -18,7 +18,7 @@ public class FunctionArgs : EventArgs
 
     public bool HasResult { get; set; }
 
-    private Expression[] _parameters = Array.Empty<Expression>();
+    private Expression[] _parameters = [];
 
     public Expression[] Parameters
     {

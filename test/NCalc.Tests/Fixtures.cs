@@ -1223,6 +1223,34 @@ namespace NCalc.Tests
             
             Assert.IsTrue(result is bool b && b);
         }
+      
+        [TestMethod]
+        public void Should_Get_Parameters_Issue_103()
+        {
+            var eif = new Expression("PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3)", EvaluateOptions.CaseInsensitiveComparer)
+                {
+                    Parameters =
+                    {
+                        ["a"] = 1
+                    }
+                };
+            eif.EvaluateParameter += (name, args) =>
+            {
+                if (name == "PageState")
+                    args.Result = "List";
+            };
+            
+            eif.EvaluateFunction += (name, args) =>
+            {
+                if (name == "customfunction")
+                    args.Result = "true";
+            };
+
+            var parameters = eif.GetParametersNames();
+            Assert.IsTrue(parameters.Contains("a"));
+            Assert.IsTrue(parameters.Contains("PageState"));
+            Assert.IsTrue(parameters.Length == 2);
+        }
 
         [TestMethod]
         public void Should_Evaluate_Ifs()
@@ -1263,5 +1291,34 @@ namespace NCalc.Tests
             Assert.ThrowsException<ArgumentException>(() => new Expression("ifs([divider] > 0, [divider] / [divided])").Evaluate());
             Assert.ThrowsException<ArgumentException>(() => new Expression("ifs([divider] > 0, [divider] / [divided], [divider < 0], [divider] + [divided])").Evaluate());
         }
+        
+        [TestMethod]
+        public void Should_Evaluate_Function_Only_Once_Issue_107()
+        {
+            var counter = 0;
+            var totalCounter = 0;
+
+            var expression = new Expression("MyFunc()");
+
+            expression.EvaluateFunction += Expression_EvaluateFunction;
+
+            for (var i = 0; i < 10; i++)
+            {
+                counter = 0;
+                _ = expression.Evaluate();
+            }
+
+
+            void Expression_EvaluateFunction(string name, FunctionArgs args)
+            {
+                if (name != "MyFunc") return;
+                args.Result = 1;
+                counter++;
+                totalCounter++;
+            }
+
+            Assert.AreEqual(totalCounter, 10);
+        }
+
     }
 }
