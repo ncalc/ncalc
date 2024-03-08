@@ -573,9 +573,9 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         if (function != called)
             throw new ArgumentException($"Function not found {called}. Try {function} instead.");
     }
-
+    
     public event EvaluateFunctionHandler EvaluateFunction;
-
+    
     protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
         EvaluateFunction?.Invoke(name, args);
@@ -619,6 +619,8 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             Result = args.Result;
         }
     }
+
+
 
     public event EvaluateParameterHandler EvaluateParameter;
 
