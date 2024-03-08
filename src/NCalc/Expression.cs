@@ -13,9 +13,27 @@ namespace NCalc;
 
 public class Expression
 {
-    
-    public event EvaluateFunctionHandler EvaluateFunction;
-    public event EvaluateParameterHandler EvaluateParameter;
+    public event EvaluateParameterHandler EvaluateParameter {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter -= value;
+        }
+    }
+
+    public event EvaluateFunctionHandler EvaluateFunction {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction -= value;
+        }
+    }
     
     private EvaluateOptions _options;
     public EvaluateOptions Options
@@ -47,28 +65,6 @@ public class Expression
     protected CultureInfo CultureInfo { get; set; }
     
     protected EvaluationVisitor EvaluationVisitor { get; set; }
-    
-    public event EvaluateFunctionHandler EvaluateFunction {
-        add {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateFunction += value;
-        }
-        remove {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateFunction -= value;
-        }
-    }
-
-    public event EvaluateParameterHandler EvaluateParameter {
-        add {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateParameter += value;
-        }
-        remove {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateParameter -= value;
-        }
-    }
     
     public Expression(string expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
     {
