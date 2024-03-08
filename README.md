@@ -9,7 +9,8 @@ NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expre
 
 ## Project Description
 
-NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
+NCalc is a .NET library for evaluating mathematical expressions. It can handle various types of expressions, including those with static or dynamic parameters, as well as custom functions.
+It is supported by any target framework that accommodates .NET Standard 2.0.
 
 For additional information on the technique we used to create this framework please read this article: https://www.codeproject.com/Articles/18880/State-of-the-Art-Expression-Evaluation.
 
@@ -19,6 +20,10 @@ For documentation here is the table of content:
 * [values](https://github.com/ncalc/ncalc/wiki/Values): authorized values like types, functions, ...
 * [functions](https://github.com/ncalc/ncalc/wiki/Functions): list of already implemented functions
 * [parameters](https://github.com/ncalc/ncalc/wiki/Parameters): on how to use parameters expressions
+
+> [!IMPORTANT]
+> If you need help, please open an issue and include the expression to help us better understand the problem. 
+> Providing this information will aid in resolving the issue effectively.
 
 ## Functionalities
 **Simple Expressions**
@@ -137,7 +142,7 @@ A Typescript/Javascript port of NCalc.
 
 ### [NCalc101](https://ncalc101.magicsuite.net)
 
-NCalc 101 is a simple web application that allows you to try out the NCalc expression evaluator, developed by [Panoramic Data](https://github.com/panoramicdata)..
+NCalc 101 is a simple web application that allows you to try out the NCalc expression evaluator, developed by [Panoramic Data](https://github.com/panoramicdata).
 
 ### [JJMasterData.NCalc](https://md.jjconsulting.tech/articles/plugins/ncalc.html)
 
@@ -150,13 +155,13 @@ Each library build can be traced back to the original git commit.
 
 ## Preparing and publishing a new release
 
-1. Make sure that `nbgv` dotnet CLI tool is installed and is up to date
+1. Make sure that `nbgv` dotnet CLI tool is installed and is up-to-date
 2. Run `nbgv prepare-release` to create a stable branch for the upcoming release, i.e. release/v1.0
 3. Switch to the release branch: `git checkout release/v1.0`
 4. Execute unit tests, update the README, release notes in csproj file, etc. Commit and push your changes.
 5. Run `dotnet pack -c Release` and check that it builds Nuget packages with the right version number.
 6. Run `nbgv tag release/v1.0` to tag the last commit on the release branch with your current version number, i.e. v1.0.7.
 7. Push tags as suggested by nbgv tool: `git push origin v1.0.7`
-8. Go to github project page and create a release out of the last tag v1.0.7.
+8. Go to GitHub project page and create a release out of the last tag v1.0.7.
 9. Verify that github workflow for publishing the nuget package has completed.
 10. Switch back to master and merge the release branch.

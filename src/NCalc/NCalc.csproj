@@ -10,9 +10,9 @@
     <PackageId>NCalcSync</PackageId>
     <PackageProjectUrl>https://github.com/ncalc/ncalc</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
-    <PackageTags>ncalc; sync; core</PackageTags>
+    <PackageTags>ncalc; sync; core; expressions;</PackageTags>
     <PackageIcon>NCalc.png</PackageIcon>
-    <Description>NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions. This version targets .NET Standard 2.0 framework.</Description>
+    <Description>NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions. This version targets .NET Standard 2.0.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
