@@ -9,8 +9,10 @@ namespace NCalc.Domain;
 public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo) : LogicalExpressionVisitor
 {
     private delegate T Func<out T>();
+    
+    public EvaluateOptions Options { get; set; } = options;
 
-    private bool IgnoreCase => (options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
+    private bool IgnoreCase => (Options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
 
     public EvaluationVisitor(EvaluateOptions options) : this(options, CultureInfo.CurrentCulture)
     {
@@ -30,6 +32,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
     }
 
     private static readonly Type[] CommonTypes =  { typeof(double), typeof(long), typeof(bool), typeof(string), typeof(decimal) };
+
 
     /// <summary>
     /// Gets the the most precise type.
@@ -64,7 +67,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             mpt = GetMostPreciseType(a.GetType(), b?.GetType());
         }
 
-        bool isCaseSensitiveComparer = (options & EvaluateOptions.CaseInsensitiveComparer) == 0;
+        bool isCaseSensitiveComparer = (Options & EvaluateOptions.CaseInsensitiveComparer) == 0;
 
         var comparer = isCaseSensitiveComparer ? (IComparer)Comparer.Default : CaseInsensitiveComparer.Default;
 
@@ -258,7 +261,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         // Evaluating every value could produce unexpected behaviour
         for (int i = 0; i < function.Expressions.Length; i++)
         {
-            args.Parameters[i] = new Expression(function.Expressions[i], options, cultureInfo);
+            args.Parameters[i] = new Expression(function.Expressions[i], Options, cultureInfo);
             args.Parameters[i].EvaluateFunction += EvaluateFunction;
             args.Parameters[i].EvaluateParameter += EvaluateParameter;
 
@@ -485,7 +488,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Round() takes exactly 2 arguments");
 
-                MidpointRounding rounding = (options & EvaluateOptions.RoundAwayFromZero) == EvaluateOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
+                var rounding = (Options & EvaluateOptions.RoundAwayFromZero) == EvaluateOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
 
                 Result = Math.Round(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo), Convert.ToInt16(Evaluate(function.Expressions[1]), cultureInfo), rounding);
 

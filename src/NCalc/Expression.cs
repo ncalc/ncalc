@@ -13,8 +13,29 @@ namespace NCalc;
 
 public class Expression
 {
-    public EvaluateOptions Options { get; set; }
-        
+    
+    public event EvaluateFunctionHandler EvaluateFunction;
+    public event EvaluateParameterHandler EvaluateParameter;
+    
+    private EvaluateOptions _options;
+    public EvaluateOptions Options
+    {
+        get => _options;
+        set
+        {
+            _options = value;
+            EvaluationVisitor.Options = value;
+        }
+    }
+
+    private Dictionary<string, object> _parameters;
+
+    public Dictionary<string, object> Parameters
+    {
+        get => _parameters ??= new Dictionary<string, object>();
+        set => _parameters = value;
+    }
+
     /// <summary>
     /// Textual representation of the expression to evaluate.
     /// </summary>
@@ -321,16 +342,5 @@ public class Expression
         ParsedExpression.Accept(visitor);
         return visitor.Result;
 
-    }
-
-    public event EvaluateFunctionHandler EvaluateFunction;
-    public event EvaluateParameterHandler EvaluateParameter;
-
-    private Dictionary<string, object> _parameters;
-
-    public Dictionary<string, object> Parameters
-    {
-        get => _parameters ??= new Dictionary<string, object>();
-        set => _parameters = value;
     }
 }
