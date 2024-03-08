@@ -52,7 +52,12 @@ public class Expression
     public Dictionary<string, object> Parameters
     {
         get => _parameters ??= new Dictionary<string, object>();
-        set => _parameters = value;
+        set
+        {
+            _parameters = value;
+            if (EvaluationVisitor != null) 
+                EvaluationVisitor.Parameters = value;
+        }
     }
 
     /// <summary>
@@ -204,62 +209,62 @@ public class Expression
             }
         }
 
-        if (logicalExpression == null)
+        if (logicalExpression != null) 
+            return logicalExpression;
+        
+        var lexer = new NCalcLexer(new AntlrInputStream(expression));
+        var errorListenerLexer = new ErrorListenerLexer();
+        lexer.AddErrorListener(errorListenerLexer);
+
+        var parser = new NCalcParser(new CommonTokenStream(lexer));
+        var errorListenerParser = new ErrorListenerParser();
+        parser.AddErrorListener(errorListenerParser);
+
+        try
         {
-            var lexer = new NCalcLexer(new AntlrInputStream(expression));
-            var errorListenerLexer = new ErrorListenerLexer();
-            lexer.AddErrorListener(errorListenerLexer);
-
-            var parser = new NCalcParser(new CommonTokenStream(lexer));
-            var errorListenerParser = new ErrorListenerParser();
-            parser.AddErrorListener(errorListenerParser);
-
-            try
-            {
-                logicalExpression = parser.ncalcExpression().retValue;
-            }
-            catch(Exception ex)
-            {
-                var message = new StringBuilder(ex.Message);
-                if (errorListenerLexer.Errors.Count != 0)
-                {
-                    message.AppendLine();
-                    message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
-                }
-                if (errorListenerParser.Errors.Count != 0)
-                {
-                    message.AppendLine();
-                    message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
-                }
-
-                throw new EvaluationException(message.ToString());
-            }
+            logicalExpression = parser.ncalcExpression().retValue;
+        }
+        catch(Exception ex)
+        {
+            var message = new StringBuilder(ex.Message);
             if (errorListenerLexer.Errors.Count != 0)
             {
-                throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
+                message.AppendLine();
+                message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
             }
             if (errorListenerParser.Errors.Count != 0)
             {
-                throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
+                message.AppendLine();
+                message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
             }
 
-            if (!_cacheEnabled || nocache)
-                return logicalExpression;
-            
-            try
-            {
-                Rwl.AcquireWriterLock(Timeout.Infinite);
-                _compiledExpressions[expression] = new WeakReference(logicalExpression);
-            }
-            finally
-            {
-                Rwl.ReleaseWriterLock();
-            }
-
-            CleanCache();
-
-            Trace.TraceInformation("Expression added to cache: " + expression);
+            throw new EvaluationException(message.ToString());
         }
+        if (errorListenerLexer.Errors.Count != 0)
+        {
+            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
+        }
+        if (errorListenerParser.Errors.Count != 0)
+        {
+            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
+        }
+
+        if (!_cacheEnabled || nocache)
+            return logicalExpression;
+            
+        try
+        {
+            Rwl.AcquireWriterLock(Timeout.Infinite);
+            _compiledExpressions[expression] = new WeakReference(logicalExpression);
+        }
+        finally
+        {
+            Rwl.ReleaseWriterLock();
+        }
+
+        CleanCache();
+
+        Trace.TraceInformation("Expression added to cache: " + expression);
 
         return logicalExpression;
     }
@@ -298,14 +303,7 @@ public class Expression
             throw new EvaluationException(Error);
         }
 
-        if (ParsedExpression == null)
-        {
-            ParsedExpression = Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
-        }
-
-
-        var visitor = EvaluationVisitor;
-        visitor.Parameters = Parameters;
+        ParsedExpression ??= Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
 
         // if array evaluation, execute the same expression multiple times
         if ((Options & EvaluateOptions.IterateParameters) == EvaluateOptions.IterateParameters)
@@ -349,15 +347,15 @@ public class Expression
                     Parameters[key] = enumerator.Current;
                 }
 
-                ParsedExpression.Accept(visitor);
-                results.Add(visitor.Result);
+                ParsedExpression.Accept(EvaluationVisitor);
+                results.Add(EvaluationVisitor.Result);
             }
 
             return results;
         }
 
-        ParsedExpression.Accept(visitor);
-        return visitor.Result;
+        ParsedExpression.Accept(EvaluationVisitor);
+        return EvaluationVisitor.Result;
 
     }
 
