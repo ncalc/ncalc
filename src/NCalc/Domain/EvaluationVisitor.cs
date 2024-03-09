@@ -10,8 +10,10 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 {
     private delegate T Func<out T>();
 
-    private bool IgnoreCase => (options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
+    private bool IgnoreCase { get; } = (options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
 
+    private bool IsCaseSensitiveComparer { get; } = (options & EvaluateOptions.CaseInsensitiveComparer) == 0;
+    
     public EvaluationVisitor(EvaluateOptions options) : this(options, CultureInfo.CurrentCulture)
     {
     }
@@ -35,6 +37,10 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         typeof(decimal),
         typeof(double),
         typeof(float),
+#if NET8_0
+        typeof(Int128),
+        typeof(UInt128),
+#endif
         typeof(long),
         typeof(ulong),
         typeof(int),
@@ -69,11 +75,10 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         else
             mpt = GetMostPreciseType(a.GetType(), b?.GetType());
         
-        var isCaseSensitiveComparer = (options & EvaluateOptions.CaseInsensitiveComparer) == 0;
         var aValue = a != null ? Convert.ChangeType(a, mpt, cultureInfo) : null;
         var bValue = b != null ? Convert.ChangeType(b, mpt, cultureInfo) : null;
 
-        if (isCaseSensitiveComparer)
+        if (IsCaseSensitiveComparer)
             return Comparer.Default.Compare(aValue, bValue);
 
         return CaseInsensitiveComparer.Default.Compare(aValue, bValue);
