@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using NCalc.Domain;
 using Antlr4.Runtime;
 
@@ -108,8 +108,7 @@ public class Expression
 
     #region Cache management
     private static bool _cacheEnabled = true;
-    private static Dictionary<string, WeakReference> _compiledExpressions = new();
-    private static readonly ReaderWriterLock Rwl = new();
+    private static readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
 
     public static bool CacheEnabled
     {
@@ -121,7 +120,7 @@ public class Expression
             if (!CacheEnabled)
             {
                 // Clears cache
-                _compiledExpressions = new Dictionary<string, WeakReference>();
+                _compiledExpressions.Clear();
             }
         }
     }
@@ -129,31 +128,17 @@ public class Expression
     /// <summary>
     /// Removed unused entries from cached compiled expression
     /// </summary>
-    private static void CleanCache()
+    private static void ClearCache()
     {
-        var keysToRemove = new List<string>();
-
-        try
+        foreach (var kvp in _compiledExpressions)
         {
-            Rwl.AcquireWriterLock(Timeout.Infinite);
-            foreach (var de in _compiledExpressions)
-            {
-                if (!de.Value.IsAlive)
-                {
-                    keysToRemove.Add(de.Key);
-                }
-            }
+            if (kvp.Value.TryGetTarget(out _)) 
+                continue;
 
-
-            foreach (var key in keysToRemove)
+            if (_compiledExpressions.TryRemove(kvp.Key, out _))
             {
-                _compiledExpressions.Remove(key);
-                Trace.TraceInformation("Cache entry released: " + key);
+                Trace.TraceInformation("Cache entry released: " + kvp.Key);
             }
-        }
-        finally
-        {
-            Rwl.ReleaseReaderLock();
         }
     }
 
@@ -161,87 +146,66 @@ public class Expression
 
     public static LogicalExpression Compile(string expression, bool nocache)
     {
-        LogicalExpression logicalExpression = null;
+        LogicalExpression logicalExpression;
 
         if (_cacheEnabled && !nocache)
         {
-            try
+            if (_compiledExpressions.TryGetValue(expression, out var wr))
             {
-                Rwl.AcquireReaderLock(Timeout.Infinite);
+                Trace.TraceInformation("Expression retrieved from cache: " + expression);
 
-                if (_compiledExpressions.TryGetValue(expression, out var wr))
+                if (wr.TryGetTarget(out var target))
                 {
-                    Trace.TraceInformation("Expression retrieved from cache: " + expression);
-                    logicalExpression = wr.Target as LogicalExpression;
-
-                    if (wr.IsAlive && logicalExpression != null)
-                    {
-                        return logicalExpression;
-                    }
+                    return target;
                 }
-            }
-            finally
-            {
-                Rwl.ReleaseReaderLock();
             }
         }
 
-        if (logicalExpression == null)
+        var lexer = new NCalcLexer(new AntlrInputStream(expression));
+        var errorListenerLexer = new ErrorListenerLexer();
+        lexer.AddErrorListener(errorListenerLexer);
+
+        var parser = new NCalcParser(new CommonTokenStream(lexer));
+        var errorListenerParser = new ErrorListenerParser();
+        parser.AddErrorListener(errorListenerParser);
+
+        try
         {
-            var lexer = new NCalcLexer(new AntlrInputStream(expression));
-            var errorListenerLexer = new ErrorListenerLexer();
-            lexer.AddErrorListener(errorListenerLexer);
-
-            var parser = new NCalcParser(new CommonTokenStream(lexer));
-            var errorListenerParser = new ErrorListenerParser();
-            parser.AddErrorListener(errorListenerParser);
-
-            try
-            {
-                logicalExpression = parser.ncalcExpression().retValue;
-            }
-            catch(Exception ex)
-            {
-                var message = new StringBuilder(ex.Message);
-                if (errorListenerLexer.Errors.Count != 0)
-                {
-                    message.AppendLine();
-                    message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
-                }
-                if (errorListenerParser.Errors.Count != 0)
-                {
-                    message.AppendLine();
-                    message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
-                }
-
-                throw new EvaluationException(message.ToString());
-            }
+            logicalExpression = parser.ncalcExpression().retValue;
+        }
+        catch(Exception ex)
+        {
+            var message = new StringBuilder(ex.Message);
             if (errorListenerLexer.Errors.Count != 0)
             {
-                throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
+                message.AppendLine();
+                message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
             }
             if (errorListenerParser.Errors.Count != 0)
             {
-                throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
+                message.AppendLine();
+                message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
             }
 
-            if (!_cacheEnabled || nocache)
-                return logicalExpression;
-            
-            try
-            {
-                Rwl.AcquireWriterLock(Timeout.Infinite);
-                _compiledExpressions[expression] = new WeakReference(logicalExpression);
-            }
-            finally
-            {
-                Rwl.ReleaseWriterLock();
-            }
-
-            CleanCache();
-
-            Trace.TraceInformation("Expression added to cache: " + expression);
+            throw new EvaluationException(message.ToString());
         }
+        if (errorListenerLexer.Errors.Count != 0)
+        {
+            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
+        }
+        if (errorListenerParser.Errors.Count != 0)
+        {
+            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
+        }
+
+        if (!_cacheEnabled || nocache)
+            return logicalExpression;
+            
+        _compiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
+            
+        ClearCache();
+
+        Trace.TraceInformation("Expression added to cache: " + expression);
 
         return logicalExpression;
     }
