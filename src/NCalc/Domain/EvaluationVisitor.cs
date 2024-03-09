@@ -715,11 +715,8 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         if (Parameters.ContainsKey(parameter.Name))
         {
             // The parameter is defined in the hashtable
-            if (Parameters[parameter.Name] is Expression)
+            if (Parameters[parameter.Name] is Expression expression)
             {
-                // The parameter is itself another Expression
-                var expression = (Expression)Parameters[parameter.Name];
-
                 // Overloads parameters 
                 foreach (var p in Parameters)
                 {
@@ -729,7 +726,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 expression.EvaluateFunction += EvaluateFunction;
                 expression.EvaluateParameter += EvaluateParameter;
 
-                Result = ((Expression)Parameters[parameter.Name]).Evaluate();
+                Result = expression.Evaluate();
             }
             else
                 Result = Parameters[parameter.Name];
