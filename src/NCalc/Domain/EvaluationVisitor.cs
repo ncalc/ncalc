@@ -38,10 +38,6 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         typeof(decimal),
         typeof(double),
         typeof(float),
-#if NET8_0
-        typeof(Int128),
-        typeof(UInt128),
-#endif
         typeof(long),
         typeof(ulong),
         typeof(int),
