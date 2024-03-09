@@ -29,17 +29,28 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         throw new Exception("The method or operation is not implemented.");
     }
 
-    private static readonly Type[] CommonTypes =  { typeof(double), typeof(long), typeof(bool), typeof(string), typeof(decimal) };
 
-    /// <summary>
-    /// Gets the the most precise type.
-    /// </summary>
-    /// <param name="a">Type a.</param>
-    /// <param name="b">Type b.</param>
-    /// <returns></returns>
+    private static readonly Type[] BuiltInTypes =
+    [
+        typeof(decimal),
+        typeof(double),
+        typeof(float),
+        typeof(long),
+        typeof(ulong),
+        typeof(int),
+        typeof(uint),
+        typeof(short),
+        typeof(ushort),
+        typeof(byte),
+        typeof(sbyte),
+        typeof(char),
+        typeof(string),
+        typeof(object)
+    ];
+
     private static Type GetMostPreciseType(Type a, Type b)
     {
-        foreach (Type t in CommonTypes)
+        foreach (var t in BuiltInTypes)
         {
             if (a == t || b == t)
             {
@@ -50,25 +61,22 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         return a;
     }
 
-    public int CompareUsingMostPreciseType(object a, object b)
+    private int CompareUsingMostPreciseType(object a, object b)
     {
         Type mpt;
         if (a == null)
-        {
-            if (b == null)
-                return 0;
             mpt = GetMostPreciseType(null, b.GetType());
-        }
         else
-        {
             mpt = GetMostPreciseType(a.GetType(), b?.GetType());
-        }
+        
+        var isCaseSensitiveComparer = (options & EvaluateOptions.CaseInsensitiveComparer) == 0;
+        var aValue = a != null ? Convert.ChangeType(a, mpt, cultureInfo) : null;
+        var bValue = b != null ? Convert.ChangeType(b, mpt, cultureInfo) : null;
 
-        bool isCaseSensitiveComparer = (options & EvaluateOptions.CaseInsensitiveComparer) == 0;
+        if (isCaseSensitiveComparer)
+            return Comparer.Default.Compare(aValue, bValue);
 
-        var comparer = isCaseSensitiveComparer ? (IComparer)Comparer.Default : CaseInsensitiveComparer.Default;
-
-        return comparer.Compare(Convert.ChangeType(a, mpt, cultureInfo), Convert.ChangeType(b, mpt, cultureInfo));
+        return CaseInsensitiveComparer.Default.Compare(aValue, bValue);
     }
 
     public override void Visit(TernaryExpression expression)
