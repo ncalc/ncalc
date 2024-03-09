@@ -2,7 +2,7 @@ grammar NCalc;
 
 options
 {
-	language=CSharp3;
+	language=CSharp;
 }
 
 @header {
@@ -11,6 +11,8 @@ using NCalc.Domain;
 }
 
 @members {
+public bool UseDecimal = false;
+
 private const char BS = '\\';
 private static NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
 
@@ -196,7 +198,9 @@ primaryExpression returns [LogicalExpression retValue]
 
 value returns [ValueExpression retValue]
 	: 	INTEGER		{ try { $retValue = new ValueExpression(int.Parse($INTEGER.text)); } catch(System.OverflowException) { $retValue = new ValueExpression(long.Parse($INTEGER.text)); } }
-	|	FLOAT		{ $retValue = new ValueExpression(double.Parse($FLOAT.text, NumberStyles.Float, numberFormatInfo)); }
+	|	FLOAT		{ $retValue = new ValueExpression(
+	                                    (UseDecimal) ? decimal.Parse($FLOAT.text, NumberStyles.Float, numberFormatInfo) : 
+	                                        double.Parse($FLOAT.text, NumberStyles.Float, numberFormatInfo)); }
 	|	STRING		{ $retValue = new ValueExpression(extractString($STRING.text)); }
 	| 	DATETIME	{ $retValue = new ValueExpression(DateTime.Parse($DATETIME.text.Substring(1, $DATETIME.text.Length-2))); }
 	|	TRUE		{ $retValue = new ValueExpression(true); }
