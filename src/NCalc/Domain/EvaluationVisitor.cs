@@ -30,6 +30,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
     }
 
 
+
     private static readonly Type[] BuiltInTypes =
     [
         typeof(decimal),
@@ -48,6 +49,12 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         typeof(object)
     ];
 
+    /// <summary>
+    /// Gets the the most precise type.
+    /// </summary>
+    /// <param name="a">Type a.</param>
+    /// <param name="b">Type b.</param>
+    /// <returns></returns>
     private static Type GetMostPreciseType(Type a, Type b)
     {
         foreach (var t in BuiltInTypes)
@@ -694,9 +701,9 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             throw new ArgumentException($"Function not found {called}. Try {function} instead.");
         }
     }
-
+    
     public event EvaluateFunctionHandler EvaluateFunction;
-
+    
     protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
         EvaluateFunction?.Invoke(name, args);
@@ -740,6 +747,8 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             Result = args.Result;
         }
     }
+
+
 
     public event EvaluateParameterHandler EvaluateParameter;
 

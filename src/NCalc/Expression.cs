@@ -26,7 +26,29 @@ public class Expression
     protected CultureInfo CultureInfo { get; set; }
     
     protected EvaluationVisitor EvaluationVisitor { get; set; }
+    
+    public event EvaluateFunctionHandler EvaluateFunction {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction -= value;
+        }
+    }
 
+    public event EvaluateParameterHandler EvaluateParameter {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter -= value;
+        }
+    }
+    
     public Expression(string expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
     {
     }
@@ -181,12 +203,12 @@ public class Expression
             catch(Exception ex)
             {
                 var message = new StringBuilder(ex.Message);
-                if (errorListenerLexer.Errors.Any())
+                if (errorListenerLexer.Errors.Count != 0)
                 {
                     message.AppendLine();
                     message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
                 }
-                if (errorListenerParser.Errors.Any())
+                if (errorListenerParser.Errors.Count != 0)
                 {
                     message.AppendLine();
                     message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
@@ -194,11 +216,11 @@ public class Expression
 
                 throw new EvaluationException(message.ToString());
             }
-            if (errorListenerLexer.Errors.Any())
+            if (errorListenerLexer.Errors.Count != 0)
             {
                 throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
             }
-            if (errorListenerParser.Errors.Any())
+            if (errorListenerParser.Errors.Count != 0)
             {
                 throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
             }
@@ -265,8 +287,6 @@ public class Expression
 
 
         var visitor = EvaluationVisitor;
-        visitor.EvaluateFunction += EvaluateFunction;
-        visitor.EvaluateParameter += EvaluateParameter;
         visitor.Parameters = Parameters;
 
         // if array evaluation, execute the same expression multiple times
@@ -297,14 +317,14 @@ public class Expression
             {
                 if (Parameters[key] is IEnumerable parameter)
                 {
-                    ParameterEnumerators.Add(key, parameter.GetEnumerator());
+                    ParameterEnumerators.Add(key,parameter.GetEnumerator());
                 }
             }
 
             var results = new List<object>();
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < size; i++)
             {
-                foreach (string key in ParameterEnumerators.Keys)
+                foreach (var key in ParameterEnumerators.Keys)
                 {
                     var enumerator = ParameterEnumerators[key];
                     enumerator.MoveNext();
@@ -322,9 +342,19 @@ public class Expression
         return visitor.Result;
 
     }
+    
+    /// <summary>
+    /// Returns an array with all parameters names from the expression.
+    /// </summary>
+    public string[] GetParametersNames()
+    {
+        var extractionVisitor = new ParameterExtractionVisitor();
+        var nocache = (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache;
+        Compile(OriginalExpression, nocache).Accept(extractionVisitor);
+        return new List<string>(extractionVisitor.Parameters).ToArray();
+    }
 
-    public event EvaluateFunctionHandler EvaluateFunction;
-    public event EvaluateParameterHandler EvaluateParameter;
+
 
     private Dictionary<string, object> _parameters;
 
