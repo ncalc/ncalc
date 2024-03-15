@@ -712,10 +712,10 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
     public override void Visit(Identifier parameter)
     {
-        if (Parameters.ContainsKey(parameter.Name))
+        if (Parameters.TryGetValue(parameter.Name, out var parameterValue))
         {
             // The parameter is defined in the hashtable
-            if (Parameters[parameter.Name] is Expression expression)
+            if (parameterValue is Expression expression)
             {
                 // Overloads parameters 
                 foreach (var p in Parameters)
@@ -729,7 +729,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 Result = expression.Evaluate();
             }
             else
-                Result = Parameters[parameter.Name];
+                Result = parameterValue;
         }
         else
         {
