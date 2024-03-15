@@ -1268,6 +1268,43 @@ namespace NCalc.Tests
         }
         
         [TestMethod]
+        public void Compare_Using_Most_Precise_Type_Issue_102()
+        {
+            var issueExp = new Expression("a == b")
+            {
+                Parameters =
+                {
+                    ["a"] = null,
+                    ["b"] = 2
+                }
+            };
+
+            Assert.IsFalse((bool)issueExp.Evaluate());
+            
+            var numericExp = new Expression("a == b")
+            {
+                Parameters =
+                {
+                    ["a"] = 2,
+                    ["b"] = 2L
+                }
+            };
+
+            Assert.IsTrue((bool)numericExp.Evaluate());
+
+            var obj = new Tuple<string,string>("Hello", "World");
+            var objExp = new Expression("a == b")
+            {
+                Parameters =
+                {
+                    ["a"] = obj,
+                    ["b"] = obj
+                }
+            };
+
+            Assert.IsTrue((bool)objExp.Evaluate());
+        }
+
         public void Should_Evaluate_Function_Only_Once_Issue_107()
         {
             var counter = 0;
