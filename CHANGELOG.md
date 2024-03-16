@@ -1,3 +1,8 @@
+# 3.12
+
+* [Allow using decimal as default floating point type](https://github.com/ncalc/ncalc/pull/118) by [Luca Schimweg](https://github.com/lucaschimweg)
+* [Use correct CLR types at GetMostPreciseType](https://github.com/ncalc/ncalc/pull/116/) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+
 # 3.11
 
 * [Evaluate function and parameters only once](https://github.com/ncalc/ncalc/pull/108) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)

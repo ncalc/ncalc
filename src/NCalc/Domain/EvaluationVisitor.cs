@@ -13,8 +13,11 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
     public EvaluateOptions Options { get; set; } = options;
 
     private bool IgnoreCase => (Options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
+    private bool IgnoreCase { get; } = (options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
 
     public Dictionary<string, object> Parameters { get; set; }
+    
+    private bool IsCaseSensitiveComparer { get; } = (options & EvaluateOptions.CaseInsensitiveComparer) == 0;
     
     public EvaluationVisitor(EvaluateOptions options) : this(options, CultureInfo.CurrentCulture)
     {
@@ -33,8 +36,25 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         throw new Exception("The method or operation is not implemented.");
     }
 
-    private static readonly Type[] CommonTypes = [typeof(double), typeof(long), typeof(bool), typeof(string), typeof(decimal)];
 
+
+    private static readonly Type[] BuiltInTypes =
+    [
+        typeof(decimal),
+        typeof(double),
+        typeof(float),
+        typeof(long),
+        typeof(ulong),
+        typeof(int),
+        typeof(uint),
+        typeof(short),
+        typeof(ushort),
+        typeof(byte),
+        typeof(sbyte),
+        typeof(char),
+        typeof(string),
+        typeof(object)
+    ];
 
     /// <summary>
     /// Gets the the most precise type.
@@ -44,7 +64,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
     /// <returns></returns>
     private static Type GetMostPreciseType(Type a, Type b)
     {
-        foreach (var t in CommonTypes)
+        foreach (var t in BuiltInTypes)
         {
             if (a == t || b == t)
             {
@@ -55,25 +75,21 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         return a;
     }
 
-    public int CompareUsingMostPreciseType(object a, object b)
+    private int CompareUsingMostPreciseType(object a, object b)
     {
         Type mpt;
         if (a == null)
-        {
-            if (b == null)
-                return 0;
             mpt = GetMostPreciseType(null, b.GetType());
-        }
         else
-        {
             mpt = GetMostPreciseType(a.GetType(), b?.GetType());
-        }
+        
+        var aValue = a != null ? Convert.ChangeType(a, mpt, cultureInfo) : null;
+        var bValue = b != null ? Convert.ChangeType(b, mpt, cultureInfo) : null;
 
-        bool isCaseSensitiveComparer = (Options & EvaluateOptions.CaseInsensitiveComparer) == 0;
+        if (IsCaseSensitiveComparer)
+            return Comparer.Default.Compare(aValue, bValue);
 
-        var comparer = isCaseSensitiveComparer ? (IComparer)Comparer.Default : CaseInsensitiveComparer.Default;
-
-        return comparer.Compare(Convert.ChangeType(a, mpt, cultureInfo), Convert.ChangeType(b, mpt, cultureInfo));
+        return CaseInsensitiveComparer.Default.Compare(aValue, bValue);
     }
 
     public override void Visit(TernaryExpression expression)
@@ -701,14 +717,11 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
     public override void Visit(Identifier parameter)
     {
-        if (Parameters.ContainsKey(parameter.Name))
+        if (Parameters.TryGetValue(parameter.Name, out var parameterValue))
         {
             // The parameter is defined in the hashtable
-            if (Parameters[parameter.Name] is Expression)
+            if (parameterValue is Expression expression)
             {
-                // The parameter is itself another Expression
-                var expression = (Expression)Parameters[parameter.Name];
-
                 // Overloads parameters 
                 foreach (var p in Parameters)
                 {
@@ -718,10 +731,10 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 expression.EvaluateFunction += EvaluateFunction;
                 expression.EvaluateParameter += EvaluateParameter;
 
-                Result = ((Expression)Parameters[parameter.Name]).Evaluate();
+                Result = expression.Evaluate();
             }
             else
-                Result = Parameters[parameter.Name];
+                Result = parameterValue;
         }
         else
         {

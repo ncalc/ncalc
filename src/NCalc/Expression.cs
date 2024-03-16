@@ -187,11 +187,16 @@ public class Expression
 
     #endregion
 
-    public static LogicalExpression Compile(string expression, bool nocache)
+    // For backwards compatibility
+    public static LogicalExpression Compile(string expression, bool nocache) {
+        return Compile(expression, nocache ? EvaluateOptions.NoCache : EvaluateOptions.None);
+    }
+    
+    public static LogicalExpression Compile(string expression, EvaluateOptions options)
     {
         LogicalExpression logicalExpression = null;
 
-        if (_cacheEnabled && !nocache)
+        if (_cacheEnabled && !options.HasOption(EvaluateOptions.NoCache))
         {
             try
             {
@@ -224,6 +229,12 @@ public class Expression
         var parser = new NCalcParser(new CommonTokenStream(lexer));
         var errorListenerParser = new ErrorListenerParser();
         parser.AddErrorListener(errorListenerParser);
+            var parser = new NCalcParser(new CommonTokenStream(lexer)) {
+                UseDecimal = options.HasOption(EvaluateOptions.DecimalAsDefault)
+            };
+
+            var errorListenerParser = new ErrorListenerParser();
+            parser.AddErrorListener(errorListenerParser);
 
         try
         {
@@ -256,6 +267,8 @@ public class Expression
 
         if (!_cacheEnabled || nocache)
             return logicalExpression;
+            if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
+                return logicalExpression;
             
         try
         {
@@ -283,7 +296,7 @@ public class Expression
     {
         try
         {
-            ParsedExpression ??= Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
+            ParsedExpression ??= Compile(OriginalExpression, Options);
 
             // In case HasErrors() is called multiple times for the same expression
             return ParsedExpression != null && Error != null;
@@ -308,10 +321,18 @@ public class Expression
             throw new EvaluationException(Error);
         }
 
+        if (ParsedExpression == null)
+        {
+            ParsedExpression = Compile(OriginalExpression, Options);
+        }
+
+
+        var visitor = EvaluationVisitor;
+        visitor.Parameters = Parameters;
         ParsedExpression ??= Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
 
         // if array evaluation, execute the same expression multiple times
-        if ((Options & EvaluateOptions.IterateParameters) == EvaluateOptions.IterateParameters)
+        if (Options.HasOption(EvaluateOptions.IterateParameters))
         {
             int size = -1;
 
@@ -370,8 +391,7 @@ public class Expression
     public string[] GetParametersNames()
     {
         var extractionVisitor = new ParameterExtractionVisitor();
-        var nocache = (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache;
-        Compile(OriginalExpression, nocache).Accept(extractionVisitor);
+        Compile(OriginalExpression, Options).Accept(extractionVisitor);
         return new List<string>(extractionVisitor.Parameters).ToArray();
     }
 
