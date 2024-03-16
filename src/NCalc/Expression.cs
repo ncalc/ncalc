@@ -226,15 +226,12 @@ public class Expression
         var errorListenerLexer = new ErrorListenerLexer();
         lexer.AddErrorListener(errorListenerLexer);
 
-        var parser = new NCalcParser(new CommonTokenStream(lexer));
+        var parser = new NCalcParser(new CommonTokenStream(lexer)) {
+            UseDecimal = options.HasOption(EvaluateOptions.DecimalAsDefault)
+        };
+
         var errorListenerParser = new ErrorListenerParser();
         parser.AddErrorListener(errorListenerParser);
-            var parser = new NCalcParser(new CommonTokenStream(lexer)) {
-                UseDecimal = options.HasOption(EvaluateOptions.DecimalAsDefault)
-            };
-
-            var errorListenerParser = new ErrorListenerParser();
-            parser.AddErrorListener(errorListenerParser);
 
         try
         {
@@ -265,11 +262,10 @@ public class Expression
             throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
         }
 
-        if (!_cacheEnabled || nocache)
+
+        if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
             return logicalExpression;
-            if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
-                return logicalExpression;
-            
+        
         try
         {
             Rwl.AcquireWriterLock(Timeout.Infinite);
@@ -317,18 +313,8 @@ public class Expression
     public object Evaluate()
     {
         if (HasErrors())
-        {
             throw new EvaluationException(Error);
-        }
 
-        if (ParsedExpression == null)
-        {
-            ParsedExpression = Compile(OriginalExpression, Options);
-        }
-
-
-        var visitor = EvaluationVisitor;
-        visitor.Parameters = Parameters;
         ParsedExpression ??= Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
 
         // if array evaluation, execute the same expression multiple times

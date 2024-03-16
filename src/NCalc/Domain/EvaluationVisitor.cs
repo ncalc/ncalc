@@ -12,7 +12,6 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
     
     public EvaluateOptions Options { get; set; } = options;
 
-    private bool IgnoreCase => (Options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
     private bool IgnoreCase { get; } = (options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
 
     public Dictionary<string, object> Parameters { get; set; }
@@ -750,9 +749,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             Result = args.Result;
         }
     }
-
-
-
+    
     public event EvaluateParameterHandler EvaluateParameter;
 
     protected void OnEvaluateParameter(string name, ParameterArgs args)
