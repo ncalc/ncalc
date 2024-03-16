@@ -1361,8 +1361,8 @@ namespace NCalc.Tests
         public void Decimals_Should_Not_Loose_Precision() {
             var expression = new Expression("0.3 - 0.2 - 0.1", EvaluateOptions.DecimalAsDefault);
 
-            var result = expression.Evaluate();
-            Assert.AreEqual("0.0", result.ToString()); // Fails without decimals due to FP rounding
+            var result = (decimal)expression.Evaluate();
+            Assert.AreEqual("0.0", result.ToString(CultureInfo.InvariantCulture)); // Fails without decimals due to FP rounding
         }
     }
 }

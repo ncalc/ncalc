@@ -12,11 +12,11 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
     
     public EvaluateOptions Options { get; set; } = options;
 
-    private bool IgnoreCase { get; } = (options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
+    private bool IgnoreCase => Options.HasOption(EvaluateOptions.IgnoreCase);
 
     public Dictionary<string, object> Parameters { get; set; }
     
-    private bool IsCaseSensitiveComparer { get; } = (options & EvaluateOptions.CaseInsensitiveComparer) == 0;
+    private bool IsCaseSensitiveComparer => (Options & EvaluateOptions.CaseInsensitiveComparer) == 0;
     
     public EvaluationVisitor(EvaluateOptions options) : this(options, CultureInfo.CurrentCulture)
     {
