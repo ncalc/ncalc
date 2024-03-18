@@ -780,8 +780,6 @@ namespace NCalc.Tests
                 TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Single, TypeCode.Double, TypeCode.Decimal
             };
 
-            var exceptionThrown = false;
-
             var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>();
 
             // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
@@ -858,8 +856,6 @@ namespace NCalc.Tests
                 TypeCode.Boolean, TypeCode.Byte, TypeCode.SByte, TypeCode.Int16, TypeCode.UInt16, TypeCode.Int32,
                 TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Single, TypeCode.Double, TypeCode.Decimal
             };
-
-            var exceptionThrown = false;
 
             var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>();
 
@@ -938,8 +934,6 @@ namespace NCalc.Tests
                 TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Single, TypeCode.Double, TypeCode.Decimal
             };
 
-            var exceptionThrown = false;
-
             var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>();
 
             // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
@@ -1016,8 +1010,6 @@ namespace NCalc.Tests
                 TypeCode.Boolean, TypeCode.Byte, TypeCode.SByte, TypeCode.Int16, TypeCode.UInt16, TypeCode.Int32,
                 TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Single, TypeCode.Double, TypeCode.Decimal
             };
-
-            var exceptionThrown = false;
 
             var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>();
 
