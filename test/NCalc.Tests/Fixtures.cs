@@ -1228,6 +1228,22 @@ namespace NCalc.Tests
         }
 
         [TestMethod]
+        public void Should_Not_Throw_Function_Not_Found_Issue_110()
+        {
+            const string expressionStr = "IN([acp_associated_person_transactions], 'T', 'Z', 'A')";
+            var expression = new Expression(expressionStr) {
+                Options = EvaluateOptions.RoundAwayFromZero | EvaluateOptions.IgnoreCase,
+                Parameters =
+                {
+                    ["acp_associated_person_transactions"] = 'T'
+                }
+            };
+
+            Assert.AreEqual(true, expression.Evaluate());
+        }
+
+        
+        [TestMethod]
         public void Should_Evaluate_Ifs()
         {
             // Test first case true, return next value
@@ -1345,8 +1361,8 @@ namespace NCalc.Tests
         public void Decimals_Should_Not_Loose_Precision() {
             var expression = new Expression("0.3 - 0.2 - 0.1", EvaluateOptions.DecimalAsDefault);
 
-            var result = expression.Evaluate();
-            Assert.AreEqual("0.0", result.ToString()); // Fails without decimals due to FP rounding
+            var result = (decimal)expression.Evaluate();
+            Assert.AreEqual("0.0", result.ToString(CultureInfo.InvariantCulture)); // Fails without decimals due to FP rounding
         }
     }
 }

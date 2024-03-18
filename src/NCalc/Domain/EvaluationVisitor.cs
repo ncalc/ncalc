@@ -9,10 +9,14 @@ namespace NCalc.Domain;
 public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo) : LogicalExpressionVisitor
 {
     private delegate T Func<out T>();
+    
+    public EvaluateOptions Options { get; set; } = options;
 
-    private bool IgnoreCase { get; } = (options & EvaluateOptions.IgnoreCase) == EvaluateOptions.IgnoreCase;
+    private bool IgnoreCase => Options.HasOption(EvaluateOptions.IgnoreCase);
 
-    private bool IsCaseSensitiveComparer { get; } = (options & EvaluateOptions.CaseInsensitiveComparer) == 0;
+    public Dictionary<string, object> Parameters { get; set; }
+    
+    private bool IsCaseSensitiveComparer => (Options & EvaluateOptions.CaseInsensitiveComparer) == 0;
     
     public EvaluationVisitor(EvaluateOptions options) : this(options, CultureInfo.CurrentCulture)
     {
@@ -274,7 +278,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         // Evaluating every value could produce unexpected behaviour
         for (int i = 0; i < function.Expressions.Length; i++)
         {
-            args.Parameters[i] = new Expression(function.Expressions[i], options, cultureInfo);
+            args.Parameters[i] = new Expression(function.Expressions[i], Options, cultureInfo);
             args.Parameters[i].EvaluateFunction += EvaluateFunction;
             args.Parameters[i].EvaluateParameter += EvaluateParameter;
 
@@ -501,7 +505,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Round() takes exactly 2 arguments");
 
-                MidpointRounding rounding = (options & EvaluateOptions.RoundAwayFromZero) == EvaluateOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
+                var rounding = (Options & EvaluateOptions.RoundAwayFromZero) == EvaluateOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
 
                 Result = Math.Round(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo), Convert.ToInt16(Evaluate(function.Expressions[1]), cultureInfo), rounding);
 
@@ -745,15 +749,11 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
             Result = args.Result;
         }
     }
-
-
-
+    
     public event EvaluateParameterHandler EvaluateParameter;
 
     protected void OnEvaluateParameter(string name, ParameterArgs args)
     {
         EvaluateParameter?.Invoke(name, args);
     }
-
-    public Dictionary<string, object> Parameters { get; set; }
 }

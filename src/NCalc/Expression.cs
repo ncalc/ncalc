@@ -13,8 +13,52 @@ namespace NCalc;
 
 public class Expression
 {
-    public EvaluateOptions Options { get; set; }
-        
+    public event EvaluateParameterHandler EvaluateParameter {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter -= value;
+        }
+    }
+
+    public event EvaluateFunctionHandler EvaluateFunction {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction -= value;
+        }
+    }
+    
+    private EvaluateOptions _options;
+    public EvaluateOptions Options
+    {
+        get => _options;
+        set
+        {
+            _options = value;
+            if (EvaluationVisitor != null) 
+                EvaluationVisitor.Options = value;
+        }
+    }
+
+    private Dictionary<string, object> _parameters = new();
+    public Dictionary<string, object> Parameters
+    {
+        get => _parameters;
+        set
+        {
+            _parameters = value;
+            if (EvaluationVisitor != null) 
+                EvaluationVisitor.Parameters = value;
+        }
+    }
+
     /// <summary>
     /// Textual representation of the expression to evaluate.
     /// </summary>
@@ -26,28 +70,6 @@ public class Expression
     protected CultureInfo CultureInfo { get; set; }
     
     protected EvaluationVisitor EvaluationVisitor { get; set; }
-    
-    public event EvaluateFunctionHandler EvaluateFunction {
-        add {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateFunction += value;
-        }
-        remove {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateFunction -= value;
-        }
-    }
-
-    public event EvaluateParameterHandler EvaluateParameter {
-        add {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateParameter += value;
-        }
-        remove {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateParameter -= value;
-        }
-    }
     
     public Expression(string expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
     {
@@ -70,7 +92,10 @@ public class Expression
         OriginalExpression = expression;
         Options = options;
         CultureInfo = cultureInfo;
-        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo);
+        EvaluationVisitor = new EvaluationVisitor(Options, CultureInfo)
+        {
+            Parameters = Parameters
+        };
     }
     
     public Expression(string expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
@@ -95,7 +120,10 @@ public class Expression
             ArgumentException("Expression can't be null", nameof(expression));
         Options = options;
         CultureInfo = cultureInfo;
-        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo);
+        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo)
+        {
+            Parameters = Parameters
+        };
     }
     public Expression(LogicalExpression expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
     {
@@ -191,65 +219,66 @@ public class Expression
             }
         }
 
-        if (logicalExpression == null)
+        if (logicalExpression != null) 
+            return logicalExpression;
+        
+        var lexer = new NCalcLexer(new AntlrInputStream(expression));
+        var errorListenerLexer = new ErrorListenerLexer();
+        lexer.AddErrorListener(errorListenerLexer);
+
+        var parser = new NCalcParser(new CommonTokenStream(lexer)) {
+            UseDecimal = options.HasOption(EvaluateOptions.DecimalAsDefault)
+        };
+
+        var errorListenerParser = new ErrorListenerParser();
+        parser.AddErrorListener(errorListenerParser);
+
+        try
         {
-            var lexer = new NCalcLexer(new AntlrInputStream(expression));
-            var errorListenerLexer = new ErrorListenerLexer();
-            lexer.AddErrorListener(errorListenerLexer);
-
-            var parser = new NCalcParser(new CommonTokenStream(lexer)) {
-                UseDecimal = options.HasOption(EvaluateOptions.DecimalAsDefault)
-            };
-
-            var errorListenerParser = new ErrorListenerParser();
-            parser.AddErrorListener(errorListenerParser);
-
-            try
-            {
-                logicalExpression = parser.ncalcExpression().retValue;
-            }
-            catch(Exception ex)
-            {
-                var message = new StringBuilder(ex.Message);
-                if (errorListenerLexer.Errors.Count != 0)
-                {
-                    message.AppendLine();
-                    message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
-                }
-                if (errorListenerParser.Errors.Count != 0)
-                {
-                    message.AppendLine();
-                    message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
-                }
-
-                throw new EvaluationException(message.ToString());
-            }
+            logicalExpression = parser.ncalcExpression().retValue;
+        }
+        catch(Exception ex)
+        {
+            var message = new StringBuilder(ex.Message);
             if (errorListenerLexer.Errors.Count != 0)
             {
-                throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
+                message.AppendLine();
+                message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
             }
             if (errorListenerParser.Errors.Count != 0)
             {
-                throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
+                message.AppendLine();
+                message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
             }
 
-            if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
-                return logicalExpression;
-            
-            try
-            {
-                Rwl.AcquireWriterLock(Timeout.Infinite);
-                _compiledExpressions[expression] = new WeakReference(logicalExpression);
-            }
-            finally
-            {
-                Rwl.ReleaseWriterLock();
-            }
-
-            CleanCache();
-
-            Trace.TraceInformation("Expression added to cache: " + expression);
+            throw new EvaluationException(message.ToString());
         }
+        if (errorListenerLexer.Errors.Count != 0)
+        {
+            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
+        }
+        if (errorListenerParser.Errors.Count != 0)
+        {
+            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
+        }
+
+
+        if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
+            return logicalExpression;
+        
+        try
+        {
+            Rwl.AcquireWriterLock(Timeout.Infinite);
+            _compiledExpressions[expression] = new WeakReference(logicalExpression);
+        }
+        finally
+        {
+            Rwl.ReleaseWriterLock();
+        }
+
+        CleanCache();
+
+        Trace.TraceInformation("Expression added to cache: " + expression);
 
         return logicalExpression;
     }
@@ -284,18 +313,9 @@ public class Expression
     public object Evaluate()
     {
         if (HasErrors())
-        {
             throw new EvaluationException(Error);
-        }
 
-        if (ParsedExpression == null)
-        {
-            ParsedExpression = Compile(OriginalExpression, Options);
-        }
-
-
-        var visitor = EvaluationVisitor;
-        visitor.Parameters = Parameters;
+        ParsedExpression ??= Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
 
         // if array evaluation, execute the same expression multiple times
         if (Options.HasOption(EvaluateOptions.IterateParameters))
@@ -339,18 +359,18 @@ public class Expression
                     Parameters[key] = enumerator.Current;
                 }
 
-                ParsedExpression.Accept(visitor);
-                results.Add(visitor.Result);
+                ParsedExpression.Accept(EvaluationVisitor);
+                results.Add(EvaluationVisitor.Result);
             }
 
             return results;
         }
 
-        ParsedExpression.Accept(visitor);
-        return visitor.Result;
+        ParsedExpression.Accept(EvaluationVisitor);
+        return EvaluationVisitor.Result;
 
     }
-    
+
     /// <summary>
     /// Returns an array with all parameters names from the expression.
     /// </summary>
@@ -361,13 +381,4 @@ public class Expression
         return new List<string>(extractionVisitor.Parameters).ToArray();
     }
 
-
-
-    private Dictionary<string, object> _parameters;
-
-    public Dictionary<string, object> Parameters
-    {
-        get => _parameters ??= new Dictionary<string, object>();
-        set => _parameters = value;
-    }
 }
