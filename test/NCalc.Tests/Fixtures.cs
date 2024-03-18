@@ -706,10 +706,10 @@ namespace NCalc.Tests
         {
             // https://github.com/ncalc/ncalc-async/issues/6
 
-            var result1 = Assert.ThrowsException<EvaluationException>(() => Expression.Compile("\"0\"", true));
+            var result1 = Assert.ThrowsException<EvaluationException>(() => Expression.Compile("\"0\"", EvaluateOptions.NoCache));
             Assert.AreEqual($"token recognition error at: '\"' at 1:1{Environment.NewLine}token recognition error at: '\"' at 1:3", result1.Message);
 
-            var result2 = Assert.ThrowsException<EvaluationException>(() => Expression.Compile("Format(\"{0:(###) ###-####}\", \"9999999999\")", true));
+            var result2 = Assert.ThrowsException<EvaluationException>(() => Expression.Compile("Format(\"{0:(###) ###-####}\", \"9999999999\")", EvaluateOptions.NoCache));
             Assert.IsTrue(result2.Message.Contains("was not recognized as a valid DateTime."));
         }
 
@@ -1161,7 +1161,7 @@ namespace NCalc.Tests
 
             void ExecuteTest(string expression, bool expected, double inputValue)
             {
-                var compiled = Expression.Compile(expression, true);
+                var compiled = Expression.Compile(expression, EvaluateOptions.NoCache);
                 var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
                 {
                     TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
@@ -1228,6 +1228,22 @@ namespace NCalc.Tests
         }
 
         [TestMethod]
+        public void Should_Not_Throw_Function_Not_Found_Issue_110()
+        {
+            const string expressionStr = "IN([acp_associated_person_transactions], 'T', 'Z', 'A')";
+            var expression = new Expression(expressionStr) {
+                Options = EvaluateOptions.RoundAwayFromZero | EvaluateOptions.IgnoreCase,
+                Parameters =
+                {
+                    ["acp_associated_person_transactions"] = 'T'
+                }
+            };
+
+            Assert.AreEqual(true, expression.Evaluate());
+        }
+
+        
+        [TestMethod]
         public void Should_Evaluate_Ifs()
         {
             // Test first case true, return next value
@@ -1268,6 +1284,43 @@ namespace NCalc.Tests
         }
         
         [TestMethod]
+        public void Compare_Using_Most_Precise_Type_Issue_102()
+        {
+            var issueExp = new Expression("a == b")
+            {
+                Parameters =
+                {
+                    ["a"] = null,
+                    ["b"] = 2
+                }
+            };
+
+            Assert.IsFalse((bool)issueExp.Evaluate());
+            
+            var numericExp = new Expression("a == b")
+            {
+                Parameters =
+                {
+                    ["a"] = 2,
+                    ["b"] = 2L
+                }
+            };
+
+            Assert.IsTrue((bool)numericExp.Evaluate());
+
+            var obj = new Tuple<string,string>("Hello", "World");
+            var objExp = new Expression("a == b")
+            {
+                Parameters =
+                {
+                    ["a"] = obj,
+                    ["b"] = obj
+                }
+            };
+
+            Assert.IsTrue((bool)objExp.Evaluate());
+        }
+
         public void Should_Evaluate_Function_Only_Once_Issue_107()
         {
             var counter = 0;
@@ -1295,5 +1348,21 @@ namespace NCalc.Tests
             Assert.AreEqual(totalCounter, 10);
         }
 
+        [TestMethod]
+        public void Should_Use_Decimal_When_Configured() {
+            var expression = new Expression("12.34", EvaluateOptions.DecimalAsDefault);
+
+            var result = expression.Evaluate();
+            Assert.IsTrue(result is decimal);
+            Assert.AreEqual(12.34m, result);
+        }
+        
+        [TestMethod]
+        public void Decimals_Should_Not_Loose_Precision() {
+            var expression = new Expression("0.3 - 0.2 - 0.1", EvaluateOptions.DecimalAsDefault);
+
+            var result = (decimal)expression.Evaluate();
+            Assert.AreEqual("0.0", result.ToString(CultureInfo.InvariantCulture)); // Fails without decimals due to FP rounding
+        }
     }
 }

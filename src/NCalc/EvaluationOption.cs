@@ -30,5 +30,13 @@ public enum EvaluateOptions
     //
     // Summary:
     //     Specifies the use of CaseInsensitiveComparer for comparasions.
-    CaseInsensitiveComparer = 32
+    CaseInsensitiveComparer = 32,
+    //
+    // Summary:
+    //     Uses decimals instead of doubles as default floating point data type
+    DecimalAsDefault = 64
+}
+
+public static class EvaluateOptionsExtensions {
+    public static bool HasOption(this EvaluateOptions options, EvaluateOptions option) => (options & option) == option;
 }

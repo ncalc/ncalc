@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using NCalc.Domain;
 using Antlr4.Runtime;
 
@@ -13,8 +13,52 @@ namespace NCalc;
 
 public class Expression
 {
-    public EvaluateOptions Options { get; set; }
-        
+    public event EvaluateParameterHandler EvaluateParameter {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateParameter -= value;
+        }
+    }
+
+    public event EvaluateFunctionHandler EvaluateFunction {
+        add {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction += value;
+        }
+        remove {
+            if (EvaluationVisitor != null)
+                EvaluationVisitor.EvaluateFunction -= value;
+        }
+    }
+    
+    private EvaluateOptions _options;
+    public EvaluateOptions Options
+    {
+        get => _options;
+        set
+        {
+            _options = value;
+            if (EvaluationVisitor != null) 
+                EvaluationVisitor.Options = value;
+        }
+    }
+
+    private Dictionary<string, object> _parameters = new();
+    public Dictionary<string, object> Parameters
+    {
+        get => _parameters;
+        set
+        {
+            _parameters = value;
+            if (EvaluationVisitor != null) 
+                EvaluationVisitor.Parameters = value;
+        }
+    }
+
     /// <summary>
     /// Textual representation of the expression to evaluate.
     /// </summary>
@@ -26,28 +70,6 @@ public class Expression
     protected CultureInfo CultureInfo { get; set; }
     
     protected EvaluationVisitor EvaluationVisitor { get; set; }
-    
-    public event EvaluateFunctionHandler EvaluateFunction {
-        add {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateFunction += value;
-        }
-        remove {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateFunction -= value;
-        }
-    }
-
-    public event EvaluateParameterHandler EvaluateParameter {
-        add {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateParameter += value;
-        }
-        remove {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateParameter -= value;
-        }
-    }
     
     public Expression(string expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
     {
@@ -70,7 +92,10 @@ public class Expression
         OriginalExpression = expression;
         Options = options;
         CultureInfo = cultureInfo;
-        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo);
+        EvaluationVisitor = new EvaluationVisitor(Options, CultureInfo)
+        {
+            Parameters = Parameters
+        };
     }
     
     public Expression(string expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
@@ -95,7 +120,10 @@ public class Expression
             ArgumentException("Expression can't be null", nameof(expression));
         Options = options;
         CultureInfo = cultureInfo;
-        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo);
+        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo)
+        {
+            Parameters = Parameters
+        };
     }
     public Expression(LogicalExpression expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
     {
@@ -108,7 +136,8 @@ public class Expression
 
     #region Cache management
     private static bool _cacheEnabled = true;
-    private static readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
+    private static Dictionary<string, WeakReference> _compiledExpressions = new();
+    private static readonly ReaderWriterLock Rwl = new();
 
     public static bool CacheEnabled
     {
@@ -120,7 +149,7 @@ public class Expression
             if (!CacheEnabled)
             {
                 // Clears cache
-                _compiledExpressions.Clear();
+                _compiledExpressions = new Dictionary<string, WeakReference>();
             }
         }
     }
@@ -128,44 +157,79 @@ public class Expression
     /// <summary>
     /// Removed unused entries from cached compiled expression
     /// </summary>
-    private static void ClearCache()
+    private static void CleanCache()
     {
-        foreach (var kvp in _compiledExpressions)
-        {
-            if (kvp.Value.TryGetTarget(out _)) 
-                continue;
+        var keysToRemove = new List<string>();
 
-            if (_compiledExpressions.TryRemove(kvp.Key, out _))
+        try
+        {
+            Rwl.AcquireWriterLock(Timeout.Infinite);
+            foreach (var de in _compiledExpressions)
             {
-                Trace.TraceInformation("Cache entry released: " + kvp.Key);
+                if (!de.Value.IsAlive)
+                {
+                    keysToRemove.Add(de.Key);
+                }
             }
+
+
+            foreach (var key in keysToRemove)
+            {
+                _compiledExpressions.Remove(key);
+                Trace.TraceInformation("Cache entry released: " + key);
+            }
+        }
+        finally
+        {
+            Rwl.ReleaseReaderLock();
         }
     }
 
     #endregion
 
-    public static LogicalExpression Compile(string expression, bool nocache)
+    // For backwards compatibility
+    public static LogicalExpression Compile(string expression, bool nocache) {
+        return Compile(expression, nocache ? EvaluateOptions.NoCache : EvaluateOptions.None);
+    }
+    
+    public static LogicalExpression Compile(string expression, EvaluateOptions options)
     {
-        LogicalExpression logicalExpression;
+        LogicalExpression logicalExpression = null;
 
-        if (_cacheEnabled && !nocache)
+        if (_cacheEnabled && !options.HasOption(EvaluateOptions.NoCache))
         {
-            if (_compiledExpressions.TryGetValue(expression, out var wr))
+            try
             {
-                Trace.TraceInformation("Expression retrieved from cache: " + expression);
+                Rwl.AcquireReaderLock(Timeout.Infinite);
 
-                if (wr.TryGetTarget(out var target))
+                if (_compiledExpressions.TryGetValue(expression, out var wr))
                 {
-                    return target;
+                    Trace.TraceInformation("Expression retrieved from cache: " + expression);
+                    logicalExpression = wr.Target as LogicalExpression;
+
+                    if (wr.IsAlive && logicalExpression != null)
+                    {
+                        return logicalExpression;
+                    }
                 }
+            }
+            finally
+            {
+                Rwl.ReleaseReaderLock();
             }
         }
 
+        if (logicalExpression != null) 
+            return logicalExpression;
+        
         var lexer = new NCalcLexer(new AntlrInputStream(expression));
         var errorListenerLexer = new ErrorListenerLexer();
         lexer.AddErrorListener(errorListenerLexer);
 
-        var parser = new NCalcParser(new CommonTokenStream(lexer));
+        var parser = new NCalcParser(new CommonTokenStream(lexer)) {
+            UseDecimal = options.HasOption(EvaluateOptions.DecimalAsDefault)
+        };
+
         var errorListenerParser = new ErrorListenerParser();
         parser.AddErrorListener(errorListenerParser);
 
@@ -198,12 +262,21 @@ public class Expression
             throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
         }
 
-        if (!_cacheEnabled || nocache)
+
+        if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
             return logicalExpression;
-            
-        _compiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
-            
-        ClearCache();
+        
+        try
+        {
+            Rwl.AcquireWriterLock(Timeout.Infinite);
+            _compiledExpressions[expression] = new WeakReference(logicalExpression);
+        }
+        finally
+        {
+            Rwl.ReleaseWriterLock();
+        }
+
+        CleanCache();
 
         Trace.TraceInformation("Expression added to cache: " + expression);
 
@@ -219,7 +292,7 @@ public class Expression
     {
         try
         {
-            ParsedExpression ??= Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
+            ParsedExpression ??= Compile(OriginalExpression, Options);
 
             // In case HasErrors() is called multiple times for the same expression
             return ParsedExpression != null && Error != null;
@@ -240,21 +313,12 @@ public class Expression
     public object Evaluate()
     {
         if (HasErrors())
-        {
             throw new EvaluationException(Error);
-        }
 
-        if (ParsedExpression == null)
-        {
-            ParsedExpression = Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
-        }
-
-
-        var visitor = EvaluationVisitor;
-        visitor.Parameters = Parameters;
+        ParsedExpression ??= Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
 
         // if array evaluation, execute the same expression multiple times
-        if ((Options & EvaluateOptions.IterateParameters) == EvaluateOptions.IterateParameters)
+        if (Options.HasOption(EvaluateOptions.IterateParameters))
         {
             int size = -1;
 
@@ -295,36 +359,26 @@ public class Expression
                     Parameters[key] = enumerator.Current;
                 }
 
-                ParsedExpression.Accept(visitor);
-                results.Add(visitor.Result);
+                ParsedExpression.Accept(EvaluationVisitor);
+                results.Add(EvaluationVisitor.Result);
             }
 
             return results;
         }
 
-        ParsedExpression.Accept(visitor);
-        return visitor.Result;
+        ParsedExpression.Accept(EvaluationVisitor);
+        return EvaluationVisitor.Result;
 
     }
-    
+
     /// <summary>
     /// Returns an array with all parameters names from the expression.
     /// </summary>
     public string[] GetParametersNames()
     {
         var extractionVisitor = new ParameterExtractionVisitor();
-        var nocache = (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache;
-        Compile(OriginalExpression, nocache).Accept(extractionVisitor);
+        Compile(OriginalExpression, Options).Accept(extractionVisitor);
         return new List<string>(extractionVisitor.Parameters).ToArray();
     }
 
-
-
-    private Dictionary<string, object> _parameters;
-
-    public Dictionary<string, object> Parameters
-    {
-        get => _parameters ??= new Dictionary<string, object>();
-        set => _parameters = value;
-    }
 }
