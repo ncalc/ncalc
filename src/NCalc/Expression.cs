@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using NCalc.Domain;
 using Antlr4.Runtime;
 
@@ -136,8 +136,8 @@ public class Expression
 
     #region Cache management
     private static bool _cacheEnabled = true;
-    private static Dictionary<string, WeakReference> _compiledExpressions = new();
-    private static readonly ReaderWriterLock Rwl = new();
+    private static readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
+
 
     public static bool CacheEnabled
     {
@@ -149,7 +149,7 @@ public class Expression
             if (!CacheEnabled)
             {
                 // Clears cache
-                _compiledExpressions = new Dictionary<string, WeakReference>();
+                _compiledExpressions.Clear();
             }
         }
     }
@@ -157,31 +157,15 @@ public class Expression
     /// <summary>
     /// Removed unused entries from cached compiled expression
     /// </summary>
-    private static void CleanCache()
+    private static void ClearCache()
     {
-        var keysToRemove = new List<string>();
-
-        try
+        foreach (var kvp in _compiledExpressions)
         {
-            Rwl.AcquireWriterLock(Timeout.Infinite);
-            foreach (var de in _compiledExpressions)
-            {
-                if (!de.Value.IsAlive)
-                {
-                    keysToRemove.Add(de.Key);
-                }
-            }
+            if (kvp.Value.TryGetTarget(out _)) 
+                continue;
 
-
-            foreach (var key in keysToRemove)
-            {
-                _compiledExpressions.Remove(key);
-                Trace.TraceInformation("Cache entry released: " + key);
-            }
-        }
-        finally
-        {
-            Rwl.ReleaseReaderLock();
+            if (_compiledExpressions.TryRemove(kvp.Key, out _))
+                Trace.TraceInformation("Cache entry released: " + kvp.Key);
         }
     }
 
@@ -194,33 +178,18 @@ public class Expression
     
     public static LogicalExpression Compile(string expression, EvaluateOptions options)
     {
-        LogicalExpression logicalExpression = null;
+        LogicalExpression logicalExpression;
 
         if (_cacheEnabled && !options.HasOption(EvaluateOptions.NoCache))
         {
-            try
+            if (_compiledExpressions.TryGetValue(expression, out var wr))
             {
-                Rwl.AcquireReaderLock(Timeout.Infinite);
+                Trace.TraceInformation("Expression retrieved from cache: " + expression);
 
-                if (_compiledExpressions.TryGetValue(expression, out var wr))
-                {
-                    Trace.TraceInformation("Expression retrieved from cache: " + expression);
-                    logicalExpression = wr.Target as LogicalExpression;
-
-                    if (wr.IsAlive && logicalExpression != null)
-                    {
-                        return logicalExpression;
-                    }
-                }
-            }
-            finally
-            {
-                Rwl.ReleaseReaderLock();
+                if (wr.TryGetTarget(out var target))
+                    return target;
             }
         }
-
-        if (logicalExpression != null) 
-            return logicalExpression;
         
         var lexer = new NCalcLexer(new AntlrInputStream(expression));
         var errorListenerLexer = new ErrorListenerLexer();
@@ -266,20 +235,12 @@ public class Expression
         if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
             return logicalExpression;
         
-        try
-        {
-            Rwl.AcquireWriterLock(Timeout.Infinite);
-            _compiledExpressions[expression] = new WeakReference(logicalExpression);
-        }
-        finally
-        {
-            Rwl.ReleaseWriterLock();
-        }
-
-        CleanCache();
+        _compiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
+            
+        ClearCache();
 
         Trace.TraceInformation("Expression added to cache: " + expression);
-
+        
         return logicalExpression;
     }
 

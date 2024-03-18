@@ -307,39 +307,39 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
     private void ExecuteBuiltInFunction(Function function)
     {
-        var functionName = function.Identifier.Name.ToLower();
+        var functionName = function.Identifier.Name.ToUpperInvariant();
 
         switch (functionName)
         {
-            case "abs":
+            case "ABS":
                 CheckCase("Abs", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Abs() takes exactly 1 argument");
                 Result = Math.Abs(Convert.ToDecimal(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "acos":
+            case "ACOS":
                 CheckCase("Acos", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Acos() takes exactly 1 argument");
                 Result = Math.Acos(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "asin":
+            case "ASIN":
                 CheckCase("Asin", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Asin() takes exactly 1 argument");
                 Result = Math.Asin(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "atan":
+            case "ATAN":
                 CheckCase("Atan", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Atan() takes exactly 1 argument");
                 Result = Math.Atan(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "atan2":
+            case "ATAN2":
                 CheckCase("Atan2", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Atan2() takes exactly 2 argument");
@@ -347,35 +347,35 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                     Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
                 break;
 
-            case "ceiling":
+            case "CEILING":
                 CheckCase("Ceiling", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Ceiling() takes exactly 1 argument");
                 Result = Math.Ceiling(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "cos":
+            case "COS":
                 CheckCase("Cos", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Cos() takes exactly 1 argument");
                 Result = Math.Cos(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "exp":
+            case "EXP":
                 CheckCase("Exp", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Exp() takes exactly 1 argument");
                 Result = Math.Exp(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "floor":
+            case "FLOOR":
                 CheckCase("Floor", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Floor() takes exactly 1 argument");
                 Result = Math.Floor(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "ieeeremainder":
+            case "IEEEREMAINDER":
                 CheckCase("IEEERemainder", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("IEEERemainder() takes exactly 2 arguments");
@@ -383,14 +383,14 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                     Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
                 break;
 
-            case "ln":
+            case "LN":
                 CheckCase("Ln", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Ln() takes exactly 1 argument");
                 Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "log":
+            case "LOG":
                 CheckCase("Log", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Log() takes exactly 2 arguments");
@@ -398,14 +398,14 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                     Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
                 break;
 
-            case "log10":
+            case "LOG10":
                 CheckCase("Log10", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Log10() takes exactly 1 argument");
                 Result = Math.Log10(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "pow":
+            case "POW":
                 CheckCase("Pow", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Pow() takes exactly 2 arguments");
@@ -413,7 +413,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                     Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
                 break;
 
-            case "round":
+            case "ROUND":
                 CheckCase("Round", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Round() takes exactly 2 arguments");
@@ -424,42 +424,42 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
                 break;
 
-            case "sign":
+            case "SIGN":
                 CheckCase("Sign", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Sign() takes exactly 1 argument");
                 Result = Math.Sign(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "sin":
+            case "SIN":
                 CheckCase("Sin", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Sin() takes exactly 1 argument");
                 Result = Math.Sin(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "sqrt":
+            case "SQRT":
                 CheckCase("Sqrt", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Sqrt() takes exactly 1 argument");
                 Result = Math.Sqrt(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "tan":
+            case "TAN":
                 CheckCase("Tan", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Tan() takes exactly 1 argument");
                 Result = Math.Tan(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "truncate":
+            case "TRUNCATE":
                 CheckCase("Truncate", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Truncate() takes exactly 1 argument");
                 Result = Math.Truncate(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
                 break;
 
-            case "max":
+            case "MAX":
                 CheckCase("Max", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Max() takes exactly 2 arguments");
@@ -468,7 +468,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 Result = Numbers.Max(maxleft, maxright, cultureInfo);
                 break;
 
-            case "min":
+            case "MIN":
                 CheckCase("Min", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Min() takes exactly 2 arguments");
@@ -477,7 +477,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 Result = Numbers.Min(minleft, minright, cultureInfo);
                 break;
 
-            case "ifs":
+            case "IFS":
                 CheckCase("ifs", function.Identifier.Name);
                 if (function.Expressions.Length < 3 || function.Expressions.Length % 2 != 1)
                     throw new ArgumentException("ifs() takes at least 3 arguments, or an odd number of arguments");
@@ -496,7 +496,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
                 break;
 
-            case "if":
+            case "IF":
                 CheckCase("if", function.Identifier.Name);
                 if (function.Expressions.Length != 3)
                     throw new ArgumentException("if() takes exactly 3 arguments");
@@ -504,7 +504,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
                 Result = cond ? Evaluate(function.Expressions[1]) : Evaluate(function.Expressions[2]);
                 break;
 
-            case "in":
+            case "IN":
                 CheckCase("in", function.Identifier.Name);
                 if (function.Expressions.Length < 2)
                     throw new ArgumentException("in() takes at least 2 arguments");
