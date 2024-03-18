@@ -2,6 +2,8 @@
 
 * [Allow using decimal as default floating point type](https://github.com/ncalc/ncalc/pull/118) by [Luca Schimweg](https://github.com/lucaschimweg)
 * [Use correct CLR types at GetMostPreciseType](https://github.com/ncalc/ncalc/pull/116/) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Performance improvements: Optimize built-in functions name checking and use ConcurrentDictionary<string, WeakReference<LogicalExpression>> at caching](https://github.com/ncalc/ncalc/pull/114) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Options were not propagating to EvaluationVisitor](https://github.com/ncalc/ncalc/pull/111) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 
 # 3.11
 
