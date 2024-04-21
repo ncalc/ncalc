@@ -1313,6 +1313,8 @@ namespace NCalc.Tests
             Assert.IsTrue((bool)objExp.Evaluate());
         }
 
+              
+        [TestMethod]
         public void Should_Evaluate_Function_Only_Once_Issue_107()
         {
             var counter = 0;
@@ -1355,6 +1357,16 @@ namespace NCalc.Tests
 
             var result = (decimal)expression.Evaluate();
             Assert.AreEqual("0.0", result.ToString(CultureInfo.InvariantCulture)); // Fails without decimals due to FP rounding
+        }
+        
+                
+        [TestMethod]
+        public void Should_Compare_Bool_Issue_122()
+        {
+            var eif = new Expression("foo = true");
+            eif.Parameters["foo"] = "true";
+
+            Assert.AreEqual(true, eif.Evaluate());
         }
     }
 }
