@@ -51,6 +51,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         typeof(byte),
         typeof(sbyte),
         typeof(char),
+        typeof(bool),
         typeof(string),
         typeof(object)
     ];
