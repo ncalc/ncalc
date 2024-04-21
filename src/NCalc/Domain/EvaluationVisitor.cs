@@ -8,8 +8,6 @@ namespace NCalc.Domain;
 
 public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo) : LogicalExpressionVisitor
 {
-    private delegate T Func<out T>();
-    
     public EvaluateOptions Options { get; set; } = options;
 
     private bool IgnoreCase => Options.HasOption(EvaluateOptions.IgnoreCase);
