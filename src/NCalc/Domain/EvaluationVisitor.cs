@@ -107,12 +107,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         }
     }
 
-    private static bool IsReal(object value)
-    {
-        var typeCode = Type.GetTypeCode(value.GetType());
-
-        return typeCode is TypeCode.Decimal or TypeCode.Double or TypeCode.Single;
-    }
+    private static bool IsReal(object value) => value is decimal or double or float;
 
     public override void Visit(BinaryExpression expression)
     {
