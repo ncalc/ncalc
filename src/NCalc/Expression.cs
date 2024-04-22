@@ -208,7 +208,7 @@ public class Expression
         }
         catch(Exception ex)
         {
-            var message = new StringBuilder(ex.Message);
+            var message = new StringBuilder();
             if (errorListenerLexer.Errors.Count != 0)
             {
                 message.AppendLine();
@@ -220,7 +220,7 @@ public class Expression
                 message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
             }
 
-            throw new EvaluationException(message.ToString());
+            throw new EvaluationException(message.ToString(), ex);
         }
         if (errorListenerLexer.Errors.Count != 0)
         {
