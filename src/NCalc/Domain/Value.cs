@@ -14,40 +14,15 @@ public class ValueExpression : LogicalExpression
 
     public ValueExpression(object value)
     {
-        switch (System.Type.GetTypeCode(value.GetType()))
+        Type = value switch
         {
-            case TypeCode.Boolean:
-                Type = ValueType.Boolean;
-                break;
-
-            case TypeCode.DateTime:
-                Type = ValueType.DateTime;
-                break;
-
-            case TypeCode.Decimal:
-            case TypeCode.Double:
-            case TypeCode.Single:
-                Type = ValueType.Float;
-                break;
-
-            case TypeCode.Byte:
-            case TypeCode.SByte:
-            case TypeCode.Int16:
-            case TypeCode.Int32:
-            case TypeCode.Int64:
-            case TypeCode.UInt16:
-            case TypeCode.UInt32:
-            case TypeCode.UInt64:
-                Type = ValueType.Integer;
-                break;
-
-            case TypeCode.String:
-                Type = ValueType.String;
-                break;
-
-            default:
-                throw new EvaluationException("This value could not be handled: " + value);
-        }
+            bool => ValueType.Boolean,
+            DateTime => ValueType.DateTime,
+            decimal or double or float => ValueType.Float,
+            byte or sbyte or short or int or long or ushort or uint or ulong => ValueType.Integer,
+            string => ValueType.String,
+            _ => throw new EvaluationException("This value could not be handled: " + value)
+        };
 
         Value = value;
     }
