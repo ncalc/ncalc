@@ -11,11 +11,11 @@ jobs:
 
     steps:
     - name: Checkout source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: | 
           6.0.x
@@ -27,7 +27,11 @@ jobs:
       run: dotnet build -c Release --no-restore 
     - name: Test
       run: dotnet test -c Release --no-build --verbosity normal
-    - name: Pack
+    - name: Pack unsigned
       run: dotnet pack -c Release --no-build -p:PublicRelease=true
-    - name: Publish
-      run: dotnet nuget push src/NCalc/bin/Release/NCalcSync*.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
+    - name: Pack signed
+      run: dotnet pack -c SignedRelease -p:PublicRelease=true
+    - name: Publish packages
+      run: |
+          dotnet nuget push src/NCalc/bin/Release/NCalcSync*.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
+          dotnet nuget push src/NCalc/bin/SignedRelease/NCalcSync*.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
