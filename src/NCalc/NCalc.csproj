@@ -1,51 +1,73 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.0;net6.0;net8.0</TargetFrameworks>
-    <LangVersion>12</LangVersion>
-    <Authors>Sebastien Ros and contributors</Authors>
-    <Copyright>Sebastien Ros and contributors</Copyright>
-    <Company>https://github.com/ncalc</Company>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <PackageId>NCalcSync</PackageId>
-    <PackageProjectUrl>https://github.com/ncalc/ncalc</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
-    <PackageTags>ncalc; sync; core; expressions;</PackageTags>
-    <PackageIcon>NCalc.png</PackageIcon>
-    <Description>NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions. This version targets .NET Standard 2.0.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-  </PropertyGroup>
+	<!-- Common Property Groups -->
 
-  <!-- TRACE symbol seems to be always defined by default, let's undefine it for the Release builds -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>$(DefineConstants.Replace("TRACE", "NOTRACE"))</DefineConstants>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net461;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+		<!-- Other common properties -->
+		<LangVersion>12</LangVersion>
+		<Authors>Sebastien Ros and contributors</Authors>
+		<Copyright>Sebastien Ros and contributors</Copyright>
+		<Company>https://github.com/ncalc</Company>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<DefineConstants>$(DefineConstants.Replace("TRACE", "NOTRACE"))</DefineConstants>
+		<PackageProjectUrl>https://github.com/ncalc/ncalc</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
+		<PackageTags>ncalc; sync; core; expressions;</PackageTags>
+		<PackageIcon>NCalc.png</PackageIcon>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net35' ">
-    <Compile Remove="Properties\ExcludeFromCodeCoverageAttribute35.cs" />
-  </ItemGroup>
+	<!-- Unsigned Assembly Configuration -->
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' ">
+		<AssemblyName>NCalc</AssemblyName>
+		<PackageId>NCalcSync</PackageId>
+		<Description>NCalc is a mathematical expressions evaluator for .NET
 
-  <ItemGroup>
-    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
-  </ItemGroup>
+NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net35' ">
-    <DefineConstants>$(DefineConstants);</DefineConstants>
-    <FrameworkPathOverride>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
-  </PropertyGroup>
+This package contains the unsigned assembly 'NCalc'. For the stronly signed assembly 'NCalc.signed', see the NCalcSync.signed package.
+		</Description>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="Resources\NCalc.png" Pack="true" PackagePath="" />
-    <None Include="..\..\README.md" Pack="true" PackagePath="" />
-  </ItemGroup>
+	<!-- Strongly Signed Assembly Configuration -->
+	<PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
+		<AssemblyName>NCalc.signed</AssemblyName>
+		<PackageId>NCalcSync.signed</PackageId>
+		<Description>NCalc is a mathematical expressions evaluator for .NET
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <Deterministic>true</Deterministic>
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-  </PropertyGroup>
+NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
+
+This package contains the stronly signed assembly 'NCalc.signed'. For the unsigned assembly 'NCalc', see the NCalcSync package.
+		</Description>
+
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>NCalc.signed.snk</AssemblyOriginatorKeyFile>
+	</PropertyGroup>
+
+	<!-- Other Item Groups and Package References -->
+	<ItemGroup>
+		<Compile Remove="Properties\ExcludeFromCodeCoverageAttribute35.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+	</ItemGroup>
+
+	<!-- Common Build Configurations -->
+	<ItemGroup>
+		<None Include="Resources\NCalc.png" Pack="true" PackagePath="" />
+		<None Include="..\..\README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<!-- Common Additional Configuration for Release Builds -->
+	<PropertyGroup Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='SignedRelease'">
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+	</PropertyGroup>
 
 </Project>
