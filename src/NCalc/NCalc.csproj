@@ -29,23 +29,23 @@
 
 NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
-This package contains the unsigned assembly 'NCalc'. For the stronly signed assembly 'NCalc.signed', see the NCalcSync.signed package.
+This package contains the unsigned assembly 'NCalc'. For the stronly signed assembly version of 'NCalc', see the NCalcSync.signed package.
 		</Description>
 	</PropertyGroup>
 
 	<!-- Strongly Signed Assembly Configuration -->
 	<PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
-		<AssemblyName>NCalc.signed</AssemblyName>
+		<AssemblyName>NCalc</AssemblyName>
 		<PackageId>NCalcSync.signed</PackageId>
 		<Description>NCalc is a mathematical expressions evaluator for .NET
 
 NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
-This package contains the stronly signed assembly 'NCalc.signed'. For the unsigned assembly 'NCalc', see the NCalcSync package.
+This package contains the stronly signed assembly version of 'NCalc'. For the unsigned assembly of 'NCalc', see the NCalcSync package.
 		</Description>
 
 		<SignAssembly>true</SignAssembly>
-		<AssemblyOriginatorKeyFile>NCalc.signed.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile>NCalc.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 	<!-- Other Item Groups and Package References -->
