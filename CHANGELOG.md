@@ -1,3 +1,10 @@
+# 3.13
+
+* [Performance: Use pattern matching instead of TypeCode](https://github.com/ncalc/ncalc/pull/126) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Fix boolean comparison](https://github.com/ncalc/ncalc/pull/123) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Test for inner exception type instead of exception message](https://github.com/ncalc/ncalc/pull/127) by [axunonb](https://github.com/axunonb)
+* [Update project to create unsigned and signed versions of NCalcSync](https://github.com/ncalc/ncalc/pull/129) by [axunonb](https://github.com/axunonb)
+ 
 # 3.12
 
 * [Allow using decimal as default floating point type](https://github.com/ncalc/ncalc/pull/118) by [Luca Schimweg](https://github.com/lucaschimweg)
