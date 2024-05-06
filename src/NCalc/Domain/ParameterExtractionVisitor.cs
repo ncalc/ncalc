@@ -2,11 +2,11 @@
 
 namespace NCalc.Domain;
 
-internal class ParameterExtractionVisitor : LogicalExpressionVisitor
+internal sealed class ParameterExtractionVisitor : LogicalExpressionVisitor
 {
     public List<string> Parameters { get; } = [];
 
-    public override void Visit(Identifier function) => Parameters.Add(function.Name);
+    public override void Visit(Identifier identifier) => Parameters.Add(identifier.Name);
 
     public override void Visit(UnaryExpression expression) => expression.Accept(this);
 

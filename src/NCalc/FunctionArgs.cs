@@ -18,20 +18,14 @@ public class FunctionArgs : EventArgs
 
     public bool HasResult { get; set; }
 
-    private Expression[] _parameters = [];
-
-    public Expression[] Parameters
-    {
-        get => _parameters;
-        set => _parameters = value;
-    }
+    public Expression[] Parameters { get; set; } = [];
 
     public object[] EvaluateParameters()
     {
-        var values = new object[_parameters.Length];
+        var values = new object[Parameters.Length];
         for (var i = 0; i < values.Length; i++)
         {
-            values[i] = _parameters[i].Evaluate();
+            values[i] = Parameters[i].Evaluate();
         }
 
         return values;
