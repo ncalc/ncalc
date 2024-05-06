@@ -7,7 +7,7 @@
 )](https://nuget.org/packages/NCalcSync)
 [![NuGet](https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget%20signed
 )](https://nuget.org/packages/NCalcSync.signed)
-
+[![Discord](https://discordapp.com/api/guilds/1237181265426387005/widget.png)](https://discord.gg/TeJkmXbqFk)
 NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
 ## Project Description
@@ -168,3 +168,7 @@ Each library build can be traced back to the original git commit.
 8. Go to GitHub project page and create a release out of the last tag v1.0.7.
 9. Verify that github workflow for publishing the nuget package has completed.
 10. Switch back to master and merge the release branch.
+
+## Discord Server
+
+If you want to talk with us, get support or just get the latest NCalc news, [come to our discord server](https://discord.gg/TeJkmXbqFk).
