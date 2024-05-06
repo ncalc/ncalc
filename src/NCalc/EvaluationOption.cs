@@ -37,6 +37,10 @@ public enum EvaluateOptions
     DecimalAsDefault = 64
 }
 
-public static class EvaluateOptionsExtensions {
-    public static bool HasOption(this EvaluateOptions options, EvaluateOptions option) => (options & option) == option;
+public static class EvaluateOptionsExtensions 
+{
+    public static bool HasOption(this EvaluateOptions options, EvaluateOptions option)
+    {
+        return (options & option) == option;
+    }
 }
