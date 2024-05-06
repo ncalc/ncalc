@@ -7,7 +7,9 @@
 )](https://nuget.org/packages/NCalcSync)
 [![NuGet](https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget%20signed
 )](https://nuget.org/packages/NCalcSync.signed)
-[![Discord](https://discordapp.com/api/guilds/1237181265426387005/widget.png)](https://discord.gg/TeJkmXbqFk)
+[![Discord](https://img.shields.io/discord/1237181265426387005?logo=discord&logoColor=white&label=%20&labelColor=%23697EC4&color=%237289DA
+)](https://discord.gg/TeJkmXbqFk)
+
 NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
 ## Project Description
