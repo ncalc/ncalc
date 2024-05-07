@@ -1368,4 +1368,16 @@ public class Fixtures
 
         Assert.AreEqual(true, eif.Evaluate());
     }
+    
+    [TestMethod]
+    public void Should_Use_Correct_BitwiseXOr_133()
+    {
+        const EvaluateOptions options = EvaluateOptions.None;
+        var logicalExpression = Expression.Compile(expression: "1 ^ 2", options);
+
+        var serializedString = logicalExpression.ToString();
+
+        Assert.AreEqual("1 ^ 2", serializedString);
+        Assert.AreEqual(3, new Expression(logicalExpression).Evaluate());
+    }
 }
