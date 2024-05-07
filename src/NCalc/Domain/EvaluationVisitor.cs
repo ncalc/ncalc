@@ -14,7 +14,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
     public Dictionary<string, object> Parameters { get; set; }
     
-    private bool IsCaseSensitiveComparer => (Options & EvaluateOptions.CaseInsensitiveComparer) == 0;
+    private bool IsCaseInsensitiveComparer => Options.HasOption(EvaluateOptions.CaseInsensitiveComparer);
     
     public EvaluationVisitor(EvaluateOptions options) : this(options, CultureInfo.CurrentCulture)
     {
@@ -30,11 +30,9 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
 
     public override void Visit(LogicalExpression expression)
     {
-        throw new Exception("The method or operation is not implemented.");
+        throw new NotSupportedException("The Visit method is not supported for this class.");
     }
-
-
-
+    
     private static readonly Type[] BuiltInTypes =
     [
         typeof(decimal),
@@ -84,17 +82,17 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         var aValue = a != null ? Convert.ChangeType(a, mpt, cultureInfo) : null;
         var bValue = b != null ? Convert.ChangeType(b, mpt, cultureInfo) : null;
 
-        if (IsCaseSensitiveComparer)
-            return Comparer.Default.Compare(aValue, bValue);
+        if (IsCaseInsensitiveComparer)
+            return CaseInsensitiveComparer.Default.Compare(aValue, bValue);
 
-        return CaseInsensitiveComparer.Default.Compare(aValue, bValue);
+        return Comparer.Default.Compare(aValue, bValue);
     }
 
     public override void Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
         expression.LeftExpression.Accept(this);
-        bool left = Convert.ToBoolean(Result, cultureInfo);
+        var left = Convert.ToBoolean(Result, cultureInfo);
 
         if (left)
         {

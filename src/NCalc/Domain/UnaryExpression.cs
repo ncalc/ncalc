@@ -11,11 +11,3 @@ public class UnaryExpression(UnaryExpressionType type, LogicalExpression express
         visitor.Visit(this);
     }
 }
-
-public enum UnaryExpressionType
-{
-    Not,
-    Negate,
-    BitwiseNot,
-    Positive
-}

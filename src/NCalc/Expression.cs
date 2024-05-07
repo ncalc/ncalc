@@ -13,23 +13,29 @@ namespace NCalc;
 
 public class Expression
 {
-    public event EvaluateParameterHandler EvaluateParameter {
-        add {
+    public event EvaluateParameterHandler EvaluateParameter
+    {
+        add 
+        {
             if (EvaluationVisitor != null)
                 EvaluationVisitor.EvaluateParameter += value;
         }
-        remove {
+        remove 
+        {
             if (EvaluationVisitor != null)
                 EvaluationVisitor.EvaluateParameter -= value;
         }
     }
 
-    public event EvaluateFunctionHandler EvaluateFunction {
-        add {
+    public event EvaluateFunctionHandler EvaluateFunction 
+    {
+        add 
+        {
             if (EvaluationVisitor != null)
                 EvaluationVisitor.EvaluateFunction += value;
         }
-        remove {
+        remove 
+        {
             if (EvaluationVisitor != null)
                 EvaluationVisitor.EvaluateFunction -= value;
         }
@@ -136,7 +142,7 @@ public class Expression
 
     #region Cache management
     private static bool _cacheEnabled = true;
-    private static readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
+    private static readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> CompiledExpressions = new();
 
 
     public static bool CacheEnabled
@@ -149,7 +155,7 @@ public class Expression
             if (!CacheEnabled)
             {
                 // Clears cache
-                _compiledExpressions.Clear();
+                CompiledExpressions.Clear();
             }
         }
     }
@@ -159,20 +165,22 @@ public class Expression
     /// </summary>
     private static void ClearCache()
     {
-        foreach (var kvp in _compiledExpressions)
+        foreach (var kvp in CompiledExpressions)
         {
             if (kvp.Value.TryGetTarget(out _)) 
                 continue;
 
-            if (_compiledExpressions.TryRemove(kvp.Key, out _))
+            if (CompiledExpressions.TryRemove(kvp.Key, out _))
                 Trace.TraceInformation("Cache entry released: " + kvp.Key);
         }
     }
 
     #endregion
 
-    // For backwards compatibility
-    public static LogicalExpression Compile(string expression, bool nocache) {
+    /// Method used for backwards compatibility.
+    [Obsolete("Please use Compile overload with EvaluateOptions.")]
+    public static LogicalExpression Compile(string expression, bool nocache) 
+    {
         return Compile(expression, nocache ? EvaluateOptions.NoCache : EvaluateOptions.None);
     }
     
@@ -182,7 +190,7 @@ public class Expression
 
         if (_cacheEnabled && !options.HasOption(EvaluateOptions.NoCache))
         {
-            if (_compiledExpressions.TryGetValue(expression, out var wr))
+            if (CompiledExpressions.TryGetValue(expression, out var wr))
             {
                 Trace.TraceInformation("Expression retrieved from cache: " + expression);
 
@@ -195,7 +203,8 @@ public class Expression
         var errorListenerLexer = new ErrorListenerLexer();
         lexer.AddErrorListener(errorListenerLexer);
 
-        var parser = new NCalcParser(new CommonTokenStream(lexer)) {
+        var parser = new NCalcParser(new CommonTokenStream(lexer)) 
+        {
             UseDecimal = options.HasOption(EvaluateOptions.DecimalAsDefault)
         };
 
@@ -235,7 +244,7 @@ public class Expression
         if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
             return logicalExpression;
         
-        _compiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
+        CompiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
             
         ClearCache();
 
@@ -276,7 +285,7 @@ public class Expression
         if (HasErrors())
             throw new EvaluationException(Error);
 
-        ParsedExpression ??= Compile(OriginalExpression, (Options & EvaluateOptions.NoCache) == EvaluateOptions.NoCache);
+        ParsedExpression ??= Compile(OriginalExpression, Options);
 
         // if array evaluation, execute the same expression multiple times
         if (Options.HasOption(EvaluateOptions.IterateParameters))
@@ -341,5 +350,4 @@ public class Expression
         Compile(OriginalExpression, Options).Accept(extractionVisitor);
         return new List<string>(extractionVisitor.Parameters).ToArray();
     }
-
 }
