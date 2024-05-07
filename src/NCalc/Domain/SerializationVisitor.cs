@@ -6,13 +6,16 @@ namespace NCalc.Domain;
 
 public class SerializationVisitor : LogicalExpressionVisitor
 {
-    private readonly NumberFormatInfo _numberFormatInfo = new() {NumberDecimalSeparator = "."};
+    private readonly NumberFormatInfo _numberFormatInfo = new()
+    {
+        NumberDecimalSeparator = "."
+    };
 
     public StringBuilder Result { get; protected set; } = new();
 
     public override void Visit(LogicalExpression expression)
     {
-        throw new Exception("The method or operation is not implemented.");
+        throw new NotSupportedException("The Visit method is not supported for this class.");
     }
 
     public override void Visit(TernaryExpression expression)
