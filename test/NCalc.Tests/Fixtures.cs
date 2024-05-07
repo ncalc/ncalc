@@ -1372,9 +1372,13 @@ namespace NCalc.Tests
         [TestMethod]
         public void Should_Use_Correct_BitwiseXOr_133()
         {
-            var eif = new Expression("1 ^ 2");
+            const EvaluateOptions options = EvaluateOptions.None;
+            var logicalExpression = Expression.Compile(expression: "1 ^ 2", options);
 
-            Assert.AreEqual(3, eif.Evaluate());
+            var serializedString = logicalExpression.ToString();
+
+            Assert.AreEqual("1 ^ 2", serializedString);
+            Assert.AreEqual(3, new Expression(logicalExpression).Evaluate());
         }
     }
 }
