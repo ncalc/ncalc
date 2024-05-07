@@ -95,7 +95,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
                 break;
 
             case BinaryExpressionType.BitwiseXOr:
-                Result.Append("~ ");
+                Result.Append("^ ");
                 break;
 
             case BinaryExpressionType.LeftShift:

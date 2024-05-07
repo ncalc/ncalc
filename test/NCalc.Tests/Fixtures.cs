@@ -1368,5 +1368,13 @@ namespace NCalc.Tests
 
             Assert.AreEqual(true, eif.Evaluate());
         }
+        
+        [TestMethod]
+        public void Should_Use_Correct_BitwiseXOr_133()
+        {
+            var eif = new Expression("1 ^ 2");
+
+            Assert.AreEqual(3, eif.Evaluate());
+        }
     }
 }
