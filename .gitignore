@@ -12,3 +12,4 @@
 *.bak
 bin/
 obj/
+.idea/

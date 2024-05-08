@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using NCalc.Domain;
 using Antlr4.Runtime;
+using NCalc.Parser;
 
 namespace NCalc;
 
@@ -199,46 +200,19 @@ public class Expression
             }
         }
         
-        var lexer = new NCalcLexer(new AntlrInputStream(expression));
-        var errorListenerLexer = new ErrorListenerLexer();
-        lexer.AddErrorListener(errorListenerLexer);
-
-        var parser = new NCalcParser(new CommonTokenStream(lexer)) 
-        {
-            UseDecimal = options.HasOption(EvaluateOptions.DecimalAsDefault)
-        };
-
-        var errorListenerParser = new ErrorListenerParser();
-        parser.AddErrorListener(errorListenerParser);
-
         try
         {
-            logicalExpression = parser.ncalcExpression().retValue;
+            logicalExpression = NCalcParser.Expression.Parse(expression);
         }
         catch(Exception ex)
         {
-            var message = new StringBuilder();
-            if (errorListenerLexer.Errors.Count != 0)
-            {
-                message.AppendLine();
-                message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
-            }
-            if (errorListenerParser.Errors.Count != 0)
-            {
-                message.AppendLine();
-                message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
-            }
+            //TODO: Handle errors like the old version.
+            var message = new StringBuilder(ex.Message);
+          
 
             throw new EvaluationException(message.ToString(), ex);
         }
-        if (errorListenerLexer.Errors.Count != 0)
-        {
-            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
-        }
-        if (errorListenerParser.Errors.Count != 0)
-        {
-            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
-        }
+
 
 
         if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))

@@ -54,7 +54,7 @@ This package contains the stronly signed assembly version of 'NCalc'. For the un
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+		<PackageReference Include="Parlot" Version="0.0.26" />
 	</ItemGroup>
 
 	<!-- Common Build Configurations -->
