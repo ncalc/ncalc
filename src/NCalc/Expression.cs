@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using NCalc.Domain;
-using Antlr4.Runtime;
 using NCalc.Parser;
 
 namespace NCalc;
