@@ -2,12 +2,13 @@ using System;
 using NCalc.Domain;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
+using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
 
 public class NCalcParser
 {
-    public static readonly Parser<LogicalExpression> Expression;
+    private static readonly Parser<LogicalExpression> LogicalExpressionParser;
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
@@ -38,9 +39,11 @@ public class NCalcParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-        var number = Terms.Decimal()
-                .Then<LogicalExpression>(static d => new ValueExpression(d))
-            ;
+        var number = OneOf(
+            Terms.Decimal().Then<LogicalExpression>(static d => new ValueExpression(d)),
+            Terms.Double().Then<LogicalExpression>(static d => new ValueExpression(d)),
+            Terms.Integer().Then<LogicalExpression>(static d => new ValueExpression(d))
+        );
 
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
@@ -64,8 +67,8 @@ public class NCalcParser
         var arguments = Separated(comma, expression);
 
         var function = Terms.Identifier().And(openParen.SkipAnd(arguments).AndSkip(closeParen))
-            .Then<LogicalExpression>(x => new Function(new Domain.Identifier(x.Item1.ToString()), x.Item2.ToArray()));
-
+            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), x.Item2.ToArray()));
+        
         var booleanTrue = Terms.Text("true", caseInsensitive: true).Then<LogicalExpression>(x => True);
         var booleanFalse = Terms.Text("false", caseInsensitive: true).Then<LogicalExpression>(x => False);
         var stringValue = Terms.String(quotes: StringLiteralQuotes.Single).Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
@@ -159,13 +162,9 @@ public class NCalcParser
             });
 
         var ternary = equality.And(ZeroOrOne(questionMark.SkipAnd(equality).AndSkip(colon).And(equality)))
-            .Then(x =>
-            {
-                return x.Item2.Item1 == null
-                        ? x.Item1
-                        : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2)
-                    ;
-            });
+            .Then(x => x.Item2.Item1 == null
+                ? x.Item1
+                : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2));
 
         // expression => ternary ( ( "-" | "+" ) ternary )* ;
         expression.Parser = ternary.And(ZeroOrMany(plus.Or(minus).And(ternary)))
@@ -186,6 +185,11 @@ public class NCalcParser
                 return result;
             });
 
-        Expression = expression;
+        LogicalExpressionParser = expression;
+    }
+
+    public static LogicalExpression Parse(string expression)
+    {
+        return LogicalExpressionParser.Parse(expression);
     }
 }
