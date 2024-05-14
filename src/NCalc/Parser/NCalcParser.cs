@@ -6,13 +6,14 @@ using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
 
-public class NCalcParser
+public sealed class NCalcParser
 {
-    private static readonly Parser<LogicalExpression> LogicalExpressionParser;
+    private readonly Parser<LogicalExpression> _logicalExpressionParser;
+
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
-    static NCalcParser()
+    public NCalcParser(NCalcParserOptions options)
     {
         /*
          * Grammar:
@@ -35,15 +36,31 @@ public class NCalcParser
          * function       => Identifier "(" arguments ")"
          * arguments      => expression ( "," expression )*
          */
-
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-        var number = OneOf(
-            Terms.Decimal().Then<LogicalExpression>(static d => new ValueExpression(d)),
-            Terms.Double().Then<LogicalExpression>(static d => new ValueExpression(d)),
-            Terms.Integer().Then<LogicalExpression>(static d => new ValueExpression(d))
-        );
+        Parser<LogicalExpression> number;
+
+        var intParser = Terms.Integer().Then<LogicalExpression>(static d => new ValueExpression(d));
+        var doubleParser = Terms.Double().Then<LogicalExpression>(static d => new ValueExpression(d));
+        var decimalParser = Terms.Decimal().Then<LogicalExpression>(static d => new ValueExpression(d));
+        
+        if (options.UseDecimalsAsDefault)
+        {
+            number = OneOf(
+                decimalParser,
+                doubleParser,
+                intParser
+            );
+        }
+        else
+        {
+            number = OneOf(
+                intParser,
+                doubleParser,
+                decimalParser
+            );
+        }
 
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
@@ -55,30 +72,42 @@ public class NCalcParser
         var closeParen = Terms.Char(')');
         var openBrace = Terms.Char('[');
         var closeBrace = Terms.Char(']');
-        var questionMark = Terms.Char('?'); 
+        var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen);
 
         // "[" identifier "]"
-        var identifierExpression = openBrace.SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true)).Then<LogicalExpression>(x => new Domain.Identifier(x.ToString()));
+        var identifierExpression = openBrace
+            .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true))
+            .Or(Terms.Identifier())
+            .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
         var arguments = Separated(comma, expression);
 
-        var function = Terms.Identifier().And(openParen.SkipAnd(arguments).AndSkip(closeParen))
+        var function = Terms
+            .Identifier()
+            .And(openParen.SkipAnd(arguments).AndSkip(closeParen))
             .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), x.Item2.ToArray()));
-        
+
         var booleanTrue = Terms.Text("true", caseInsensitive: true).Then<LogicalExpression>(x => True);
         var booleanFalse = Terms.Text("false", caseInsensitive: true).Then<LogicalExpression>(x => False);
-        var stringValue = Terms.String(quotes: StringLiteralQuotes.Single).Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
+        var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
+            .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
         // primary => NUMBER | "[" identifier "]" | function | boolean | "(" expression ")";
-        var primary = number.Or(identifierExpression).Or(function).Or(booleanTrue).Or(booleanFalse).Or(stringValue).Or(groupExpression);
+        var primary = number
+            .Or(identifierExpression)
+            .Or(function)
+            .Or(booleanTrue)
+            .Or(booleanFalse)
+            .Or(stringValue)
+            .Or(groupExpression);
 
         // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
-        var unary = Recursive<LogicalExpression>((u) =>
+        var unary = Recursive<LogicalExpression>(u =>
             minus.Or(Terms.Text("not")).And(u)
                 .Then<LogicalExpression>(static x =>
                 {
@@ -108,6 +137,7 @@ public class NCalcParser
                         _ => null
                     };
                 }
+
                 return result;
             });
 
@@ -133,6 +163,7 @@ public class NCalcParser
                         _ => null
                     };
                 }
+
                 return result;
             });
 
@@ -158,6 +189,7 @@ public class NCalcParser
                         _ => null
                     };
                 }
+
                 return result;
             });
 
@@ -182,14 +214,15 @@ public class NCalcParser
                         _ => null
                     };
                 }
+
                 return result;
             });
 
-        LogicalExpressionParser = expression;
+        _logicalExpressionParser = expression;
     }
 
-    public static LogicalExpression Parse(string expression)
+    public LogicalExpression Parse(string expression)
     {
-        return LogicalExpressionParser.Parse(expression);
+        return _logicalExpressionParser.Parse(expression);
     }
 }

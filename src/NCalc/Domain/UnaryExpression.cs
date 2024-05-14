@@ -1,10 +1,12 @@
+using NCalc.Visitors;
+
 namespace NCalc.Domain;
 
-public class UnaryExpression(UnaryExpressionType type, LogicalExpression expression) : LogicalExpression
+public sealed class UnaryExpression(UnaryExpressionType type, LogicalExpression expression) : LogicalExpression
 {
-    public LogicalExpression Expression { get; set; } = expression;
+    public LogicalExpression Expression { get; } = expression;
 
-    public UnaryExpressionType Type { get; set; } = type;
+    public UnaryExpressionType Type { get; } = type;
 
     public override void Accept(LogicalExpressionVisitor visitor)
     {

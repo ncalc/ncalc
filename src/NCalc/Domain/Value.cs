@@ -1,18 +1,14 @@
 using System;
 using NCalc.Exceptions;
+using NCalc.Visitors;
 
 namespace NCalc.Domain;
 
-public class ValueExpression : LogicalExpression
+public sealed class ValueExpression : LogicalExpression
 {
-    public ValueExpression() {}
-        
-    public ValueExpression(object value, ValueType type)
-    {
-        Value = value;
-        Type = type;
-    }
-
+    public object Value { get; }
+    public ValueType Type { get; }
+    
     public ValueExpression(object value)
     {
         Type = value switch
@@ -42,7 +38,7 @@ public class ValueExpression : LogicalExpression
 
     public ValueExpression(long value)
     {
-        Value = value;
+        Value = (int)value;
         Type = ValueType.Integer;
     }
 
@@ -63,9 +59,6 @@ public class ValueExpression : LogicalExpression
         Value = value;
         Type = ValueType.Boolean;
     }
-
-    public object Value { get; set; }
-    public ValueType Type { get; set; }
 
     public override void Accept(LogicalExpressionVisitor visitor)
     {

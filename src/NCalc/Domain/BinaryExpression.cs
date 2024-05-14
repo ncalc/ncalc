@@ -1,17 +1,17 @@
+using NCalc.Visitors;
+
 namespace NCalc.Domain;
 
-public class BinaryExpression(
+public sealed class BinaryExpression(
         BinaryExpressionType type, 
         LogicalExpression leftExpression,
-        LogicalExpression rightExpression)
-    
-    : LogicalExpression
+        LogicalExpression rightExpression) : LogicalExpression
 {
-    public LogicalExpression LeftExpression { get; set; } = leftExpression;
+    public LogicalExpression LeftExpression { get;  } = leftExpression;
 
-    public LogicalExpression RightExpression { get; set; } = rightExpression;
+    public LogicalExpression RightExpression { get;  } = rightExpression;
 
-    public BinaryExpressionType Type { get; set; } = type;
+    public BinaryExpressionType Type { get; } = type;
 
     public override void Accept(LogicalExpressionVisitor visitor)
     {

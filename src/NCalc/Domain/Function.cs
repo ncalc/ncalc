@@ -1,10 +1,12 @@
+using NCalc.Visitors;
+
 namespace NCalc.Domain;
 
-public class Function(Identifier identifier, LogicalExpression[] expressions) : LogicalExpression
+public sealed class Function(Identifier identifier, LogicalExpression[] expressions) : LogicalExpression
 {
-    public Identifier Identifier { get; set; } = identifier;
+    public Identifier Identifier { get;  } = identifier;
 
-    public LogicalExpression[] Expressions { get; set; } = expressions;
+    public LogicalExpression[] Expressions { get; } = expressions;
 
     public override void Accept(LogicalExpressionVisitor visitor)
     {

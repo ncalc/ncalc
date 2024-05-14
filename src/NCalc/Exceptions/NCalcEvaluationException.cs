@@ -2,7 +2,7 @@
 
 namespace NCalc.Exceptions;
 
-public class NCalcEvaluationException : ApplicationException
+public sealed class NCalcEvaluationException : NCalcException
 {
     public NCalcEvaluationException(string message)
         : base(message)

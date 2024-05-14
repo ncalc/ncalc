@@ -9,6 +9,7 @@ using System.Text;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Parser;
+using NCalc.Visitors;
 
 namespace NCalc;
 
@@ -202,7 +203,11 @@ public class Expression
         
         try
         {
-            logicalExpression = NCalcParser.Parse(expression);
+            //TODO: When development is finished, cache the parser in a static class.
+            logicalExpression = new NCalcParser(new NCalcParserOptions
+            {
+                UseDecimalsAsDefault = options.HasOption(EvaluateOptions.DecimalAsDefault)
+            }).Parse(expression);
         }
         catch(Exception ex)
         {

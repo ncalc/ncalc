@@ -1,8 +1,10 @@
+using NCalc.Visitors;
+
 namespace NCalc.Domain;
 
-public class Identifier(string name) : LogicalExpression
+public sealed class Identifier(string name) : LogicalExpression
 {
-    public string Name { get; set; } = name;
+    public string Name { get; } = name;
     
     public override void Accept(LogicalExpressionVisitor visitor)
     {

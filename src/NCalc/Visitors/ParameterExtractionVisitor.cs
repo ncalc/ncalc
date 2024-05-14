@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using NCalc.Domain;
 
-namespace NCalc.Domain;
+namespace NCalc.Visitors;
 
 internal sealed class ParameterExtractionVisitor : LogicalExpressionVisitor
 {

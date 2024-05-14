@@ -1,3 +1,5 @@
+using NCalc.Visitors;
+
 namespace NCalc.Domain;
 
 public abstract class LogicalExpression

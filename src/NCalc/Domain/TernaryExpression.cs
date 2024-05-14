@@ -1,14 +1,16 @@
-﻿namespace NCalc.Domain;
+﻿using NCalc.Visitors;
 
-public class TernaryExpression(LogicalExpression leftExpression, LogicalExpression middleExpression,
+namespace NCalc.Domain;
+
+public sealed class TernaryExpression(LogicalExpression leftExpression, LogicalExpression middleExpression,
         LogicalExpression rightExpression)
     : LogicalExpression
 {
-    public LogicalExpression LeftExpression { get; set; } = leftExpression;
+    public LogicalExpression LeftExpression { get; } = leftExpression;
 
-    public LogicalExpression MiddleExpression { get; set; } = middleExpression;
+    public LogicalExpression MiddleExpression { get; } = middleExpression;
 
-    public LogicalExpression RightExpression { get; set; } = rightExpression;
+    public LogicalExpression RightExpression { get; } = rightExpression;
 
     public override void Accept(LogicalExpressionVisitor visitor)
     {
