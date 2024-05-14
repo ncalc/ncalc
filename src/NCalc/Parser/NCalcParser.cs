@@ -100,10 +100,11 @@ public sealed class NCalcParser
         var primary = number
             .Or(booleanTrue)
             .Or(booleanFalse)
-            .Or(identifierExpression)
-            .Or(function)
             .Or(stringValue)
-            .Or(groupExpression);
+            .Or(function)
+            .Or(groupExpression)
+            .Or(identifierExpression);
+
 
         // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
