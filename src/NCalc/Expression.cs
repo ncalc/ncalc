@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using NCalc.Domain;
+using NCalc.Exceptions;
 using NCalc.Parser;
 
 namespace NCalc;
@@ -201,18 +202,14 @@ public class Expression
         
         try
         {
-            logicalExpression = NCalcParser.Expression.Parse(expression);
+            logicalExpression = NCalcParser.Parse(expression);
         }
         catch(Exception ex)
         {
             //TODO: Handle errors like the old version.
             var message = new StringBuilder(ex.Message);
-          
-
-            throw new EvaluationException(message.ToString(), ex);
+            throw new NCalcParserException(message.ToString(), ex);
         }
-
-
 
         if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
             return logicalExpression;
@@ -256,7 +253,7 @@ public class Expression
     public object Evaluate()
     {
         if (HasErrors())
-            throw new EvaluationException(Error);
+            throw new NCalcEvaluationException(Error);
 
         ParsedExpression ??= Compile(OriginalExpression, Options);
 
@@ -279,7 +276,7 @@ public class Expression
                     }
                     else if (localsize != size)
                     {
-                        throw new EvaluationException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
+                        throw new NCalcEvaluationException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
                     }
                 }
             }

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Collections;
 using System.Globalization;
 using System.Linq;
+using NCalc.Exceptions;
 using BinaryExpression = NCalc.Domain.BinaryExpression;
 using UnaryExpression = NCalc.Domain.UnaryExpression;
 using Newtonsoft.Json;
@@ -83,7 +84,7 @@ public class Fixtures
             new Expression("(3 + 2").Evaluate();
             Assert.Fail();
         }
-        catch(EvaluationException e)
+        catch(NCalcEvaluationException e)
         {
             Console.WriteLine("Error catched: " + e.Message);
         }
@@ -313,7 +314,7 @@ public class Fixtures
             new Expression(". + 2").Evaluate();
             Assert.Fail();
         }
-        catch (EvaluationException e)
+        catch (NCalcEvaluationException e)
         {
             Console.WriteLine("Error catched: " + e.Message);
         }
@@ -706,10 +707,10 @@ public class Fixtures
     {
         // https://github.com/ncalc/ncalc-async/issues/6
             
-        var result1 = Assert.ThrowsException<EvaluationException>(() => Expression.Compile("\"0\"", EvaluateOptions.NoCache));
+        var result1 = Assert.ThrowsException<NCalcEvaluationException>(() => Expression.Compile("\"0\"", EvaluateOptions.NoCache));
         Assert.AreEqual($"token recognition error at: '\"' at 1:1{Environment.NewLine}token recognition error at: '\"' at 1:3", result1.Message);
 
-        var result2 = Assert.ThrowsException<EvaluationException>(() => Expression.Compile("Format(\"{0:(###) ###-####}\", \"9999999999\")", EvaluateOptions.NoCache));
+        var result2 = Assert.ThrowsException<NCalcEvaluationException>(() => Expression.Compile("Format(\"{0:(###) ###-####}\", \"9999999999\")", EvaluateOptions.NoCache));
         Assert.IsTrue(result2.InnerException?.GetType() == typeof(FormatException));
     }
 
