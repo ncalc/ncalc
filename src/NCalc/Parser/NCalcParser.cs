@@ -98,10 +98,10 @@ public sealed class NCalcParser
 
         // primary => NUMBER | "[" identifier "]" | function | boolean | "(" expression ")";
         var primary = number
-            .Or(identifierExpression)
-            .Or(function)
             .Or(booleanTrue)
             .Or(booleanFalse)
+            .Or(identifierExpression)
+            .Or(function)
             .Or(stringValue)
             .Or(groupExpression);
 
