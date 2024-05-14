@@ -203,11 +203,11 @@ public class Expression
         
         try
         {
-            //TODO: When development is finished, cache the parser in a static class.
-            logicalExpression = new NCalcParser(new NCalcParserOptions
+            var context = new NCalcParserContext(expression)
             {
                 UseDecimalsAsDefault = options.HasOption(EvaluateOptions.DecimalAsDefault)
-            }).Parse(expression);
+            };
+            logicalExpression = NCalcParser.Parse(context);
         }
         catch(Exception ex)
         {

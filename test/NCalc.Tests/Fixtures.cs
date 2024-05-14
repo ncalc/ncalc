@@ -274,7 +274,7 @@ public class Fixtures
             {"if(false, 0, 1)", 1}
         };
 
-        foreach (KeyValuePair<string, object> pair in expressions)
+        foreach (var pair in expressions)
         {
             Assert.AreEqual(pair.Value, new Expression(pair.Key).Evaluate(), pair.Key + " failed");
         }

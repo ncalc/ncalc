@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using NCalc.Domain;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
@@ -6,14 +7,14 @@ using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
 
-public sealed class NCalcParser
+public static class NCalcParser
 {
-    private readonly Parser<LogicalExpression> _logicalExpressionParser;
+    private static readonly Parser<LogicalExpression> LogicalExpressionParser;
 
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
-    public NCalcParser(NCalcParserOptions options)
+    static NCalcParser()
     {
         /*
          * Grammar:
@@ -39,28 +40,18 @@ public sealed class NCalcParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-        Parser<LogicalExpression> number;
-
         var intParser = Terms.Integer().Then<LogicalExpression>(static d => new ValueExpression(d));
-        var doubleParser = Terms.Double().Then<LogicalExpression>(static d => new ValueExpression(d));
-        var decimalParser = Terms.Decimal().Then<LogicalExpression>(static d => new ValueExpression(d));
         
-        if (options.UseDecimalsAsDefault)
-        {
-            number = OneOf(
-                decimalParser,
-                doubleParser,
-                intParser
-            );
-        }
-        else
-        {
-            number = OneOf(
-                intParser,
-                doubleParser,
-                decimalParser
-            );
-        }
+        var number = OneOf(
+            Terms.Integer(NumberOptions.AllowSign)
+                .AndSkip(Terms.Char('.'))
+                .And(Terms.Integer())
+                .Then<LogicalExpression>((context,x) =>
+                    new ValueExpression(((NCalcParserContext)context).UseDecimalsAsDefault ?
+                        Convert.ToDecimal(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture) :
+                        Convert.ToDouble(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture))),
+            intParser
+        );
 
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
@@ -219,11 +210,11 @@ public sealed class NCalcParser
                 return result;
             });
 
-        _logicalExpressionParser = expression;
+        LogicalExpressionParser = expression;
     }
 
-    public LogicalExpression Parse(string expression)
+    public static LogicalExpression Parse(NCalcParserContext context)
     {
-        return _logicalExpressionParser.Parse(expression);
+        return LogicalExpressionParser.Parse(context);
     }
 }
