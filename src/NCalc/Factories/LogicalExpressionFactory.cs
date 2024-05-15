@@ -13,7 +13,7 @@ public static class LogicalExpressionFactory
     private static bool _enableCache = true;
     private static readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> CompiledExpressions = new();
     
-    public static bool EnableCache
+    internal static bool EnableCache
     {
         get => _enableCache;
         set

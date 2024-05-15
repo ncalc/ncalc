@@ -1171,7 +1171,8 @@ public class Fixtures
                 TypeNameHandling = TypeNameHandling.All
             });
 
-            LogicalExpressionFactory.EnableCache = false;
+            Expression.EnableCache = false;
+            
             var exp = new Expression(deserialized);
             exp.Parameters = new Dictionary<string, object> {
                 {"waterlevel", inputValue}

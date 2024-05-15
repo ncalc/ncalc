@@ -12,6 +12,12 @@ namespace NCalc;
 
 public class Expression
 {
+    public static bool EnableCache
+    {
+        get => LogicalExpressionFactory.EnableCache;
+        set => LogicalExpressionFactory.EnableCache = value;
+    }
+    
     public event EvaluateParameterHandler EvaluateParameter
     {
         add => EvaluationVisitor.EvaluateParameter += value;
