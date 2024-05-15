@@ -4,34 +4,25 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using NCalc.Domain;
+using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 
-public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo) : LogicalExpressionVisitor
+public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInfo) : LogicalExpressionVisitor
 {
-    public event EvaluateFunctionHandler EvaluateFunction;
-    public event EvaluateParameterHandler EvaluateParameter;
+    public event EvaluateFunctionHandler? EvaluateFunction;
+    public event EvaluateParameterHandler? EvaluateParameter;
     
-    public EvaluateOptions Options { get; set; } = options;
+    public ExpressionOptions Options { get; set; } = options;
+    public CultureInfo CultureInfo { get; set; } = cultureInfo;
 
-    private bool IgnoreCase => Options.HasOption(EvaluateOptions.IgnoreCase);
+    private bool IgnoreCase { get; } = options.HasOption(ExpressionOptions.IgnoreCase);
 
-    public Dictionary<string, object> Parameters { get; set; }
+    public required Dictionary<string, object?> Parameters { get; set; }
     
-    private bool IsCaseInsensitiveComparer => Options.HasOption(EvaluateOptions.CaseInsensitiveComparer);
+    private bool IsCaseInsensitiveComparer { get; } = options.HasOption(ExpressionOptions.CaseInsensitiveComparer);
 
-    public object Result { get; private set; }
-
-    private object Evaluate(LogicalExpression expression)
-    {
-        expression.Accept(this);
-        return Result;
-    }
-
-    public override void Visit(LogicalExpression expression)
-    {
-        throw new NotSupportedException("The Visit method is not supported for this class.");
-    }
+    public object? Result { get; private set; }
     
     private static readonly Type[] BuiltInTypes =
     [
@@ -51,6 +42,17 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
         typeof(string),
         typeof(object)
     ];
+    
+    private object? Evaluate(LogicalExpression expression)
+    {
+        expression.Accept(this);
+        return Result;
+    }
+
+    public override void Visit(LogicalExpression expression)
+    {
+        throw new NotSupportedException("The Visit method is not supported for this class.");
+    }
 
     /// <summary>
     /// Gets the the most precise type.
@@ -58,7 +60,7 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
     /// <param name="a">Type a.</param>
     /// <param name="b">Type b.</param>
     /// <returns></returns>
-    private static Type GetMostPreciseType(Type a, Type b)
+    private static Type GetMostPreciseType(Type? a, Type? b)
     {
         foreach (var t in BuiltInTypes)
         {
@@ -68,19 +70,19 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
             }
         }
 
-        return a;
+        return a ?? typeof(object);
     }
 
-    private int CompareUsingMostPreciseType(object a, object b)
+    private int CompareUsingMostPreciseType(object? a, object? b)
     {
         Type mpt;
         if (a == null)
-            mpt = GetMostPreciseType(null, b.GetType());
+            mpt = GetMostPreciseType(null, b?.GetType());
         else
             mpt = GetMostPreciseType(a.GetType(), b?.GetType());
         
-        var aValue = a != null ? Convert.ChangeType(a, mpt, cultureInfo) : null;
-        var bValue = b != null ? Convert.ChangeType(b, mpt, cultureInfo) : null;
+        var aValue = a != null ? Convert.ChangeType(a, mpt, CultureInfo) : null;
+        var bValue = b != null ? Convert.ChangeType(b, mpt, CultureInfo) : null;
 
         if (IsCaseInsensitiveComparer)
             return CaseInsensitiveComparer.Default.Compare(aValue, bValue);
@@ -92,7 +94,7 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
     {
         // Evaluates the left expression and saves the value
         expression.LeftExpression.Accept(this);
-        var left = Convert.ToBoolean(Result, cultureInfo);
+        var left = Convert.ToBoolean(Result, CultureInfo);
 
         if (left)
         {
@@ -104,30 +106,30 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
         }
     }
 
-    private static bool IsReal(object value) => value is decimal or double or float;
+    private static bool IsReal(object? value) => value is decimal or double or float;
 
     public override void Visit(BinaryExpression expression)
     {
         // simulate Lazy<Func<>> behavior for late evaluation
-        object leftValue = null;
+        object? leftValue = null;
 
         // simulate Lazy<Func<>> behavior for late evaluations
-        object rightValue = null;
+        object? rightValue = null;
 
         switch (expression.Type)
         {
             case BinaryExpressionType.And:
-                Result = Convert.ToBoolean(Left(), cultureInfo) && Convert.ToBoolean(Right(), cultureInfo);
+                Result = Convert.ToBoolean(Left(), CultureInfo) && Convert.ToBoolean(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.Or:
-                Result = Convert.ToBoolean(Left(), cultureInfo) || Convert.ToBoolean(Right(), cultureInfo);
+                Result = Convert.ToBoolean(Left(), CultureInfo) || Convert.ToBoolean(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.Div:
                 Result = IsReal(Left()) || IsReal(Right())
-                    ? Numbers.Divide(Left(), Right(), cultureInfo)
-                    : Numbers.Divide(Convert.ToDouble(Left(), cultureInfo), Right(), cultureInfo);
+                    ? NumberHelper.Divide(Left(), Right(), CultureInfo)
+                    : NumberHelper.Divide(Convert.ToDouble(Left(), CultureInfo), Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.Equal:
@@ -156,11 +158,11 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
                 break;
 
             case BinaryExpressionType.Minus:
-                Result = Numbers.Subtract(Left(), Right(), cultureInfo);
+                Result = NumberHelper.Subtract(Left(), Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.Modulo:
-                Result = Numbers.Modulo(Left(), Right(), cultureInfo);
+                Result = NumberHelper.Modulo(Left(), Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.NotEqual:
@@ -175,43 +177,43 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
                 }
                 else
                 {
-                    Result = Numbers.Add(Left(), Right(), cultureInfo);
+                    Result = NumberHelper.Add(Left(), Right(), CultureInfo);
                 }
 
                 break;
 
             case BinaryExpressionType.Times:
-                Result = Numbers.Multiply(Left(), Right(), cultureInfo);
+                Result = NumberHelper.Multiply(Left(), Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseAnd:
-                Result = Convert.ToUInt16(Left(), cultureInfo) & Convert.ToUInt16(Right(), cultureInfo);
+                Result = Convert.ToUInt16(Left(), CultureInfo) & Convert.ToUInt16(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseOr:
-                Result = Convert.ToUInt16(Left(), cultureInfo) | Convert.ToUInt16(Right(), cultureInfo);
+                Result = Convert.ToUInt16(Left(), CultureInfo) | Convert.ToUInt16(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseXOr:
-                Result = Convert.ToUInt16(Left(), cultureInfo) ^ Convert.ToUInt16(Right(), cultureInfo);
+                Result = Convert.ToUInt16(Left(), CultureInfo) ^ Convert.ToUInt16(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.LeftShift:
-                Result = Convert.ToUInt16(Left(), cultureInfo) << Convert.ToUInt16(Right(), cultureInfo);
+                Result = Convert.ToUInt16(Left(), CultureInfo) << Convert.ToUInt16(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.RightShift:
-                Result = Convert.ToUInt16(Left(), cultureInfo) >> Convert.ToUInt16(Right(), cultureInfo);
+                Result = Convert.ToUInt16(Left(), CultureInfo) >> Convert.ToUInt16(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.Exponentiation:
-                Result = Math.Pow(Convert.ToDouble(Left(), cultureInfo), Convert.ToDouble(Right(), cultureInfo));
+                Result = Math.Pow(Convert.ToDouble(Left(), CultureInfo), Convert.ToDouble(Right(), CultureInfo));
                 break;
         }
 
         return;
 
-        object Left()
+        object? Left()
         {
             if (leftValue != null)
                 return leftValue;
@@ -222,7 +224,7 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
             return leftValue;
         }
 
-        object Right()
+        object? Right()
         {
             if (rightValue != null) 
                 return rightValue;
@@ -242,15 +244,15 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
         switch (expression.Type)
         {
             case UnaryExpressionType.Not:
-                Result = !Convert.ToBoolean(Result, cultureInfo);
+                Result = !Convert.ToBoolean(Result, CultureInfo);
                 break;
 
             case UnaryExpressionType.Negate:
-                Result = Numbers.Subtract(0, Result, cultureInfo);
+                Result = NumberHelper.Subtract(0, Result, CultureInfo);
                 break;
 
             case UnaryExpressionType.BitwiseNot:
-                Result = ~Convert.ToUInt16(Result, cultureInfo);
+                Result = ~Convert.ToUInt16(Result, CultureInfo);
                 break;
 
             case UnaryExpressionType.Positive:
@@ -274,9 +276,9 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
         // Don't call parameters right now, instead let the function do it as needed.
         // Some parameters shouldn't be called, for instance, in a if(), the "not" value might be a division by zero
         // Evaluating every value could produce unexpected behaviour
-        for (int i = 0; i < function.Expressions.Length; i++)
+        for (var i = 0; i < function.Expressions.Length; i++)
         {
-            args.Parameters[i] = new Expression(function.Expressions[i], Options, cultureInfo);
+            args.Parameters[i] = new Expression(function.Expressions[i], Options, CultureInfo);
             args.Parameters[i].EvaluateFunction += EvaluateFunction;
             args.Parameters[i].EvaluateParameter += EvaluateParameter;
 
@@ -285,7 +287,7 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
         }
 
         // Calls external implementation
-        EvaluateFunction?.Invoke(IgnoreCase ? function.Identifier.Name.ToLower() : function.Identifier.Name, args);
+        OnEvaluateFunction(IgnoreCase ? function.Identifier.Name.ToLower() : function.Identifier.Name, args);
 
         // If an external implementation was found get the result back
         if (args.HasResult)
@@ -307,64 +309,64 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
                 CheckCase("Abs", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Abs() takes exactly 1 argument");
-                Result = Math.Abs(Convert.ToDecimal(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Abs(Convert.ToDecimal(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "ACOS":
                 CheckCase("Acos", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Acos() takes exactly 1 argument");
-                Result = Math.Acos(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Acos(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "ASIN":
                 CheckCase("Asin", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Asin() takes exactly 1 argument");
-                Result = Math.Asin(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Asin(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "ATAN":
                 CheckCase("Atan", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Atan() takes exactly 1 argument");
-                Result = Math.Atan(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Atan(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "ATAN2":
                 CheckCase("Atan2", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Atan2() takes exactly 2 argument");
-                Result = Math.Atan2(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo),
-                    Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
+                Result = Math.Atan2(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo),
+                    Convert.ToDouble(Evaluate(function.Expressions[1]), CultureInfo));
                 break;
 
             case "CEILING":
                 CheckCase("Ceiling", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Ceiling() takes exactly 1 argument");
-                Result = Math.Ceiling(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Ceiling(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "COS":
                 CheckCase("Cos", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Cos() takes exactly 1 argument");
-                Result = Math.Cos(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Cos(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "EXP":
                 CheckCase("Exp", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Exp() takes exactly 1 argument");
-                Result = Math.Exp(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Exp(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "FLOOR":
                 CheckCase("Floor", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Floor() takes exactly 1 argument");
-                Result = Math.Floor(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Floor(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "IEEEREMAINDER":
@@ -372,37 +374,37 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("IEEERemainder() takes exactly 2 arguments");
                 Result = Math.IEEERemainder(Convert.ToDouble(Evaluate(function.Expressions[0])),
-                    Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
+                    Convert.ToDouble(Evaluate(function.Expressions[1]), CultureInfo));
                 break;
 
             case "LN":
                 CheckCase("Ln", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Ln() takes exactly 1 argument");
-                Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "LOG":
                 CheckCase("Log", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Log() takes exactly 2 arguments");
-                Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo),
-                    Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
+                Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo),
+                    Convert.ToDouble(Evaluate(function.Expressions[1]), CultureInfo));
                 break;
 
             case "LOG10":
                 CheckCase("Log10", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Log10() takes exactly 1 argument");
-                Result = Math.Log10(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Log10(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "POW":
                 CheckCase("Pow", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Pow() takes exactly 2 arguments");
-                Result = Math.Pow(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo),
-                    Convert.ToDouble(Evaluate(function.Expressions[1]), cultureInfo));
+                Result = Math.Pow(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo),
+                    Convert.ToDouble(Evaluate(function.Expressions[1]), CultureInfo));
                 break;
 
             case "ROUND":
@@ -410,9 +412,9 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Round() takes exactly 2 arguments");
 
-                var rounding = (Options & EvaluateOptions.RoundAwayFromZero) == EvaluateOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
+                var rounding = (Options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
 
-                Result = Math.Round(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo), Convert.ToInt16(Evaluate(function.Expressions[1]), cultureInfo), rounding);
+                Result = Math.Round(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo), Convert.ToInt16(Evaluate(function.Expressions[1]), CultureInfo), rounding);
 
                 break;
 
@@ -420,53 +422,53 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
                 CheckCase("Sign", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Sign() takes exactly 1 argument");
-                Result = Math.Sign(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Sign(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "SIN":
                 CheckCase("Sin", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Sin() takes exactly 1 argument");
-                Result = Math.Sin(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Sin(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "SQRT":
                 CheckCase("Sqrt", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Sqrt() takes exactly 1 argument");
-                Result = Math.Sqrt(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Sqrt(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "TAN":
                 CheckCase("Tan", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Tan() takes exactly 1 argument");
-                Result = Math.Tan(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Tan(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "TRUNCATE":
                 CheckCase("Truncate", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new ArgumentException("Truncate() takes exactly 1 argument");
-                Result = Math.Truncate(Convert.ToDouble(Evaluate(function.Expressions[0]), cultureInfo));
+                Result = Math.Truncate(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
                 break;
 
             case "MAX":
                 CheckCase("Max", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Max() takes exactly 2 arguments");
-                object maxleft = Evaluate(function.Expressions[0]);
-                object maxright = Evaluate(function.Expressions[1]);
-                Result = Numbers.Max(maxleft, maxright, cultureInfo);
+                var maxleft = Evaluate(function.Expressions[0]);
+                var maxright = Evaluate(function.Expressions[1]);
+                Result = NumberHelper.Max(maxleft, maxright, CultureInfo);
                 break;
 
             case "MIN":
                 CheckCase("Min", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new ArgumentException("Min() takes exactly 2 arguments");
-                object minleft = Evaluate(function.Expressions[0]);
-                object minright = Evaluate(function.Expressions[1]);
-                Result = Numbers.Min(minleft, minright, cultureInfo);
+                var minleft = Evaluate(function.Expressions[0]);
+                var minright = Evaluate(function.Expressions[1]);
+                Result = NumberHelper.Min(minleft, minright, CultureInfo);
                 break;
 
             case "IFS":
@@ -476,7 +478,7 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
                 foreach (var eval in function.Expressions.Where((_, i) => i % 2 == 0))
                 {
                     var index = Array.IndexOf(function.Expressions, eval);
-                    var tf = Convert.ToBoolean(Evaluate(eval), cultureInfo);
+                    var tf = Convert.ToBoolean(Evaluate(eval), CultureInfo);
                     if (index == function.Expressions.Length - 1)
                         Result = Evaluate(eval);
                     else if (tf)
@@ -492,7 +494,7 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
                 CheckCase("if", function.Identifier.Name);
                 if (function.Expressions.Length != 3)
                     throw new ArgumentException("if() takes exactly 3 arguments");
-                bool cond = Convert.ToBoolean(Evaluate(function.Expressions[0]), cultureInfo);
+                var cond = Convert.ToBoolean(Evaluate(function.Expressions[0]), CultureInfo);
                 Result = cond ? Evaluate(function.Expressions[1]) : Evaluate(function.Expressions[2]);
                 break;
 
@@ -500,9 +502,9 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
                 CheckCase("in", function.Identifier.Name);
                 if (function.Expressions.Length < 2)
                     throw new ArgumentException("in() takes at least 2 arguments");
-                object parameter = Evaluate(function.Expressions[0]);
-                bool evaluation = false;
-                for (int i = 1; i < function.Expressions.Length; i++)
+                var parameter = Evaluate(function.Expressions[0]);
+                var evaluation = false;
+                for (var i = 1; i < function.Expressions.Length; i++)
                 {
                     var argument = Evaluate(function.Expressions[i]);
                     if (CompareUsingMostPreciseType(parameter, argument) == 0)
@@ -565,7 +567,7 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
             var args = new ParameterArgs();
 
             // Calls external implementation
-            EvaluateParameter?.Invoke(parameter.Name, args);
+            OnEvaluateParameter(parameter.Name, args);
 
             if (!args.HasResult)
                 throw new ArgumentException("Parameter was not defined", parameter.Name);
@@ -574,7 +576,13 @@ public sealed class EvaluationVisitor(EvaluateOptions options, CultureInfo cultu
         }
     }
     
+    protected void OnEvaluateFunction(string name, FunctionArgs args)
+    {
+        EvaluateFunction?.Invoke(name, args);
+    }
 
-
-
+    protected void OnEvaluateParameter(string name, ParameterArgs args)
+    {
+        EvaluateParameter?.Invoke(name, args);
+    }
 }

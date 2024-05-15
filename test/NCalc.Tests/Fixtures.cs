@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable disable
+
+using System;
 using NCalc.Domain;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -7,6 +9,7 @@ using System.Collections;
 using System.Globalization;
 using System.Linq;
 using NCalc.Exceptions;
+using NCalc.Factories;
 using BinaryExpression = NCalc.Domain.BinaryExpression;
 using UnaryExpression = NCalc.Domain.UnaryExpression;
 using Newtonsoft.Json;
@@ -352,7 +355,8 @@ public class Fixtures
         Assert.AreEqual("-(True and False)",new UnaryExpression(UnaryExpressionType.Negate, new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false))).ToString());
         Assert.AreEqual("!(True and False)",new UnaryExpression(UnaryExpressionType.Not, new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false))).ToString());
 
-        Assert.AreEqual("test(True and False, -(True and False))",new Function(new Identifier("test"), new LogicalExpression[] { new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false)), new UnaryExpression(UnaryExpressionType.Negate, new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false))) }).ToString());
+        Assert.AreEqual("test(True and False, -(True and False))",new Function(new Identifier("test"), [new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false)), new UnaryExpression(UnaryExpressionType.Negate, new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false)))
+        ]).ToString());
 
         Assert.AreEqual("True", new ValueExpression(true).ToString());
         Assert.AreEqual("False", new ValueExpression(false).ToString());
@@ -361,7 +365,8 @@ public class Fixtures
         Assert.AreEqual("'hello'", new ValueExpression("hello").ToString());
         Assert.AreEqual("#" + new DateTime(2009, 1, 1) + "#", new ValueExpression(new DateTime(2009, 1, 1)).ToString());
 
-        Assert.AreEqual("Sum(1 + 2)", new Function(new Identifier("Sum"), new [] { new BinaryExpression(BinaryExpressionType.Plus, new ValueExpression(1), new ValueExpression(2))}).ToString());
+        Assert.AreEqual("Sum(1 + 2)", new Function(new Identifier("Sum"), [new BinaryExpression(BinaryExpressionType.Plus, new ValueExpression(1), new ValueExpression(2))
+        ]).ToString());
     }
 
     [TestMethod]
@@ -394,7 +399,7 @@ public class Fixtures
         for (int cpt = 0; cpt < 20; cpt++)
         {
             const int nbthreads = 30;
-            _exceptions = new List<Exception>();
+            _exceptions = [];
             var threads = new Thread[nbthreads];
 
             // Starts threads
@@ -451,12 +456,12 @@ public class Fixtures
     [TestMethod]
     public void ShouldHandleCaseSensitiveness()
     {
-        Assert.AreEqual(1M, new Expression("aBs(-1)", EvaluateOptions.IgnoreCase).Evaluate());
-        Assert.AreEqual(1M, new Expression("Abs(-1)", EvaluateOptions.None).Evaluate());
+        Assert.AreEqual(1M, new Expression("aBs(-1)", ExpressionOptions.IgnoreCase).Evaluate());
+        Assert.AreEqual(1M, new Expression("Abs(-1)", ExpressionOptions.None).Evaluate());
 
         try
         {
-            Assert.AreEqual(1M, new Expression("aBs(-1)", EvaluateOptions.None).Evaluate());
+            Assert.AreEqual(1M, new Expression("aBs(-1)", ExpressionOptions.None).Evaluate());
         }
         catch (ArgumentException)
         {
@@ -533,7 +538,7 @@ public class Fixtures
     [TestMethod]
     public void ShouldEvaluateArrayParameters()
     {
-        var e = new Expression("x * x", EvaluateOptions.IterateParameters);
+        var e = new Expression("x * x", ExpressionOptions.IterateParameters);
         e.Parameters["x"] = new [] { 0, 1, 2, 3, 4 };
 
         var result = (IList)e.Evaluate();
@@ -588,7 +593,7 @@ public class Fixtures
     public void ShouldRoundAwayFromZero()
     {
         Assert.AreEqual(22d, new Expression("Round(22.5, 0)").Evaluate());
-        Assert.AreEqual(23d, new Expression("Round(22.5, 0)", EvaluateOptions.RoundAwayFromZero).Evaluate());
+        Assert.AreEqual(23d, new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero).Evaluate());
     }
 
     [TestMethod]
@@ -707,10 +712,10 @@ public class Fixtures
     {
         // https://github.com/ncalc/ncalc-async/issues/6
             
-        var result1 = Assert.ThrowsException<NCalcEvaluationException>(() => Expression.Compile("\"0\"", EvaluateOptions.NoCache));
+        var result1 = Assert.ThrowsException<NCalcEvaluationException>(() => LogicalExpressionFactory.Create("\"0\"", ExpressionOptions.NoCache));
         Assert.AreEqual($"token recognition error at: '\"' at 1:1{Environment.NewLine}token recognition error at: '\"' at 1:3", result1.Message);
 
-        var result2 = Assert.ThrowsException<NCalcEvaluationException>(() => Expression.Compile("Format(\"{0:(###) ###-####}\", \"9999999999\")", EvaluateOptions.NoCache));
+        var result2 = Assert.ThrowsException<NCalcEvaluationException>(() => LogicalExpressionFactory.Create("Format(\"{0:(###) ###-####}\", \"9999999999\")", ExpressionOptions.NoCache));
         Assert.IsTrue(result2.InnerException?.GetType() == typeof(FormatException));
     }
 
@@ -757,7 +762,8 @@ public class Fixtures
 
             Assert.IsTrue(exceptionThrown);
 
-            var e = new Expression("[a]<2.0", CultureInfo.InvariantCulture) { Parameters = { ["a"] = "1.7" } };
+            var e = new Expression("[a]<2.0", CultureInfo.InvariantCulture);
+            e.Parameters["a"] = "1.7";
             Assert.AreEqual(true, e.Evaluate());
         }
         finally
@@ -781,22 +787,22 @@ public class Fixtures
             TypeCode.UInt32, TypeCode.Int64, TypeCode.UInt64, TypeCode.Single, TypeCode.Double, TypeCode.Decimal
         };
 
-        var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>();
-
-        // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
-        shouldNotWork[TypeCode.Boolean] = allTypes;
-        shouldNotWork[TypeCode.Byte] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.SByte] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.Int16] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt16] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Int32] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt32] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Int64] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt64] = new List<TypeCode>
-            { TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64 };
-        shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean };
+        var shouldNotWork = new Dictionary<TypeCode, List<TypeCode>>
+        {
+            // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
+            [TypeCode.Boolean] = allTypes,
+            [TypeCode.Byte] = [TypeCode.Boolean],
+            [TypeCode.SByte] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.Int16] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.UInt16] = [TypeCode.Boolean],
+            [TypeCode.Int32] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.UInt32] = [TypeCode.Boolean],
+            [TypeCode.Int64] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.UInt64] = [TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64],
+            [TypeCode.Single] = [TypeCode.Boolean],
+            [TypeCode.Double] = [TypeCode.Boolean],
+            [TypeCode.Decimal] = [TypeCode.Boolean]
+        };
 
         // These should all work and return a value
         foreach (var typecodeA in allTypes)
@@ -862,18 +868,18 @@ public class Fixtures
 
         // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
         shouldNotWork[TypeCode.Boolean] = allTypes;
-        shouldNotWork[TypeCode.Byte] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.SByte] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.Int16] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt16] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Int32] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt32] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Int64] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt64] = new List<TypeCode>
-            { TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64 };
-        shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean, TypeCode.Decimal };
-        shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean };
+        shouldNotWork[TypeCode.Byte] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.SByte] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.Int16] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.UInt16] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.Int32] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.UInt32] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.Int64] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.UInt64] =
+            [TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64];
+        shouldNotWork[TypeCode.Single] = [TypeCode.Boolean, TypeCode.Decimal];
+        shouldNotWork[TypeCode.Double] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.Decimal] = [TypeCode.Boolean];
 
         // These should all work and return a value
         foreach (var typecodeA in allTypes)
@@ -939,18 +945,18 @@ public class Fixtures
 
         // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
         shouldNotWork[TypeCode.Boolean] = allTypes;
-        shouldNotWork[TypeCode.Byte] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.SByte] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.Int16] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt16] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Int32] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt32] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Int64] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt64] = new List<TypeCode>
-            { TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64 };
-        shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean };
+        shouldNotWork[TypeCode.Byte] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.SByte] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.Int16] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.UInt16] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.Int32] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.UInt32] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.Int64] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.UInt64] =
+            [TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64];
+        shouldNotWork[TypeCode.Single] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.Double] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.Decimal] = [TypeCode.Boolean];
 
         // These should all work and return a value
         foreach (var typecodeA in allTypes)
@@ -1016,18 +1022,18 @@ public class Fixtures
 
         // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
         shouldNotWork[TypeCode.Boolean] = allTypes;
-        shouldNotWork[TypeCode.Byte] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.SByte] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.Int16] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt16] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Int32] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt32] = new List<TypeCode> { TypeCode.Boolean };
-        shouldNotWork[TypeCode.Int64] = new List<TypeCode> { TypeCode.Boolean, TypeCode.UInt64 };
-        shouldNotWork[TypeCode.UInt64] = new List<TypeCode>
-            { TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64 };
-        shouldNotWork[TypeCode.Single] = new List<TypeCode> { TypeCode.Boolean, TypeCode.Decimal };
-        shouldNotWork[TypeCode.Double] = new List<TypeCode> { TypeCode.Boolean, TypeCode.Decimal };
-        shouldNotWork[TypeCode.Decimal] = new List<TypeCode> { TypeCode.Boolean, TypeCode.Single, TypeCode.Double };
+        shouldNotWork[TypeCode.Byte] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.SByte] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.Int16] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.UInt16] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.Int32] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.UInt32] = [TypeCode.Boolean];
+        shouldNotWork[TypeCode.Int64] = [TypeCode.Boolean, TypeCode.UInt64];
+        shouldNotWork[TypeCode.UInt64] =
+            [TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64];
+        shouldNotWork[TypeCode.Single] = [TypeCode.Boolean, TypeCode.Decimal];
+        shouldNotWork[TypeCode.Double] = [TypeCode.Boolean, TypeCode.Decimal];
+        shouldNotWork[TypeCode.Decimal] = [TypeCode.Boolean, TypeCode.Single, TypeCode.Double];
 
         // These should all work and return a value
         foreach (var typecodeA in allTypes)
@@ -1154,7 +1160,7 @@ public class Fixtures
 
         void ExecuteTest(string expression, bool expected, double inputValue)
         {
-            var compiled = Expression.Compile(expression, EvaluateOptions.NoCache);
+            var compiled = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
             var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
@@ -1165,7 +1171,7 @@ public class Fixtures
                 TypeNameHandling = TypeNameHandling.All
             });
 
-            Expression.CacheEnabled = false;
+            LogicalExpressionFactory.EnableCache = false;
             var exp = new Expression(deserialized);
             exp.Parameters = new Dictionary<string, object> {
                 {"waterlevel", inputValue}
@@ -1186,7 +1192,7 @@ public class Fixtures
     [TestMethod]
     public void Should_Use_Case_Insensitive_Comparer_Issue_85()
     {
-        var eif = new Expression("PageState == 'LIST'", EvaluateOptions.CaseInsensitiveComparer);
+        var eif = new Expression("PageState == 'LIST'", ExpressionOptions.CaseInsensitiveComparer);
         eif.Parameters["PageState"] = "List";
 
         Assert.AreEqual(true, eif.Evaluate());
@@ -1195,7 +1201,7 @@ public class Fixtures
     [TestMethod]
     public void Should_Get_Parameters_Issue_103()
     {
-        var eif = new Expression("PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3)", EvaluateOptions.CaseInsensitiveComparer)
+        var eif = new Expression("PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3)", ExpressionOptions.CaseInsensitiveComparer)
         {
             Parameters =
             {
@@ -1225,7 +1231,7 @@ public class Fixtures
     {
         const string expressionStr = "IN([acp_associated_person_transactions], 'T', 'Z', 'A')";
         var expression = new Expression(expressionStr) {
-            Options = EvaluateOptions.RoundAwayFromZero | EvaluateOptions.IgnoreCase,
+            Options = ExpressionOptions.RoundAwayFromZero | ExpressionOptions.IgnoreCase,
             Parameters =
             {
                 ["acp_associated_person_transactions"] = 'T'
@@ -1345,7 +1351,7 @@ public class Fixtures
 
     [TestMethod]
     public void Should_Use_Decimal_When_Configured() {
-        var expression = new Expression("12.34", EvaluateOptions.DecimalAsDefault);
+        var expression = new Expression("12.34", ExpressionOptions.DecimalAsDefault);
 
         var result = expression.Evaluate();
         Assert.IsTrue(result is decimal);
@@ -1354,7 +1360,7 @@ public class Fixtures
         
     [TestMethod]
     public void Decimals_Should_Not_Loose_Precision() {
-        var expression = new Expression("0.3 - 0.2 - 0.1", EvaluateOptions.DecimalAsDefault);
+        var expression = new Expression("0.3 - 0.2 - 0.1", ExpressionOptions.DecimalAsDefault);
 
         var result = (decimal)expression.Evaluate();
         Assert.AreEqual("0.0", result.ToString(CultureInfo.InvariantCulture)); // Fails without decimals due to FP rounding
@@ -1373,8 +1379,8 @@ public class Fixtures
     [TestMethod]
     public void Should_Use_Correct_BitwiseXOr_133()
     {
-        const EvaluateOptions options = EvaluateOptions.None;
-        var logicalExpression = Expression.Compile(expression: "1 ^ 2", options);
+        const ExpressionOptions options = ExpressionOptions.None;
+        var logicalExpression = LogicalExpressionFactory.Create(expression: "1 ^ 2", options);
 
         var serializedString = logicalExpression.ToString();
 

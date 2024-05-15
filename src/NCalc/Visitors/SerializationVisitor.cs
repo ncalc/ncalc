@@ -148,7 +148,8 @@ public sealed class SerializationVisitor : LogicalExpressionVisitor
                 break;
 
             case ValueType.Float:
-                Result.Append(decimal.Parse(expression.Value.ToString()).ToString(_numberFormatInfo)).Append(' ');
+                Result.Append(decimal.Parse(expression.Value.ToString() ?? string.Empty).ToString(_numberFormatInfo))
+                    .Append(' ');
                 break;
 
             case ValueType.Integer:
@@ -167,10 +168,10 @@ public sealed class SerializationVisitor : LogicalExpressionVisitor
 
         Result.Append('(');
 
-        for(int i=0; i<function.Expressions.Length; i++)
+        for (int i = 0; i < function.Expressions.Length; i++)
         {
             function.Expressions[i].Accept(this);
-            if (i < function.Expressions.Length-1)
+            if (i < function.Expressions.Length - 1)
             {
                 Result.Remove(Result.Length - 1, 1);
                 Result.Append(", ");
@@ -178,7 +179,7 @@ public sealed class SerializationVisitor : LogicalExpressionVisitor
         }
 
         // trim spaces before adding a closing paren
-        while (Result[Result.Length - 1] == ' ')
+        while (Result[^1] == ' ')
             Result.Remove(Result.Length - 1, 1);
 
         Result.Append(") ");
@@ -199,11 +200,11 @@ public sealed class SerializationVisitor : LogicalExpressionVisitor
         {
             Result.Append('(');
             expression.Accept(this);
-                
+
             // trim spaces before adding a closing paren
-            while(Result[Result.Length - 1] == ' ')
+            while (Result[^1] == ' ')
                 Result.Remove(Result.Length - 1, 1);
-                
+
             Result.Append(") ");
         }
     }

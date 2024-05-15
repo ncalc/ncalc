@@ -4,7 +4,7 @@ namespace NCalc.Exceptions;
 
 public class NCalcException : Exception
 {
-    protected NCalcException(string message) : base(message)
+    public NCalcException(string message) : base(message)
     {
         
     }

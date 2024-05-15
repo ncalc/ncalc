@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Globalization;
 using NCalc.Domain;
@@ -7,14 +9,14 @@ using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
 
-public static class NCalcParser
+public static class LogicalExpressionParser
 {
-    private static readonly Parser<LogicalExpression> LogicalExpressionParser;
+    private static readonly Parser<LogicalExpression> Parser;
 
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
-    static NCalcParser()
+    static LogicalExpressionParser()
     {
         /*
          * Grammar:
@@ -47,7 +49,7 @@ public static class NCalcParser
                 .AndSkip(Terms.Char('.'))
                 .And(Terms.Integer())
                 .Then<LogicalExpression>((context,x) =>
-                    new ValueExpression(((NCalcParserContext)context).UseDecimalsAsDefault ?
+                    new ValueExpression(((LogicalExpressionParserContext)context).UseDecimalsAsDefault ?
                         Convert.ToDecimal(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture) :
                         Convert.ToDouble(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture))),
             intParser
@@ -210,11 +212,11 @@ public static class NCalcParser
                 return result;
             });
 
-        LogicalExpressionParser = expression;
+        Parser = expression;
     }
 
-    public static LogicalExpression Parse(NCalcParserContext context)
+    public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        return LogicalExpressionParser.Parse(context);
+        return Parser.Parse(context);
     }
 }
