@@ -43,26 +43,64 @@ public static class LogicalExpressionParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-        var intParser = Terms.Integer().Then<LogicalExpression>(static d => new ValueExpression(d));
+var intParser = Terms.Integer().Then<LogicalExpression>(static d => new ValueExpression(d));
 
-        var decimalPointParser = Terms.Integer(NumberOptions.AllowSign)
+var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
+    .And(Terms.Text("e", true))
+    .And(Terms.Integer(NumberOptions.AllowSign))
+    .Then<LogicalExpression>((context, d) =>
+    {
+        if (!string.IsNullOrWhiteSpace(d.Item2))
+        {
+            bool useDecimalAsDefault = ((LogicalExpressionParserContext)context).UseDecimalsAsDefault;
+
+            if (useDecimalAsDefault)
+            {
+                decimal val = Convert.ToDecimal(d.Item1 + d.Item2 + d.Item3);
+                return new ValueExpression(val);
+            }
+            else
+            {
+                double val = Convert.ToDouble(d.Item1 + d.Item2 + d.Item3);
+                return new ValueExpression(val);
+            }
+        }
+
+        return new ValueExpression(d.Item1);
+    });
+
+        var decimalPointParser = ZeroOrOne(Terms.Integer(NumberOptions.AllowSign))
             .AndSkip(Terms.Char('.'))
-            .And(Terms.Integer())
+            .And(ZeroOrOne(Terms.Integer()))
+            .AndSkip(ZeroOrOne(Terms.Text("e", true)))
+            .And(ZeroOrOne(Terms.Integer(NumberOptions.AllowSign)))
             .Then<LogicalExpression>((context, x) =>
-                new ValueExpression(((LogicalExpressionParserContext)context).UseDecimalsAsDefault
-                    ? Convert.ToDecimal(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture)
-                    : Convert.ToDouble(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture)));
-        
-        var trailingDecimalPointParser = Terms.Integer(NumberOptions.AllowSign)
-            .AndSkip(Terms.Char('.'))
-            .Then<LogicalExpression>((context, x) =>
-                new ValueExpression(((LogicalExpressionParserContext)context).UseDecimalsAsDefault
-                    ? Convert.ToDecimal(x, CultureInfo.InvariantCulture)
-                    : Convert.ToDouble(x, CultureInfo.InvariantCulture)));
-        
+            {
+                var useDecimalAsDefault = ((LogicalExpressionParserContext)context).UseDecimalsAsDefault;
+
+                if (useDecimalAsDefault)
+                {
+                    decimal decimalValue;
+                    if (x.Item3 != 0)
+                        decimalValue = Convert.ToDecimal(x.Item1 + "." + x.Item2 + "e" + x.Item3, CultureInfo.InvariantCulture);
+                    else
+                        decimalValue = Convert.ToDecimal(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture);
+
+                    return new ValueExpression(decimalValue);
+                }
+
+                double doubleValue;
+                if (x.Item3 != 0)
+                    doubleValue = Convert.ToDouble(x.Item1 + "." + x.Item2 + "e" + x.Item3, CultureInfo.InvariantCulture);
+                else
+                    doubleValue = Convert.ToDouble(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture);
+
+                return new ValueExpression(doubleValue);
+            });
+
         var number = OneOf(
             decimalPointParser,
-            trailingDecimalPointParser,
+            intExponentParser,
             intParser
         );
         
