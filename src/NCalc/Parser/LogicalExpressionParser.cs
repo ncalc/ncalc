@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using NCalc.Domain;
+using NCalc.Exceptions;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
 using Identifier = NCalc.Domain.Identifier;
@@ -64,10 +65,7 @@ public static class LogicalExpressionParser
             trailingDecimalPointParser,
             intParser
         );
-
-
-
-
+        
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
         var times = Terms.Char('*');
@@ -102,10 +100,31 @@ public static class LogicalExpressionParser
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
+        var charIsNumber = Terms.Pattern(char.IsNumber);
+        
+        var dateTimeParser = Terms
+            .Char('#')
+            .SkipAnd(charIsNumber)
+            .AndSkip(divided)
+            .And(charIsNumber)
+            .AndSkip(divided)
+            .And(charIsNumber)
+            .AndSkip(Terms.Char('#'))
+            .Then<LogicalExpression>(date =>
+            {
+                if (DateTime.TryParse( $"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
+                {
+                    return new ValueExpression(result);
+                }
+
+                throw new NCalcParserException("Invalid date format.");
+            });
+        
         // primary => NUMBER | "[" identifier "]" | function | boolean | "(" expression ")";
         var primary = number
             .Or(booleanTrue)
             .Or(booleanFalse)
+            .Or(dateTimeParser)
             .Or(stringValue)
             .Or(function)
             .Or(groupExpression)
