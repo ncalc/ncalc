@@ -43,17 +43,30 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var intParser = Terms.Integer().Then<LogicalExpression>(static d => new ValueExpression(d));
+
+        var decimalPointParser = Terms.Integer(NumberOptions.AllowSign)
+            .AndSkip(Terms.Char('.'))
+            .And(Terms.Integer())
+            .Then<LogicalExpression>((context, x) =>
+                new ValueExpression(((LogicalExpressionParserContext)context).UseDecimalsAsDefault
+                    ? Convert.ToDecimal(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture)
+                    : Convert.ToDouble(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture)));
+        
+        var trailingDecimalPointParser = Terms.Integer(NumberOptions.AllowSign)
+            .AndSkip(Terms.Char('.'))
+            .Then<LogicalExpression>((context, x) =>
+                new ValueExpression(((LogicalExpressionParserContext)context).UseDecimalsAsDefault
+                    ? Convert.ToDecimal(x, CultureInfo.InvariantCulture)
+                    : Convert.ToDouble(x, CultureInfo.InvariantCulture)));
         
         var number = OneOf(
-            Terms.Integer(NumberOptions.AllowSign)
-                .AndSkip(Terms.Char('.'))
-                .And(Terms.Integer())
-                .Then<LogicalExpression>((context,x) =>
-                    new ValueExpression(((LogicalExpressionParserContext)context).UseDecimalsAsDefault ?
-                        Convert.ToDecimal(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture) :
-                        Convert.ToDouble(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture))),
+            decimalPointParser,
+            trailingDecimalPointParser,
             intParser
         );
+
+
+
 
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
