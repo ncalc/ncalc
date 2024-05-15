@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace NCalc.Helpers;
+namespace NCalc;
 
 internal static class NumberHelper
 {

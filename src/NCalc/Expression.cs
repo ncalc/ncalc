@@ -189,12 +189,13 @@ public class Expression
     }
 
     /// <summary>
-    /// Returns an array with all parameters names from the expression.
+    /// Returns a list with all parameters names from the expression.
     /// </summary>
-    public string[] GetParametersNames()
+    public List<string> GetParametersNames()
     {
         var extractionVisitor = new ParameterExtractionVisitor();
-        LogicalExpressionFactory.Create(ExpressionString!, Options).Accept(extractionVisitor);
-        return new List<string>(extractionVisitor.Parameters).ToArray();
+        var logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
+        logicalExpression.Accept(extractionVisitor);
+        return [..extractionVisitor.Parameters];
     }
 }

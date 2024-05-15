@@ -38,8 +38,16 @@ public sealed class ValueExpression : LogicalExpression
 
     public ValueExpression(long value)
     {
-        Value = (int)value;
-        Type = ValueType.Integer;
+        if (value is > int.MaxValue or < int.MinValue)
+        {
+            Value = value;
+            Type = ValueType.Integer;
+        }
+        else
+        {
+            Value = (int)value;
+            Type = ValueType.Integer;
+        }
     }
 
     public ValueExpression(double value)

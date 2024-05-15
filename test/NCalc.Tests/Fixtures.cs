@@ -1223,7 +1223,7 @@ public class Fixtures
         var parameters = eif.GetParametersNames();
         Assert.IsTrue(parameters.Contains("a"));
         Assert.IsTrue(parameters.Contains("PageState"));
-        Assert.IsTrue(parameters.Length == 2);
+        Assert.IsTrue(parameters.Count == 2);
     }
 
     [TestMethod]

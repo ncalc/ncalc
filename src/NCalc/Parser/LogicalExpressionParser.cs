@@ -84,8 +84,8 @@ public static class LogicalExpressionParser
             .And(openParen.SkipAnd(arguments).AndSkip(closeParen))
             .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), x.Item2.ToArray()));
 
-        var booleanTrue = Terms.Text("true", caseInsensitive: true).Then<LogicalExpression>(x => True);
-        var booleanFalse = Terms.Text("false", caseInsensitive: true).Then<LogicalExpression>(x => False);
+        var booleanTrue = Terms.Text("true", caseInsensitive: true).Then<LogicalExpression>(_ => True);
+        var booleanFalse = Terms.Text("false", caseInsensitive: true).Then<LogicalExpression>(_ => False);
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using NCalc.Domain;
-using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 
