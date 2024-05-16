@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace NCalc;
 
-internal static class NumberHelper
+public static class MathHelper
 {
     private static object? ConvertIfString(object? s, CultureInfo cultureInfo)
     {
