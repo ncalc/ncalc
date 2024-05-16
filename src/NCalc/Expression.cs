@@ -30,22 +30,22 @@ public class Expression
         remove => EvaluationVisitor.EvaluateFunction -= value;
     }
     
-    private readonly ExpressionOptions _options;
+    private ExpressionOptions _options;
     public ExpressionOptions Options
     {
         get => _options;
-        init
+        set
         {
             _options = value;
             EvaluationVisitor.Options = value;
         }
     }
     
-    private readonly CultureInfo _cultureInfo = CultureInfo.CurrentUICulture;
+    private CultureInfo _cultureInfo = CultureInfo.CurrentUICulture;
     public CultureInfo CultureInfo
     {
         get => _cultureInfo;
-        init
+        set
         {
             _cultureInfo = value;
             EvaluationVisitor.CultureInfo = value;
