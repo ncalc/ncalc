@@ -1,3 +1,7 @@
+# 3.13.1
+* [CompareUsingMostPreciseType is now public again](https://github.com/ncalc/ncalc/commit/c3eb2778c7e83ef191b8f647cdd98f802f6af3bf) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Fixed `BitwiseXOr` behavior](https://github.com/ncalc/ncalc/pull/134) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+
 # 3.13
 
 * [Performance: Use pattern matching instead of TypeCode](https://github.com/ncalc/ncalc/pull/126) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
