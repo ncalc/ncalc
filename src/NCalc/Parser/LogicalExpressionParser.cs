@@ -48,25 +48,18 @@ public static class LogicalExpressionParser
         var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
             .And(Terms.Text("e", true))
             .And(Terms.Integer(NumberOptions.AllowSign))
-            .Then<LogicalExpression>((context, d) =>
+            .Then<LogicalExpression>((context, n) =>
             {
-                if (!string.IsNullOrWhiteSpace(d.Item2))
-                {
-                    bool useDecimalAsDefault = ((LogicalExpressionParserContext)context).UseDecimalsAsDefault;
+                var useDecimalAsDefault = ((LogicalExpressionParserContext)context).UseDecimalsAsDefault;
 
-                    if (useDecimalAsDefault)
-                    {
-                        decimal val = Convert.ToDecimal(d.Item1 + d.Item2 + d.Item3);
-                        return new ValueExpression(val);
-                    }
-                    else
-                    {
-                        double val = Convert.ToDouble(d.Item1 + d.Item2 + d.Item3);
-                        return new ValueExpression(val);
-                    }
+                if (useDecimalAsDefault)
+                {
+                    var decimalValue = Convert.ToDecimal(n.Item1 + n.Item2 + n.Item3);
+                    return new ValueExpression(decimalValue);
                 }
 
-                return new ValueExpression(d.Item1);
+                var doubleValue = Convert.ToDouble(n.Item1 + n.Item2 + n.Item3);
+                return new ValueExpression(doubleValue);
             });
 
         var decimalPointParser = ZeroOrOne(Terms.Integer(NumberOptions.AllowSign))
@@ -138,10 +131,10 @@ public static class LogicalExpressionParser
         var functionWithoutArguments = Terms
             .Identifier()
             .And(openParen.AndSkip(closeParen))
-            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()),[]));
+            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), []));
 
         var function = OneOf(functionWithArguments, functionWithoutArguments);
-        
+
         var booleanTrue = Terms.Text("true", caseInsensitive: true).Then<LogicalExpression>(_ => True);
         var booleanFalse = Terms.Text("false", caseInsensitive: true).Then<LogicalExpression>(_ => False);
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
