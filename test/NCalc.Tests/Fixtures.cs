@@ -1341,7 +1341,8 @@ public class Fixtures
 
         void Expression_EvaluateFunction(string name, FunctionArgs args)
         {
-            if (name != "MyFunc") return;
+            if (name != "MyFunc") 
+                return;
             args.Result = 1;
             counter++;
             totalCounter++;

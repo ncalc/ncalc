@@ -43,31 +43,31 @@ public static class LogicalExpressionParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-var intParser = Terms.Integer().Then<LogicalExpression>(static d => new ValueExpression(d));
+        var intParser = Terms.Integer().Then<LogicalExpression>(static d => new ValueExpression(d));
 
-var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
-    .And(Terms.Text("e", true))
-    .And(Terms.Integer(NumberOptions.AllowSign))
-    .Then<LogicalExpression>((context, d) =>
-    {
-        if (!string.IsNullOrWhiteSpace(d.Item2))
-        {
-            bool useDecimalAsDefault = ((LogicalExpressionParserContext)context).UseDecimalsAsDefault;
-
-            if (useDecimalAsDefault)
+        var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
+            .And(Terms.Text("e", true))
+            .And(Terms.Integer(NumberOptions.AllowSign))
+            .Then<LogicalExpression>((context, d) =>
             {
-                decimal val = Convert.ToDecimal(d.Item1 + d.Item2 + d.Item3);
-                return new ValueExpression(val);
-            }
-            else
-            {
-                double val = Convert.ToDouble(d.Item1 + d.Item2 + d.Item3);
-                return new ValueExpression(val);
-            }
-        }
+                if (!string.IsNullOrWhiteSpace(d.Item2))
+                {
+                    bool useDecimalAsDefault = ((LogicalExpressionParserContext)context).UseDecimalsAsDefault;
 
-        return new ValueExpression(d.Item1);
-    });
+                    if (useDecimalAsDefault)
+                    {
+                        decimal val = Convert.ToDecimal(d.Item1 + d.Item2 + d.Item3);
+                        return new ValueExpression(val);
+                    }
+                    else
+                    {
+                        double val = Convert.ToDouble(d.Item1 + d.Item2 + d.Item3);
+                        return new ValueExpression(val);
+                    }
+                }
+
+                return new ValueExpression(d.Item1);
+            });
 
         var decimalPointParser = ZeroOrOne(Terms.Integer(NumberOptions.AllowSign))
             .AndSkip(Terms.Char('.'))
@@ -82,7 +82,8 @@ var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
                 {
                     decimal decimalValue;
                     if (x.Item3 != 0)
-                        decimalValue = Convert.ToDecimal(x.Item1 + "." + x.Item2 + "e" + x.Item3, CultureInfo.InvariantCulture);
+                        decimalValue = Convert.ToDecimal(x.Item1 + "." + x.Item2 + "e" + x.Item3,
+                            CultureInfo.InvariantCulture);
                     else
                         decimalValue = Convert.ToDecimal(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture);
 
@@ -91,7 +92,8 @@ var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
 
                 double doubleValue;
                 if (x.Item3 != 0)
-                    doubleValue = Convert.ToDouble(x.Item1 + "." + x.Item2 + "e" + x.Item3, CultureInfo.InvariantCulture);
+                    doubleValue = Convert.ToDouble(x.Item1 + "." + x.Item2 + "e" + x.Item3,
+                        CultureInfo.InvariantCulture);
                 else
                     doubleValue = Convert.ToDouble(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture);
 
@@ -103,7 +105,7 @@ var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
             intExponentParser,
             intParser
         );
-        
+
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
         var times = Terms.Char('*');
@@ -128,18 +130,25 @@ var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
 
         var arguments = Separated(comma, expression);
 
-        var function = Terms
+        var functionWithArguments = Terms
             .Identifier()
             .And(openParen.SkipAnd(arguments).AndSkip(closeParen))
             .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), x.Item2.ToArray()));
 
+        var functionWithoutArguments = Terms
+            .Identifier()
+            .And(openParen.AndSkip(closeParen))
+            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()),[]));
+
+        var function = OneOf(functionWithArguments, functionWithoutArguments);
+        
         var booleanTrue = Terms.Text("true", caseInsensitive: true).Then<LogicalExpression>(_ => True);
         var booleanFalse = Terms.Text("false", caseInsensitive: true).Then<LogicalExpression>(_ => False);
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
         var charIsNumber = Terms.Pattern(char.IsNumber);
-        
+
         var dateTimeParser = Terms
             .Char('#')
             .SkipAnd(charIsNumber)
@@ -150,14 +159,14 @@ var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
             .AndSkip(Terms.Char('#'))
             .Then<LogicalExpression>(date =>
             {
-                if (DateTime.TryParse( $"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
+                if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
                 {
                     return new ValueExpression(result);
                 }
 
                 throw new NCalcParserException("Invalid date format.");
             });
-        
+
         // primary => NUMBER | "[" identifier "]" | function | boolean | "(" expression ")";
         var primary = number
             .Or(booleanTrue)
