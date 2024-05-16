@@ -181,10 +181,10 @@ public static class LogicalExpressionParser
         // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
         var unary = Recursive<LogicalExpression>(u =>
-            minus.Or(Terms.Text("not")).And(u)
+            minus.Or(Terms.Text("not", caseInsensitive: true)).And(u)
                 .Then<LogicalExpression>(static x =>
                 {
-                    return x.Item1 switch
+                    return x.Item1.ToLowerInvariant() switch
                     {
                         "-" => new UnaryExpression(UnaryExpressionType.Negate, x.Item2),
                         "not" => new UnaryExpression(UnaryExpressionType.Not, x.Item2),
