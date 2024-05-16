@@ -71,7 +71,7 @@ public class EvaluationVisitor(EvaluateOptions options, CultureInfo cultureInfo)
         return a;
     }
 
-    private int CompareUsingMostPreciseType(object a, object b)
+    public int CompareUsingMostPreciseType(object a, object b)
     {
         Type mpt;
         if (a == null)
