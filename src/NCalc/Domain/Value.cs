@@ -73,12 +73,3 @@ public sealed class ValueExpression : LogicalExpression
         visitor.Visit(this);
     }
 }
-
-public enum ValueType
-{
-    Integer,
-    String,
-    DateTime,
-    Float,
-    Boolean
-}
