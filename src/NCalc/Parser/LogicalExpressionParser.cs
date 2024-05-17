@@ -1,5 +1,7 @@
 #nullable disable
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 using System;
 using System.Globalization;
 using NCalc.Domain;
@@ -26,6 +28,8 @@ public static class LogicalExpressionParser
          * equality       => relational ( ( "=" | "!=" | ... ) relational )* ;
          * relational     => multiplicative ( ( ">=" | ">" | ... ) multiplicative )* ;
          * multiplicative => unary ( ( "/" | "*" ) unary )* ;
+         * exponential    => unary ( "**" unary )* ;
+
          * unary          => ( "-" | "not" ) unary
          *                 | primary ;
          *
@@ -105,12 +109,15 @@ public static class LogicalExpressionParser
         var modulo = Terms.Char('%');
         var minus = Terms.Text("-");
         var plus = Terms.Text("+");
+        var exponent = Terms.Text("**");
         var openParen = Terms.Char('(');
         var closeParen = Terms.Char(')');
         var openBrace = Terms.Char('[');
         var closeBrace = Terms.Char(']');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
+        var negate = Terms.Text("!");
+        var not = Terms.Text("not", caseInsensitive:true);
         
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen);
@@ -174,11 +181,12 @@ public static class LogicalExpressionParser
         // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
         var unary = Recursive<LogicalExpression>(u =>
-            minus.Or(Terms.Text("not", caseInsensitive: true)).And(u)
+            minus.Or(not).Or(negate).And(u)
                 .Then<LogicalExpression>(static x =>
                 {
                     return x.Item1.ToLowerInvariant() switch
                     {
+                        "!" => new UnaryExpression(UnaryExpressionType.Negate, x.Item2),
                         "-" => new UnaryExpression(UnaryExpressionType.Negate, x.Item2),
                         "not" => new UnaryExpression(UnaryExpressionType.Not, x.Item2),
                         _ => throw new NotSupportedException()
@@ -186,13 +194,25 @@ public static class LogicalExpressionParser
                 })
                 .Or(primary));
 
-        // factor => unary ( ( "/" | "*" | "%" ) unary )* ;
-        var multiplicative = unary.And(ZeroOrMany(divided.Or(times).Or(modulo).And(unary)))
+
+        // exponential => unary ( "**" unary )* ;
+        var exponential = unary.And(ZeroOrMany(exponent.And(unary)))
             .Then(static x =>
             {
-                // unary
                 var result = x.Item1;
-                // (("/" | "*") unary ) *
+                foreach (var op in x.Item2)
+                {
+                    result = new BinaryExpression(BinaryExpressionType.Exponentiation, result, op.Item2);
+                }
+
+                return result;
+            });
+
+        // multiplicative => exponential ( ( "/" | "*" | "%" ) exponential )* ;
+        var multiplicative = exponential.And(ZeroOrMany(divided.Or(times).Or(modulo).And(exponential)))
+            .Then(static x =>
+            {
+                var result = x.Item1;
                 foreach (var op in x.Item2)
                 {
                     result = op.Item1 switch
