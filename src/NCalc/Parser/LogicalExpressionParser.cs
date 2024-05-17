@@ -208,10 +208,9 @@ public static class LogicalExpressionParser
                 {
                     return x.Item1.ToUpperInvariant() switch
                     {
-                        "!" => new UnaryExpression(UnaryExpressionType.Negate, x.Item2),
+                        "!" or "NOT" => new UnaryExpression(UnaryExpressionType.Not, x.Item2),
                         "-" => new UnaryExpression(UnaryExpressionType.Negate, x.Item2),
                         "+" => new UnaryExpression(UnaryExpressionType.Positive, x.Item2),
-                        "NOT" => new UnaryExpression(UnaryExpressionType.Not, x.Item2),
                         "~" => new UnaryExpression(UnaryExpressionType.BitwiseNot, x.Item2),
                         _ => throw new NotSupportedException()
                     };
