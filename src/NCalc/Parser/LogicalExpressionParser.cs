@@ -4,7 +4,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using Parlot.Fluent;
@@ -119,7 +118,7 @@ public static class LogicalExpressionParser
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
         var negate = Terms.Text("!");
-        var not = Terms.Text("not", true);
+        var not = Terms.Text("NOT", true);
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen);
