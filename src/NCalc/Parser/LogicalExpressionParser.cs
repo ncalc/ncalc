@@ -111,7 +111,7 @@ public static class LogicalExpressionParser
         var closeBrace = Terms.Char(']');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
-
+        
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen);
 
@@ -259,11 +259,48 @@ public static class LogicalExpressionParser
                 return result;
             });
 
-        var ternary = equality.And(ZeroOrOne(questionMark.SkipAnd(equality).AndSkip(colon).And(equality)))
+
+        var and = Terms
+            .Text("and", caseInsensitive: true)
+            .Or(Terms.Text("&&"))
+            .Or(Terms.Text("&"));
+        
+        var or = Terms
+            .Text("or", caseInsensitive: true)
+            .Or(Terms.Text("||"))
+            .Or(Terms.Text("|"));
+        
+        var xor = Terms.Text("^");
+        
+        var logical = equality.And(
+                ZeroOrMany(OneOf(and, or, xor)
+                    .And(equality)))
+            .Then(static x =>
+            {
+                var result = x.Item1;
+                foreach (var op in x.Item2)
+                {
+                    result = op.Item1.ToLowerInvariant() switch
+                    {
+                        "and" => new BinaryExpression(BinaryExpressionType.And, result, op.Item2),
+                        "&&" => new BinaryExpression(BinaryExpressionType.And, result, op.Item2),
+                        "&" => new BinaryExpression(BinaryExpressionType.BitwiseAnd, result, op.Item2),
+                        "or" => new BinaryExpression(BinaryExpressionType.Or, result, op.Item2),
+                        "||" => new BinaryExpression(BinaryExpressionType.Or, result, op.Item2),
+                        "|" => new BinaryExpression(BinaryExpressionType.BitwiseOr, result, op.Item2),
+                        "^" => new BinaryExpression(BinaryExpressionType.BitwiseXOr, result, op.Item2),
+                        _ => null
+                    };
+                }
+
+                return result;
+            });
+        
+        var ternary = logical.And(ZeroOrOne(questionMark.SkipAnd(logical).AndSkip(colon).And(logical)))
             .Then(x => x.Item2.Item1 == null
                 ? x.Item1
                 : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2));
-
+       
         // expression => ternary ( ( "-" | "+" ) ternary )* ;
         expression.Parser = ternary.And(ZeroOrMany(plus.Or(minus).And(ternary)))
             .Then(static x =>
@@ -287,8 +324,5 @@ public static class LogicalExpressionParser
         Parser = expression;
     }
 
-    public static LogicalExpression Parse(LogicalExpressionParserContext context)
-    {
-        return Parser.Parse(context);
-    }
+    public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
 }

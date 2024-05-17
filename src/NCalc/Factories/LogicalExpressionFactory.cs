@@ -43,7 +43,7 @@ public static class LogicalExpressionFactory
         }
     }
 
-    public static LogicalExpression Create(string expression, ExpressionOptions options)
+    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
     {
         LogicalExpression logicalExpression;
 
