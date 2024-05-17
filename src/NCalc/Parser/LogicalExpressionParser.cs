@@ -165,7 +165,7 @@ public static class LogicalExpressionParser
                     return new ValueExpression(result);
                 }
 
-                throw new NCalcParserException("Invalid date format.");
+                throw new FormatException("Invalid date format.");
             });
 
         // primary => NUMBER | "[" identifier "]" | function | boolean | "(" expression ")";

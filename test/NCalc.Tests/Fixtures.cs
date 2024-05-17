@@ -317,7 +317,7 @@ public class Fixtures
             new Expression(". + 2").Evaluate();
             Assert.Fail();
         }
-        catch (NCalcEvaluationException e)
+        catch (NCalcParserException e)
         {
             Console.WriteLine("Error catched: " + e.Message);
         }
@@ -710,13 +710,23 @@ public class Fixtures
     [TestMethod]
     public void Should_Throw_Exception_On_Lexer_Errors_Issue_6()
     {
-        // https://github.com/ncalc/ncalc-async/issues/6
-            
-        var result1 = Assert.ThrowsException<NCalcEvaluationException>(() => LogicalExpressionFactory.Create("\"0\"", ExpressionOptions.NoCache));
-        Assert.AreEqual($"token recognition error at: '\"' at 1:1{Environment.NewLine}token recognition error at: '\"' at 1:3", result1.Message);
+        
+        Assert.ThrowsException<NCalcParserException>(() => LogicalExpressionFactory.Create("#t -chers", ExpressionOptions.NoCache));
 
-        var result2 = Assert.ThrowsException<NCalcEvaluationException>(() => LogicalExpressionFactory.Create("Format(\"{0:(###) ###-####}\", \"9999999999\")", ExpressionOptions.NoCache));
-        Assert.IsTrue(result2.InnerException?.GetType() == typeof(FormatException));
+        
+        var invalidDateException = Assert.ThrowsException<NCalcParserException>(() => LogicalExpressionFactory.Create("#13/13/2222#", ExpressionOptions.NoCache));
+        Assert.IsTrue(invalidDateException.InnerException?.GetType() == typeof(FormatException));
+        
+        //At v4, DateTime is better handled, and this should no longer cause errors.
+        // https://github.com/ncalc/ncalc-async/issues/6
+        try
+        {
+            LogicalExpressionFactory.Create("Format(\"{0:(###) ###-####}\", \"9999999999\")");
+        }
+        catch 
+        {
+            Assert.Fail();
+        }
     }
 
     [TestMethod]

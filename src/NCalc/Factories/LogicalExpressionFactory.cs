@@ -65,12 +65,13 @@ public static class LogicalExpressionFactory
                 UseDecimalsAsDefault = options.HasOption(ExpressionOptions.DecimalAsDefault)
             };
             logicalExpression = LogicalExpressionParser.Parse(context);
+
+            if (logicalExpression is null)
+                throw new ArgumentNullException(nameof(logicalExpression));
         }
-        catch(Exception ex)
+        catch(Exception exception)
         {
-            //TODO: Handle errors like the old version.
-            var message = new StringBuilder(ex.Message);
-            throw new NCalcParserException(message.ToString(), ex);
+            throw new NCalcParserException("Error parsing the expression.", exception);
         }
 
         if (!_enableCache || options.HasOption(ExpressionOptions.NoCache))
