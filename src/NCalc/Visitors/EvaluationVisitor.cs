@@ -15,11 +15,7 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
     public ExpressionOptions Options { get; set; } = options;
     public CultureInfo CultureInfo { get; set; } = cultureInfo;
 
-    private bool IgnoreCase { get; } = options.HasOption(ExpressionOptions.IgnoreCase);
-
     public required Dictionary<string, object?> Parameters { get; set; }
-    
-    private bool IsCaseInsensitiveComparer { get; } = options.HasOption(ExpressionOptions.CaseInsensitiveComparer);
 
     public object? Result { get; private set; }
     
@@ -83,7 +79,9 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
         var aValue = a != null ? Convert.ChangeType(a, mpt, CultureInfo) : null;
         var bValue = b != null ? Convert.ChangeType(b, mpt, CultureInfo) : null;
 
-        if (IsCaseInsensitiveComparer)
+        bool isCaseInsensitiveComparer = Options.HasOption(ExpressionOptions.CaseInsensitiveComparer);
+
+        if (isCaseInsensitiveComparer)
             return CaseInsensitiveComparer.Default.Compare(aValue, bValue);
 
         return Comparer.Default.Compare(aValue, bValue);
@@ -285,8 +283,10 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
             args.Parameters[i].Parameters = Parameters;
         }
 
+        bool ignoreCase = Options.HasOption(ExpressionOptions.IgnoreCase);
+
         // Calls external implementation
-        OnEvaluateFunction(IgnoreCase ? function.Identifier.Name.ToLower() : function.Identifier.Name, args);
+        OnEvaluateFunction(ignoreCase ? function.Identifier.Name.ToLower() : function.Identifier.Name, args);
 
         // If an external implementation was found get the result back
         if (args.HasResult)
@@ -523,7 +523,9 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
 
     private void CheckCase(string function, string called)
     {
-        if (IgnoreCase)
+        bool ignoreCase = Options.HasOption(ExpressionOptions.IgnoreCase);
+
+        if (ignoreCase)
         {
             if (function.Equals(called, StringComparison.OrdinalIgnoreCase))
             {
