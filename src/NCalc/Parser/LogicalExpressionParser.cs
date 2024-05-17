@@ -119,7 +119,7 @@ public static class LogicalExpressionParser
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
         var negate = Terms.Text("!");
-        var not = Terms.Text("not", caseInsensitive: true);
+        var not = Terms.Text("not", true);
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen);
@@ -144,8 +144,8 @@ public static class LogicalExpressionParser
 
         var function = OneOf(functionWithArguments, functionWithoutArguments);
 
-        var booleanTrue = Terms.Text("true", caseInsensitive: true).Then<LogicalExpression>(_ => True);
-        var booleanFalse = Terms.Text("false", caseInsensitive: true).Then<LogicalExpression>(_ => False);
+        var booleanTrue = Terms.Text("true", true).Then<LogicalExpression>(_ => True);
+        var booleanFalse = Terms.Text("false", true).Then<LogicalExpression>(_ => False);
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
@@ -311,12 +311,12 @@ public static class LogicalExpressionParser
 
 
         var and = Terms
-            .Text("and", caseInsensitive: true)
+            .Text("and", true)
             .Or(Terms.Text("&&"))
             .Or(Terms.Text("&"));
 
         var or = Terms
-            .Text("or", caseInsensitive: true)
+            .Text("or", true)
             .Or(Terms.Text("||"))
             .Or(Terms.Text("|"));
 
