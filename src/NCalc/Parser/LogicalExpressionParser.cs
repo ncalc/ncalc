@@ -184,11 +184,11 @@ public static class LogicalExpressionParser
             minus.Or(not).Or(negate).And(u)
                 .Then<LogicalExpression>(static x =>
                 {
-                    return x.Item1.ToLowerInvariant() switch
+                    return x.Item1.ToUpperInvariant() switch
                     {
                         "!" => new UnaryExpression(UnaryExpressionType.Negate, x.Item2),
                         "-" => new UnaryExpression(UnaryExpressionType.Negate, x.Item2),
-                        "not" => new UnaryExpression(UnaryExpressionType.Not, x.Item2),
+                        "NOT" => new UnaryExpression(UnaryExpressionType.Not, x.Item2),
                         _ => throw new NotSupportedException()
                     };
                 })
@@ -300,12 +300,12 @@ public static class LogicalExpressionParser
                 var result = x.Item1;
                 foreach (var op in x.Item2)
                 {
-                    result = op.Item1.ToLowerInvariant() switch
+                    result = op.Item1.ToUpperInvariant() switch
                     {
-                        "and" => new BinaryExpression(BinaryExpressionType.And, result, op.Item2),
+                        "AND" => new BinaryExpression(BinaryExpressionType.And, result, op.Item2),
                         "&&" => new BinaryExpression(BinaryExpressionType.And, result, op.Item2),
                         "&" => new BinaryExpression(BinaryExpressionType.BitwiseAnd, result, op.Item2),
-                        "or" => new BinaryExpression(BinaryExpressionType.Or, result, op.Item2),
+                        "OR" => new BinaryExpression(BinaryExpressionType.Or, result, op.Item2),
                         "||" => new BinaryExpression(BinaryExpressionType.Or, result, op.Item2),
                         "|" => new BinaryExpression(BinaryExpressionType.BitwiseOr, result, op.Item2),
                         "^" => new BinaryExpression(BinaryExpressionType.BitwiseXOr, result, op.Item2),
