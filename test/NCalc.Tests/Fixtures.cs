@@ -87,7 +87,7 @@ public class Fixtures
             new Expression("(3 + 2").Evaluate();
             Assert.Fail();
         }
-        catch(NCalcEvaluationException e)
+        catch(NCalcParserException e)
         {
             Console.WriteLine("Error catched: " + e.Message);
         }

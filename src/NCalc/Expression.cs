@@ -70,10 +70,10 @@ public class Expression
 
     public LogicalExpression? LogicalExpression { get; private set; }
     
+    public Exception? Error { get; private set; }
+    
     protected EvaluationVisitor EvaluationVisitor { get; set; }
     
-    public Exception? Error { get; private set; }
-
     protected Dictionary<string, IEnumerator>? ParameterEnumerators;
     
     public Expression(string expressionString, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null)
@@ -113,10 +113,10 @@ public class Expression
     }
     
     /// <summary>
-    /// Pre-compiles the expression in order to check syntax errors.
-    /// If errors are detected, the Error property contains the message.
+    /// Create the LogicalExpression in order to check syntax errors.
+    /// If errors are detected, the Error property contains the exception.
     /// </summary>
-    /// <returns>True if the expression syntax is correct, otherwiser False</returns>
+    /// <returns>True if the expression syntax is correct, otherwiser False.</returns>
     public bool HasErrors()
     {
         try
@@ -138,60 +138,60 @@ public class Expression
         if (HasErrors() && Error is not null)
             throw Error;
 
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
-
         // if array evaluation, execute the same expression multiple times
         if (Options.HasOption(ExpressionOptions.IterateParameters))
+            return IterateParameters();
+
+        LogicalExpression!.Accept(EvaluationVisitor);
+        return EvaluationVisitor.Result;
+    }
+
+    private List<object?> IterateParameters()
+    {
+        int size = -1;
+
+        ParameterEnumerators = new Dictionary<string, IEnumerator>();
+
+        foreach (var parameter in Parameters.Values)
         {
-            int size = -1;
-
-            ParameterEnumerators = new Dictionary<string, IEnumerator>();
-
-            foreach (var parameter in Parameters.Values)
+            if (parameter is IEnumerable enumerable)
             {
-                if (parameter is IEnumerable enumerable)
-                {
-                    var localsize = enumerable.Cast<object>().Count();
+                var localsize = enumerable.Cast<object>().Count();
 
-                    if (size == -1)
-                    {
-                        size = localsize;
-                    }
-                    else if (localsize != size)
-                    {
-                        throw new NCalcEvaluationException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
-                    }
+                if (size == -1)
+                {
+                    size = localsize;
+                }
+                else if (localsize != size)
+                {
+                    throw new NCalcEvaluationException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
                 }
             }
-
-            foreach (var key in Parameters.Keys)
-            {
-                if (Parameters[key] is IEnumerable parameter)
-                {
-                    ParameterEnumerators.Add(key,parameter.GetEnumerator());
-                }
-            }
-
-            var results = new List<object?>();
-            for (var i = 0; i < size; i++)
-            {
-                foreach (var key in ParameterEnumerators.Keys)
-                {
-                    var enumerator = ParameterEnumerators[key];
-                    enumerator.MoveNext();
-                    Parameters[key] = enumerator.Current;
-                }
-
-                LogicalExpression.Accept(EvaluationVisitor);
-                results.Add(EvaluationVisitor.Result);
-            }
-
-            return results;
         }
 
-        LogicalExpression.Accept(EvaluationVisitor);
-        return EvaluationVisitor.Result;
+        foreach (var key in Parameters.Keys)
+        {
+            if (Parameters[key] is IEnumerable parameter)
+            {
+                ParameterEnumerators.Add(key,parameter.GetEnumerator());
+            }
+        }
 
+        var results = new List<object?>();
+        for (var i = 0; i < size; i++)
+        {
+            foreach (var key in ParameterEnumerators.Keys)
+            {
+                var enumerator = ParameterEnumerators[key];
+                enumerator.MoveNext();
+                Parameters[key] = enumerator.Current;
+            }
+
+            LogicalExpression!.Accept(EvaluationVisitor);
+            results.Add(EvaluationVisitor.Result);
+        }
+
+        return results;
     }
 
     /// <summary>
@@ -200,8 +200,8 @@ public class Expression
     public List<string> GetParametersNames()
     {
         var extractionVisitor = new ParameterExtractionVisitor();
-        var logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
-        logicalExpression.Accept(extractionVisitor);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
+        LogicalExpression.Accept(extractionVisitor);
         return [..extractionVisitor.Parameters];
     }
 }

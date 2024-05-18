@@ -66,9 +66,19 @@ public static class LogicalExpressionParser
                 return new ValueExpression(doubleValue);
             });
 
-        var decimalPointParser = ZeroOrOne(Terms.Integer(NumberOptions.AllowSign))
+
+        var mandatoryIntWithOptionalDecimal  = 
+            Terms.Integer(NumberOptions.AllowSign)
             .AndSkip(Terms.Char('.'))
-            .And(ZeroOrOne(Terms.Integer()))
+            .And(ZeroOrOne(Terms.Integer()));
+        
+        var optionalIntWithMandatoryDecimal = 
+            ZeroOrOne(Terms.Integer(NumberOptions.AllowSign))
+                .AndSkip(Terms.Char('.'))
+                .And(Terms.Integer());
+        
+        var decimalPointParser = 
+            OneOf(mandatoryIntWithOptionalDecimal, optionalIntWithMandatoryDecimal)
             .AndSkip(ZeroOrOne(Terms.Text("e", true)))
             .And(ZeroOrOne(Terms.Integer(NumberOptions.AllowSign)))
             .Then<LogicalExpression>((context, x) =>
@@ -350,7 +360,7 @@ public static class LogicalExpressionParser
                 : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2));
 
         expression.Parser = ternary;
-        Parser = expression.Compile();
+        Parser = expression;
     }
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
