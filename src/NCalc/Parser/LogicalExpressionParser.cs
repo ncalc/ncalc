@@ -30,7 +30,7 @@ public static class LogicalExpressionParser
          * multiplicative => unary ( ( "/" | "*" ) unary )* ;
          * exponential    => unary ( "**" unary )* ;
 
-         * unary          => ( "-" | "not" ) unary
+         * unary          => ( "-" | "not" | "!" ) unary
          *                 | primary ;
          *
          * primary        => NUMBER
@@ -137,6 +137,7 @@ public static class LogicalExpressionParser
         var identifierExpression = openBrace
             .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true))
             .Or(Terms.Identifier())
+            // .Or(Terms.Identifier().When(i=> !i.ToString().Equals("NOT", StringComparison.InvariantCultureIgnoreCase)))
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
         var arguments = Separated(comma, expression);
@@ -211,8 +212,9 @@ public static class LogicalExpressionParser
 
         // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
-        var unary = Recursive<LogicalExpression>(u =>
-            minus.Or(not).Or(negate).Or(plus).Or(bitwiseNot).And(u)
+        var unary = Recursive<LogicalExpression>(u => 
+                OneOf(not,minus,negate,plus,bitwiseNot)
+                .And(u)
                 .Then<LogicalExpression>(static x =>
                 {
                     return x.Item1.ToUpperInvariant() switch
@@ -319,12 +321,12 @@ public static class LogicalExpressionParser
 
 
         var and = Terms
-            .Text("and", true)
+            .Text("AND", true)
             .Or(Terms.Text("&&"))
             .Or(Terms.Text("&"));
 
         var or = Terms
-            .Text("or", true)
+            .Text("OR", true)
             .Or(Terms.Text("||"))
             .Or(Terms.Text("|"));
 

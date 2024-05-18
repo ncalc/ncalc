@@ -1399,4 +1399,16 @@ public class Fixtures
         Assert.AreEqual("1 ^ 2", serializedString);
         Assert.AreEqual(3, new Expression(logicalExpression).Evaluate());
     }
+
+    [TestMethod]
+    public void Should_Evaluate_Not_Unary_Operator()
+    {
+        var notUppercaseLogicalExpression = LogicalExpressionFactory.Create("NOT true");
+        var notUppercaseExpression = new Expression(notUppercaseLogicalExpression);
+        Assert.IsFalse((bool)notUppercaseExpression.Evaluate()!);
+        
+        var notLowercaseLogicalExpression = LogicalExpressionFactory.Create("not true");
+        var notLowercaseExpression = new Expression(notLowercaseLogicalExpression);
+        Assert.IsFalse((bool)notLowercaseExpression.Evaluate()!);
+    }
 }
