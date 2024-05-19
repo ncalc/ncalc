@@ -127,8 +127,9 @@ public static class LogicalExpressionParser
         var closeBrace = Terms.Char(']');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
-        var negate = Terms.Text("!");
-        var not = Terms.Text("NOT", true);
+        
+        var negate = Literals.Text("!");
+        var not = Literals.Text("NOT", true);
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen);
