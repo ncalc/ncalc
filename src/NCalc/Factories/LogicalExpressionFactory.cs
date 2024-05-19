@@ -5,6 +5,9 @@ using NCalc.Parser;
 
 namespace NCalc;
 
+/// <summary>
+/// Class responsible to create LogicalExpression objects.
+/// </summary>
 public static class LogicalExpressionFactory
 {
     private static bool _enableCache = true;

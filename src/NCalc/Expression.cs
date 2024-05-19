@@ -132,7 +132,7 @@ public class Expression
         if (HasErrors() && Error is not null)
             throw Error;
 
-        // if array evaluation, execute the same expression multiple times
+        // If array evaluation, execute the same expression multiple times
         if (Options.HasOption(ExpressionOptions.IterateParameters))
             return IterateParameters();
 
@@ -196,6 +196,6 @@ public class Expression
         var extractionVisitor = new ParameterExtractionVisitor();
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
         LogicalExpression.Accept(extractionVisitor);
-        return [..extractionVisitor.Parameters];
+        return extractionVisitor.Parameters;
     }
 }

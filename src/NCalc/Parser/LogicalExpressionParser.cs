@@ -127,7 +127,7 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         
         var negate = Terms.Text("!");
-        var not = Terms.Text("NOT", true);
+        var not = Literals.Text("NOT", true);
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen);
@@ -151,9 +151,12 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), []));
 
         var function = OneOf(functionWithArguments, functionWithoutArguments);
-
-        var booleanTrue = Terms.Text("true", true).Then<LogicalExpression>(_ => True);
-        var booleanFalse = Terms.Text("false", true).Then<LogicalExpression>(_ => False);
+        
+        var booleanTrue = Terms.Text("TRUE", true)
+            .Then<LogicalExpression>(_ => True);
+        var booleanFalse = Terms.Text("FALSE", true)
+            .Then<LogicalExpression>(_ => False);
+        
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
@@ -177,16 +180,18 @@ public static class LogicalExpressionParser
                 throw new FormatException("Invalid date format.");
             });
 
-        // primary => NUMBER | "[" identifier "]" | function | boolean | "(" expression ")";
-        var primary = number
-            .Or(booleanTrue)
-            .Or(booleanFalse)
-            .Or(dateTimeParser)
-            .Or(stringValue)
-            .Or(function)
-            .Or(groupExpression)
-            .Or(identifierExpression);
-
+        // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
+        
+        var primary = OneOf(
+            number, 
+            booleanTrue, 
+            booleanFalse,
+            dateTimeParser,
+            stringValue, 
+            function,
+            groupExpression,
+            identifierExpression);
+        
         // exponential => primary ( "**" primary )* ;
         var exponential = primary.And(ZeroOrMany(exponent.And(primary)))
             .Then(static x =>
