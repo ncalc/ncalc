@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using NCalc.Domain;
+﻿using NCalc.Domain;
 
 namespace NCalc.Visitors;
 

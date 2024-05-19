@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NCalc.Exceptions;
+﻿namespace NCalc.Exceptions;
 
 public sealed class NCalcEvaluationException : NCalcException
 {

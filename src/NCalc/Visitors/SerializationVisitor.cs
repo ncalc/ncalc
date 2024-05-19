@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Text;
-using NCalc.Domain;
+﻿using NCalc.Domain;
 using ValueType = NCalc.Domain.ValueType;
 
 namespace NCalc.Visitors;

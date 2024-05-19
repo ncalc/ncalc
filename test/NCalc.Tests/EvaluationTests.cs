@@ -1,5 +1,3 @@
-using System;
-
 namespace NCalc.Tests;
 
 [Trait("Category","Evaluations")]

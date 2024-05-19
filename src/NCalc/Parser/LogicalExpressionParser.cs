@@ -2,8 +2,6 @@
 
 // ReSharper disable AssignNullToNotNullAttribute
 
-using System;
-using System.Globalization;
 using NCalc.Domain;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;

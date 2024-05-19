@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-
-namespace NCalc;
+﻿namespace NCalc;
 
 public static class MathHelper
 {

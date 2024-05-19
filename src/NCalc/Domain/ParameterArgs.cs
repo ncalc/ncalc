@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NCalc.Domain;
+﻿namespace NCalc.Domain;
 
 public class ParameterArgs : EventArgs
 {

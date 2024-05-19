@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-
 namespace NCalc.Tests;
 
 [Trait("Category","Multiple Threads")]

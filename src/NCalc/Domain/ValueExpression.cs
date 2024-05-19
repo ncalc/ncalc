@@ -1,4 +1,3 @@
-using System;
 using NCalc.Exceptions;
 using NCalc.Visitors;
 
@@ -6,15 +5,14 @@ namespace NCalc.Domain;
 
 public sealed class ValueExpression : LogicalExpression
 {
-    public object? Value { get; set;  }
-    public ValueType Type { get; set;  }
+    public object? Value { get; set; }
+    public ValueType Type { get; set; }
 
-    
+
     public ValueExpression()
     {
-        
     }
-    
+
     public ValueExpression(object value)
     {
         Type = value switch

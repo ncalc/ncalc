@@ -7,6 +7,7 @@
 		<!-- Other common properties -->
 		<LangVersion>12</LangVersion>
 		<Nullable>enable</Nullable>
+		<ImplicitUsings>true</ImplicitUsings>
 		<Authors>Sebastien Ros and contributors</Authors>
 		<Copyright>Sebastien Ros and contributors</Copyright>
 		<Company>https://github.com/ncalc</Company>
@@ -21,6 +22,16 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<Using Include="System"/>
+		<Using Include="System.Text"/>
+		<Using Include="System.Collections"/>
+		<Using Include="System.Collections.Concurrent"/>
+		<Using Include="System.Collections.Generic"/>
+		<Using Include="System.Globalization"/>
+		<Using Include="System.Linq"/>
+	</ItemGroup>
 
 	<!-- Unsigned Assembly Configuration -->
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' ">

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using NCalc.Domain;
+﻿using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Visitors;
 

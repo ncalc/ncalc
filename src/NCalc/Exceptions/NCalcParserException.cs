@@ -1,5 +1,3 @@
-using System;
-
 namespace NCalc.Exceptions;
 
 public sealed class NCalcParserException : NCalcException

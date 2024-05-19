@@ -1,6 +1,4 @@
-using System;
 using NCalc.Exceptions;
-
 
 namespace NCalc.Tests;
 
