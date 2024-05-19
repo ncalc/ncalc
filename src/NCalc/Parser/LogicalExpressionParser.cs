@@ -129,8 +129,8 @@ public static class LogicalExpressionParser
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
         
-        var negate = Literals.Text("!");
-        var not = Literals.Text("NOT", true);
+        var negate = Terms.Text("!");
+        var not = Terms.Text("NOT", true);
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen);
@@ -296,9 +296,7 @@ public static class LogicalExpressionParser
                 .And(shift)))
             .Then(static x =>
             {
-                // unary
                 var result = x.Item1;
-                // (("/" | "*") unary ) *
                 foreach (var op in x.Item2)
                 {
                     result = op.Item1 switch
@@ -322,9 +320,7 @@ public static class LogicalExpressionParser
                 .And(relational)))
             .Then(static x =>
             {
-                // unary
                 var result = x.Item1;
-                // (("/" | "*") unary ) *
                 foreach (var op in x.Item2)
                 {
                     result = op.Item1 switch
@@ -337,7 +333,6 @@ public static class LogicalExpressionParser
 
                 return result;
             });
-
 
         var and = Terms
             .Text("AND", true)
