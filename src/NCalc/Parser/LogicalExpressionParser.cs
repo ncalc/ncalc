@@ -26,7 +26,9 @@ public static class LogicalExpressionParser
          * expression     => ternary ( ( "-" | "+" ) ternary )* ;
          * ternary        => equality ( "?" equality ":" equality)?
          * equality       => relational ( ( "=" | "!=" | ... ) relational )* ;
-         * relational     => multiplicative ( ( ">=" | ">" | ... ) multiplicative )* ;
+         * relational     => shift ( ( ">=" | ">" | ... ) shift )* ;
+         * shift          => additive ( ( "<<" | ">>" ) additive )* ;
+         * additive       => multiplicative ( ( "-" | "+" ) multiplicative )* ;
          * multiplicative => unary ( ( "/" | "*" ) unary )* ;
          * exponential    => unary ( "**" unary )* ;
 
@@ -65,7 +67,6 @@ public static class LogicalExpressionParser
                 var doubleValue = Convert.ToDouble(n.Item1 + n.Item2 + n.Item3);
                 return new ValueExpression(doubleValue);
             });
-
 
         var mandatoryIntWithOptionalDecimal  = 
             Terms.Integer(NumberOptions.AllowSign)
@@ -138,7 +139,6 @@ public static class LogicalExpressionParser
         var identifierExpression = openBrace
             .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true))
             .Or(Terms.Identifier())
-            // .Or(Terms.Identifier().When(i=> !i.ToString().Equals("NOT", StringComparison.InvariantCultureIgnoreCase)))
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
         var arguments = Separated(comma, expression);
@@ -248,7 +248,7 @@ public static class LogicalExpressionParser
                 return result;
             }).Or(unary);
 
-        // expression => ternary ( ( "-" | "+" ) ternary )* ;
+        // additive => multiplicative ( ( "-" | "+" ) multiplicative )* ;
         var additive = multiplicative.And(ZeroOrMany(plus.Or(minus).And(multiplicative)))
             .Then(static x =>
             {
@@ -264,16 +264,36 @@ public static class LogicalExpressionParser
                 }
 
                 return result;
-            })
-            .Or(multiplicative);
-            
+            }).Or(multiplicative);
 
-        var relational = additive.And(ZeroOrMany(OneOf(
+        // shift => additive ( ( "<<" | ">>" ) additive )* ;
+        var shift = additive.And(ZeroOrMany(
+                Terms.Text("<<")
+                .Or(Terms.Text(">>"))
+                .And(additive)))
+            .Then(static x =>
+            {
+                var result = x.Item1;
+                foreach (var op in x.Item2)
+                {
+                    result = op.Item1 switch
+                    {
+                        "<<" => new BinaryExpression(BinaryExpressionType.LeftShift, result, op.Item2),
+                        ">>" => new BinaryExpression(BinaryExpressionType.RightShift, result, op.Item2),
+                        _ => null
+                    };
+                }
+
+                return result;
+            }).Or(additive);
+
+        // relational => shift ( ( ">=" | "<=" | "<" | ">" ) shift )* ;
+        var relational = shift.And(ZeroOrMany(OneOf(
                     Terms.Text(">="),
                     Terms.Text("<="),
                     Terms.Text("<"),
                     Terms.Text(">"))
-                .And(additive)))
+                .And(shift)))
             .Then(static x =>
             {
                 // unary
