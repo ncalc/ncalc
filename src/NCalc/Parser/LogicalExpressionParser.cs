@@ -309,10 +309,8 @@ public static class LogicalExpressionParser
                 {
                     result = op.Item1 switch
                     {
-                        "<>" => new BinaryExpression(BinaryExpressionType.NotEqual, result, op.Item2),
-                        "==" => new BinaryExpression(BinaryExpressionType.Equal, result, op.Item2),
-                        "!=" => new BinaryExpression(BinaryExpressionType.NotEqual, result, op.Item2),
-                        "=" => new BinaryExpression(BinaryExpressionType.Equal, result, op.Item2),
+                        "<>" or "!=" => new BinaryExpression(BinaryExpressionType.NotEqual, result, op.Item2),
+                        "==" or "=" => new BinaryExpression(BinaryExpressionType.Equal, result, op.Item2),
                         _ => null
                     };
                 }
@@ -343,11 +341,9 @@ public static class LogicalExpressionParser
                 {
                     result = op.Item1.ToUpperInvariant() switch
                     {
-                        "AND" => new BinaryExpression(BinaryExpressionType.And, result, op.Item2),
-                        "&&" => new BinaryExpression(BinaryExpressionType.And, result, op.Item2),
+                        "AND" or "&&" => new BinaryExpression(BinaryExpressionType.And, result, op.Item2),
+                        "OR" or "||" => new BinaryExpression(BinaryExpressionType.Or, result, op.Item2),
                         "&" => new BinaryExpression(BinaryExpressionType.BitwiseAnd, result, op.Item2),
-                        "OR" => new BinaryExpression(BinaryExpressionType.Or, result, op.Item2),
-                        "||" => new BinaryExpression(BinaryExpressionType.Or, result, op.Item2),
                         "|" => new BinaryExpression(BinaryExpressionType.BitwiseOr, result, op.Item2),
                         "^" => new BinaryExpression(BinaryExpressionType.BitwiseXOr, result, op.Item2),
                         _ => null
