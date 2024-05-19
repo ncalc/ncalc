@@ -148,7 +148,7 @@ public sealed class SerializationVisitor : LogicalExpressionVisitor
                 break;
 
             case ValueType.Float:
-                Result.Append(decimal.Parse(expression.Value.ToString() ?? string.Empty).ToString(_numberFormatInfo))
+                Result.Append(decimal.Parse(expression.Value?.ToString() ?? string.Empty).ToString(_numberFormatInfo))
                     .Append(' ');
                 break;
 

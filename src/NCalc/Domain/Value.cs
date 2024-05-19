@@ -6,8 +6,14 @@ namespace NCalc.Domain;
 
 public sealed class ValueExpression : LogicalExpression
 {
-    public object Value { get; }
+    public object? Value { get; }
     public ValueType Type { get; }
+
+    
+    public ValueExpression()
+    {
+        
+    }
     
     public ValueExpression(object value)
     {
