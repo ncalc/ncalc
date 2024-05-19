@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using NCalc.Domain;
 using NCalc.Exceptions;
-using NCalc.Factories;
 using NCalc.Visitors;
 
 namespace NCalc;
@@ -148,7 +147,7 @@ public class Expression
 
     private List<object?> IterateParameters()
     {
-        int size = -1;
+        var size = -1;
 
         ParameterEnumerators = new Dictionary<string, IEnumerator>();
 

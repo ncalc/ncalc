@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Text;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Parser;
 
-namespace NCalc.Factories;
+namespace NCalc;
 
 public static class LogicalExpressionFactory
 {

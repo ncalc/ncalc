@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NCalc.Domain;
-using NCalc.Factories;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace NCalc.Tests;
 

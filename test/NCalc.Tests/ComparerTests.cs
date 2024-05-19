@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace NCalc.Tests;
 
 [Trait("Category","Comparer")]
