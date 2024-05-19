@@ -6,11 +6,11 @@ public sealed class TernaryExpression(LogicalExpression leftExpression, LogicalE
         LogicalExpression rightExpression)
     : LogicalExpression
 {
-    public LogicalExpression LeftExpression { get; } = leftExpression;
+    public LogicalExpression LeftExpression { get; set;  } = leftExpression;
 
-    public LogicalExpression MiddleExpression { get; } = middleExpression;
+    public LogicalExpression MiddleExpression { get; set;  } = middleExpression;
 
-    public LogicalExpression RightExpression { get; } = rightExpression;
+    public LogicalExpression RightExpression { get; set;  } = rightExpression;
 
     public override void Accept(LogicalExpressionVisitor visitor)
     {
