@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0;net4.8</TargetFrameworks>
+    <LangVersion>12</LangVersion>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <ImplicitUsings>true</ImplicitUsings>
