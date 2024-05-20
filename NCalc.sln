@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Docs", "docs\NCalc.Do
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{E423BF0C-4F9F-4C8D-B432-52FD873E5929}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Play", "src\NCalc.Play\NCalc.Play.csproj", "{C36CFACB-111E-45F6-94A8-ED9A084C6410}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,12 @@ Global
 		{FC5C9A17-744F-4F97-B0FC-330B0514B395}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FC5C9A17-744F-4F97-B0FC-330B0514B395}.SignedRelease|Any CPU.ActiveCfg = Debug|Any CPU
 		{FC5C9A17-744F-4F97-B0FC-330B0514B395}.SignedRelease|Any CPU.Build.0 = Debug|Any CPU
+		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.SignedRelease|Any CPU.ActiveCfg = Debug|Any CPU
+		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.SignedRelease|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

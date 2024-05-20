@@ -8,7 +8,8 @@
           ],
           "src": "../src",
           "exclude": [
-            "**/test/**"
+            "**/test/**",
+            "**/NCalc.Play/**"
           ]
         }
       ],
