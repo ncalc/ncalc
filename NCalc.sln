@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Tests", "test\NCalc.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalc", "src\NCalc\NCalc.csproj", "{252E5F34-FA82-488A-939D-EF8DDAAB7D2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Docs", "docs\NCalc.Docs.csproj", "{FC5C9A17-744F-4F97-B0FC-330B0514B395}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{E423BF0C-4F9F-4C8D-B432-52FD873E5929}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +46,12 @@ Global
 		{252E5F34-FA82-488A-939D-EF8DDAAB7D2A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{252E5F34-FA82-488A-939D-EF8DDAAB7D2A}.SignedRelease|Any CPU.ActiveCfg = SignedRelease|Any CPU
 		{252E5F34-FA82-488A-939D-EF8DDAAB7D2A}.SignedRelease|Any CPU.Build.0 = SignedRelease|Any CPU
+		{FC5C9A17-744F-4F97-B0FC-330B0514B395}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC5C9A17-744F-4F97-B0FC-330B0514B395}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC5C9A17-744F-4F97-B0FC-330B0514B395}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC5C9A17-744F-4F97-B0FC-330B0514B395}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC5C9A17-744F-4F97-B0FC-330B0514B395}.SignedRelease|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC5C9A17-744F-4F97-B0FC-330B0514B395}.SignedRelease|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,5 +61,8 @@ Global
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = NCalc.vsmdi
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FC5C9A17-744F-4F97-B0FC-330B0514B395} = {E423BF0C-4F9F-4C8D-B432-52FD873E5929}
 	EndGlobalSection
 EndGlobal

@@ -13,3 +13,5 @@
 bin/
 obj/
 .idea/
+/docs/api/
+*.user
