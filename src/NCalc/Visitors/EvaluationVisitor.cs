@@ -1,4 +1,6 @@
 ﻿using NCalc.Domain;
+using NCalc.Handlers;
+using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 

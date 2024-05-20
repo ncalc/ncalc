@@ -1,5 +1,7 @@
 ﻿using NCalc.Domain;
 using NCalc.Exceptions;
+using NCalc.Factories;
+using NCalc.Handlers;
 using NCalc.Visitors;
 
 namespace NCalc;

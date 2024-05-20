@@ -1,5 +1,7 @@
 
 
+using NCalc.Factories;
+
 namespace NCalc.Tests;
 
 [Trait("Category","Operators")]

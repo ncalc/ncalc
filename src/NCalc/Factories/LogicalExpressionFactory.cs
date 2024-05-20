@@ -3,7 +3,7 @@ using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Parser;
 
-namespace NCalc;
+namespace NCalc.Factories;
 
 /// <summary>
 /// Class responsible to create LogicalExpression objects.

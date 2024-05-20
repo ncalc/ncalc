@@ -1,4 +1,4 @@
-﻿namespace NCalc;
+﻿namespace NCalc.Helpers;
 
 public static class MathHelper
 {
