@@ -65,46 +65,53 @@ public static class LogicalExpressionParser
                 return new ValueExpression(doubleValue);
             });
 
-        var mandatoryIntWithOptionalDecimal  = 
-            Terms.Integer(NumberOptions.AllowSign)
-            .AndSkip(Terms.Char('.'))
-            .And(ZeroOrOne(Terms.Integer()));
+     var mandatoryIntWithOptionalDecimal =
+         Terms.Integer(NumberOptions.AllowSign)
+                .AndSkip(Terms.Char('.'))
+                .And(ZeroOrOne(Terms.Integer()))
+                .Then(l=>new ValueTuple<OptionalResult<long>, OptionalResult<long>>(new OptionalResult<long>(true, l.Item1), l.Item2));
+
         
         var optionalIntWithMandatoryDecimal = 
             ZeroOrOne(Terms.Integer(NumberOptions.AllowSign))
                 .AndSkip(Terms.Char('.'))
-                .And(Terms.Integer());
+                .And(Terms.Integer())
+                .Then(l=>new ValueTuple<OptionalResult<long>, OptionalResult<long>>(l.Item1, new OptionalResult<long>(true, l.Item2)));
         
         var decimalPointParser = 
-            OneOf(mandatoryIntWithOptionalDecimal, optionalIntWithMandatoryDecimal)
+             OneOf(mandatoryIntWithOptionalDecimal, optionalIntWithMandatoryDecimal)
             .AndSkip(ZeroOrOne(Terms.Text("e", true)))
             .And(ZeroOrOne(Terms.Integer(NumberOptions.AllowSign)))
             .Then<LogicalExpression>((context, x) =>
             {
                 var useDecimalAsDefault = ((LogicalExpressionParserContext)context).UseDecimalsAsDefault;
 
+
+                var intPart = x.Item1.Item1.Value;
+                var decimalPart = x.Item1.Item2.Value;
+                var notationPartResult = x.Item2;
+                
                 if (useDecimalAsDefault)
                 {
                     decimal decimalValue;
-                    if (x.Item3 != 0)
-                        decimalValue = Convert.ToDecimal(x.Item1 + "." + x.Item2 + "e" + x.Item3,
+                    if (notationPartResult.HasValue)
+                        decimalValue = Convert.ToDecimal(intPart + "." + decimalPart + "e" + notationPartResult.Value,
                             CultureInfo.InvariantCulture);
                     else
-                        decimalValue = Convert.ToDecimal(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture);
+                        decimalValue = Convert.ToDecimal(intPart + "." + decimalPart, CultureInfo.InvariantCulture);
 
                     return new ValueExpression(decimalValue);
                 }
 
                 double doubleValue;
-                if (x.Item3 != 0)
-                    doubleValue = Convert.ToDouble(x.Item1 + "." + x.Item2 + "e" + x.Item3,
+                if (notationPartResult.HasValue)
+                    doubleValue = Convert.ToDouble(intPart + "." + decimalPart + "e" + notationPartResult.Value,
                         CultureInfo.InvariantCulture);
                 else
-                    doubleValue = Convert.ToDouble(x.Item1 + "." + x.Item2, CultureInfo.InvariantCulture);
+                    doubleValue = Convert.ToDouble(intPart + "." + decimalPart, CultureInfo.InvariantCulture);
 
                 return new ValueExpression(doubleValue);
             });
-
         var number = OneOf(
             decimalPointParser,
             intExponentParser,
@@ -127,10 +134,10 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         
         var negate = Terms.Text("!");
-        var not = Literals.Text("NOT", true);
+        var not = Terms.Text("NOT", true);
 
         // "(" expression ")"
-        var groupExpression = Between(openParen, expression, closeParen);
+        var groupExpression = Between(openParen, expression, closeParen.ElseError("Parentesis not closed."));
 
         // "[" identifier "]"
         var identifierExpression = openBrace
@@ -371,9 +378,9 @@ public static class LogicalExpressionParser
             });
 
         var ternary = logical.And(ZeroOrOne(questionMark.SkipAnd(logical).AndSkip(colon).And(logical)))
-            .Then(x => x.Item2.Item1 == null
+            .Then(x => x.Item2.Value.Item1 == null
                 ? x.Item1
-                : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2));
+                : new TernaryExpression(x.Item1, x.Item2.Value.Item1, x.Item2.Value.Item2));
 
         expression.Parser = ternary;
         Parser = expression;

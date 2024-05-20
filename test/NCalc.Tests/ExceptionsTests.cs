@@ -25,9 +25,10 @@ public class ExceptionsTests
     }
     
     [Fact]
-    public void ShouldDetectSyntaxErrorsBeforeEvaluation()
+    public void Should_Detect_Syntax_Errors_Before_Evaluation()
     {
-        var e = new Expression("a + b * (");
+        //Yes, I know at v3 the test was a + b * ( , but it's impossible to define an empty expression.
+        var e = new Expression("a + b * ( 1 + 1");
         Assert.Null(e.Error);
         Assert.True(e.HasErrors());
         Assert.NotNull(e.Error);
@@ -39,7 +40,7 @@ public class ExceptionsTests
     }
     
     [Fact]
-    public void ShouldDisplayErrorIfUncompatibleTypes()
+    public void Should_Display_Error_If_UncompatibleTypes()
     {
         var e = new Expression("(a > b) + 10")
         {
