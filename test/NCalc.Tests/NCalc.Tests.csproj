@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net4.8</TargetFrameworks>
+    <LangVersion>12</LangVersion>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <ImplicitUsings>true</ImplicitUsings>
