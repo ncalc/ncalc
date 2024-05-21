@@ -7,6 +7,8 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>true</ImplicitUsings>
     <OutputType>Library</OutputType>
+    <Configurations>Debug;Release;SignedRelease</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

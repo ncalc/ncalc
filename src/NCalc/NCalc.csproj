@@ -21,6 +21,8 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<Configurations>Debug;Release;SignedRelease</Configurations>
+		<Platforms>AnyCPU</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
@@ -29,13 +31,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Using Include="System"/>
-		<Using Include="System.Text"/>
-		<Using Include="System.Collections"/>
-		<Using Include="System.Collections.Concurrent"/>
-		<Using Include="System.Collections.Generic"/>
-		<Using Include="System.Globalization"/>
-		<Using Include="System.Linq"/>
+		<Using Include="System" />
+		<Using Include="System.Text" />
+		<Using Include="System.Collections" />
+		<Using Include="System.Collections.Concurrent" />
+		<Using Include="System.Collections.Generic" />
+		<Using Include="System.Globalization" />
+		<Using Include="System.Linq" />
 	</ItemGroup>
 
 	<!-- Unsigned Assembly Configuration -->
@@ -51,19 +53,6 @@ This package contains the unsigned assembly 'NCalc'. For the stronly signed asse
 	</PropertyGroup>
 
 	<!-- Strongly Signed Assembly Configuration -->
-	<PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
-		<AssemblyName>NCalc.signed</AssemblyName>
-		<PackageId>NCalcSync.signed</PackageId>
-		<Description>NCalc is a mathematical expressions evaluator for .NET
-
-NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
-
-This package contains the stronly signed assembly version of 'NCalc'. For the unsigned assembly of 'NCalc', see the NCalcSync package.
-		</Description>
-
-		<SignAssembly>true</SignAssembly>
-		<AssemblyOriginatorKeyFile>NCalc.snk</AssemblyOriginatorKeyFile>
-	</PropertyGroup>
 
 	<!-- Other Item Groups and Package References -->
 	<ItemGroup>
@@ -90,6 +79,18 @@ This package contains the stronly signed assembly version of 'NCalc'. For the un
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<Optimize>true</Optimize>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
+	  <AssemblyName>NCalc.signed</AssemblyName>
+	  <PackageId>NCalcSync.signed</PackageId>
+	  <Description>NCalc is a mathematical expressions evaluator for .NET
+
+NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
+
+This package contains the stronly signed assembly version of 'NCalc'. For the unsigned assembly of 'NCalc', see the NCalcSync package.
+		</Description>
+	  <SignAssembly>true</SignAssembly>
+	  <AssemblyOriginatorKeyFile>NCalc.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 </Project>
