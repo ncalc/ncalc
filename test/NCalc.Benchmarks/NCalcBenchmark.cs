@@ -2,6 +2,8 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Toolchains.InProcess.Emit;
+using BenchmarkDotNet.Toolchains.InProcess.NoEmit;
 using NCalc.Domain;
 
 namespace NCalc.Benchmarks
@@ -13,8 +15,10 @@ namespace NCalc.Benchmarks
         {
             public Config()
             {
-                var currentVersionJob = Job.ShortRun;
-                var actualNugetVersionJob = Job.ShortRun.WithNuGet("NCalcSync");
+                var currentVersionJob = Job.ShortRun
+                   .WithToolchain(InProcessEmitToolchain.Instance);
+                var actualNugetVersionJob = Job.ShortRun.WithNuGet("NCalcSync")
+                    .WithToolchain(InProcessEmitToolchain.Instance);
 
                 AddJob(currentVersionJob.WithRuntime(ClrRuntime.Net462));
                 AddJob(currentVersionJob.WithRuntime(CoreRuntime.Core80));
