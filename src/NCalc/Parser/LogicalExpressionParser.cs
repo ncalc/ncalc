@@ -46,8 +46,15 @@ public static class LogicalExpressionParser
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
-                Literals.Char('.').SkipAnd(Terms.Integer().Then<long?>(x => x)).And(exponentNumberPart.ThenElse<long?>(x => x, null)).Then(x => (0L, x.Item1, x.Item2)),
-                Literals.Integer(NumberOptions.AllowSign).And(Literals.Char('.').SkipAnd(ZeroOrOne(Terms.Integer())).ThenElse<long?>(x => x, null)).And(exponentNumberPart.ThenElse<long?>(x => x, null)).Then(x => (x.Item1, x.Item2, x.Item3))
+                Literals.Char('.')
+                    .SkipAnd(Terms.Integer().Then<long?>(x => x))
+                    .And(exponentNumberPart.ThenElse<long?>(x => x, null)).Then(x => (0L, x.Item1, x.Item2)),
+                Literals.Integer(NumberOptions.AllowSign)
+                    .And(Literals.Char('.')
+                    .SkipAnd(ZeroOrOne(Terms.Integer()))
+                    .ThenElse<long?>(x => x, null))
+                    .And(exponentNumberPart.ThenElse<long?>(x => x, null))
+                    .Then(x => (x.Item1, x.Item2, x.Item3))
                 ))
             .Then<LogicalExpression>((ctx, x) =>
             {
@@ -168,7 +175,7 @@ public static class LogicalExpressionParser
         var exponential = primary.And(ZeroOrMany(exponent.And(primary)))
             .Then(static x =>
             {
-                LogicalExpression? result = null;
+                LogicalExpression result = null!;
 
                 if (x.Item2.Count == 0)
                 {
@@ -185,7 +192,7 @@ public static class LogicalExpressionParser
                         result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item2[i - 1].Item2, x.Item2[i].Item2);
                     }
 
-                    result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, result!);
+                    result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, result);
                 }
 
                 return result;

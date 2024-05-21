@@ -3,7 +3,7 @@
 	<!-- Common Property Groups -->
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net462;netstandard2.0;net6.0;net8.0</TargetFrameworks>
 		<!-- Other common properties -->
 		<LangVersion>12</LangVersion>
 		<Nullable>enable</Nullable>
@@ -22,6 +22,10 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Using Include="System"/>
