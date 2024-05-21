@@ -2,12 +2,10 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Mathematics;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
-using BenchmarkDotNet.Toolchains.InProcess.NoEmit;
 using NCalc.Domain;
-using NCalc.Factories;
+
 
 namespace NCalc.Benchmarks
 {        
@@ -35,18 +33,18 @@ namespace NCalc.Benchmarks
         }
 
         [Benchmark]
-        public void SimpleExpression()
+        public object? SimpleExpression()
         {
             string expression = "1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2";
 
             Expression.CacheEnabled = false;
-            _ = LogicalExpressionFactory.Create("1+1");
             var expr = new Expression(expression);
-            expr.Evaluate();
+            
+            return expr.Evaluate();
         }
 
         [Benchmark]
-        public void EvaluateCustomFunction()
+        public object? EvaluateCustomFunction()
         {
             Expression.CacheEnabled = false;
             var expr = new Expression("SecretOperation(3, 6)");
@@ -56,11 +54,11 @@ namespace NCalc.Benchmarks
                     args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
             };
 
-            expr.Evaluate();
+            return expr.Evaluate();
         }
 
         [Benchmark]
-        public void EvaluateParameters()
+        public object? EvaluateParameters()
         {
             Expression.CacheEnabled = false;
             var expr = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
@@ -74,7 +72,7 @@ namespace NCalc.Benchmarks
                     args.Result = 3.14;
             };
 
-            expr.Evaluate();
+           return expr.Evaluate();
         }
     }
 }
