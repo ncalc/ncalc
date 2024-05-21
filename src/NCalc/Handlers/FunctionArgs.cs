@@ -1,4 +1,4 @@
-﻿namespace NCalc.Domain;
+﻿namespace NCalc.Handlers;
 
 public class FunctionArgs : EventArgs
 {

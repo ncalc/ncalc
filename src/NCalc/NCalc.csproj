@@ -89,6 +89,7 @@ This package contains the stronly signed assembly version of 'NCalc'. For the un
 		<Deterministic>true</Deterministic>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<Optimize>true</Optimize>
 	</PropertyGroup>
 
 </Project>
