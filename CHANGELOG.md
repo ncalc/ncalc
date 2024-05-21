@@ -7,7 +7,8 @@
 
 ## Breaking Changes
 * .NET Framework 4.6.1 no longer supported, please update to .NET Framework 4.6.2 or higher
-* Renamed `EvaluationOptions` enum to `ExpressionOptions`
+* Renamed `EvaluateOptions` enum to `ExpressionOptions`
+* Renamed `EvaluateOptionsExtensions` class to `ExpressionOptionsExtensions`
 * Renamed `Expression.OriginalExpression` property  to `Expression.ExpressionString`
 * Renamed `Expression.ParsedExpression` property to `Expression.LogicalExpression`
 * Renamed `Numbers` static class to `MathHelper`
