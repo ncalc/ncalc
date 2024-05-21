@@ -3,9 +3,11 @@
 	<!-- Common Property Groups -->
 
 	<PropertyGroup>
-		<TargetFrameworks>net461;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net462;netstandard2.0;net6.0;net8.0</TargetFrameworks>
 		<!-- Other common properties -->
 		<LangVersion>12</LangVersion>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>true</ImplicitUsings>
 		<Authors>Sebastien Ros and contributors</Authors>
 		<Copyright>Sebastien Ros and contributors</Copyright>
 		<Company>https://github.com/ncalc</Company>
@@ -19,7 +21,24 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<Configurations>Debug;Release;SignedRelease</Configurations>
+		<Platforms>AnyCPU</Platforms>
 	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
+		<Reference Include="netstandard" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="System" />
+		<Using Include="System.Text" />
+		<Using Include="System.Collections" />
+		<Using Include="System.Collections.Concurrent" />
+		<Using Include="System.Collections.Generic" />
+		<Using Include="System.Globalization" />
+		<Using Include="System.Linq" />
+	</ItemGroup>
 
 	<!-- Unsigned Assembly Configuration -->
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' ">
@@ -34,19 +53,6 @@ This package contains the unsigned assembly 'NCalc'. For the stronly signed asse
 	</PropertyGroup>
 
 	<!-- Strongly Signed Assembly Configuration -->
-	<PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
-		<AssemblyName>NCalc</AssemblyName>
-		<PackageId>NCalcSync.signed</PackageId>
-		<Description>NCalc is a mathematical expressions evaluator for .NET
-
-NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
-
-This package contains the stronly signed assembly version of 'NCalc'. For the unsigned assembly of 'NCalc', see the NCalcSync package.
-		</Description>
-
-		<SignAssembly>true</SignAssembly>
-		<AssemblyOriginatorKeyFile>NCalc.snk</AssemblyOriginatorKeyFile>
-	</PropertyGroup>
 
 	<!-- Other Item Groups and Package References -->
 	<ItemGroup>
@@ -54,7 +60,11 @@ This package contains the stronly signed assembly version of 'NCalc'. For the un
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+		<PackageReference Include="Parlot" Version="0.0.27" />
+		<PackageReference Include="PolySharp" Version="1.14.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 	<!-- Common Build Configurations -->
@@ -68,6 +78,21 @@ This package contains the stronly signed assembly version of 'NCalc'. For the un
 		<Deterministic>true</Deterministic>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<Optimize>true</Optimize>
+	</PropertyGroup>
+	
+	<PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
+	  <AssemblyName>NCalc.signed</AssemblyName>
+	  <PackageId>NCalcSync.signed</PackageId>
+		<Optimize>true</Optimize>
+	  <Description>NCalc is a mathematical expressions evaluator for .NET
+
+NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
+
+This package contains the strongly signed assembly version of 'NCalc'. For the unsigned assembly of 'NCalc', see the NCalcSync package.
+		</Description>
+	  <SignAssembly>true</SignAssembly>
+	  <AssemblyOriginatorKeyFile>NCalc.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 </Project>

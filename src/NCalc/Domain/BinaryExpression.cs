@@ -1,11 +1,11 @@
+using NCalc.Visitors;
+
 namespace NCalc.Domain;
 
-public class BinaryExpression(
-        BinaryExpressionType type, 
-        LogicalExpression leftExpression,
-        LogicalExpression rightExpression)
-    
-    : LogicalExpression
+public sealed class BinaryExpression(
+    BinaryExpressionType type,
+    LogicalExpression leftExpression,
+    LogicalExpression rightExpression) : LogicalExpression
 {
     public LogicalExpression LeftExpression { get; set; } = leftExpression;
 

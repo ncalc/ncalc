@@ -1,6 +1,8 @@
+using NCalc.Visitors;
+
 namespace NCalc.Domain;
 
-public class Function(Identifier identifier, LogicalExpression[] expressions) : LogicalExpression
+public sealed class Function(Identifier identifier, LogicalExpression[] expressions) : LogicalExpression
 {
     public Identifier Identifier { get; set; } = identifier;
 

@@ -1,0 +1,80 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": [
+            "**.csproj"
+          ],
+          "src": "../src",
+          "exclude": [
+            "**/test/**",
+            "**/NCalc.Play/**",
+            "**/NCalc.Benchmarks/**"
+          ]
+        }
+      ],
+      "dest": "api",
+      "namespaceLayout":"nested",
+      "disableGitFeatures": false,
+      "disableDefaultFilter": false
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "api/*.yml",
+          "articles/**/*.md",
+          "articles/**/*.yml",
+          "index.md",
+          "toc.yml"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "media/**",
+          "logo.png",
+          "favicon.ico"
+        ]
+      }
+    ],
+    "overwrite": [
+      {
+        "files": [
+          "api/**.md"
+        ]
+      }
+    ],
+    "dest": "_site",
+    "globalMetadata": {
+      "_appName":"NCalc",
+      "_disableContribution": false,
+      "_enableSearch": true,
+      "_gitContribute": {
+        "branch": "main",
+        "apiSpecFolder":"api",
+        "repo": "https://github.com/ncalc/ncalc"
+      },
+      "_gitUrlPattern": "github",
+      "_disableSideFilter":true,
+      "_appLogoPath": "logo.png",
+
+      "_appFooter": "4.0.x",
+      "_copyrightFooter":"2024 NCalc. All rights reserved."
+    },
+    "globalMetadataFiles": [],
+    "fileMetadataFiles": [],
+    "template": [
+      "default",
+      "modern"
+    ],
+    "postProcessors": [ "ExtractSearchIndex" ],
+    "noLangKeyword": false,
+    "keepFileLink": true,
+    "cleanupCacheHistory": false,
+    "disableGitFeatures": false
+  }
+}

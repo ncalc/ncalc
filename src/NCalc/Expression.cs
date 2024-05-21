@@ -1,353 +1,203 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using NCalc.Domain;
-using Antlr4.Runtime;
+﻿using NCalc.Domain;
+using NCalc.Exceptions;
+using NCalc.Factories;
+using NCalc.Handlers;
+using NCalc.Visitors;
 
 namespace NCalc;
 
 public class Expression
 {
+    public static bool CacheEnabled
+    {
+        get => LogicalExpressionFactory.EnableCache;
+        set => LogicalExpressionFactory.EnableCache = value;
+    }
+    
     public event EvaluateParameterHandler EvaluateParameter
     {
-        add 
-        {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateParameter += value;
-        }
-        remove 
-        {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateParameter -= value;
-        }
+        add => EvaluationVisitor.EvaluateParameter += value;
+        remove => EvaluationVisitor.EvaluateParameter -= value;
     }
 
     public event EvaluateFunctionHandler EvaluateFunction 
     {
-        add 
-        {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateFunction += value;
-        }
-        remove 
-        {
-            if (EvaluationVisitor != null)
-                EvaluationVisitor.EvaluateFunction -= value;
-        }
+        add => EvaluationVisitor.EvaluateFunction += value;
+        remove => EvaluationVisitor.EvaluateFunction -= value;
     }
     
-    private EvaluateOptions _options;
-    public EvaluateOptions Options
+    private ExpressionOptions _options;
+    public ExpressionOptions Options
     {
         get => _options;
         set
         {
             _options = value;
-            if (EvaluationVisitor != null) 
-                EvaluationVisitor.Options = value;
+            EvaluationVisitor.Options = value;
+        }
+    }
+    
+    private CultureInfo _cultureInfo = CultureInfo.CurrentUICulture;
+    public CultureInfo CultureInfo
+    {
+        get => _cultureInfo;
+        set
+        {
+            _cultureInfo = value;
+            EvaluationVisitor.CultureInfo = value;
         }
     }
 
-    private Dictionary<string, object> _parameters = new();
-    public Dictionary<string, object> Parameters
+    private Dictionary<string, object?> _parameters = new();
+    public Dictionary<string, object?> Parameters
     {
         get => _parameters;
         set
         {
             _parameters = value;
-            if (EvaluationVisitor != null) 
-                EvaluationVisitor.Parameters = value;
+            EvaluationVisitor.Parameters = value;
         }
     }
 
     /// <summary>
-    /// Textual representation of the expression to evaluate.
+    /// Textual representation of the expression.
     /// </summary>
-    public string OriginalExpression { get; protected set; }
+    public string? ExpressionString { get; protected set; }
 
-    /// <summary>
-    /// Get or set the culture info.
-    /// </summary>
-    protected CultureInfo CultureInfo { get; set; }
+    public LogicalExpression? LogicalExpression { get; private set; }
+    
+    public Exception? Error { get; private set; }
     
     protected EvaluationVisitor EvaluationVisitor { get; set; }
     
-    public Expression(string expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
+    protected Dictionary<string, IEnumerator>? ParameterEnumerators;
+    
+    public Expression(string expressionString, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null)
     {
-    }
-
-    public Expression(string expression, CultureInfo cultureInfo) : this(expression, EvaluateOptions.None, cultureInfo)
-    {
-    }
-
-    public Expression(string expression, EvaluateOptions options) : this(expression, options, CultureInfo.CurrentCulture)
-    {
-    }
-
-    public Expression(string expression, EvaluateOptions options, CultureInfo cultureInfo)
-    {
-        if (string.IsNullOrEmpty(expression))
+        if (string.IsNullOrEmpty(expressionString))
             throw new
-                ArgumentException("Expression can't be empty", nameof(expression));
+                ArgumentException("Expression can't be empty", nameof(expressionString));
 
-        OriginalExpression = expression;
-        Options = options;
-        CultureInfo = cultureInfo;
-        EvaluationVisitor = new EvaluationVisitor(Options, CultureInfo)
+        EvaluationVisitor = new EvaluationVisitor(options, cultureInfo ?? CultureInfo.CurrentCulture)
         {
             Parameters = Parameters
         };
+        Options = EvaluationVisitor.Options;
+        CultureInfo = EvaluationVisitor.CultureInfo;
+        ExpressionString = expressionString;
     }
     
-    public Expression(string expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
+    public Expression(string expressionString, CultureInfo cultureInfo) : this(expressionString, ExpressionOptions.None, cultureInfo)
     {
-        if (string.IsNullOrEmpty(expression))
-            throw new
-                ArgumentException("Expression can't be empty", nameof(expression));
-
-        OriginalExpression = expression;
-        Options = options;
-        CultureInfo = cultureInfo;
-        EvaluationVisitor = evaluationVisitor;
+        
     }
-
-    public Expression(LogicalExpression expression) : this(expression, EvaluateOptions.None, CultureInfo.CurrentCulture)
+    
+    public Expression(LogicalExpression expression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null)
     {
-    }
-
-    public Expression(LogicalExpression expression, EvaluateOptions options, CultureInfo cultureInfo)
-    {
-        ParsedExpression = expression ?? throw new
+        LogicalExpression = expression ?? throw new
             ArgumentException("Expression can't be null", nameof(expression));
-        Options = options;
-        CultureInfo = cultureInfo;
-        EvaluationVisitor = new EvaluationVisitor(Options,CultureInfo)
+        EvaluationVisitor = new EvaluationVisitor(options,cultureInfo ?? CultureInfo.CurrentCulture)
         {
             Parameters = Parameters
         };
-    }
-    public Expression(LogicalExpression expression, EvaluationVisitor evaluationVisitor, EvaluateOptions options, CultureInfo cultureInfo)
-    {
-        ParsedExpression = expression ?? throw new
-            ArgumentException("Expression can't be null", nameof(expression));
-        Options = options;
-        CultureInfo = cultureInfo;
-        EvaluationVisitor = evaluationVisitor;
-    }
-
-    #region Cache management
-    private static bool _cacheEnabled = true;
-    private static readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> CompiledExpressions = new();
-
-
-    public static bool CacheEnabled
-    {
-        get => _cacheEnabled;
-        set
-        {
-            _cacheEnabled = value;
-
-            if (!CacheEnabled)
-            {
-                // Clears cache
-                CompiledExpressions.Clear();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Removed unused entries from cached compiled expression
-    /// </summary>
-    private static void ClearCache()
-    {
-        foreach (var kvp in CompiledExpressions)
-        {
-            if (kvp.Value.TryGetTarget(out _)) 
-                continue;
-
-            if (CompiledExpressions.TryRemove(kvp.Key, out _))
-                Trace.TraceInformation("Cache entry released: " + kvp.Key);
-        }
-    }
-
-    #endregion
-
-    /// Method used for backwards compatibility.
-    [Obsolete("Please use Compile overload with EvaluateOptions.")]
-    public static LogicalExpression Compile(string expression, bool nocache) 
-    {
-        return Compile(expression, nocache ? EvaluateOptions.NoCache : EvaluateOptions.None);
+        Options = EvaluationVisitor.Options;
+        CultureInfo = EvaluationVisitor.CultureInfo;
     }
     
-    public static LogicalExpression Compile(string expression, EvaluateOptions options)
+    public Expression(LogicalExpression expression, CultureInfo cultureInfo) : this(expression, ExpressionOptions.None, cultureInfo)
     {
-        LogicalExpression logicalExpression;
-
-        if (_cacheEnabled && !options.HasOption(EvaluateOptions.NoCache))
-        {
-            if (CompiledExpressions.TryGetValue(expression, out var wr))
-            {
-                Trace.TraceInformation("Expression retrieved from cache: " + expression);
-
-                if (wr.TryGetTarget(out var target))
-                    return target;
-            }
-        }
-        
-        var lexer = new NCalcLexer(new AntlrInputStream(expression));
-        var errorListenerLexer = new ErrorListenerLexer();
-        lexer.AddErrorListener(errorListenerLexer);
-
-        var parser = new NCalcParser(new CommonTokenStream(lexer)) 
-        {
-            UseDecimal = options.HasOption(EvaluateOptions.DecimalAsDefault)
-        };
-
-        var errorListenerParser = new ErrorListenerParser();
-        parser.AddErrorListener(errorListenerParser);
-
-        try
-        {
-            logicalExpression = parser.ncalcExpression().retValue;
-        }
-        catch(Exception ex)
-        {
-            var message = new StringBuilder();
-            if (errorListenerLexer.Errors.Count != 0)
-            {
-                message.AppendLine();
-                message.AppendLine(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
-            }
-            if (errorListenerParser.Errors.Count != 0)
-            {
-                message.AppendLine();
-                message.AppendLine(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
-            }
-
-            throw new EvaluationException(message.ToString(), ex);
-        }
-        if (errorListenerLexer.Errors.Count != 0)
-        {
-            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerLexer.Errors.ToArray()));
-        }
-        if (errorListenerParser.Errors.Count != 0)
-        {
-            throw new EvaluationException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
-        }
-
-
-        if (!_cacheEnabled || options.HasOption(EvaluateOptions.NoCache))
-            return logicalExpression;
-        
-        CompiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
-            
-        ClearCache();
-
-        Trace.TraceInformation("Expression added to cache: " + expression);
-        
-        return logicalExpression;
     }
-
+    
     /// <summary>
-    /// Pre-compiles the expression in order to check syntax errors.
-    /// If errors are detected, the Error property contains the message.
+    /// Create the LogicalExpression in order to check syntax errors.
+    /// If errors are detected, the Error property contains the exception.
     /// </summary>
-    /// <returns>True if the expression syntax is correct, otherwiser False</returns>
+    /// <returns>True if the expression syntax is correct, otherwiser False.</returns>
     public bool HasErrors()
     {
         try
         {
-            ParsedExpression ??= Compile(OriginalExpression, Options);
+            LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
 
             // In case HasErrors() is called multiple times for the same expression
-            return ParsedExpression != null && Error != null;
+            return LogicalExpression != null && Error != null;
         }
-        catch(Exception e)
+        catch(Exception exception)
         {
-            Error = e.Message;
+            Error = exception;
             return true;
         }
     }
 
-    public string Error { get; private set; }
-
-    public LogicalExpression ParsedExpression { get; private set; }
-
-    protected Dictionary<string, IEnumerator> ParameterEnumerators;
-
-    public object Evaluate()
+    public object? Evaluate()
     {
-        if (HasErrors())
-            throw new EvaluationException(Error);
+        if (HasErrors() && Error is not null)
+            throw Error;
 
-        ParsedExpression ??= Compile(OriginalExpression, Options);
+        // If array evaluation, execute the same expression multiple times
+        if (Options.HasOption(ExpressionOptions.IterateParameters))
+            return IterateParameters();
 
-        // if array evaluation, execute the same expression multiple times
-        if (Options.HasOption(EvaluateOptions.IterateParameters))
+        LogicalExpression!.Accept(EvaluationVisitor);
+        return EvaluationVisitor.Result;
+    }
+
+    private List<object?> IterateParameters()
+    {
+        var size = -1;
+
+        ParameterEnumerators = new Dictionary<string, IEnumerator>();
+
+        foreach (var parameter in Parameters.Values)
         {
-            int size = -1;
-
-            ParameterEnumerators = new Dictionary<string, IEnumerator>();
-
-            foreach (var parameter in Parameters.Values)
+            if (parameter is IEnumerable enumerable)
             {
-                if (parameter is IEnumerable enumerable)
-                {
-                    var localsize = enumerable.Cast<object>().Count();
+                var localsize = enumerable.Cast<object>().Count();
 
-                    if (size == -1)
-                    {
-                        size = localsize;
-                    }
-                    else if (localsize != size)
-                    {
-                        throw new EvaluationException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
-                    }
+                if (size == -1)
+                {
+                    size = localsize;
+                }
+                else if (localsize != size)
+                {
+                    throw new NCalcEvaluationException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
                 }
             }
-
-            foreach (var key in Parameters.Keys)
-            {
-                if (Parameters[key] is IEnumerable parameter)
-                {
-                    ParameterEnumerators.Add(key,parameter.GetEnumerator());
-                }
-            }
-
-            var results = new List<object>();
-            for (var i = 0; i < size; i++)
-            {
-                foreach (var key in ParameterEnumerators.Keys)
-                {
-                    var enumerator = ParameterEnumerators[key];
-                    enumerator.MoveNext();
-                    Parameters[key] = enumerator.Current;
-                }
-
-                ParsedExpression.Accept(EvaluationVisitor);
-                results.Add(EvaluationVisitor.Result);
-            }
-
-            return results;
         }
 
-        ParsedExpression.Accept(EvaluationVisitor);
-        return EvaluationVisitor.Result;
+        foreach (var key in Parameters.Keys)
+        {
+            if (Parameters[key] is IEnumerable parameter)
+            {
+                ParameterEnumerators.Add(key,parameter.GetEnumerator());
+            }
+        }
 
+        var results = new List<object?>();
+        for (var i = 0; i < size; i++)
+        {
+            foreach (var key in ParameterEnumerators.Keys)
+            {
+                var enumerator = ParameterEnumerators[key];
+                enumerator.MoveNext();
+                Parameters[key] = enumerator.Current;
+            }
+
+            LogicalExpression!.Accept(EvaluationVisitor);
+            results.Add(EvaluationVisitor.Result);
+        }
+
+        return results;
     }
 
     /// <summary>
-    /// Returns an array with all parameters names from the expression.
+    /// Returns a list with all parameters names from the expression.
     /// </summary>
-    public string[] GetParametersNames()
+    public List<string> GetParametersNames()
     {
         var extractionVisitor = new ParameterExtractionVisitor();
-        Compile(OriginalExpression, Options).Accept(extractionVisitor);
-        return new List<string>(extractionVisitor.Parameters).ToArray();
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
+        LogicalExpression.Accept(extractionVisitor);
+        return extractionVisitor.Parameters;
     }
 }

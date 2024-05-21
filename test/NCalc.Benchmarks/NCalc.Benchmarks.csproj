@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <Configurations>Debug;Release;SignedRelease</Configurations>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NCalc\NCalc.csproj" Aliases="CsProjVersion"/>
+    <PackageReference Include="NCalcSync" Version="3.13.1" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+</Project>

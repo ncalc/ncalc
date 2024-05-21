@@ -20,6 +20,5 @@ public enum BinaryExpressionType
     BitwiseXOr,
     LeftShift,
     RightShift,
-    Unknown,
     Exponentiation
 }

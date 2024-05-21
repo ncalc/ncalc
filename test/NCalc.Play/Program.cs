@@ -1,34 +1,37 @@
-using System;
+﻿using NCalc;
+using NCalc.Exceptions;
 
-namespace NCalc.Play
+while (true)
 {
-    /// <summary>
-    /// Summary description for Program.
-    /// </summary>
-    public class Program
+    Console.Write("Enter an expression (or type 'exit' to quit): ");
+    var input = Console.ReadLine();
+
+    if (input?.Trim().ToLower() == "exit")
+        break;
+
+    if (string.IsNullOrWhiteSpace(input))
     {
-        public static void Main(string[] args)
-        {
-            var expressions = new[]
-            {
-                "2 * (3 + 5)",
-                "2 * (2*(2*(2+1)))",
-                "10 % 3",
-                "false || not (false and true)",
-                "3 > 2 and 1 <= (3-2)",
-                "3 % 2 != 10 % 3",
-                "'A' = 'A' ? 10 : ('B' = 'B' ? 15 : 20)",
-                "if ('A' = 'A', 10, if ('B' = 'B', 15, 20))"
-                //"if( [age] >= 18, 'majeur', 'mineur')",
-                //"CalculateBenefits([user]) * [Taxes]"
-            };
-
-            foreach (string expression in expressions)
-                Console.WriteLine("{0} = {1}",
-                    expression,
-                    new Expression(expression).Evaluate());
-
-            Console.ReadKey();
-        }
+        Console.WriteLine("Expression cannot be empty.");
+        continue;
+    }
+    
+    try
+    {
+        var expression = new Expression(input);
+        var result = expression.Evaluate();
+        Console.WriteLine("Result: {0}", result);
+    }
+    catch (NCalcParserException ex)
+    {
+        Console.WriteLine("Error parsing the expression: {0}", ex.Message);
+    }
+    catch (NCalcEvaluationException ex)
+    {
+        Console.WriteLine("Error evaluating the expression: {0}", ex.Message);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Unexpected error: {0}", ex.Message);
     }
 }
+

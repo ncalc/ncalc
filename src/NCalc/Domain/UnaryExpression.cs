@@ -1,6 +1,8 @@
+using NCalc.Visitors;
+
 namespace NCalc.Domain;
 
-public class UnaryExpression(UnaryExpressionType type, LogicalExpression expression) : LogicalExpression
+public sealed class UnaryExpression(UnaryExpressionType type, LogicalExpression expression) : LogicalExpression
 {
     public LogicalExpression Expression { get; set; } = expression;
 
