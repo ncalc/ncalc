@@ -15,6 +15,7 @@ namespace NCalc.Benchmarks;
 
 [Config(typeof(Config))]
 [RankColumn]
+[CategoriesColumn]
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class NCalcBenchmark
