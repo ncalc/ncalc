@@ -29,9 +29,21 @@ public class NCalcBenchmark
             AddJob(job.WithRuntime(CoreRuntime.Core80));
         }
     }
+    [BenchmarkCategory("SimpleExpression"), Benchmark]
+    public object? CsProj_SimpleExpression()
+    {
+        string expression =
+            "1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2";
+
+        CsProjExpression.CacheEnabled = false;
+        var expr = new CsProjExpression(expression);
+
+        return expr.Evaluate();
+    }
+
 
     [BenchmarkCategory("SimpleExpression"), Benchmark]
-    public object? NuGetNewVersionExpressionSimpleExpression()
+    public object? NuGet_SimpleExpression()
     {
         string expression =
             "1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2";
@@ -43,7 +55,7 @@ public class NCalcBenchmark
     }
 
     [BenchmarkCategory("EvaluateCustomFunction"), Benchmark]
-    public object? CsProjExpression_EvaluateCustomFunction()
+    public object? CsProj_EvaluateCustomFunction()
     {
         CsProjExpression.CacheEnabled = false;
         var expr = new CsProjExpression("SecretOperation(3, 6)");
@@ -57,7 +69,7 @@ public class NCalcBenchmark
     }
 
     [BenchmarkCategory("EvaluateCustomFunction"), Benchmark]
-    public object? NuGetExpression_EvaluateCustomFunction()
+    public object? NuGet_EvaluateCustomFunction()
     {
         NuGetExpression.CacheEnabled = false;
         var expr = new NuGetExpression("SecretOperation(3, 6)");
@@ -71,7 +83,7 @@ public class NCalcBenchmark
     }
 
     [BenchmarkCategory("EvaluateParameters"), Benchmark]
-    public object? CsProjExpression_EvaluateParameters()
+    public object? CsProj_EvaluateParameters()
     {
         CsProjExpression.CacheEnabled = false;
         var expr = new CsProjExpression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
@@ -89,7 +101,7 @@ public class NCalcBenchmark
     }
 
     [BenchmarkCategory("EvaluateParameters"), Benchmark]
-    public object? NuGetExpression_EvaluateParameters()
+    public object? NuGet_EvaluateParameters()
     {
         NuGetExpression.CacheEnabled = false;
         var expr = new NuGetExpression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
