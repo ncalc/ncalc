@@ -1,7 +1,3 @@
-#nullable disable
-
-// ReSharper disable AssignNullToNotNullAttribute
-
 using NCalc.Domain;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
@@ -172,7 +168,7 @@ public static class LogicalExpressionParser
         var exponential = primary.And(ZeroOrMany(exponent.And(primary)))
             .Then(static x =>
             {
-                LogicalExpression result = null;
+                LogicalExpression? result = null;
 
                 if (x.Item2.Count == 0)
                 {
@@ -189,7 +185,7 @@ public static class LogicalExpressionParser
                         result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item2[i - 1].Item2, x.Item2[i].Item2);
                     }
 
-                    result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, result);
+                    result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, result!);
                 }
 
                 return result;
