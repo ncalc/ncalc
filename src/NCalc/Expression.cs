@@ -86,25 +86,25 @@ public class Expression
         CultureInfo = EvaluationVisitor.CultureInfo;
         ExpressionString = expressionString;
     }
-
+    
     public Expression(string expressionString, CultureInfo cultureInfo) : this(expressionString, ExpressionOptions.None, cultureInfo)
     {
         
     }
     
-    public Expression(LogicalExpression expression, ExpressionOptions options, CultureInfo cultureInfo)
+    public Expression(LogicalExpression expression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null)
     {
         LogicalExpression = expression ?? throw new
             ArgumentException("Expression can't be null", nameof(expression));
-        EvaluationVisitor = new EvaluationVisitor(options,cultureInfo)
+        EvaluationVisitor = new EvaluationVisitor(options,cultureInfo ?? CultureInfo.CurrentCulture)
         {
             Parameters = Parameters
         };
         Options = EvaluationVisitor.Options;
         CultureInfo = EvaluationVisitor.CultureInfo;
     }
-
-    public Expression(LogicalExpression expression) : this(expression, ExpressionOptions.None, CultureInfo.CurrentCulture)
+    
+    public Expression(LogicalExpression expression, CultureInfo cultureInfo) : this(expression, ExpressionOptions.None, cultureInfo)
     {
     }
     

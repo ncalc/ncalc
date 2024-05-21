@@ -3,7 +3,7 @@ using ValueType = NCalc.Domain.ValueType;
 
 namespace NCalc.Visitors;
 
-public sealed class SerializationVisitor : LogicalExpressionVisitor
+public class SerializationVisitor : LogicalExpressionVisitor
 {
     private readonly NumberFormatInfo _numberFormatInfo = new()
     {
@@ -187,7 +187,7 @@ public sealed class SerializationVisitor : LogicalExpressionVisitor
         Result.Append('[').Append(parameter.Name).Append("] ");
     }
 
-    private void EncapsulateNoValue(LogicalExpression expression)
+    protected virtual void EncapsulateNoValue(LogicalExpression expression)
     {
         if (expression is ValueExpression)
         {
