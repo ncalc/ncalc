@@ -15,6 +15,9 @@
         }
       ],
       "dest": "api",
+      "properties": {
+        "TargetFramework": "net8.0"
+      },
       "namespaceLayout":"nested",
       "disableGitFeatures": false,
       "disableDefaultFilter": false
