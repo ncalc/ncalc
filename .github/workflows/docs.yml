@@ -30,6 +30,7 @@ jobs:
 
       - name: Build and Generate Documentation
         run: |
+          dotnet tool update -g docfx
           cd docs
           docfx metadata
           docfx build
