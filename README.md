@@ -133,6 +133,10 @@ var evaluated = exp.Evaluate();
 
 Pure asynchronous implementation of NCalc by [Peter Liljenberg](https://github.com/petli).
 
+### [Parlot](https://github.com/sebastienros/parlot)
+
+Fast and lightweight parser creation tools by [Sébastien Ros](https://github.com/sebastienros) that NCalc uses at its parser.
+
 ### [PanoramicData.NCalcExtensions](https://github.com/panoramicdata/PanoramicData.NCalcExtensions)
 
 Extension functions for NCalc to handle many general functions,  
