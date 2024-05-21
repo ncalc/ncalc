@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Docs", "docs\NCalc.Do
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{E423BF0C-4F9F-4C8D-B432-52FD873E5929}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Play", "src\NCalc.Play\NCalc.Play.csproj", "{C36CFACB-111E-45F6-94A8-ED9A084C6410}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Play", "test\NCalc.Play\NCalc.Play.csproj", "{C36CFACB-111E-45F6-94A8-ED9A084C6410}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

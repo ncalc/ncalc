@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\NCalc\NCalc.csproj" />
+      <ProjectReference Include="..\..\src\NCalc\NCalc.csproj" />
     </ItemGroup>
 
 </Project>
