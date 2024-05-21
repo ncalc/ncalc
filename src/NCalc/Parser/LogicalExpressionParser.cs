@@ -65,30 +65,26 @@ public static class LogicalExpressionParser
                 if (decimalPart != null && decimalPart.Value != 0)
                 {
                     var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1);
-                    result = result + decimalPart.Value / (decimal)Math.Pow(10, digits);
+                    result += decimalPart.Value / (decimal)Math.Pow(10, digits);
                 }
 
                 // exponent part?
                 if (exponentPart != null)
                 {
-                    result = result * (decimal)Math.Pow(10, exponentPart.Value);
+                    result *= (decimal)Math.Pow(10, exponentPart.Value);
                 }
 
-                if (ctx is LogicalExpressionParserContext parseContext && parseContext.UseDecimalsAsDefault)
+                if (ctx is LogicalExpressionParserContext { UseDecimalsAsDefault: true })
                 {
                     return new ValueExpression(result);
                 }
-                else
+
+                if (decimalPart != null || (exponentPart != null))
                 {
-                    if (decimalPart != null || (exponentPart != null))
-                    {
-                        return new ValueExpression((double)result);
-                    }
-                    else
-                    {
-                        return new ValueExpression((long)result);
-                    }
-                }                
+                    return new ValueExpression((double)result);
+                }
+
+                return new ValueExpression((long)result);
             });
         
         var comma = Terms.Char(',');
@@ -328,7 +324,7 @@ public static class LogicalExpressionParser
                 : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2));
 
         expression.Parser = ternary;
-        Parser = expression;
+        Parser = expression.Compile();
     }
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
