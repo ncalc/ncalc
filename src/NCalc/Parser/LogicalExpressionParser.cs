@@ -383,7 +383,7 @@ public static class LogicalExpressionParser
                 : new TernaryExpression(x.Item1, x.Item2.Value.Item1, x.Item2.Value.Item2));
 
         expression.Parser = ternary;
-        Parser = expression;
+        Parser = expression.Compile();
     }
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
