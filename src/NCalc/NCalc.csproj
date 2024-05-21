@@ -80,14 +80,16 @@ This package contains the unsigned assembly 'NCalc'. For the stronly signed asse
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<Optimize>true</Optimize>
 	</PropertyGroup>
+	
 	<PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
 	  <AssemblyName>NCalc.signed</AssemblyName>
 	  <PackageId>NCalcSync.signed</PackageId>
+		<Optimize>true</Optimize>
 	  <Description>NCalc is a mathematical expressions evaluator for .NET
 
 NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
-This package contains the stronly signed assembly version of 'NCalc'. For the unsigned assembly of 'NCalc', see the NCalcSync package.
+This package contains the strongly signed assembly version of 'NCalc'. For the unsigned assembly of 'NCalc', see the NCalcSync package.
 		</Description>
 	  <SignAssembly>true</SignAssembly>
 	  <AssemblyOriginatorKeyFile>NCalc.snk</AssemblyOriginatorKeyFile>
