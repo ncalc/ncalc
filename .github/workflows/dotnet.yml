@@ -26,9 +26,7 @@ jobs:
         dotnet-version: | 
           6.0.x
           8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
     - name: Build
-      run: dotnet build src/NCalc/NCalc.csproj --no-restore
+      run: dotnet build src/NCalc/NCalc.csproj
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --verbosity normal
