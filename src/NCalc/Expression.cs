@@ -8,7 +8,7 @@ namespace NCalc;
 
 public class Expression
 {
-    public static bool EnableCache
+    public static bool CacheEnabled
     {
         get => LogicalExpressionFactory.EnableCache;
         set => LogicalExpressionFactory.EnableCache = value;
