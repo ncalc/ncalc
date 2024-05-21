@@ -12,6 +12,7 @@
 * Renamed `Expression.ParsedExpression` property to `Expression.LogicalExpression`
 * Renamed `Numbers` static class to `MathHelper`
 * Removed `Expression.Compile` static method, please use `LogicalExpressionFactory.Create`
+* Removed unused `BinaryExpressionType.Unknown` enum value
 * `Expression.Error` property now stores an `Exception` object instead of a `string`
 * `Expression.GetParametersNames` method now returns a `List<String>` instead of a `string[]`
 
