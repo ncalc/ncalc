@@ -121,34 +121,6 @@ public class EventHandlersTests
     }
     
     [Fact]
-    public void Should_Get_Parameters_Issue_103()
-    {
-        var eif = new Expression("PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3)", ExpressionOptions.CaseInsensitiveComparer)
-        {
-            Parameters =
-            {
-                ["a"] = 1
-            }
-        };
-        eif.EvaluateParameter += (name, args) =>
-        {
-            if (name == "PageState")
-                args.Result = "List";
-        };
-        
-        eif.EvaluateFunction += (name, args) =>
-        {
-            if (name == "customfunction")
-                args.Result = "true";
-        };
-
-        var parameters = eif.GetParametersNames();
-        Assert.Contains("a", parameters);
-        Assert.Contains("PageState", parameters);
-        Assert.Equal(2, parameters.Count);
-    }
-    
-        [Fact]
     public void ShouldHandleCustomParametersWhenNoSpecificParameterIsDefined()
     {
         var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");

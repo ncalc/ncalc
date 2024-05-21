@@ -6,7 +6,13 @@ internal sealed class ParameterExtractionVisitor : LogicalExpressionVisitor
 {
     public List<string> Parameters { get; } = [];
 
-    public override void Visit(Identifier identifier) => Parameters.Add(identifier.Name);
+    public override void Visit(Identifier identifier)
+    {
+        if (!Parameters.Contains(identifier.Name))
+        {
+            Parameters.Add(identifier.Name);
+        }
+    }
 
     public override void Visit(UnaryExpression expression) => expression.Accept(this);
 
