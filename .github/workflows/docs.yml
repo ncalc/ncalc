@@ -28,10 +28,11 @@ jobs:
         with:
           dotnet-version: 8.x
 
-      - run: dotnet tool update -g docfx
-      - run: cd docs
-      - run: docfx metadata
-      - run: docfx build
+      - name: Build and Generate Documentation
+        run: |
+          cd docs
+          docfx metadata
+          docfx build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
