@@ -1,78 +1,108 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿extern alias CsProjVersion;
+extern alias NuGetVersion;
+using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
-using NCalc.Domain;
+using CsProjExpression = CsProjVersion::NCalc.Expression;
+using CsProjDomain = CsProjVersion::NCalc.Handlers;
+using NuGetExpression = NuGetVersion::NCalc.Expression;
+using NuGetDomain = NuGetVersion::NCalc;
 
+namespace NCalc.Benchmarks;
 
-namespace NCalc.Benchmarks
-{        
-    [Config(typeof(Config))]
-    [RankColumn]
-    [MemoryDiagnoser]
-    [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    public class NCalcBenchmark
+[Config(typeof(Config))]
+[RankColumn]
+[MemoryDiagnoser]
+[Orderer(SummaryOrderPolicy.FastestToSlowest)]
+public class NCalcBenchmark
+{
+    private class Config : ManualConfig
     {
-        private class Config : ManualConfig
+        public Config()
         {
-            public Config()
-            {
-                var currentVersionJob = Job.ShortRun
-                   .WithToolchain(InProcessEmitToolchain.Instance);
-                var actualNugetVersionJob = Job.ShortRun.WithNuGet("NCalcSync")
-                    .WithToolchain(InProcessEmitToolchain.Instance);
-
-                AddJob(currentVersionJob.WithRuntime(ClrRuntime.Net462));
-                AddJob(currentVersionJob.WithRuntime(CoreRuntime.Core80));
-
-                AddJob(actualNugetVersionJob.WithRuntime(ClrRuntime.Net462));
-                AddJob(actualNugetVersionJob.WithRuntime(CoreRuntime.Core80));
-            }
+            var job = Job.ShortRun
+                .WithToolchain(InProcessEmitToolchain.Instance);
+            AddJob(job.WithRuntime(ClrRuntime.Net462));
+            AddJob(job.WithRuntime(CoreRuntime.Core80));
         }
+    }
 
-        [Benchmark]
-        public object? SimpleExpression()
+    [BenchmarkCategory("SimpleExpression"), Benchmark]
+    public object? NuGetNewVersionExpressionSimpleExpression()
+    {
+        string expression =
+            "1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2";
+
+        NuGetExpression.CacheEnabled = false;
+        var expr = new NuGetExpression(expression);
+
+        return expr.Evaluate();
+    }
+
+    [BenchmarkCategory("EvaluateCustomFunction"), Benchmark]
+    public object? CsProjExpression_EvaluateCustomFunction()
+    {
+        CsProjExpression.CacheEnabled = false;
+        var expr = new CsProjExpression("SecretOperation(3, 6)");
+        expr.EvaluateFunction += delegate(string name, CsProjDomain.FunctionArgs args)
         {
-            string expression = "1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2 + 1 - ( 3 + 2.5 ) * 4 - 1 / 2";
+            if (name == "SecretOperation")
+                args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+        };
 
-            Expression.CacheEnabled = false;
-            var expr = new Expression(expression);
-            
-            return expr.Evaluate();
-        }
+        return expr.Evaluate();
+    }
 
-        [Benchmark]
-        public object? EvaluateCustomFunction()
+    [BenchmarkCategory("EvaluateCustomFunction"), Benchmark]
+    public object? NuGetExpression_EvaluateCustomFunction()
+    {
+        NuGetExpression.CacheEnabled = false;
+        var expr = new NuGetExpression("SecretOperation(3, 6)");
+        expr.EvaluateFunction += delegate(string name, NuGetDomain.FunctionArgs args)
         {
-            Expression.CacheEnabled = false;
-            var expr = new Expression("SecretOperation(3, 6)");
-            expr.EvaluateFunction += delegate (string name, FunctionArgs args)
-            {
-                if (name == "SecretOperation")
-                    args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
-            };
+            if (name == "SecretOperation")
+                args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+        };
 
-            return expr.Evaluate();
-        }
+        return expr.Evaluate();
+    }
 
-        [Benchmark]
-        public object? EvaluateParameters()
+    [BenchmarkCategory("EvaluateParameters"), Benchmark]
+    public object? CsProjExpression_EvaluateParameters()
+    {
+        CsProjExpression.CacheEnabled = false;
+        var expr = new CsProjExpression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
+
+        expr.Parameters["Pi2"] = new CsProjExpression("Pi * [Pi]");
+        expr.Parameters["X"] = 10;
+
+        expr.EvaluateParameter += delegate(string name, CsProjDomain.ParameterArgs args)
         {
-            Expression.CacheEnabled = false;
-            var expr = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
+            if (name == "Pi")
+                args.Result = 3.14;
+        };
 
-            expr.Parameters["Pi2"] = new Expression("Pi * [Pi]");
-            expr.Parameters["X"] = 10;
+        return expr.Evaluate();
+    }
 
-            expr.EvaluateParameter += delegate (string name, ParameterArgs args)
-            {
-                if (name == "Pi")
-                    args.Result = 3.14;
-            };
+    [BenchmarkCategory("EvaluateParameters"), Benchmark]
+    public object? NuGetExpression_EvaluateParameters()
+    {
+        NuGetExpression.CacheEnabled = false;
+        var expr = new NuGetExpression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
 
-           return expr.Evaluate();
-        }
+        expr.Parameters["Pi2"] = new NuGetExpression("Pi * [Pi]");
+        expr.Parameters["X"] = 10;
+
+        expr.EvaluateParameter += delegate(string name, NuGetDomain.ParameterArgs args)
+        {
+            if (name == "Pi")
+                args.Result = 3.14;
+        };
+
+        return expr.Evaluate();
     }
 }

@@ -52,7 +52,7 @@ This package contains the unsigned assembly 'NCalc'. For the stronly signed asse
 
 	<!-- Strongly Signed Assembly Configuration -->
 	<PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
-		<AssemblyName>NCalc</AssemblyName>
+		<AssemblyName>NCalc.signed</AssemblyName>
 		<PackageId>NCalcSync.signed</PackageId>
 		<Description>NCalc is a mathematical expressions evaluator for .NET
 

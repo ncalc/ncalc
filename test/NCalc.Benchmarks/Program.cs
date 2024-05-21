@@ -1,12 +1,12 @@
-﻿using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Running;
 
-namespace NCalc.Benchmarks
+namespace NCalc.Benchmarks;
+
+public static class Program
 {
-    public class Program
+    public static void Main()
     {
-        public static void Main(string[] args)
-        {
-            BenchmarkSwitcher.FromAssemblies(new[] { typeof(Program).Assembly }).Run(args);
-        }
+        BenchmarkRunner.Run<NCalcBenchmark>();
     }
 }
