@@ -27,7 +27,7 @@
           "api/*.yml",
           "articles/**/*.md",
           "articles/**/*.yml",
-          "index.md",
+          "Index.md",
           "toc.yml"
         ]
       }
