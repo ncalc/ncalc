@@ -1,3 +1,21 @@
+# 4.0
+
+* [Parlot is used instead of Antlr for parsing](https://github.com/ncalc/ncalc/issues/137) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros) and [Sébastien Ros](https://github.com/sebastienros)
+* [`GetParametersNames` no longer adds same parameter more than one time to the result](https://github.com/ncalc/ncalc/issues/141) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [xUnit is now used for unit tests](https://github.com/ncalc/ncalc/issues/138) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [New DocFX website with articles and public API](https://github.com/ncalc/ncalc/issues/143) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+
+## Breaking Changes
+* .NET Framework 4.6.1 no longer supported, please update to .NET Framework 4.6.2 or higher
+* Renamed `EvaluationOptions` enum to `ExpressionOptions`
+* Renamed `Expression.CacheEnabled` static property  to `Expression.EnableCache`
+* Renamed `Expression.OriginalExpression` property  to `Expression.ExpressionString`
+* Renamed `Expression.ParsedExpression` property to `Expression.LogicalExpression`
+* Renamed `Numbers` static class to `MathHelper`
+* Removed `Expression.Compile` static method, please use `LogicalExpressionFactory.Create`
+* `Expression.Error` property now stores an `Exception` object instead of a `string`
+* `Expression.GetParametersNames` method now returns a `List<String>` instead of a `string[]`
+
 # 3.13.1
 * [CompareUsingMostPreciseType is now public again](https://github.com/ncalc/ncalc/commit/c3eb2778c7e83ef191b8f647cdd98f802f6af3bf) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 * [Fixed `BitwiseXOr` behavior](https://github.com/ncalc/ncalc/pull/134) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
@@ -8,7 +26,7 @@
 * [Fix boolean comparison](https://github.com/ncalc/ncalc/pull/123) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 * [Test for inner exception type instead of exception message](https://github.com/ncalc/ncalc/pull/127) by [axunonb](https://github.com/axunonb)
 * [Update project to create unsigned and signed versions of NCalcSync](https://github.com/ncalc/ncalc/pull/129) by [axunonb](https://github.com/axunonb)
- 
+
 # 3.12
 
 * [Allow using decimal as default floating point type](https://github.com/ncalc/ncalc/pull/118) by [Luca Schimweg](https://github.com/lucaschimweg)
@@ -21,7 +39,7 @@
 * [Evaluate function and parameters only once](https://github.com/ncalc/ncalc/pull/108) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 * [Performance improvements: CA1860 and CA1834](https://github.com/ncalc/ncalc/pull/105) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 * [Add GetParametersNames method to Expression.cs](https://github.com/ncalc/ncalc/pull/104) by [Gustavo Mauricio de Barros](https://github.com/gumbarros),
-[Added Expression.GetParameters() method](https://github.com/ncalc/ncalc/pull/104) by [Rodion Mostovoi](https://github.com/rodion-m)
+  [Added Expression.GetParameters() method](https://github.com/ncalc/ncalc/pull/104) by [Rodion Mostovoi](https://github.com/rodion-m)
 
 # 3.10
 
@@ -55,7 +73,7 @@
 
 * [Added Atan2 built-in function](https://github.com/ncalc/ncalc/pull/53) by [YuJiaHao](https://github.com/YuJiaHao)
 
-# 3.4 
+# 3.4
 
 * [Improved custom CultureInfo support](https://github.com/ncalc/ncalc/pull/52) by [rholek](https://github.com/rholek)
 
