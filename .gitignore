@@ -3,6 +3,8 @@
 /test/NCalc.Play/obj
 /test/NCalc.Tests/bin
 /test/NCalc.Tests/obj
+/test/NCalc.Benchmarks/bin
+/test/NCalc.Benchmarks/obj
 /src/NCalc/bin
 /src/NCalc/obj
 /TestResults
