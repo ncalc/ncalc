@@ -21,16 +21,15 @@ public static class LogicalExpressionParser
         /*
          * Grammar:
          * expression     => ternary ( ( "-" | "+" ) ternary )* ;
-         * ternary        => equality ( "?" equality ":" equality)?
+         * ternary        => logical ( "?" logical ":" logical)?
+         * logical        => equality ( ( "and" | "or" ) equality )* ;
          * equality       => relational ( ( "=" | "!=" | ... ) relational )* ;
          * relational     => shift ( ( ">=" | ">" | ... ) shift )* ;
          * shift          => additive ( ( "<<" | ">>" ) additive )* ;
          * additive       => multiplicative ( ( "-" | "+" ) multiplicative )* ;
-         * multiplicative => unary ( ( "/" | "*" ) unary )* ;
-         * exponential    => unary ( "**" unary )* ;
-
-         * unary          => ( "-" | "not" | "!" ) unary
-         *                 | primary ;
+         * multiplicative => exponential ( "/" | "*" | "%") exponential )* ;
+         * exponential    => unary ( "**" ) unary )* ;
+         * unary          => ( "-" | "not" | "!" ) primary
          *
          * primary        => NUMBER
          *                  | STRING
@@ -46,78 +45,52 @@ public static class LogicalExpressionParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-        var intParser = Terms.Integer(NumberOptions.AllowSign).Then<LogicalExpression>(static d => new ValueExpression(d));
+        var exponentNumberPart = Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
 
-        var intExponentParser = Terms.Integer(NumberOptions.AllowSign)
-            .And(Terms.Text("e", true))
-            .And(Terms.Integer(NumberOptions.AllowSign))
-            .Then<LogicalExpression>((context, n) =>
+        // [integral_value]['.'decimal_value}]['e'exponent_value]
+        var number =
+            SkipWhiteSpace(OneOf(
+                Literals.Char('.').SkipAnd(Terms.Integer().Then<long?>(x => x)).And(exponentNumberPart.ThenElse<long?>(x => x, null)).Then(x => (0L, x.Item1, x.Item2)),
+                Literals.Integer(NumberOptions.AllowSign).And(Literals.Char('.').SkipAnd(ZeroOrOne(Terms.Integer())).ThenElse<long?>(x => x, null)).And(exponentNumberPart.ThenElse<long?>(x => x, null)).Then(x => (x.Item1, x.Item2, x.Item3))
+                ))
+            .Then<LogicalExpression>((ctx, x) =>
             {
-                var useDecimalAsDefault = ((LogicalExpressionParserContext)context).UseDecimalsAsDefault;
+                long integralValue = x.Item1;
+                long? decimalPart = x.Item2;
+                long? exponentPart = x.Item3;
 
-                if (useDecimalAsDefault)
+                decimal result = integralValue;
+
+                // decimal part?
+                if (decimalPart != null && decimalPart.Value != 0)
                 {
-                    var decimalValue = Convert.ToDecimal(n.Item1 + n.Item2 + n.Item3);
-                    return new ValueExpression(decimalValue);
+                    var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1);
+                    result = result + decimalPart.Value / (decimal)Math.Pow(10, digits);
                 }
 
-                var doubleValue = Convert.ToDouble(n.Item1 + n.Item2 + n.Item3);
-                return new ValueExpression(doubleValue);
-            });
-
-     var mandatoryIntWithOptionalDecimal =
-         Terms.Integer(NumberOptions.AllowSign)
-                .AndSkip(Terms.Char('.'))
-                .And(ZeroOrOne(Terms.Integer()))
-                .Then(l=>new ValueTuple<OptionalResult<long>, OptionalResult<long>>(new OptionalResult<long>(true, l.Item1), l.Item2));
-
-        
-        var optionalIntWithMandatoryDecimal = 
-            ZeroOrOne(Terms.Integer(NumberOptions.AllowSign))
-                .AndSkip(Terms.Char('.'))
-                .And(Terms.Integer())
-                .Then(l=>new ValueTuple<OptionalResult<long>, OptionalResult<long>>(l.Item1, new OptionalResult<long>(true, l.Item2)));
-        
-        var decimalPointParser = 
-             OneOf(mandatoryIntWithOptionalDecimal, optionalIntWithMandatoryDecimal)
-            .AndSkip(ZeroOrOne(Terms.Text("e", true)))
-            .And(ZeroOrOne(Terms.Integer(NumberOptions.AllowSign)))
-            .Then<LogicalExpression>((context, x) =>
-            {
-                var useDecimalAsDefault = ((LogicalExpressionParserContext)context).UseDecimalsAsDefault;
-
-
-                var intPart = x.Item1.Item1.Value;
-                var decimalPart = x.Item1.Item2.Value;
-                var notationPartResult = x.Item2;
-                
-                if (useDecimalAsDefault)
+                // exponent part?
+                if (exponentPart != null)
                 {
-                    decimal decimalValue;
-                    if (notationPartResult.HasValue)
-                        decimalValue = Convert.ToDecimal(intPart + "." + decimalPart + "e" + notationPartResult.Value,
-                            CultureInfo.InvariantCulture);
-                    else
-                        decimalValue = Convert.ToDecimal(intPart + "." + decimalPart, CultureInfo.InvariantCulture);
-
-                    return new ValueExpression(decimalValue);
+                    result = result * (decimal)Math.Pow(10, exponentPart.Value);
                 }
 
-                double doubleValue;
-                if (notationPartResult.HasValue)
-                    doubleValue = Convert.ToDouble(intPart + "." + decimalPart + "e" + notationPartResult.Value,
-                        CultureInfo.InvariantCulture);
+                if (ctx is LogicalExpressionParserContext parseContext && parseContext.UseDecimalsAsDefault)
+                {
+                    return new ValueExpression(result);
+                }
                 else
-                    doubleValue = Convert.ToDouble(intPart + "." + decimalPart, CultureInfo.InvariantCulture);
-
-                return new ValueExpression(doubleValue);
+                {
+                    if (decimalPart != null || (exponentPart != null))
+                    {
+                        return new ValueExpression((double)result);
+                    }
+                    else
+                    {
+                        return new ValueExpression((long)result);
+                    }
+                }                
             });
-        var number = OneOf(
-            decimalPointParser,
-            intExponentParser,
-            intParser
-        );
-
+        
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
         var times = Terms.Char('*');
@@ -134,10 +107,10 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         
         var negate = Terms.Text("!");
-        var not = Terms.Text("NOT", true);
+        var not = Terms.Text("not", true);
 
         // "(" expression ")"
-        var groupExpression = Between(openParen, expression, closeParen.ElseError("Parentesis not closed."));
+        var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
 
         // "[" identifier "]"
         var identifierExpression = openBrace
@@ -159,15 +132,15 @@ public static class LogicalExpressionParser
 
         var function = OneOf(functionWithArguments, functionWithoutArguments);
         
-        var booleanTrue = Terms.Text("TRUE", true)
-            .Then<LogicalExpression>(_ => True);
-        var booleanFalse = Terms.Text("FALSE", true)
-            .Then<LogicalExpression>(_ => False);
+        var booleanTrue = Terms.Text("true", true)
+            .Then<LogicalExpression>(True);
+        var booleanFalse = Terms.Text("false", true)
+            .Then<LogicalExpression>(False);
         
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
-        var charIsNumber = Terms.Pattern(char.IsNumber);
+        var charIsNumber = Literals.Pattern(char.IsNumber);
 
         var dateTimeParser = Terms
             .Char('#')
@@ -176,7 +149,7 @@ public static class LogicalExpressionParser
             .And(charIsNumber)
             .AndSkip(divided)
             .And(charIsNumber)
-            .AndSkip(Terms.Char('#'))
+            .AndSkip(Literals.Char('#'))
             .Then<LogicalExpression>(date =>
             {
                 if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
@@ -198,78 +171,75 @@ public static class LogicalExpressionParser
             function,
             groupExpression,
             identifierExpression);
-        
-        // exponential => primary ( "**" primary )* ;
+
+        // exponential => unary ( "**" unary )* ;
         var exponential = primary.And(ZeroOrMany(exponent.And(primary)))
             .Then(static x =>
             {
                 LogicalExpression result = null;
 
                 if (x.Item2.Count == 0)
+                {
                     result = x.Item1;
+                }
                 else if (x.Item2.Count == 1)
+                {
                     result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, x.Item2[0].Item2);
+                }
                 else
                 {
                     for (int i = x.Item2.Count - 1; i > 0; i--)
+                    {
                         result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item2[i - 1].Item2, x.Item2[i].Item2);
+                    }
 
                     result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, result);
                 }
 
                 return result;
-            }).Or(primary);
+            });
 
         // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
-        var unary = Recursive<LogicalExpression>(u => 
-                OneOf(not,minus,negate,plus,bitwiseNot)
-                .And(u)
-                .Then<LogicalExpression>(static x =>
-                {
-                    return x.Item1.ToUpperInvariant() switch
-                    {
-                        "!" or "NOT" => new UnaryExpression(UnaryExpressionType.Not, x.Item2),
-                        "-" => new UnaryExpression(UnaryExpressionType.Negate, x.Item2),
-                        "+" => new UnaryExpression(UnaryExpressionType.Positive, x.Item2),
-                        "~" => new UnaryExpression(UnaryExpressionType.BitwiseNot, x.Item2),
-                        _ => throw new NotSupportedException()
-                    };
-                })
-                .Or(exponential));
-
-        // multiplicative => exponential ( ( "/" | "*" | "%" ) exponential )* ;
-        var multiplicative = unary.And(ZeroOrMany(divided.Or(times).Or(modulo).And(unary)))
+        var unary = Recursive<LogicalExpression>(u =>
+                OneOf(
+                    not.Then(UnaryExpressionType.Not),
+                    negate.Then(UnaryExpressionType.Not),
+                    minus.Then(UnaryExpressionType.Negate),
+                    bitwiseNot.Then(UnaryExpressionType.BitwiseNot))
+                .And(u).Then<LogicalExpression>(static x => new UnaryExpression(x.Item1, x.Item2))
+                .Or(exponential)
+                );
+        
+        // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
+        var multiplicative = unary.And(ZeroOrMany(
+            divided.Then(BinaryExpressionType.Div)
+            .Or(times.Then(BinaryExpressionType.Times))
+            .Or(modulo.Then(BinaryExpressionType.Modulo))
+            .And(unary)))
             .Then(static x =>
             {
                 var result = x.Item1;
+
                 foreach (var op in x.Item2)
                 {
-                    result = op.Item1 switch
-                    {
-                        '/' => new BinaryExpression(BinaryExpressionType.Div, result, op.Item2),
-                        '*' => new BinaryExpression(BinaryExpressionType.Times, result, op.Item2),
-                        '%' => new BinaryExpression(BinaryExpressionType.Modulo, result, op.Item2),
-                        _ => null
-                    };
+                    result = new BinaryExpression(op.Item1, result, op.Item2);
                 }
 
                 return result;
             }).Or(unary);
 
         // additive => multiplicative ( ( "-" | "+" ) multiplicative )* ;
-        var additive = multiplicative.And(ZeroOrMany(plus.Or(minus).And(multiplicative)))
+        var additive = multiplicative.And(ZeroOrMany(
+            plus.Then(BinaryExpressionType.Plus)
+            .Or(minus.Then(BinaryExpressionType.Minus))
+            .And(multiplicative)))
             .Then(static x =>
             {
                 var result = x.Item1;
                 foreach (var op in x.Item2)
                 {
-                    result = op.Item1 switch
-                    {
-                        "+" => new BinaryExpression(BinaryExpressionType.Plus, result, op.Item2),
-                        "-" => new BinaryExpression(BinaryExpressionType.Minus, result, op.Item2),
-                        _ => null
-                    };
+                    result = new BinaryExpression(op.Item1, result, op.Item2);
                 }
 
                 return result;
@@ -277,20 +247,15 @@ public static class LogicalExpressionParser
 
         // shift => additive ( ( "<<" | ">>" ) additive )* ;
         var shift = additive.And(ZeroOrMany(
-                Terms.Text("<<")
-                .Or(Terms.Text(">>"))
+                Terms.Text("<<").Then(BinaryExpressionType.LeftShift)
+                .Or(Terms.Text(">>").Then(BinaryExpressionType.RightShift))
                 .And(additive)))
             .Then(static x =>
             {
                 var result = x.Item1;
                 foreach (var op in x.Item2)
                 {
-                    result = op.Item1 switch
-                    {
-                        "<<" => new BinaryExpression(BinaryExpressionType.LeftShift, result, op.Item2),
-                        ">>" => new BinaryExpression(BinaryExpressionType.RightShift, result, op.Item2),
-                        _ => null
-                    };
+                    result = new BinaryExpression(op.Item1, result, op.Item2);
                 }
 
                 return result;
@@ -298,92 +263,72 @@ public static class LogicalExpressionParser
 
         // relational => shift ( ( ">=" | "<=" | "<" | ">" ) shift )* ;
         var relational = shift.And(ZeroOrMany(OneOf(
-                    Terms.Text(">="),
-                    Terms.Text("<="),
-                    Terms.Text("<"),
-                    Terms.Text(">"))
+                    Terms.Text(">=").Then(BinaryExpressionType.GreaterOrEqual),
+                    Terms.Text("<=").Then(BinaryExpressionType.LesserOrEqual),
+                    Terms.Text("<").Then(BinaryExpressionType.Lesser),
+                    Terms.Text(">").Then(BinaryExpressionType.Greater))
                 .And(shift)))
             .Then(static x =>
             {
                 var result = x.Item1;
                 foreach (var op in x.Item2)
                 {
-                    result = op.Item1 switch
-                    {
-                        "<" => new BinaryExpression(BinaryExpressionType.Lesser, result, op.Item2),
-                        ">" => new BinaryExpression(BinaryExpressionType.Greater, result, op.Item2),
-                        "<=" => new BinaryExpression(BinaryExpressionType.LesserOrEqual, result, op.Item2),
-                        ">=" => new BinaryExpression(BinaryExpressionType.GreaterOrEqual, result, op.Item2),
-                        _ => null
-                    };
+                    result = new BinaryExpression(op.Item1, result, op.Item2);
                 }
 
                 return result;
             });
 
         var equality = relational.And(ZeroOrMany(OneOf(
-                    Terms.Text("<>"),
-                    Terms.Text("=="),
-                    Terms.Text("!="),
-                    Terms.Text("="))
+                    Terms.Text("<>").Then(BinaryExpressionType.NotEqual),
+                    Terms.Text("==").Then(BinaryExpressionType.Equal),
+                    Terms.Text("!=").Then(BinaryExpressionType.NotEqual),
+                    Terms.Text("=").Then(BinaryExpressionType.Equal))
                 .And(relational)))
             .Then(static x =>
             {
                 var result = x.Item1;
                 foreach (var op in x.Item2)
                 {
-                    result = op.Item1 switch
-                    {
-                        "<>" or "!=" => new BinaryExpression(BinaryExpressionType.NotEqual, result, op.Item2),
-                        "==" or "=" => new BinaryExpression(BinaryExpressionType.Equal, result, op.Item2),
-                        _ => null
-                    };
+                    result = new BinaryExpression(op.Item1, result, op.Item2);
                 }
 
                 return result;
             });
 
         var and = Terms
-            .Text("AND", true)
-            .Or(Terms.Text("&&"))
-            .Or(Terms.Text("&"));
+            .Text("AND", true).Then(BinaryExpressionType.And)
+            .Or(Terms.Text("&&").Then(BinaryExpressionType.And))
+            .Or(Terms.Text("&").Then(BinaryExpressionType.BitwiseAnd));
 
         var or = Terms
-            .Text("OR", true)
-            .Or(Terms.Text("||"))
-            .Or(Terms.Text("|"));
+            .Text("OR", true).Then(BinaryExpressionType.Or)
+            .Or(Terms.Text("||").Then(BinaryExpressionType.Or))
+            .Or(Terms.Text("|").Then(BinaryExpressionType.BitwiseOr));
 
-        var xor = Terms.Text("^");
+        var xor = Terms.Text("^").Then(BinaryExpressionType.BitwiseXOr);
 
-        var logical = equality.And(
-                ZeroOrMany(OneOf(and, or, xor)
-                    .And(equality)))
+        // logical => equality ( ( "and" | "or" ) equality )* ;
+        var logical = equality.And(ZeroOrMany(OneOf(and, or, xor).And(equality)))
             .Then(static x =>
             {
                 var result = x.Item1;
                 foreach (var op in x.Item2)
                 {
-                    result = op.Item1.ToUpperInvariant() switch
-                    {
-                        "AND" or "&&" => new BinaryExpression(BinaryExpressionType.And, result, op.Item2),
-                        "OR" or "||" => new BinaryExpression(BinaryExpressionType.Or, result, op.Item2),
-                        "&" => new BinaryExpression(BinaryExpressionType.BitwiseAnd, result, op.Item2),
-                        "|" => new BinaryExpression(BinaryExpressionType.BitwiseOr, result, op.Item2),
-                        "^" => new BinaryExpression(BinaryExpressionType.BitwiseXOr, result, op.Item2),
-                        _ => null
-                    };
+                    result = new BinaryExpression(op.Item1, result, op.Item2);
                 }
 
                 return result;
             });
 
+        // ternary => logical("?" logical ":" logical) ?
         var ternary = logical.And(ZeroOrOne(questionMark.SkipAnd(logical).AndSkip(colon).And(logical)))
-            .Then(x => x.Item2.Value.Item1 == null
+            .Then(x => x.Item2.Item1 == null
                 ? x.Item1
-                : new TernaryExpression(x.Item1, x.Item2.Value.Item1, x.Item2.Value.Item2));
+                : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2));
 
         expression.Parser = ternary;
-        Parser = expression.Compile();
+        Parser = expression;
     }
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);

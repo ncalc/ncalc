@@ -66,6 +66,7 @@ This package contains the stronly signed assembly version of 'NCalc'. For the un
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Parlot" Version="0.0.27" />
 		<PackageReference Include="PolySharp" Version="1.14.1">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -76,9 +77,6 @@ This package contains the stronly signed assembly version of 'NCalc'. For the un
 	<ItemGroup>
 		<None Include="Resources\NCalc.png" Pack="true" PackagePath="" />
 		<None Include="..\..\README.md" Pack="true" PackagePath="" />
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\..\..\parlot\src\Parlot\Parlot.csproj" />
 	</ItemGroup>
 
 	<!-- Common Additional Configuration for Release Builds -->
