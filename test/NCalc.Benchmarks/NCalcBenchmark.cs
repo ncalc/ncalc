@@ -1,5 +1,5 @@
 ﻿extern alias CsProjVersion;
-extern alias NuGetVersion;
+
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Environments;
@@ -8,8 +8,8 @@ using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
 using CsProjExpression = CsProjVersion::NCalc.Expression;
 using CsProjDomain = CsProjVersion::NCalc.Handlers;
-using NuGetExpression = NuGetVersion::NCalc.Expression;
-using NuGetDomain = NuGetVersion::NCalc;
+using NuGetExpression = NCalc.Expression;
+using NuGetDomain = NCalc;
 
 namespace NCalc.Benchmarks;
 

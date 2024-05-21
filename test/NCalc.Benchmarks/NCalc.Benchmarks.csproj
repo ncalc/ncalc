@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\NCalc\NCalc.csproj" Aliases="CsProjVersion"/>
-    <PackageReference Include="NCalcSync" Version="3.13.1" Aliases="NuGetVersion" />
+    <PackageReference Include="NCalcSync" Version="3.13.1" />
   </ItemGroup>
 
 
