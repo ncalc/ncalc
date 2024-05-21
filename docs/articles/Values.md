@@ -26,7 +26,7 @@ Use the dot to define the decimal part.
 123.456
 .123
 ```
-They are evaluated as **Double**, unless you use `ExpressionOptions..DecimalAsDefault`
+They are evaluated as **Double**, unless you use `ExpressionOptions.DecimalAsDefault`
 
 ## Scientific notation
 
@@ -39,7 +39,7 @@ You can use the e to define power of ten (10^).
 .1e-2
 1e10
 ```
-They are evaluated as **Double**, unless you use `ExpressionOptions..DecimalAsDefault`
+They are evaluated as **Double**, unless you use `ExpressionOptions.DecimalAsDefault`
 
 ## Dates and Times
 
