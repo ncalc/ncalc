@@ -522,20 +522,8 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
     {
         bool ignoreCase = Options.HasOption(ExpressionOptions.IgnoreCase);
 
-        if (ignoreCase)
-        {
-            if (function.Equals(called, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            throw new ArgumentException("Function not found", called);
-        }
-
-        if (function != called)
-        {
+        if (!ignoreCase && function != called)
             throw new ArgumentException($"Function not found {called}. Try {function} instead.");
-        }
     }
     
     public override void Visit(Identifier parameter)
