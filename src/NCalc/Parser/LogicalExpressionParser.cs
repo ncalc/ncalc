@@ -141,31 +141,62 @@ public static class LogicalExpressionParser
 
         var charIsNumber = Literals.Pattern(char.IsNumber);
 
-        var dateTimeParser = Terms
-            .Char('#')
-            .SkipAnd(charIsNumber)
+        const char dateTimeDelimiter = '#';
+
+        var dateDefinition = charIsNumber
             .AndSkip(divided)
             .And(charIsNumber)
             .AndSkip(divided)
-            .And(charIsNumber)
-            .AndSkip(Literals.Char('#'))
-            .Then<LogicalExpression>(date =>
+            .And(charIsNumber);
+        
+        var date = dateDefinition.Then<LogicalExpression>(date =>
             {
                 if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
                 {
                     return new ValueExpression(result);
                 }
 
-                throw new FormatException("Invalid date format.");
+                throw new FormatException("Invalid DateTime format.");
             });
 
-        // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
+        var timeDefinition = charIsNumber
+            .AndSkip(Terms.Char(':'))
+            .And(charIsNumber)
+            .AndSkip(Terms.Char(':'))
+            .And(charIsNumber);
         
+        var time = timeDefinition.Then<LogicalExpression>(time =>
+        {
+            if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
+            {
+                return new ValueExpression(result);
+            }
+
+            throw new FormatException("Invalid TimeSpan format.");
+        });
+
+
+        var dateAndTime = dateDefinition.And(SkipWhiteSpace(timeDefinition)).Then<LogicalExpression>(dateTime =>
+        {
+            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", out var result))
+            {
+                return new ValueExpression(result);
+            }
+
+            throw new FormatException("Invalid DateTime format.");
+        });
+
+        var dateTime = Terms
+            .Char(dateTimeDelimiter)
+            .SkipAnd(OneOf(date, time, dateAndTime))
+            .AndSkip(Literals.Char(dateTimeDelimiter));
+        
+        // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
         var primary = OneOf(
             number, 
             booleanTrue, 
             booleanFalse,
-            dateTimeParser,
+            dateTime,
             stringValue, 
             function,
             groupExpression,
