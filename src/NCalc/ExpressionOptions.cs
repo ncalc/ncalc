@@ -5,37 +5,42 @@ public enum ExpressionOptions
 {
     // Summary:
     //     Specifies that no options are set.
-    None = 1,
+    None = 1 << 0,
 
     //
     // Summary:
     //     Specifies case-insensitive matching.
-    IgnoreCase = 2,
+    IgnoreCase = 1 << 1,
 
     //
     // Summary:
     //     No-cache mode. Ingores any pre-compiled expression in the cache.
-    NoCache = 4,
+    NoCache = 1 << 2,
 
     //
     // Summary:
     //     Treats parameters as arrays and result a set of results.
-    IterateParameters = 8,
+    IterateParameters = 1 << 3,
 
     //
     // Summary:
     //     When using Round(), if a number is halfway between two others, it is rounded toward the nearest number that is away from zero. 
-    RoundAwayFromZero = 16,
+    RoundAwayFromZero = 1 << 4,
 
     //
     // Summary:
     //     Specifies the use of CaseInsensitiveComparer for comparasions.
-    CaseInsensitiveComparer = 32,
+    CaseInsensitiveComparer = 1 << 5,
 
     //
     // Summary:
     //     Uses decimals instead of doubles as default floating point data type
-    DecimalAsDefault = 64
+    DecimalAsDefault = 1 << 6,
+
+    /// <summary>
+    /// Defines a "null" parameter and allows comparison of values to null.
+    /// </summary>
+    AllowNullParameter = 1 << 7
 }
 
 // Summary:
