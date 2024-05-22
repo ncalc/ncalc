@@ -19,7 +19,7 @@ public class ParameterExtractionTests
                 args.Result = "List";
         };
         
-        expression.EvaluateFunction += (name, args) =>
+        expression.EvaluateFunction += (name, args, hash) =>
         {
             if (name == "customfunction")
                 args.Result = "true";

@@ -259,7 +259,7 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
     {
         Result = expression.Value;
     }
-
+    
     public override void Visit(Function function)
     {
         var args = new FunctionArgs
@@ -283,7 +283,7 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
         bool ignoreCase = Options.HasOption(ExpressionOptions.IgnoreCase);
 
         // Calls external implementation
-        OnEvaluateFunction(ignoreCase ? function.Identifier.Name.ToLower() : function.Identifier.Name, args);
+        OnEvaluateFunction(ignoreCase ? function.Identifier.Name.ToLower() : function.Identifier.Name, args, function.Id.ToString());
 
         // If an external implementation was found get the result back
         if (args.HasResult)
@@ -574,9 +574,9 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
         }
     }
     
-    protected void OnEvaluateFunction(string name, FunctionArgs args)
+    protected void OnEvaluateFunction(string name, FunctionArgs args, string? id = null)
     {
-        EvaluateFunction?.Invoke(name, args);
+        EvaluateFunction?.Invoke(name, args, id);
     }
 
     protected void OnEvaluateParameter(string name, ParameterArgs args)

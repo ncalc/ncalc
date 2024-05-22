@@ -1,27 +1,94 @@
 using System.Collections;
 
 using NCalc.Handlers;
+using NCalc.Visitors;
 
 namespace NCalc.Tests;
 
 using Xunit;
 
-[Trait("Category","Event Handlers")]
+[Trait("Category", "Event Handlers")]
 public class EventHandlersTests
 {
     [Fact]
     public void ExpressionShouldEvaluateCustomFunctions()
     {
-        var e = new Expression("SecretOperation(3, 6)");
+        var e = new Expression("SecretOperation(3, 6) + SecretOperation(1, 2)");
+        
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs args)
+        var d = new Dictionary<string, int>()
         {
-            if (name == "SecretOperation")
-                args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+
         };
 
-        Assert.Equal(9, e.Evaluate());
+        e.EvaluateFunction += (name, args, id) =>
+        {
+            if (name == "SecretOperation")
+            {
+                if (id != null)
+                {
+                    if (!d.ContainsKey(id))
+                    {
+                        d[id] = 3;
+                    }
+                    else
+                    {
+                        d[id]--;
+                    }
+                }
+
+                args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+            }
+        };
+
+        Assert.Equal(12, e.Evaluate());
+        Assert.Equal(12, e.Evaluate());
+        
+        Assert.Equal(2, d.FirstOrDefault().Value);
     }
+
+    [Fact]
+    public void ExpressionShouldEvaluateCustomFunctionsWithEffects()
+    {
+        var e = new Expression("Repeat([value] > 10, 3)");
+        
+
+        var times = new Dictionary<string, int>();
+
+        e.EvaluateFunction += (name, args, id) =>
+        {
+            if (name == "Repeat")
+            {
+                var t = (int)args.Parameters[1].Evaluate() - 1;
+                var r = (bool)args.Parameters[0].Evaluate();
+                if (r && id != null)
+                {
+                    if (!times.ContainsKey(id))
+                    {
+                        times[id] = t;
+                    }
+                    else
+                    {
+                        times[id]--;
+                    }
+                }
+
+                args.Result =  r && times[id] == 0;
+            }
+        };
+        e.Parameters["value"] = 9;
+
+        Assert.Equal(false, e.Evaluate());
+        
+        e.Parameters["value"] = 11;
+        Assert.Equal(false, e.Evaluate());
+        e.Parameters["value"] = 12;
+        Assert.Equal(false, e.Evaluate()); 
+        e.Parameters["value"] = 13;
+        Assert.Equal(true, e.Evaluate()); 
+        Assert.Single(times);
+    }
+
 
     [Fact]
     public void ExpressionShouldEvaluateCustomFunctionsWithParameters()
@@ -30,7 +97,7 @@ public class EventHandlersTests
         e.Parameters["e"] = 3;
         e.Parameters["f"] = 1;
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs args)
+        e.EvaluateFunction += delegate (string name, FunctionArgs args, string id)
         {
             if (name == "SecretOperation")
                 args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
@@ -47,7 +114,7 @@ public class EventHandlersTests
         e.Parameters["Pi Squared"] = new Expression("Pi * [Pi]");
         e.Parameters["X"] = 10;
 
-        e.EvaluateParameter += delegate(string name, ParameterArgs args)
+        e.EvaluateParameter += delegate (string name, ParameterArgs args)
         {
             if (name == "Pi")
                 args.Result = 3.14;
@@ -55,7 +122,7 @@ public class EventHandlersTests
 
         Assert.Equal(117.07, e.Evaluate());
     }
-    
+
     [Fact]
     public void Should_Evaluate_Function_Only_Once_Issue_107()
     {
@@ -73,9 +140,9 @@ public class EventHandlersTests
         }
 
 
-        void Expression_EvaluateFunction(string name, FunctionArgs args)
+        void Expression_EvaluateFunction(string name, FunctionArgs args, string id)
         {
-            if (name != "MyFunc") 
+            if (name != "MyFunc")
                 return;
             args.Result = 1;
             counter++;
@@ -84,7 +151,7 @@ public class EventHandlersTests
 
         Assert.Equal(10, totalCounter);
     }
-    
+
     [Fact]
     public void ShouldOverrideExistingFunctions()
     {
@@ -92,7 +159,7 @@ public class EventHandlersTests
 
         Assert.Equal(1.99d, e.Evaluate());
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs args)
+        e.EvaluateFunction += delegate (string name, FunctionArgs args, string id)
         {
             if (name == "Round")
                 args.Result = 3;
@@ -100,7 +167,7 @@ public class EventHandlersTests
 
         Assert.Equal(3, e.Evaluate());
     }
-    
+
     [Fact]
     public void ShouldEvaluateArrayParameters()
     {
@@ -120,13 +187,13 @@ public class EventHandlersTests
         Assert.Equal(9, result[3]);
         Assert.Equal(16, result[4]);
     }
-    
+
     [Fact]
     public void ShouldHandleCustomParametersWhenNoSpecificParameterIsDefined()
     {
         var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");
 
-        e.EvaluateParameter += delegate(string name, ParameterArgs arg)
+        e.EvaluateParameter += delegate (string name, ParameterArgs arg)
         {
             if (name == "Pi")
                 arg.Result = 3.14;
@@ -140,7 +207,7 @@ public class EventHandlersTests
     {
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs arg)
+        e.EvaluateFunction += delegate (string name, FunctionArgs arg, string hash)
         {
             switch (name)
             {
@@ -156,7 +223,7 @@ public class EventHandlersTests
             }
         };
 
-        e.EvaluateParameter += delegate(string name, ParameterArgs arg)
+        e.EvaluateParameter += delegate (string name, ParameterArgs arg)
         {
             switch (name)
             {
@@ -180,7 +247,7 @@ public class EventHandlersTests
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs args)
+        e.EvaluateFunction += delegate (string name, FunctionArgs args, string id)
         {
             Assert.False(args.HasResult);
             if (name == "SecretOperation")
@@ -196,7 +263,7 @@ public class EventHandlersTests
     {
         var e = new Expression("x");
 
-        e.EvaluateParameter += delegate(string name, ParameterArgs args)
+        e.EvaluateParameter += delegate (string name, ParameterArgs args)
         {
             Assert.False(args.HasResult);
             if (name == "x")
