@@ -134,6 +134,9 @@ public class Expression
         if (HasErrors() && Error is not null)
             throw Error;
 
+        if (Options.HasOption(ExpressionOptions.AllowNullParameter))
+            EvaluationVisitor.Parameters["null"] = null;
+
         // If array evaluation, execute the same expression multiple times
         if (Options.HasOption(ExpressionOptions.IterateParameters))
             return IterateParameters();
