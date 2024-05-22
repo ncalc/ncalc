@@ -200,50 +200,27 @@ public static class LogicalExpressionParser
 
         // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
-        var unary = Recursive<LogicalExpression>(u =>
-                OneOf(
-                    not.Then(UnaryExpressionType.Not),
-                    negate.Then(UnaryExpressionType.Not),
-                    minus.Then(UnaryExpressionType.Negate),
-                    bitwiseNot.Then(UnaryExpressionType.BitwiseNot))
-                .And(u).Then<LogicalExpression>(static x => new UnaryExpression(x.Item1, x.Item2))
-                .Or(exponential)
-                );
+        var unary = exponential.Unary(
+            (not, value => new UnaryExpression(UnaryExpressionType.Not,value)),
+            (negate, value => new UnaryExpression(UnaryExpressionType.Not,value)),
+            (minus, value => new UnaryExpression(UnaryExpressionType.Negate,value)),
+            (bitwiseNot, value => new UnaryExpression(UnaryExpressionType.BitwiseNot,value))
+        );
         
         // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
-        var multiplicative = unary.And(ZeroOrMany(
-            divided.Then(BinaryExpressionType.Div)
-            .Or(times.Then(BinaryExpressionType.Times))
-            .Or(modulo.Then(BinaryExpressionType.Modulo))
-            .And(unary)))
-            .Then(static x =>
-            {
-                var result = x.Item1;
 
-                foreach (var op in x.Item2)
-                {
-                    result = new BinaryExpression(op.Item1, result, op.Item2);
-                }
-
-                return result;
-            }).Or(unary);
-
+        var multiplicative = unary.LeftAssociative(
+            (divided, static (a, b) => new BinaryExpression(BinaryExpressionType.Div,a, b)),
+            (times, static (a, b) => new BinaryExpression(BinaryExpressionType.Times,a, b)),
+            (modulo, static (a, b) => new BinaryExpression(BinaryExpressionType.Modulo,a, b))
+        );
+        
         // additive => multiplicative ( ( "-" | "+" ) multiplicative )* ;
-        var additive = multiplicative.And(ZeroOrMany(
-            plus.Then(BinaryExpressionType.Plus)
-            .Or(minus.Then(BinaryExpressionType.Minus))
-            .And(multiplicative)))
-            .Then(static x =>
-            {
-                var result = x.Item1;
-                foreach (var op in x.Item2)
-                {
-                    result = new BinaryExpression(op.Item1, result, op.Item2);
-                }
-
-                return result;
-            }).Or(multiplicative);
-
+        var additive = multiplicative.LeftAssociative(
+            (plus, static (a, b) => new BinaryExpression(BinaryExpressionType.Plus,a, b)),
+            (minus, static (a, b) => new BinaryExpression(BinaryExpressionType.Minus,a, b))
+        );
+        
         // shift => additive ( ( "<<" | ">>" ) additive )* ;
         var shift = additive.And(ZeroOrMany(
                 Terms.Text("<<").Then(BinaryExpressionType.LeftShift)
@@ -327,7 +304,7 @@ public static class LogicalExpressionParser
                 : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2));
 
         expression.Parser = ternary;
-        Parser = expression.Compile();
+        Parser = expression;
     }
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
