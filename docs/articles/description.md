@@ -1,3 +1,5 @@
+# Description
+
 NCalc is a set of assemblies allowing expressions evaluation. The main class to use is **Expression**.
 This class has a method **Evaluate()** returning the actual value of its **String** representation.
 

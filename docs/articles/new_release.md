@@ -1,3 +1,5 @@
+# Publishing a new release
+
 The project uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) tool to manage versions.  
 Each library build can be traced back to the original git commit. The installation is simple:
 

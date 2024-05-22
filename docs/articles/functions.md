@@ -1,3 +1,5 @@
+# Functions
+
 The framework includes a set of already implemented functions.
 
 |Name		|Description	|Usage	|Result

@@ -1,14 +1,14 @@
 - name: Home  
-  href: Index.md
+  href: index.md
 - name: Description
-  href: Description.md
+  href: description.md
 - name: Functions
-  href: Functions.md
+  href: functions.md
 - name: Operators
-  href: Operators.md
+  href: operators.md
 - name: Values
-  href: Values.md
+  href: values.md
 - name: Parameters
-  href: Parameters.md
+  href: parameters.md
 - name: Publishing a New Release
-  href: PublishingANewRelease.md
+  href: new_release.md

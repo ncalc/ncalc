@@ -1,3 +1,5 @@
+# Parameters
+
 ## Static parameters
 
 Static parameters are values which can be defined before the evaluation of an expression.
