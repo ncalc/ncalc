@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{E423BF0C-4
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalc.Play", "test\NCalc.Play\NCalc.Play.csproj", "{C36CFACB-111E-45F6-94A8-ED9A084C6410}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalc.Benchmarks", "test\NCalc.Benchmarks\NCalc.Benchmarks.csproj", "{2BA665D6-C31F-4FA9-B0A5-EA0D3BE65D84}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +62,12 @@ Global
 		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.SignedRelease|Any CPU.ActiveCfg = SignedRelease|Any CPU
 		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.SignedRelease|Any CPU.Build.0 = SignedRelease|Any CPU
+		{2BA665D6-C31F-4FA9-B0A5-EA0D3BE65D84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BA665D6-C31F-4FA9-B0A5-EA0D3BE65D84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BA665D6-C31F-4FA9-B0A5-EA0D3BE65D84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BA665D6-C31F-4FA9-B0A5-EA0D3BE65D84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BA665D6-C31F-4FA9-B0A5-EA0D3BE65D84}.SignedRelease|Any CPU.ActiveCfg = SignedRelease|Any CPU
+		{2BA665D6-C31F-4FA9-B0A5-EA0D3BE65D84}.SignedRelease|Any CPU.Build.0 = SignedRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
