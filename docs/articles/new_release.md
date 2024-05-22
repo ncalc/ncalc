@@ -20,7 +20,7 @@ Each library build can be traced back to the original git commit. The installati
 
 ## Nuget package token
 
-* Github actions publish all tagged releases as nuget packages automatically.
+* GitHub actions publish all tagged releases as nuget packages automatically.
 * Nuget API token is required for publishing new package versions.
 * The token expires every year and should be regenerated upon expiration.
 * Please contact Nuget package owners for regenerating the package token.

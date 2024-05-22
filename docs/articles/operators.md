@@ -63,6 +63,15 @@ The **and** operator has more priority than the **or**, thus in the example abov
   not true
 ```
 
+## Exponential
+
+* **
+
+```
+  2 ** 2
+```
+
+
 ## Primary
 
 * (, )

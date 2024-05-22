@@ -10,6 +10,10 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   publish-docs:
     environment:
@@ -24,12 +28,8 @@ jobs:
         with:
           dotnet-version: 8.x
 
-      - name: Build and Generate Documentation
-        run: |
-          dotnet tool update -g docfx
-          cd docs
-          docfx metadata
-          docfx build
+      - run: dotnet tool update -g docfx
+      - run: docfx docs/docfx.json
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

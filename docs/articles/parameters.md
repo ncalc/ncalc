@@ -51,7 +51,7 @@ Parameters in between square brackets can contain special characters like spaces
 ```
 ## Multi-valued parameters
 
-When parameters are IEnumerable and the **EvaluationOptions.IterateParameters** is used, the result is an **IList** made of the evaluation of each value in the parameter.
+When parameters are IEnumerable and the **EvaluationOptions.IterateParameters** is used, the result is a **List<object?>** made of the evaluation of each value in the parameter.
 
 ```c#
  Expression e = new Expression("(a * b) ^ c", ExpressionOptions.IterateParameters);
@@ -69,4 +69,15 @@ When parameters are IEnumerable and the **EvaluationOptions.IterateParameters** 
  //  13824
  //  46656
  //  0
+```
+
+## Getting all parameters from an expression
+
+```c#
+	Expression exp = new Expression ("if(x=0,x,y)"); 
+    exp.Parameters["x"] = 1;
+    exp.Parameters["y"] = "pan"
+    var parameters = exp.GetParametersNames(); 
+ //  x
+ //  y
 ```
