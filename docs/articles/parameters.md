@@ -76,7 +76,7 @@ When parameter is null and **EvaluationOptions.AllowNullParameter** is used, com
 
 ```c#
 Expression e = new Expression("'a string' == null", ExpressionOptions.AllowNullParameter);
-(bool)e.Evaluate()
+(bool)e.Evaluate();
 
  //  False
 ```
