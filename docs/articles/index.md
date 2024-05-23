@@ -31,7 +31,7 @@ Debug.Assert(17 == e.Evaluate());
 
 ```c#
 Debug.Assert(123456 == new Expression("123456").Evaluate()); // integers
-Debug.Assert(new DateTime(2001, 01, 01) == new Expression("#01/01/2001#").Evaluate()); // date and times
+Debug.Assert(new DateTime(2001, 01, 01) == new Expression("#01/01/2001#").Evaluate()); // datetime
 Debug.Assert(123.456 == new Expression("123.456").Evaluate()); // floating point numbers
 Debug.Assert(true == new Expression("true").Evaluate()); // booleans
 Debug.Assert("azerty" == new Expression("'azerty'").Evaluate()); // strings

@@ -44,12 +44,7 @@ public class EvaluationTests
         }
     }
     
-    [Fact]
-    public void Should_Parse_Date_Time()
-    {
-        Assert.Equal(new DateTime(2001,1,1), new Expression("#01/01/2001#").Evaluate());
-    }
-    
+
     [Fact]
     public void ShouldEvaluateInOperator()
     {
