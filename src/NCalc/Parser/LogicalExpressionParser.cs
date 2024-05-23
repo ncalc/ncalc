@@ -36,7 +36,7 @@ public static class LogicalExpressionParser
          *                  | "(" expression ")" ;
          *
          * function       => Identifier "(" arguments ")"
-         * arguments      => expression ( "," expression )*
+         * arguments      => expression ( ("," | ";") expression )*
          */
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
@@ -104,6 +104,7 @@ public static class LogicalExpressionParser
         var closeBrace = Terms.Char(']');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
+        var semicolon = Terms.Char(';');
         
         var negate = Terms.Text("!");
         var not = Terms.Text("not", true);
@@ -117,7 +118,7 @@ public static class LogicalExpressionParser
             .Or(Terms.Identifier())
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
-        var arguments = Separated(comma, expression);
+        var arguments = Separated(comma.Or(semicolon), expression);
 
         var functionWithArguments = Terms
             .Identifier()
