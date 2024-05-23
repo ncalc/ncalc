@@ -10,8 +10,8 @@ public class Expression
 {
     public static bool CacheEnabled
     {
-        get => LogicalExpressionFactory.EnableCache;
-        set => LogicalExpressionFactory.EnableCache = value;
+        get => Factories.LogicalExpressionFactory.EnableCache;
+        set => Factories.LogicalExpressionFactory.EnableCache = value;
     }
     
     public event EvaluateParameterHandler EvaluateParameter
@@ -68,23 +68,22 @@ public class Expression
     
     public Exception? Error { get; private set; }
     
-    protected EvaluationVisitor EvaluationVisitor { get; set; }
-    
     protected Dictionary<string, IEnumerator>? ParameterEnumerators;
+
+    protected ILogicalExpressionFactory LogicalExpressionFactory { get; } = LogicalExpressionFactoryWrapper.GetInstance();
+
+    protected IEvaluationVisitor EvaluationVisitor { get; } = new EvaluationVisitor();
     
     public Expression(string expressionString, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null)
     {
         if (string.IsNullOrEmpty(expressionString))
             throw new
                 ArgumentException("Expression can't be empty", nameof(expressionString));
-
-        EvaluationVisitor = new EvaluationVisitor(options, cultureInfo ?? CultureInfo.CurrentCulture)
-        {
-            Parameters = Parameters
-        };
-        Options = EvaluationVisitor.Options;
-        CultureInfo = EvaluationVisitor.CultureInfo;
+        
+        Options = options;
+        CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
         ExpressionString = expressionString;
+        EvaluationVisitor.Parameters = Parameters;
     }
     
     public Expression(string expressionString, CultureInfo cultureInfo) : this(expressionString, ExpressionOptions.None, cultureInfo)
@@ -96,12 +95,9 @@ public class Expression
     {
         LogicalExpression = expression ?? throw new
             ArgumentException("Expression can't be null", nameof(expression));
-        EvaluationVisitor = new EvaluationVisitor(options,cultureInfo ?? CultureInfo.CurrentCulture)
-        {
-            Parameters = Parameters
-        };
-        Options = EvaluationVisitor.Options;
-        CultureInfo = EvaluationVisitor.CultureInfo;
+        Options = options;
+        CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
+        EvaluationVisitor.Parameters = Parameters;
     }
     
     public Expression(LogicalExpression expression, CultureInfo cultureInfo) : this(expression, ExpressionOptions.None, cultureInfo)

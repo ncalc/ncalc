@@ -8,7 +8,7 @@ public sealed class UnaryExpression(UnaryExpressionType type, LogicalExpression 
 
     public UnaryExpressionType Type { get; set; } = type;
 
-    public override void Accept(LogicalExpressionVisitor visitor)
+    public override void Accept(ILogicalExpressionVisitor visitor)
     {
         visitor.Visit(this);
     }
