@@ -1,4 +1,5 @@
 ﻿using NCalc.Domain;
+using NCalc.Factories.Abstractions;
 
 namespace NCalc.Factories;
 

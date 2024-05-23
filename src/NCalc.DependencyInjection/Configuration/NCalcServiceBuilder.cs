@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using NCalc.Factories;
+using NCalc.Cache;
+using NCalc.Factories.Abstractions;
 using NCalc.Visitors;
 
 namespace NCalc.DependencyInjection.Configuration;
 
 public class NCalcServiceBuilder(IServiceCollection services)
 {
-    public NCalcServiceBuilder WithCache<TCache>() where TCache : class
+    public NCalcServiceBuilder WithCache<TCache>()  where TCache : class, ILogicalExpressionCache
     {
         return this;
     }
@@ -16,7 +17,7 @@ public class NCalcServiceBuilder(IServiceCollection services)
         return this;
     }
 
-    public NCalcServiceBuilder WithLogicalExpressionFactory<TEvaluationVisitor>() where TEvaluationVisitor : class, ILogicalExpressionFactory
+    public NCalcServiceBuilder WithLogicalExpressionFactory<TLogicalExpressionFactory>() where TLogicalExpressionFactory : class, ILogicalExpressionFactory
     {
         return this;
     }

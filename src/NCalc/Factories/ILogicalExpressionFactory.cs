@@ -1,6 +1,6 @@
 ﻿using NCalc.Domain;
 
-namespace NCalc.Factories;
+namespace NCalc.Factories.Abstractions;
 
 public interface ILogicalExpressionFactory
 {

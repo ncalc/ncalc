@@ -2,7 +2,7 @@
 
 namespace NCalc.Visitors;
 
-internal sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor
+internal sealed class ParameterExtractionVisitor : IParameterExtractionVisitor
 {
     public List<string> Parameters { get; } = [];
 

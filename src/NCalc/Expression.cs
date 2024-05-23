@@ -1,6 +1,7 @@
 ﻿using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
+using NCalc.Factories.Abstractions;
 using NCalc.Handlers;
 using NCalc.Visitors;
 
@@ -70,9 +71,11 @@ public class Expression
     
     protected Dictionary<string, IEnumerator>? ParameterEnumerators;
 
-    protected ILogicalExpressionFactory LogicalExpressionFactory { get; } = LogicalExpressionFactoryWrapper.GetInstance();
+    protected ILogicalExpressionFactory LogicalExpressionFactory { get; set; } = LogicalExpressionFactoryWrapper.GetInstance();
 
-    protected IEvaluationVisitor EvaluationVisitor { get; } = new EvaluationVisitor();
+    protected IEvaluationVisitor EvaluationVisitor { get; set; } = new EvaluationVisitor();
+    
+    protected IParameterExtractionVisitor ParameterExtractionVisitor { get; set; } = new ParameterExtractionVisitor();
     
     public Expression(string expressionString, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null)
     {
@@ -194,9 +197,8 @@ public class Expression
     /// </summary>
     public List<string> GetParametersNames()
     {
-        var extractionVisitor = new ParameterExtractionVisitor();
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
-        LogicalExpression.Accept(extractionVisitor);
-        return extractionVisitor.Parameters;
+        LogicalExpression.Accept(ParameterExtractionVisitor);
+        return ParameterExtractionVisitor.Parameters.ToList();
     }
 }

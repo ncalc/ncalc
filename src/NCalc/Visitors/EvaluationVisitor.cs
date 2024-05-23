@@ -4,7 +4,7 @@ using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 
-public class EvaluationVisitor : ILogicalExpressionVisitor, IEvaluationVisitor
+public class EvaluationVisitor : IEvaluationVisitor
 {
     public event EvaluateFunctionHandler? EvaluateFunction;
     public event EvaluateParameterHandler? EvaluateParameter;
@@ -14,6 +14,17 @@ public class EvaluationVisitor : ILogicalExpressionVisitor, IEvaluationVisitor
     public Dictionary<string, object?> Parameters { get; set; } = new();
 
     public object? Result { get; set; }
+
+    public EvaluationVisitor()
+    {
+        
+    }
+
+    public EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInfo)
+    {
+        Options = options;
+        CultureInfo = cultureInfo;
+    }
     
     private static readonly Type[] BuiltInTypes =
     [
