@@ -43,17 +43,18 @@ You can use the e to define power of ten (10^).
 ```
 They are evaluated as **Double**, unless you use `ExpressionOptions.DecimalAsDefault`
 
-## Dates and Times
+## DateTime and TimeSpan
 
 Must be enclosed between sharps. 
 
 ```
 #2008/01/31# // for en-US culture
+#20:42:00# 
+#08/08/2001 09:30:00# 
 ```
-The are evaluated as DateTime. NCalc uses the current Culture to evaluate them.
+They are evaluated as DateTime. NCalc uses the current Culture to evaluate them.
 
 ## Booleans
-
 Booleans can be either **true** or **false**.
 
 ```

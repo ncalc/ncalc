@@ -71,6 +71,16 @@ When parameters are IEnumerable and the **EvaluationOptions.IterateParameters** 
  //  0
 ```
 
+## Compare with null parameters
+When parameter is null and **EvaluationOptions.AllowNullParameter** is used, comparison of values to null is allowed.
+
+```c#
+Expression e = new Expression("'a string' == null", ExpressionOptions.AllowNullParameter);
+(bool)e.Evaluate();
+
+ //  False
+```
+
 ## Getting all parameters from an expression
 
 ```c#
