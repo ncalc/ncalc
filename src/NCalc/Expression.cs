@@ -117,7 +117,7 @@ public class Expression
     {
         try
         {
-            LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
+            LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options, CultureInfo);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -199,7 +199,7 @@ public class Expression
     public List<string> GetParametersNames()
     {
         var extractionVisitor = new ParameterExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options, CultureInfo);
         LogicalExpression.Accept(extractionVisitor);
         return extractionVisitor.Parameters;
     }

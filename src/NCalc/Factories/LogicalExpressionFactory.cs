@@ -43,7 +43,7 @@ public static class LogicalExpressionFactory
         }
     }
 
-    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null)
     {
         LogicalExpression logicalExpression;
 
@@ -57,12 +57,16 @@ public static class LogicalExpressionFactory
                     return target;
             }
         }
+
+        if (cultureInfo == null)
+            cultureInfo = CultureInfo.CurrentCulture;
         
         try
         {
             var context = new LogicalExpressionParserContext(expression)
             {
-                UseDecimalsAsDefault = options.HasOption(ExpressionOptions.DecimalAsDefault)
+                UseDecimalsAsDefault = options.HasOption(ExpressionOptions.DecimalAsDefault),
+                CultureInfo = cultureInfo
             };
             logicalExpression = LogicalExpressionParser.Parse(context);
 
