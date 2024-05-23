@@ -44,7 +44,7 @@ public static class LogicalExpressionParser
         char decimalSeparator = CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator[0]; // get LogicalExpressionParserContext here
 
 
-        var exponentNumberPart = Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x); ;
+        var exponentNumberPart = Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
 
         // [integral_value]['{decimalSeparator}'decimal_value}]['e'exponent_value]
         var number =
