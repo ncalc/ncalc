@@ -138,7 +138,7 @@ public class EvaluationTests
 
         Assert.Equal(1d, eif.Evaluate());
 
-        eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)");
+        eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)", CultureInfo.InvariantCulture);
         eif.Parameters["divider"] = 0;
         eif.Parameters["divided"] = 5;
         Assert.Equal(0, eif.Evaluate());
