@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace NCalc.Tests;
 
 [Trait("Category","Evaluations")]
@@ -31,7 +33,7 @@ public class EvaluationTests
     [InlineData("'azerty'", "azerty")]
     public void Should_Parse_Values(string input, object expectedValue, params object[] args)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, CultureInfo.InvariantCulture);
         var result = expression.Evaluate();
         
         if (expectedValue is double expectedDouble)
@@ -54,7 +56,7 @@ public class EvaluationTests
     public void ShouldEvaluateInOperator()
     {
         // The last argument should not be evaluated
-        var ein = new Expression("in((2 + 2), [1], [2], 1 + 2, 4, 1 / 0)");
+        var ein = new Expression("in((2 + 2), [1], [2], 1 + 2, 4, 1 / 0)", CultureInfo.InvariantCulture);
         ein.Parameters["1"] = 2;
         ein.Parameters["2"] = 5;
 
@@ -100,14 +102,14 @@ public class EvaluationTests
     public void Should_Evaluate_Ifs()
     {
         // Test first case true, return next value
-        var eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)");
+        var eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)", CultureInfo.InvariantCulture);
         eifs.Parameters["divider"] = 5;
         eifs.Parameters["divided"] = 5;
 
         Assert.Equal(1d, eifs.Evaluate());
 
         // Test first case false, no next case, return default value
-        eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)");
+        eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)", CultureInfo.InvariantCulture);
         eifs.Parameters["divider"] = 0;
         eifs.Parameters["divided"] = 5;
 
@@ -115,13 +117,13 @@ public class EvaluationTests
 
         // Test first case false, next case true, return next value (eg 4th expr)
 
-        eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)");
+        eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)", CultureInfo.InvariantCulture);
         eifs.Parameters["number"] = 5;
         Assert.Equal(3, eifs.Evaluate());
 
         // Test first case false, next case false, return default value (eg 5th expr)
 
-        eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)");
+        eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)", CultureInfo.InvariantCulture);
         eifs.Parameters["number"] = 1337;
 
         Assert.Equal(8, eifs.Evaluate());
@@ -130,7 +132,7 @@ public class EvaluationTests
     [Fact]
     public void ShouldEvaluateConditional()
     {
-        var eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)");
+        var eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)", CultureInfo.InvariantCulture);
         eif.Parameters["divider"] = 5;
         eif.Parameters["divided"] = 5;
 
@@ -161,8 +163,8 @@ public class EvaluationTests
     [Fact]
     public void ShouldRoundAwayFromZero()
     {
-        Assert.Equal(22d, new Expression("Round(22.5, 0)").Evaluate());
-        Assert.Equal(23d, new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero).Evaluate());
+        Assert.Equal(22d, new Expression("Round(22.5, 0)", CultureInfo.InvariantCulture).Evaluate());
+        Assert.Equal(23d, new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero, CultureInfo.InvariantCulture).Evaluate());
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 
 
 using NCalc.Factories;
+using System.Globalization;
 
 namespace NCalc.Tests;
 
@@ -60,7 +61,8 @@ public class OperatorsTests
     [InlineData("if(false, 0, 1)", 1)]
     public void ShouldEvaluateOperators(string expression, object expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        var e = new Expression(expression, CultureInfo.InvariantCulture);
+        Assert.Equal(expected, e.Evaluate());
     }
     
     [Theory]

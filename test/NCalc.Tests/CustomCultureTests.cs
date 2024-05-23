@@ -84,4 +84,25 @@ public class CustomCultureTests
         e.Parameters["a"] = "1,7";
         Assert.Equal(true, e.Evaluate());
     }
+
+    [Fact]
+    public void ShouldParseFunctionParameters()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NumberDecimalSeparator = ",";
+
+        var e = new Expression("Round(3,123,0)", culture);
+        Assert.Equal(3d, e.Evaluate());
+    }
+
+    [Fact]
+    public void PiTest()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NumberDecimalSeparator = ",";
+
+        var e = new Expression("if([Pi] > 3,14, 3,14, 3,13)", culture);
+        e.Parameters["Pi"] = Math.PI;
+        Assert.Equal(3.14d, e.Evaluate());
+    }
 }

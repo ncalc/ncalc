@@ -1,6 +1,7 @@
 using NCalc.Domain;
 using NCalc.Factories;
 using Newtonsoft.Json;
+using System.Globalization;
 
 namespace NCalc.Tests;
 
@@ -16,7 +17,7 @@ public class SerializationTests
     [InlineData("(3.2 < waterlevel AND 5.3 >= waterlevel)", true, 4)]
     public void SerializeAndDeserialize_ShouldWork(string expression, bool expected, double inputValue)
     {
-        var compiled = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
+        var compiled = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache, CultureInfo.InvariantCulture);
         var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes

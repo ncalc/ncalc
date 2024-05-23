@@ -5,14 +5,14 @@ using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
 
-public static class LogicalExpressionParser
+public class LogicalExpressionParser
 {
-    private static readonly Parser<LogicalExpression> Parser;
+    private static Parser<LogicalExpression>? Parser;
 
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
-    static LogicalExpressionParser()
+    public LogicalExpressionParser(CultureInfo cultureInfo)
     {
         /*
          * Grammar:
@@ -41,8 +41,7 @@ public static class LogicalExpressionParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>(); 
         
-        char decimalSeparator = CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator[0]; // get LogicalExpressionParserContext here
-
+        char decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator[0];
 
         var exponentNumberPart = Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
 
@@ -333,5 +332,5 @@ public static class LogicalExpressionParser
         Parser = expression.Compile();
     }
 
-    public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
+    public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser!.Parse(context);
 }

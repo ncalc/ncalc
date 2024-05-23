@@ -66,8 +66,9 @@ public static class LogicalExpressionFactory
             var context = new LogicalExpressionParserContext(expression)
             {
                 UseDecimalsAsDefault = options.HasOption(ExpressionOptions.DecimalAsDefault),
-                CultureInfo = cultureInfo
             };
+
+            var parser = new LogicalExpressionParser(cultureInfo);
             logicalExpression = LogicalExpressionParser.Parse(context);
 
             if (logicalExpression is null)

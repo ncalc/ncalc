@@ -44,7 +44,7 @@ public class MathsTests
     [MemberData(nameof(GetBuiltInFunctionTestData))]
     public void BuiltInFunctions_Test(string expression, object expected, double? tolerance)
     {
-        var result = new Expression(expression).Evaluate();
+        var result = new Expression(expression, CultureInfo.InvariantCulture).Evaluate();
 
         if (tolerance.HasValue)
         {
@@ -306,7 +306,8 @@ public class MathsTests
     [InlineData("1e10", 10000000000d)]
     public void ShouldParseScientificNotation(string expression, double expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        var e = new Expression(expression, CultureInfo.InvariantCulture);
+        Assert.Equal(expected, e.Evaluate());
     }
     
     [Fact]

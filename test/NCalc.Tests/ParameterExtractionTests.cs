@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace NCalc.Tests;
 
 [Trait("Category","Parameter Extraction")]
@@ -36,7 +38,8 @@ public class ParameterExtractionTests
     {
         var expression =
             new Expression("if(x=0,x,y)",
-                ExpressionOptions.CaseInsensitiveComparer);
+                ExpressionOptions.CaseInsensitiveComparer,
+                CultureInfo.InvariantCulture);
         var parameters = expression.GetParametersNames();
         
         Assert.Equal(2,parameters.Count);

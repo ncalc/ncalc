@@ -4,6 +4,7 @@ using NCalc.Handlers;
 
 namespace NCalc.Tests;
 
+using System.Globalization;
 using Xunit;
 
 [Trait("Category","Event Handlers")]
@@ -12,7 +13,7 @@ public class EventHandlersTests
     [Fact]
     public void ExpressionShouldEvaluateCustomFunctions()
     {
-        var e = new Expression("SecretOperation(3, 6)");
+        var e = new Expression("SecretOperation(3, 6)", CultureInfo.InvariantCulture);
 
         e.EvaluateFunction += delegate(string name, FunctionArgs args)
         {
@@ -88,7 +89,7 @@ public class EventHandlersTests
     [Fact]
     public void ShouldOverrideExistingFunctions()
     {
-        var e = new Expression("Round(1.99, 2)");
+        var e = new Expression("Round(1.99, 2)", CultureInfo.InvariantCulture);
 
         Assert.Equal(1.99d, e.Evaluate());
 
@@ -124,7 +125,7 @@ public class EventHandlersTests
     [Fact]
     public void ShouldHandleCustomParametersWhenNoSpecificParameterIsDefined()
     {
-        var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");
+        var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)", CultureInfo.InvariantCulture);
 
         e.EvaluateParameter += delegate(string name, ParameterArgs arg)
         {
