@@ -18,6 +18,6 @@ public class DateTimeTests
     [Fact]
     public void Should_Parse_Date_Time()
     {
-        Assert.Equal(new DateTime(2022,12,31,8,8,8), new Expression("#2022/12/31 08:00:00#").Evaluate());
+        Assert.Equal(new DateTime(2022,12,31,8,0,0), new Expression("#2022/12/31 08:00:00#").Evaluate());
     }
 }

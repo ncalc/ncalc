@@ -140,15 +140,14 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
         var charIsNumber = Literals.Pattern(char.IsNumber);
-
-        const char dateTimeDelimiter = '#';
-
+        
         var dateDefinition = charIsNumber
             .AndSkip(divided)
             .And(charIsNumber)
             .AndSkip(divided)
             .And(charIsNumber);
         
+        // date => number/number/number
         var date = dateDefinition.Then<LogicalExpression>(date =>
             {
                 if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
@@ -159,6 +158,7 @@ public static class LogicalExpressionParser
                 throw new FormatException("Invalid DateTime format.");
             });
 
+        // time => number:number:number
         var timeDefinition = charIsNumber
             .AndSkip(Terms.Char(':'))
             .And(charIsNumber)
@@ -176,7 +176,8 @@ public static class LogicalExpressionParser
         });
 
 
-        var dateAndTime = dateDefinition.And(SkipWhiteSpace(timeDefinition)).Then<LogicalExpression>(dateTime =>
+        // dateAndTime => number/number/number number:number:number
+        var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(dateTime =>
         {
             if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", out var result))
             {
@@ -186,10 +187,11 @@ public static class LogicalExpressionParser
             throw new FormatException("Invalid DateTime format.");
         });
 
+        // datetime => '#' dateAndTime | date | time  '#';
         var dateTime = Terms
-            .Char(dateTimeDelimiter)
-            .SkipAnd(OneOf(date, time, dateAndTime))
-            .AndSkip(Literals.Char(dateTimeDelimiter));
+            .Char('#')
+            .SkipAnd(OneOf( dateAndTime, date, time ))
+            .AndSkip(Literals.Char('#'));
         
         // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
         var primary = OneOf(
