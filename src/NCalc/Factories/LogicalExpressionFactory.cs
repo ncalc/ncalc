@@ -20,8 +20,7 @@ public static class LogicalExpressionFactory
                 UseDecimalsAsDefault = options.HasOption(ExpressionOptions.DecimalAsDefault)
             };
             logicalExpression = LogicalExpressionParser.Parse(parserContext);
-
-            if (logicalExpression is null)
+            
             if (logicalExpression is null)
                 throw new ArgumentNullException(nameof(logicalExpression));
         }

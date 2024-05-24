@@ -11,21 +11,13 @@ public sealed class ExpressionFactory(
     IParameterExtractionVisitor parameterExtractionVisitor
     ) : IExpressionFactory
 {
-    public Expression Create(string expression, Action<ExpressionContext>? configure = null)
+    public Expression Create(string expression, ExpressionContext? expressionContext = null)
     {
-        var context = new ExpressionContext();
-
-        configure?.Invoke(context);
-
-        return new AdvancedExpression(logicalExpressionFactory,cache,evaluationVisitor,parameterExtractionVisitor,expression, context);
+        return new AdvancedExpression(logicalExpressionFactory,cache,evaluationVisitor,parameterExtractionVisitor,expression, expressionContext);
     }
 
-    public Expression Create(LogicalExpression logicalExpression, Action<ExpressionContext>? configure = null)
+    public Expression Create(LogicalExpression logicalExpression, ExpressionContext? expressionContext = null)
     {
-        var context = new ExpressionContext();
-
-        configure?.Invoke(context);
-        
-        return new AdvancedExpression(logicalExpressionFactory,cache,evaluationVisitor,parameterExtractionVisitor,logicalExpression, context);
+        return new AdvancedExpression(logicalExpressionFactory,cache,evaluationVisitor,parameterExtractionVisitor,logicalExpression, expressionContext);
     }
 }

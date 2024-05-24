@@ -103,9 +103,9 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomExpressionFactory : IExpressionFactory
     {
-        public Expression Create(string expression, Action<ExpressionContext> configure = null) => throw new NotImplementedException();
+        public Expression Create(string expression, ExpressionContext expressionContext = null) => throw new NotImplementedException();
 
-        public Expression Create(LogicalExpression logicalExpression, Action<ExpressionContext> configure = null) => throw new NotImplementedException();
+        public Expression Create(LogicalExpression logicalExpression, ExpressionContext expressionContext = null) => throw new NotImplementedException();
     }
     
     private class CustomCache : ILogicalExpressionCache

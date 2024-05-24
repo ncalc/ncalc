@@ -20,6 +20,8 @@ public sealed class LogicalExpressionFactoryWrapper : ILogicalExpressionFactory
     
     public LogicalExpression Create(string expression, ExpressionContext? expressionContext = null)
     {
-        return LogicalExpressionFactory.Create(expression, expressionContext);
+        var context = new ExpressionContext();
+        
+        return LogicalExpressionFactory.Create(expression, context);
     }
 }
