@@ -106,6 +106,8 @@ public class Expression
     }
     
     
+    // ReSharper disable once RedundantOverload.Global
+    // Reason: False positive, ExpressionContext have implicit conversions.
     public Expression(string expression) : this(expression, ExpressionOptions.None)
     {
      
@@ -115,7 +117,7 @@ public class Expression
     {
 
     }
-
+    
     public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this()
     {
         LogicalExpression = logicalExpression ?? throw new
@@ -123,6 +125,8 @@ public class Expression
         Context = context ?? new();
     }
     
+    // ReSharper disable once RedundantOverload.Global
+    // Reason: False positive, ExpressionContext have implicit conversions.
     public Expression(LogicalExpression logicalExpression) : this(logicalExpression, ExpressionOptions.None)
     {
      
