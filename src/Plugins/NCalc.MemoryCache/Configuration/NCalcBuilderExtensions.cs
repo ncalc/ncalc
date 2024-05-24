@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using NCalc.DependencyInjection.Configuration;
 
@@ -12,9 +14,13 @@ public static class NCalcBuilderExtensions
     /// <param name="builder"></param>
     /// <param name="configureOptions">The options of the cache.</param>
     /// <returns></returns>
-    public static NCalcServiceBuilder WithMemoryCache(this NCalcServiceBuilder builder, Action<LogicalExpressionMemoryCacheOptions> configureOptions)
+    public static NCalcServiceBuilder WithMemoryCache(this NCalcServiceBuilder builder, Action<LogicalExpressionMemoryCacheOptions>? configureOptions = null)
     {
-        builder.Services.Configure(configureOptions);
+        if (configureOptions != null)
+            builder.Services.Configure(configureOptions);
+        else
+            builder.Services.AddOptions<LogicalExpressionMemoryCacheOptions>();
+        
         builder.WithCache<LogicalExpressionMemoryCache>();
         return builder;
     }

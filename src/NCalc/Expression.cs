@@ -17,8 +17,9 @@ public class Expression
 {
     /// <summary>
     /// Static property to enable or disable cache.
+    /// Default Value: True
     /// </summary>
-    public static bool CacheEnabled { get; set; }
+    public static bool CacheEnabled { get; set; } = true;
     
     /// <summary>
     /// Event triggered to handle parameter evaluation.
@@ -134,9 +135,9 @@ public class Expression
     
     public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this()
     {
+        Context = context ?? new();
         LogicalExpression = logicalExpression ?? throw new
             ArgumentException("Expression can't be null", nameof(logicalExpression));
-        Context = context ?? new();
     }
     
     // ReSharper disable once RedundantOverload.Global

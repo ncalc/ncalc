@@ -1,25 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using NCalc.DependencyInjection.Configuration;
-using NCalc.Factories;
+﻿using NCalc.Factories;
+using NCalc.Tests.Fixtures;
 
 namespace NCalc.Tests;
 
-public class FactoriesFixture
-{
-    public IExpressionFactory ExpressionFactory { get;  }
-    public ILogicalExpressionFactory LogicalExpressionFactory { get; }
-    public FactoriesFixture()
-    {
-        var serviceProvider = new ServiceCollection()
-            .AddNCalc()
-            .Services.BuildServiceProvider();
 
-        ExpressionFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
-        LogicalExpressionFactory = serviceProvider.GetRequiredService<ILogicalExpressionFactory>();
-    }
-
-
-}
 
 [Trait("Category", "DependencyInjection")]
 public class FactoriesTests(FactoriesFixture fixture) : IClassFixture<FactoriesFixture>
