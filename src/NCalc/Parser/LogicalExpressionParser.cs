@@ -36,7 +36,7 @@ public static class LogicalExpressionParser
          *                  | "(" expression ")" ;
          *
          * function       => Identifier "(" arguments ")"
-         * arguments      => expression ( "," expression )*
+         * arguments      => expression ( ("," | ";") expression )*
          */
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
@@ -104,6 +104,7 @@ public static class LogicalExpressionParser
         var closeBrace = Terms.Char(']');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
+        var semicolon = Terms.Char(';');
         
         var negate = Terms.Text("!");
         var not = Terms.Text("not", true);
@@ -117,7 +118,7 @@ public static class LogicalExpressionParser
             .Or(Terms.Identifier())
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
-        var arguments = Separated(comma, expression);
+        var arguments = Separated(comma.Or(semicolon), expression);
 
         var functionWithArguments = Terms
             .Identifier()
@@ -140,32 +141,65 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
         var charIsNumber = Literals.Pattern(char.IsNumber);
-
-        var dateTimeParser = Terms
-            .Char('#')
-            .SkipAnd(charIsNumber)
+        
+        var dateDefinition = charIsNumber
             .AndSkip(divided)
             .And(charIsNumber)
             .AndSkip(divided)
-            .And(charIsNumber)
-            .AndSkip(Literals.Char('#'))
-            .Then<LogicalExpression>(date =>
+            .And(charIsNumber);
+        
+        // date => number/number/number
+        var date = dateDefinition.Then<LogicalExpression>(date =>
             {
                 if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
                 {
                     return new ValueExpression(result);
                 }
 
-                throw new FormatException("Invalid date format.");
+                throw new FormatException("Invalid DateTime format.");
             });
 
-        // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
+        // time => number:number:number
+        var timeDefinition = charIsNumber
+            .AndSkip(Terms.Char(':'))
+            .And(charIsNumber)
+            .AndSkip(Terms.Char(':'))
+            .And(charIsNumber);
         
+        var time = timeDefinition.Then<LogicalExpression>(time =>
+        {
+            if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
+            {
+                return new ValueExpression(result);
+            }
+
+            throw new FormatException("Invalid TimeSpan format.");
+        });
+
+
+        // dateAndTime => number/number/number number:number:number
+        var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(dateTime =>
+        {
+            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", out var result))
+            {
+                return new ValueExpression(result);
+            }
+
+            throw new FormatException("Invalid DateTime format.");
+        });
+
+        // datetime => '#' dateAndTime | date | time  '#';
+        var dateTime = Terms
+            .Char('#')
+            .SkipAnd(OneOf( dateAndTime, date, time ))
+            .AndSkip(Literals.Char('#'));
+        
+        // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
         var primary = OneOf(
             number, 
             booleanTrue, 
             booleanFalse,
-            dateTimeParser,
+            dateTime,
             stringValue, 
             function,
             groupExpression,

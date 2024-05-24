@@ -140,10 +140,9 @@ public class SerializationVisitor : ILogicalExpressionVisitor
                 Result.Append(expression.Value).Append(' ');
                 break;
 
-            case ValueType.DateTime:
+            case ValueType.DateTime or ValueType.TimeSpan:
                 Result.Append('#').Append(expression.Value).Append('#').Append(' ');
                 break;
-
             case ValueType.Float:
                 Result.Append(decimal.Parse(expression.Value?.ToString() ?? string.Empty).ToString(_numberFormatInfo))
                     .Append(' ');
