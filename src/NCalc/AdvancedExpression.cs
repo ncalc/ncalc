@@ -21,15 +21,14 @@ public sealed class AdvancedExpression : Expression
         IEvaluationVisitor evaluationVisitor, 
         IParameterExtractionVisitor parameterExtractionVisitor,
         string expression, 
-        ExpressionContext? context = null)
+        ExpressionContext? context = null) : base(logicalExpressionFactory,logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
     {
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
         EvaluationVisitor = evaluationVisitor;
         ParameterExtractionVisitor = parameterExtractionVisitor;
-        Options = context?.Options ?? ExpressionOptions.None;
-        CultureInfo = context?.CultureInfo ?? CultureInfo.CurrentCulture;
         ExpressionString = expression;
+        Context = context ?? new();
     }
 
     public AdvancedExpression(
@@ -38,14 +37,14 @@ public sealed class AdvancedExpression : Expression
         IEvaluationVisitor evaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor, 
         LogicalExpression logicalExpression,
-        ExpressionContext? context = null)
+        ExpressionContext? context = null): base(logicalExpressionFactory,logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
     {
+        
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
         EvaluationVisitor = evaluationVisitor;
         ParameterExtractionVisitor = parameterExtractionVisitor;
         LogicalExpression = logicalExpression;
-        Options = context?.Options ?? ExpressionOptions.None;
-        CultureInfo = context?.CultureInfo ?? CultureInfo.CurrentCulture;
+        Context = context ?? new();
     }
 }

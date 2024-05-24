@@ -9,21 +9,31 @@ public class EvaluationVisitor : IEvaluationVisitor
     public event EvaluateFunctionHandler? EvaluateFunction;
     public event EvaluateParameterHandler? EvaluateParameter;
     
-    public ExpressionOptions Options { get; set; } 
-    public CultureInfo CultureInfo { get; set; } = CultureInfo.CurrentUICulture;
+    public ExpressionOptions Options
+    {
+        get => Context.Options;
+        set => Context.Options = value;
+    }
+    
+    public CultureInfo CultureInfo
+    {
+        get => Context.CultureInfo;
+        set => Context.CultureInfo = value;
+    }
+    
     public Dictionary<string, object?> Parameters { get; set; } = new();
+
+    public ExpressionContext Context { get; set; } = new();
 
     public object? Result { get; set; }
 
     public EvaluationVisitor()
     {
-        
     }
 
     public EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInfo)
     {
-        Options = options;
-        CultureInfo = cultureInfo;
+        Context = new(options, cultureInfo);
     }
     
     private static readonly Type[] BuiltInTypes =

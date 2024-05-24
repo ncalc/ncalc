@@ -82,6 +82,10 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         var visitor = serviceProvider.GetService<IEvaluationVisitor>();
+        var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
+
+        var exp = expFactory.Create("1+1");
+        
         Assert.IsType<CustomEvaluationVisitor>(visitor);
     }
 
@@ -164,8 +168,7 @@ public class ServiceCollectionExtensionsTests
 
         public event EvaluateFunctionHandler EvaluateFunction;
         public event EvaluateParameterHandler EvaluateParameter;
-        public ExpressionOptions Options { get; set; }
-        public CultureInfo CultureInfo { get; set; }
+        public ExpressionContext Context { get; set; }
         public Dictionary<string, object> Parameters { get; set; }
         public object Result { get; }
     }

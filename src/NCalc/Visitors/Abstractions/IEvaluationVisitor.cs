@@ -7,9 +7,10 @@ public interface IEvaluationVisitor : ILogicalExpressionVisitor
     public event EvaluateFunctionHandler? EvaluateFunction;
     public event EvaluateParameterHandler? EvaluateParameter;
     
-    public ExpressionOptions Options { get; set; }
-    public CultureInfo CultureInfo { get; set; }
+    ExpressionContext Context { get; set; }
+    
     public Dictionary<string, object?> Parameters { get; set; }
     
     public object? Result { get; }
+
 }

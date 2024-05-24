@@ -31,24 +31,29 @@ public class Expression
         remove => EvaluationVisitor.EvaluateFunction -= value;
     }
     
-    private ExpressionOptions _options;
     public ExpressionOptions Options
     {
-        get => _options;
-        set
-        {
-            _options = value;
-            EvaluationVisitor.Options = value;
-        }
+        get => Context.Options;
+        set => Context.Options = value;
     }
     
-
     public CultureInfo CultureInfo
     {
-        get => EvaluationVisitor.CultureInfo;
-        set => EvaluationVisitor.CultureInfo = value;
+        get => Context.CultureInfo;
+        set => Context.CultureInfo = value;
     }
-    
+
+    private ExpressionContext _context = null!;
+    protected ExpressionContext Context
+    {
+        get => _context;
+        set
+        {
+            _context = value;
+            EvaluationVisitor.Context = value;
+        }
+    }
+
     public Dictionary<string, object?> Parameters
     {
         get => EvaluationVisitor.Parameters;
@@ -66,26 +71,37 @@ public class Expression
     
     protected Dictionary<string, IEnumerator>? ParameterEnumerators;
 
-    protected virtual ILogicalExpressionCache LogicalExpressionCache { get; } = LogicalExpressionCacheWrapper.GetInstance();
+    protected virtual ILogicalExpressionCache LogicalExpressionCache { get; } 
     
-    protected virtual ILogicalExpressionFactory LogicalExpressionFactory { get; } = LogicalExpressionFactoryWrapper.GetInstance();
+    protected virtual ILogicalExpressionFactory LogicalExpressionFactory { get; }
 
-    protected virtual IEvaluationVisitor EvaluationVisitor { get; } = new EvaluationVisitor
-    {
-        Parameters = new Dictionary<string, object?>()
-    };
+    protected virtual IEvaluationVisitor EvaluationVisitor { get; } 
     
-    protected virtual IParameterExtractionVisitor ParameterExtractionVisitor { get; } = new ParameterExtractionVisitor();
+    protected virtual IParameterExtractionVisitor ParameterExtractionVisitor { get; }
 
-    protected Expression()
+    private Expression()
     {
-        
+        LogicalExpressionCache = LogicalExpressionCacheWrapper.GetInstance();
+        LogicalExpressionFactory =  LogicalExpressionFactoryWrapper.GetInstance();
+        ParameterExtractionVisitor = new ParameterExtractionVisitor();
+        EvaluationVisitor = new EvaluationVisitor();
     }
     
-    public Expression(string expression, ExpressionContext? context = null)
+    protected Expression(
+        ILogicalExpressionFactory logicalExpressionFactory, 
+        ILogicalExpressionCache logicalExpressionCache,
+        IEvaluationVisitor evaluationVisitor, 
+        IParameterExtractionVisitor parameterExtractionVisitor)
     {
-        Options = context?.Options ?? ExpressionOptions.None;
-        CultureInfo = context?.CultureInfo ?? CultureInfo.CurrentCulture;
+        LogicalExpressionCache = logicalExpressionCache;
+        LogicalExpressionFactory = logicalExpressionFactory;
+        EvaluationVisitor = evaluationVisitor;
+        ParameterExtractionVisitor = parameterExtractionVisitor;
+    }
+    
+    public Expression(string expression, ExpressionContext? context = null) : this()
+    {
+        Context = context ?? new();
         ExpressionString = expression;
     }
     
@@ -100,12 +116,11 @@ public class Expression
 
     }
 
-    public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null)
+    public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this()
     {
         LogicalExpression = logicalExpression ?? throw new
             ArgumentException("Expression can't be null", nameof(logicalExpression));
-        Options = context?.Options ?? ExpressionOptions.None;
-        CultureInfo = context?.CultureInfo ?? CultureInfo.CurrentCulture;
+        Context = context ?? new();
     }
     
     public Expression(LogicalExpression logicalExpression) : this(logicalExpression, ExpressionOptions.None)
@@ -117,8 +132,8 @@ public class Expression
     {
 
     }
-    
-    public bool IsCacheEnabled()
+
+    private bool IsCacheEnabled()
     {
         return CacheEnabled && !Options.HasOption(ExpressionOptions.NoCache);
     }
@@ -173,7 +188,7 @@ public class Expression
 
         try
         {
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
             if(IsCacheEnabled())
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
@@ -238,7 +253,7 @@ public class Expression
     /// </summary>
     public List<string> GetParametersNames()
     {
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
         LogicalExpression.Accept(ParameterExtractionVisitor);
         return ParameterExtractionVisitor.Parameters.ToList();
     }
