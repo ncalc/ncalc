@@ -1,5 +1,4 @@
 using NCalc.Domain;
-using NCalc.Exceptions;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
 using Identifier = NCalc.Domain.Identifier;
