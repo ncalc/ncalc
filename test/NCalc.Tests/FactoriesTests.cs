@@ -1,11 +1,6 @@
-﻿using System.Globalization;
-using Microsoft.Extensions.DependencyInjection;
-using NCalc.Cache;
+﻿using Microsoft.Extensions.DependencyInjection;
 using NCalc.DependencyInjection.Configuration;
-using NCalc.Domain;
 using NCalc.Factories;
-using NCalc.Handlers;
-using NCalc.Visitors;
 
 namespace NCalc.Tests;
 
@@ -26,6 +21,7 @@ public class FactoriesFixture
 
 }
 
+[Trait("Category", "DependencyInjection")]
 public class FactoriesTests(FactoriesFixture fixture) : IClassFixture<FactoriesFixture>
 {
     private readonly IExpressionFactory _expressionFactory = fixture.ExpressionFactory;
