@@ -172,4 +172,14 @@ public class EvaluationTests
 
         Assert.Equal(6, volume.Evaluate());
     }
+
+    [Theory]
+    [InlineData("Round(1.412; 2)", 1.41)]
+    [InlineData("Max(5.1; 10.2)", 10.2)]
+    [InlineData("Min(1.3; 2)", 1.3)]
+    [InlineData("Pow(5;2)", 25d)]
+    public void ShouldAllowSemicolonAsArgumentSeparator(string expression, object expected)
+    {
+        Assert.Equal(expected, new Expression(expression).Evaluate());
+    }
 }
