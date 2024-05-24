@@ -1,4 +1,5 @@
-﻿using NCalc.Domain;
+﻿using NCalc.Cache;
+using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Factories.Abstractions;
@@ -9,12 +10,7 @@ namespace NCalc;
 
 public class Expression
 {
-    public static bool CacheEnabled
-    {
-        get => Factories.LogicalExpressionFactory.EnableCache;
-        set => Factories.LogicalExpressionFactory.EnableCache = value;
-    }
-    
+    public static bool CacheEnabled { get; set; }
     public event EvaluateParameterHandler EvaluateParameter
     {
         add => EvaluationVisitor.EvaluateParameter += value;
@@ -71,6 +67,8 @@ public class Expression
     
     protected Dictionary<string, IEnumerator>? ParameterEnumerators;
 
+    protected ILogicalExpressionCache LogicalExpressionCache { get; set; } = new LogicalExpressionCache();
+    
     protected ILogicalExpressionFactory LogicalExpressionFactory { get; set; } = LogicalExpressionFactoryWrapper.GetInstance();
 
     protected IEvaluationVisitor EvaluationVisitor { get; set; } = new EvaluationVisitor();
@@ -116,7 +114,7 @@ public class Expression
     {
         try
         {
-            LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Options);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -130,7 +128,9 @@ public class Expression
 
     public object? Evaluate()
     {
-        if (HasErrors() && Error is not null)
+        LogicalExpression ??= GetLogicalExpression();
+        
+        if (Error is not null)
             throw Error;
 
         if (Options.HasOption(ExpressionOptions.AllowNullParameter))
@@ -142,6 +142,26 @@ public class Expression
 
         LogicalExpression!.Accept(EvaluationVisitor);
         return EvaluationVisitor.Result;
+    }
+
+    private LogicalExpression? GetLogicalExpression()
+    {
+        if (string.IsNullOrEmpty(ExpressionString))
+            throw new NCalcException("Expression cannot be null or empty.");
+        
+        if (LogicalExpressionCache.TryGetValue(ExpressionString!, out var logicalExpression))
+            return logicalExpression!;
+
+        try
+        {
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
+        }
+        catch (Exception exception)
+        {
+            Error = exception;
+        }
+        
+        return logicalExpression;
     }
 
     private List<object?> IterateParameters()
