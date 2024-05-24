@@ -1,5 +1,3 @@
-using NCalc;
-using NCalc.Cache;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Parser;
@@ -11,17 +9,19 @@ namespace NCalc.Factories;
 /// </summary>
 public static class LogicalExpressionFactory
 {
-    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, ExpressionContext? expressionContext = null)
     {
         LogicalExpression? logicalExpression;
         try
         {
-            var context = new LogicalExpressionParserContext(expression)
+            var options = expressionContext?.Options ?? ExpressionOptions.None;
+            var parserContext = new LogicalExpressionParserContext(expression)
             {
                 UseDecimalsAsDefault = options.HasOption(ExpressionOptions.DecimalAsDefault)
             };
-            logicalExpression = LogicalExpressionParser.Parse(context);
+            logicalExpression = LogicalExpressionParser.Parse(parserContext);
 
+            if (logicalExpression is null)
             if (logicalExpression is null)
                 throw new ArgumentNullException(nameof(logicalExpression));
         }

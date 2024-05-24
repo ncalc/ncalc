@@ -2,7 +2,10 @@
 
 namespace NCalc.Visitors;
 
-internal sealed class ParameterExtractionVisitor : IParameterExtractionVisitor
+/// <summary>
+/// Default implementation of IParameterExtractionVisitor.
+/// </summary>
+public sealed class ParameterExtractionVisitor : IParameterExtractionVisitor
 {
     public List<string> Parameters { get; } = [];
 

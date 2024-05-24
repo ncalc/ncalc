@@ -1,12 +1,11 @@
 ﻿using NCalc.Domain;
-using NCalc.Factories.Abstractions;
 
 namespace NCalc.Factories;
 
 /// <summary>
 /// Default LogicalExpressionFactory implementation.
 /// </summary>
-internal sealed class LogicalExpressionFactoryWrapper : ILogicalExpressionFactory
+public sealed class LogicalExpressionFactoryWrapper : ILogicalExpressionFactory
 {
     private static LogicalExpressionFactoryWrapper? _instance;
     private LogicalExpressionFactoryWrapper()
@@ -19,8 +18,8 @@ internal sealed class LogicalExpressionFactoryWrapper : ILogicalExpressionFactor
         return _instance ??= new LogicalExpressionFactoryWrapper();
     }
     
-    public LogicalExpression Create(string expression, ExpressionOptions expressionOptions)
+    public LogicalExpression Create(string expression, ExpressionContext? expressionContext = null)
     {
-        return LogicalExpressionFactory.Create(expression, expressionOptions);
+        return LogicalExpressionFactory.Create(expression, expressionContext);
     }
 }

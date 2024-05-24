@@ -46,8 +46,7 @@ public static class LogicalExpressionParser
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
-                Literals.Char('.')
-                    .SkipAnd(Terms.Integer().Then<long?>(x => x))
+                Literals.Char('.').SkipAnd(Terms.Integer().Then<long?>(x => x))
                     .And(exponentNumberPart.ThenElse<long?>(x => x, null)).Then(x => (0L, x.Item1, x.Item2)),
                 Literals.Integer(NumberOptions.AllowSign)
                     .And(Literals.Char('.')

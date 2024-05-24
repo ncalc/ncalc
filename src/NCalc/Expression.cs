@@ -2,15 +2,23 @@
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Factories.Abstractions;
 using NCalc.Handlers;
+using NCalc.Helpers;
 using NCalc.Visitors;
 
 namespace NCalc;
 
+
+/// <summary>
+/// NCalc principal class. 
+/// </summary>
 public class Expression
 {
+    /// <summary>
+    /// Static property to enable or disable cache.
+    /// </summary>
     public static bool CacheEnabled { get; set; }
+    
     public event EvaluateParameterHandler EvaluateParameter
     {
         add => EvaluationVisitor.EvaluateParameter += value;
@@ -34,26 +42,17 @@ public class Expression
         }
     }
     
-    private CultureInfo _cultureInfo = CultureInfo.CurrentUICulture;
+
     public CultureInfo CultureInfo
     {
-        get => _cultureInfo;
-        set
-        {
-            _cultureInfo = value;
-            EvaluationVisitor.CultureInfo = value;
-        }
+        get => EvaluationVisitor.CultureInfo;
+        set => EvaluationVisitor.CultureInfo = value;
     }
-
-    private Dictionary<string, object?> _parameters = new();
+    
     public Dictionary<string, object?> Parameters
     {
-        get => _parameters;
-        set
-        {
-            _parameters = value;
-            EvaluationVisitor.Parameters = value;
-        }
+        get => EvaluationVisitor.Parameters;
+        set => EvaluationVisitor.Parameters = value;
     }
 
     /// <summary>
@@ -61,48 +60,67 @@ public class Expression
     /// </summary>
     public string? ExpressionString { get; protected set; }
 
-    public LogicalExpression? LogicalExpression { get; private set; }
+    public LogicalExpression? LogicalExpression { get; protected set; }
     
     public Exception? Error { get; private set; }
     
     protected Dictionary<string, IEnumerator>? ParameterEnumerators;
 
-    protected ILogicalExpressionCache LogicalExpressionCache { get; set; } = new LogicalExpressionCache();
+    protected virtual ILogicalExpressionCache LogicalExpressionCache { get; } = LogicalExpressionCacheWrapper.GetInstance();
     
-    protected ILogicalExpressionFactory LogicalExpressionFactory { get; set; } = LogicalExpressionFactoryWrapper.GetInstance();
+    protected virtual ILogicalExpressionFactory LogicalExpressionFactory { get; } = LogicalExpressionFactoryWrapper.GetInstance();
 
-    protected IEvaluationVisitor EvaluationVisitor { get; set; } = new EvaluationVisitor();
-    
-    protected IParameterExtractionVisitor ParameterExtractionVisitor { get; set; } = new ParameterExtractionVisitor();
-    
-    public Expression(string expressionString, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null)
+    protected virtual IEvaluationVisitor EvaluationVisitor { get; } = new EvaluationVisitor
     {
-        if (string.IsNullOrEmpty(expressionString))
-            throw new
-                ArgumentException("Expression can't be empty", nameof(expressionString));
-        
-        Options = options;
-        CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
-        ExpressionString = expressionString;
-        EvaluationVisitor.Parameters = Parameters;
-    }
+        Parameters = new Dictionary<string, object?>()
+    };
     
-    public Expression(string expressionString, CultureInfo cultureInfo) : this(expressionString, ExpressionOptions.None, cultureInfo)
+    protected virtual IParameterExtractionVisitor ParameterExtractionVisitor { get; } = new ParameterExtractionVisitor();
+
+    protected Expression()
     {
         
     }
     
-    public Expression(LogicalExpression expression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null)
+    public Expression(string expression, ExpressionContext? context = null)
     {
-        LogicalExpression = expression ?? throw new
-            ArgumentException("Expression can't be null", nameof(expression));
-        Options = options;
-        CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
-        EvaluationVisitor.Parameters = Parameters;
+        Options = context?.Options ?? ExpressionOptions.None;
+        CultureInfo = context?.CultureInfo ?? CultureInfo.CurrentCulture;
+        ExpressionString = expression;
     }
     
-    public Expression(LogicalExpression expression, CultureInfo cultureInfo) : this(expression, ExpressionOptions.None, cultureInfo)
+    
+    public Expression(string expression) : this(expression, ExpressionOptions.None)
     {
+     
+    }
+    
+    public Expression(string expression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null) : this(expression,new ExpressionContext(options, cultureInfo))
+    {
+
+    }
+
+    public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null)
+    {
+        LogicalExpression = logicalExpression ?? throw new
+            ArgumentException("Expression can't be null", nameof(logicalExpression));
+        Options = context?.Options ?? ExpressionOptions.None;
+        CultureInfo = context?.CultureInfo ?? CultureInfo.CurrentCulture;
+    }
+    
+    public Expression(LogicalExpression logicalExpression) : this(logicalExpression, ExpressionOptions.None)
+    {
+     
+    }
+    
+    public Expression(LogicalExpression logicalExpression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
+    {
+
+    }
+    
+    public bool IsCacheEnabled()
+    {
+        return CacheEnabled && !Options.HasOption(ExpressionOptions.NoCache);
     }
     
     /// <summary>
@@ -149,12 +167,15 @@ public class Expression
         if (string.IsNullOrEmpty(ExpressionString))
             throw new NCalcException("Expression cannot be null or empty.");
         
-        if (LogicalExpressionCache.TryGetValue(ExpressionString!, out var logicalExpression))
+        //Yes, this is the first time in my life I need a bitwise AND, because logicalExpression needs to be declared.
+        if (IsCacheEnabled() & LogicalExpressionCache.TryGetValue(ExpressionString!, out var logicalExpression))
             return logicalExpression!;
 
         try
         {
             logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
+            if(IsCacheEnabled())
+                LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
         catch (Exception exception)
         {

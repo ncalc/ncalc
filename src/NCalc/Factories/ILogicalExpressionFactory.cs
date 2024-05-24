@@ -1,8 +1,8 @@
 ﻿using NCalc.Domain;
 
-namespace NCalc.Factories.Abstractions;
+namespace NCalc.Factories;
 
 public interface ILogicalExpressionFactory
 {
-    public LogicalExpression Create(string expression, ExpressionOptions expressionOptions);
+    public LogicalExpression Create(string expression, ExpressionContext? expressionContext = null);
 }

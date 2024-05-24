@@ -72,9 +72,6 @@ This package contains the unsigned assembly 'NCalc'. For the stronly signed asse
 		<None Include="Resources\NCalc.png" Pack="true" PackagePath="" />
 		<None Include="..\..\README.md" Pack="true" PackagePath="" />
 	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Abstractions\" />
-	</ItemGroup>
 
 	<!-- Common Additional Configuration for Release Builds -->
 	<PropertyGroup Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='SignedRelease'">
@@ -97,5 +94,4 @@ This package contains the strongly signed assembly version of 'NCalc'. For the u
 	  <SignAssembly>true</SignAssembly>
 	  <AssemblyOriginatorKeyFile>NCalc.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
-
 </Project>
