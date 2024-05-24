@@ -1,4 +1,5 @@
 using NCalc.Domain;
+using NCalc.Exceptions;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
 using Identifier = NCalc.Domain.Identifier;
@@ -48,13 +49,27 @@ public static class LogicalExpressionParser
             SkipWhiteSpace(OneOf(
                 Literals.Char('.')
                     .SkipAnd(Terms.Integer().Then<long?>(x => x))
-                    .And(exponentNumberPart.ThenElse<long?>(x => x, null)).Then(x => (0L, x.Item1, x.Item2)),
+                    .And(exponentNumberPart.ThenElse<long?>(x => x, null))
+                    .And(Literals.Identifier().ThenElse(x => x, null))
+                    .Then(x => {
+                        if (x.Item3.Length != 0)
+                            throw new NCalcParserException("Invalid token in expression");
+
+                        return (0L, x.Item1, x.Item2);
+                    }),
                 Literals.Integer(NumberOptions.AllowSign)
                     .And(Literals.Char('.')
                     .SkipAnd(ZeroOrOne(Terms.Integer()))
                     .ThenElse<long?>(x => x, null))
                     .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                    .Then(x => (x.Item1, x.Item2, x.Item3))
+                    .And(Literals.Identifier().ThenElse(x => x, null))
+                    .Then((x) =>
+                    {
+                        if (x.Item4.Length != 0)
+                            throw new NCalcParserException("Invalid token in expression");
+
+                        return (x.Item1, x.Item2, x.Item3);
+                    })
                 ))
             .Then<LogicalExpression>((ctx, x) =>
             {

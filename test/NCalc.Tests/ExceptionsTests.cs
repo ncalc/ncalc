@@ -19,6 +19,9 @@ public class ExceptionsTests
     [Theory]
     [InlineData(". + 2")]
     [InlineData("(3 + 2")]
+    [InlineData("42a")]
+    [InlineData("42.3a")]
+    [InlineData("42.3e-5a")]
     public void Should_Throw_Parse_Exception(string expression)
     {
         Assert.Throws<NCalcParserException>(() =>new Expression(expression).Evaluate());
