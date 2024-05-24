@@ -3,14 +3,15 @@ using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Handlers;
-using NCalc.Helpers;
 using NCalc.Visitors;
 
 namespace NCalc;
 
 
 /// <summary>
-/// NCalc principal class. 
+/// The Expression class represents a mathematical or logical expression that can be evaluated.
+/// It supports caching, custom parameter and function evaluation, and options for handling null parameters and iterating over parameter collections.
+/// The class manages the parsing, validation, and evaluation of expressions, and provides mechanisms for error detection and reporting.
 /// </summary>
 public class Expression
 {
@@ -19,24 +20,36 @@ public class Expression
     /// </summary>
     public static bool CacheEnabled { get; set; }
     
+    /// <summary>
+    /// Event triggered to handle parameter evaluation.
+    /// </summary>
     public event EvaluateParameterHandler EvaluateParameter
     {
         add => EvaluationVisitor.EvaluateParameter += value;
         remove => EvaluationVisitor.EvaluateParameter -= value;
     }
 
+    /// <summary>
+    /// Event triggered to handle function evaluation.
+    /// </summary>
     public event EvaluateFunctionHandler EvaluateFunction 
     {
         add => EvaluationVisitor.EvaluateFunction += value;
         remove => EvaluationVisitor.EvaluateFunction -= value;
     }
     
+    /// <summary>
+    /// Options for the expression evaluation.
+    /// </summary>
     public ExpressionOptions Options
     {
         get => Context.Options;
         set => Context.Options = value;
     }
     
+    /// <summary>
+    /// Culture information for the expression evaluation.
+    /// </summary>
     public CultureInfo CultureInfo
     {
         get => Context.CultureInfo;
@@ -54,6 +67,9 @@ public class Expression
         }
     }
 
+    /// <summary>
+    /// Parameters for the expression evaluation.
+    /// </summary>
     public Dictionary<string, object?> Parameters
     {
         get => EvaluationVisitor.Parameters;
@@ -63,21 +79,19 @@ public class Expression
     /// <summary>
     /// Textual representation of the expression.
     /// </summary>
-    public string? ExpressionString { get; protected set; }
+    public string? ExpressionString { get; protected init; }
 
     public LogicalExpression? LogicalExpression { get; protected set; }
     
     public Exception? Error { get; private set; }
-    
-    protected Dictionary<string, IEnumerator>? ParameterEnumerators;
 
-    protected virtual ILogicalExpressionCache LogicalExpressionCache { get; } 
-    
-    protected virtual ILogicalExpressionFactory LogicalExpressionFactory { get; }
+    protected ILogicalExpressionCache LogicalExpressionCache { get; init; }
 
-    protected virtual IEvaluationVisitor EvaluationVisitor { get; } 
-    
-    protected virtual IParameterExtractionVisitor ParameterExtractionVisitor { get; }
+    protected ILogicalExpressionFactory LogicalExpressionFactory { get; init; }
+
+    protected IEvaluationVisitor EvaluationVisitor { get; init; }
+
+    protected IParameterExtractionVisitor ParameterExtractionVisitor { get; init; }
 
     private Expression()
     {
@@ -163,6 +177,10 @@ public class Expression
         }
     }
 
+    /// <summary>
+    /// Evaluate the expression and return the result.
+    /// </summary>
+    /// <returns>The result of the evaluation.</returns>
     public object? Evaluate()
     {
         LogicalExpression ??= GetLogicalExpression();
@@ -208,7 +226,7 @@ public class Expression
     {
         var size = -1;
 
-        ParameterEnumerators = new Dictionary<string, IEnumerator>();
+        var parameterEnumerators = new Dictionary<string, IEnumerator>();
 
         foreach (var parameter in Parameters.Values)
         {
@@ -231,16 +249,16 @@ public class Expression
         {
             if (Parameters[key] is IEnumerable parameter)
             {
-                ParameterEnumerators.Add(key,parameter.GetEnumerator());
+                parameterEnumerators.Add(key,parameter.GetEnumerator());
             }
         }
 
         var results = new List<object?>();
         for (var i = 0; i < size; i++)
         {
-            foreach (var key in ParameterEnumerators.Keys)
+            foreach (var key in parameterEnumerators.Keys)
             {
-                var enumerator = ParameterEnumerators[key];
+                var enumerator = parameterEnumerators[key];
                 enumerator.MoveNext();
                 Parameters[key] = enumerator.Current;
             }

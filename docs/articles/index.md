@@ -13,11 +13,11 @@ NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expre
 For additional information on the technique we used to create this framework please read this article: http://www.codeproject.com/KB/recipes/sota_expression_evaluator.aspx.
 
 For documentation here is the table of content:
-* [[description|Description]]: overall concepts, usage and extensibility points
-* [[operators]]: available standard operators and structures
-* [[values]]: authorized values like types, functions, ...
-* [[functions]]: list of already implemented functions
-* [[parameters]]: on how to use parameters expressions
+* [Description]: overall concepts, usage and extensibility points.
+* [Operators]: available standard operators and structures.
+* [Values]: authorized values like types and functions.
+* [Functions]:  list of already implemented functions.
+* [Parameters]:  on how to use parameters expressions.
 
 ## Functionalities
 **Simple Expressions**

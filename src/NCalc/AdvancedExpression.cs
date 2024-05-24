@@ -10,11 +10,6 @@ namespace NCalc;
 /// </summary>
 internal sealed class AdvancedExpression : Expression
 {
-    protected override ILogicalExpressionCache LogicalExpressionCache { get; }
-    protected override ILogicalExpressionFactory LogicalExpressionFactory { get; }
-    protected override IEvaluationVisitor EvaluationVisitor { get; }
-    protected override IParameterExtractionVisitor ParameterExtractionVisitor { get; }
-    
     public AdvancedExpression(
         ILogicalExpressionFactory logicalExpressionFactory, 
         ILogicalExpressionCache logicalExpressionCache,
