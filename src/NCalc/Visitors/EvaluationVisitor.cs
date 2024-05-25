@@ -4,17 +4,37 @@ using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 
-public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInfo) : LogicalExpressionVisitor
+public class EvaluationVisitor : IEvaluationVisitor
 {
     public event EvaluateFunctionHandler? EvaluateFunction;
     public event EvaluateParameterHandler? EvaluateParameter;
     
-    public ExpressionOptions Options { get; set; } = options;
-    public CultureInfo CultureInfo { get; set; } = cultureInfo;
+    public ExpressionOptions Options
+    {
+        get => Context.Options;
+        set => Context.Options = value;
+    }
+    
+    public CultureInfo CultureInfo
+    {
+        get => Context.CultureInfo;
+        set => Context.CultureInfo = value;
+    }
+    
+    public Dictionary<string, object?> Parameters { get; set; } = new();
 
-    public required Dictionary<string, object?> Parameters { get; set; }
+    public ExpressionContext Context { get; set; } = new();
 
-    public object? Result { get; private set; }
+    public object? Result { get; set; }
+
+    public EvaluationVisitor()
+    {
+    }
+
+    public EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInfo)
+    {
+        Context = new(options, cultureInfo);
+    }
     
     private static readonly Type[] BuiltInTypes =
     [
@@ -41,7 +61,7 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
         return Result;
     }
 
-    public override void Visit(LogicalExpression expression)
+    public void Visit(LogicalExpression expression)
     {
         throw new NotSupportedException("The Visit method is not supported for this class.");
     }
@@ -84,7 +104,7 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
         return Comparer.Default.Compare(aValue, bValue);
     }
 
-    public override void Visit(TernaryExpression expression)
+    public void Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
         expression.LeftExpression.Accept(this);
@@ -102,7 +122,7 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
 
     private static bool IsReal(object? value) => value is decimal or double or float;
 
-    public override void Visit(BinaryExpression expression)
+    public void Visit(BinaryExpression expression)
     {
         // simulate Lazy<Func<>> behavior for late evaluation
         object? leftValue = null;
@@ -230,7 +250,7 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
         }
     }
 
-    public override void Visit(UnaryExpression expression)
+    public void Visit(UnaryExpression expression)
     {
         // Recursively evaluates the underlying expression
         expression.Expression.Accept(this);
@@ -255,12 +275,12 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
         }
     }
 
-    public override void Visit(ValueExpression expression)
+    public void Visit(ValueExpression expression)
     {
         Result = expression.Value;
     }
 
-    public override void Visit(Function function)
+    public void Visit(Function function)
     {
         var args = new FunctionArgs
         {
@@ -526,7 +546,7 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
             throw new ArgumentException($"Function not found {called}. Try {function} instead.");
     }
     
-    public override void Visit(Identifier parameter)
+    public void Visit(Identifier parameter)
     {
         if (Parameters.TryGetValue(parameter.Name, out var parameterValue))
         {
@@ -536,7 +556,8 @@ public class EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInf
                 // Overloads parameters 
                 foreach (var p in Parameters)
                 {
-                    expression.Parameters[p.Key] = p.Value;
+                    if (expression.Parameters != null) 
+                        expression.Parameters[p.Key] = p.Value;
                 }
 
                 expression.EvaluateFunction += EvaluateFunction;

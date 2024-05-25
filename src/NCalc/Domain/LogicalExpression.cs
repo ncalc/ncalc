@@ -12,7 +12,7 @@ public abstract class LogicalExpression
         return serializer.Result.ToString().TrimEnd(' ');
     }
 
-    public virtual void Accept(LogicalExpressionVisitor visitor)
+    public virtual void Accept(ILogicalExpressionVisitor visitor)
     {
         visitor.Visit(this);
     }
