@@ -3,19 +3,19 @@ using NCalc.Domain;
 
 namespace NCalc.Cache;
 
-public sealed class LogicalExpressionCacheWrapper : ILogicalExpressionCache
+public sealed class LogicalExpressionCache : ILogicalExpressionCache
 {
     private readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
     
-    private static LogicalExpressionCacheWrapper? _instance;
+    private static LogicalExpressionCache? _instance;
     
-    private LogicalExpressionCacheWrapper()
+    private LogicalExpressionCache()
     {
         
     }
-    public static LogicalExpressionCacheWrapper GetInstance()
+    public static LogicalExpressionCache GetInstance()
     {
-        return _instance ??= new LogicalExpressionCacheWrapper();
+        return _instance ??= new LogicalExpressionCache();
     }
     
     public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)

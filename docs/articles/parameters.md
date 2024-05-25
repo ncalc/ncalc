@@ -6,7 +6,7 @@ Static parameters are values which can be defined before the evaluation of an ex
 These parameters can be accesed using the **Parameters** dictionary of the **Expression** instance.
 
 ```c#
-  Expression e = new Expression("2 * [x] ^ 2 + 5 * [y]");
+  var expression = new Expression("2 * [x] ^ 2 + 5 * [y]");
   e.Parameters["x"] = 5;
   e.Parameters["y"] = 1;
 
@@ -31,7 +31,7 @@ Expressions can be split into several ones by defining expression parameters. Th
 Sometimes parameters can be even more complex to evaluate and need a dedicated method to be evaluated. This can be done by intercepting there evaluation using the **EvaluateParameter** event published on **Expression** instances. Thus, each time a parameter is not defined in the dictionary, this event is called to try to resolve the value.
 
 ```c#
-  Expression e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + [X], 2)");
+  var expression = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + [X], 2)");
 
   e.Parameters["Pi2"] = new Expression("Pi * [Pi]");
   e.Parameters["X"] = 10;
@@ -47,7 +47,7 @@ Sometimes parameters can be even more complex to evaluate and need a dedicated m
 
 Parameters in between square brackets can contain special characters like spaces, dots, and also start with digits.
 ```c#
-  Expression e = new Expression("[My First Parameter] + [My Second Parameter]");
+  var expression = new Expression("[My First Parameter] + [My Second Parameter]");
 ```
 You can also use a curly braces as alternative to square brackets.
 ## Multi-valued parameters
@@ -55,7 +55,7 @@ You can also use a curly braces as alternative to square brackets.
 When parameters are IEnumerable and the **EvaluationOptions.IterateParameters** is used, the result is a **List<object?>** made of the evaluation of each value in the parameter.
 
 ```c#
- Expression e = new Expression("(a * b) ^ c", ExpressionOptions.IterateParameters);
+ var expression = new Expression("(a * b) ^ c", ExpressionOptions.IterateParameters);
  e.Parameters["a"] = new int[] { 1, 2, 3, 4, 5 };
  e.Parameters["b"] = new int[] { 6, 7, 8, 9, 0 };
  e.Parameters["c"] = 3;
@@ -76,7 +76,7 @@ When parameters are IEnumerable and the **EvaluationOptions.IterateParameters** 
 When parameter is null and **EvaluationOptions.AllowNullParameter** is used, comparison of values to null is allowed.
 
 ```c#
-Expression e = new Expression("'a string' == null", ExpressionOptions.AllowNullParameter);
+var expression = new Expression("'a string' == null", ExpressionOptions.AllowNullParameter);
 (bool)e.Evaluate();
 
  //  False
@@ -85,7 +85,7 @@ Expression e = new Expression("'a string' == null", ExpressionOptions.AllowNullP
 ## Getting all parameters from an expression
 
 ```c#
-	Expression exp = new Expression ("if(x=0,x,y)"); 
+	var expressionxp = new Expression ("if(x=0,x,y)"); 
     exp.Parameters["x"] = 1;
     exp.Parameters["y"] = "pan"
     var parameters = exp.GetParametersNames(); 

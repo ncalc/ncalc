@@ -96,7 +96,7 @@ public class Expression
 
     private Expression()
     {
-        LogicalExpressionCache = LogicalExpressionCacheWrapper.GetInstance();
+        LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
         LogicalExpressionFactory =  LogicalExpressionFactoryWrapper.GetInstance();
         ParameterExtractionVisitor = new ParameterExtractionVisitor();
         EvaluationVisitor = new EvaluationVisitor();

@@ -36,7 +36,7 @@ public static class ServiceCollectionExtensions
 
     private static void AddCache(this IServiceCollection services)
     {
-        services.AddSingleton<ILogicalExpressionCache>(_ => LogicalExpressionCacheWrapper.GetInstance());
+        services.AddSingleton<ILogicalExpressionCache>(_ => LogicalExpressionCache.GetInstance());
     }
 
     private static void AddFactories(this IServiceCollection services)
