@@ -1,5 +1,8 @@
 ﻿namespace NCalc;
 
+/// <summary>
+/// Stores the context of an <see cref="Expression"/>, for both parsing and evaluation.
+/// </summary>
 public class ExpressionContext
 {
     public ExpressionOptions Options { get; set; } = ExpressionOptions.None;

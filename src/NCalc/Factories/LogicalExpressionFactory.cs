@@ -5,7 +5,7 @@ using NCalc.Parser;
 namespace NCalc.Factories;
 
 /// <summary>
-/// Class responsible to create LogicalExpression objects.
+/// Class responsible to create <see cref="LogicalExpression"/> objects. Parlot is used for parsing strings.
 /// </summary>
 public static class LogicalExpressionFactory
 {

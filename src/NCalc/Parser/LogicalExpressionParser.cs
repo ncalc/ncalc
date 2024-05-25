@@ -5,6 +5,9 @@ using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
 
+/// <summary>
+/// Class responsible for parsing strings into <see cref="LogicalExpression"/> objects.
+/// </summary>
 public static class LogicalExpressionParser
 {
     private static readonly Parser<LogicalExpression> Parser;
@@ -368,6 +371,6 @@ public static class LogicalExpressionParser
         expression.Parser = ternary;
         Parser = expression.Compile();
     }
-
+    
     public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
 }

@@ -3,7 +3,7 @@
 namespace NCalc.Factories;
 
 /// <summary>
-/// Default LogicalExpressionFactory implementation.
+/// Default <see cref="ILogicalExpressionFactory"/> implementation.
 /// </summary>
 public sealed class LogicalExpressionFactoryWrapper : ILogicalExpressionFactory
 {

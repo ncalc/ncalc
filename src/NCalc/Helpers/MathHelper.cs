@@ -1,5 +1,8 @@
 ﻿namespace NCalc.Helpers;
 
+/// <summary>
+/// Utilities for doing mathematical operations between different object types.
+/// </summary>
 public static class MathHelper
 {
     private static object? ConvertIfString(object? s, CultureInfo cultureInfo)

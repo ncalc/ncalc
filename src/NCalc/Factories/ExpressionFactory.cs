@@ -4,6 +4,9 @@ using NCalc.Visitors;
 
 namespace NCalc.Factories;
 
+/// <summary>
+/// Default <see cref="IExpressionFactory"/> implementation.
+/// </summary>
 public sealed class ExpressionFactory(
     ILogicalExpressionFactory logicalExpressionFactory, 
     ILogicalExpressionCache cache,
