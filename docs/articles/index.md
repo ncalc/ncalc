@@ -1,8 +1,4 @@
-# NCalc
-
-[![Appveyor](https://img.shields.io/appveyor/ci/yallie/ncalc.svg)](https://ci.appveyor.com/project/yallie/ncalc)
-[![Coverage](https://img.shields.io/codecov/c/github/ncalc/ncalc.svg)](https://codecov.io/gh/ncalc/ncalc)
-[![Tests](https://img.shields.io/appveyor/tests/yallie/ncalc.svg)](https://ci.appveyor.com/project/yallie/ncalc/build/tests)
+# Intro
 
 NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
@@ -13,11 +9,12 @@ NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expre
 For additional information on the technique we used to create this framework please read this article: http://www.codeproject.com/KB/recipes/sota_expression_evaluator.aspx.
 
 For documentation here is the table of content:
-* [Description]: overall concepts, usage and extensibility points.
-* [Operators]: available standard operators and structures.
-* [Values]: authorized values like types and functions.
-* [Functions]:  list of already implemented functions.
-* [Parameters]:  on how to use parameters expressions.
+- [Description](description.md): overall concepts, usage and extensibility points.
+- [Operators](operators.md): available standard operators and structures.
+- [Values](values.md): authorized values like types and functions.
+- [Functions](functions.md):  list of already implemented functions.
+- [Parameters](parameters.md):  on how to use parameters expressions.
+- [Dependency Injection](dependency_injection.md):  bring expressions to the next level with dependency injection.
 
 ## Functionalities
 **Simple Expressions**
