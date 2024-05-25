@@ -31,7 +31,7 @@ public static class LogicalExpressionParser
          *                  | STRING
          *                  | "true"
          *                  | "false"
-         *                  | "[" anything "]"
+         *                  | ("[" | "{") anything ("]" | "}")
          *                  | function
          *                  | "(" expression ")" ;
          *
@@ -102,6 +102,8 @@ public static class LogicalExpressionParser
         var closeParen = Terms.Char(')');
         var openBrace = Terms.Char('[');
         var closeBrace = Terms.Char(']');
+        var openCurlyBrace = Terms.Char('{');
+        var closeCurlyBrace = Terms.Char('}');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
@@ -112,9 +114,9 @@ public static class LogicalExpressionParser
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
 
-        // "[" identifier "]"
-        var identifierExpression = openBrace
-            .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true))
+        // ("[" | "{") identifier ("]" | "}")
+        var identifierExpression = openBrace.Or(openCurlyBrace)
+            .SkipAnd(AnyCharBefore(closeBrace.Or(closeCurlyBrace), consumeDelimiter: true))
             .Or(Terms.Identifier())
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
