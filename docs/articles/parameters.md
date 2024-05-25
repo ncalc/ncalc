@@ -85,9 +85,9 @@ var expression = new Expression("'a string' == null", ExpressionOptions.AllowNul
 ## Getting all parameters from an expression
 
 ```c#
-	var expressionxp = new Expression ("if(x=0,x,y)"); 
-    exp.Parameters["x"] = 1;
-    exp.Parameters["y"] = "pan"
+	var expression = new Expression ("if(x=0,x,y)"); 
+    expression.Parameters["x"] = 1;
+    expression.Parameters["y"] = "pan"
     var parameters = exp.GetParametersNames(); 
  //  x
  //  y
