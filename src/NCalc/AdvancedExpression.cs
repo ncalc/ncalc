@@ -8,7 +8,7 @@ namespace NCalc;
 /// <summary>
 /// An Expression object with dependency injection friendly constructors.
 /// </summary>
-internal sealed class AdvancedExpression : Expression
+public class AdvancedExpression : Expression
 {
     public AdvancedExpression(
         ILogicalExpressionFactory logicalExpressionFactory, 
