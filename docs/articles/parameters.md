@@ -49,6 +49,7 @@ Parameters in between square brackets can contain special characters like spaces
 ```c#
   Expression e = new Expression("[My First Parameter] + [My Second Parameter]");
 ```
+You can also use a curly braces as alternative to square brackets.
 ## Multi-valued parameters
 
 When parameters are IEnumerable and the **EvaluationOptions.IterateParameters** is used, the result is a **List<object?>** made of the evaluation of each value in the parameter.
