@@ -204,9 +204,9 @@ public class Expression
     {
         if (string.IsNullOrEmpty(ExpressionString))
             throw new NCalcException("Expression cannot be null or empty.");
-        
-        //Yes, this is the first time in my life I need a bitwise AND, because logicalExpression needs to be declared.
-        if (IsCacheEnabled() & LogicalExpressionCache.TryGetValue(ExpressionString!, out var logicalExpression))
+
+        LogicalExpression? logicalExpression = null;
+        if (IsCacheEnabled() && LogicalExpressionCache.TryGetValue(ExpressionString!, out logicalExpression))
             return logicalExpression!;
 
         try
