@@ -1,3 +1,12 @@
+# 4.1
+* [Remove excessive check for casing](https://github.com/ncalc/ncalc/pull/149) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Add support for comparison with null parameters](https://github.com/ncalc/ncalc/pull/156) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Fix support for TimeSpan and DateTime with hours, minutes and seconds](https://github.com/ncalc/ncalc/issues/158) by [Gustavo Barros](https://github.com/gumbarros)
+* [Add Dependency Injection support with IMemoryCache plugin](https://github.com/ncalc/ncalc/issues/154) by [Gustavo Barros](https://github.com/gumbarros)
+* [Add support for using semicolon as argument separator](https://github.com/ncalc/ncalc/pull/162) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Fix invalid token handling](https://github.com/ncalc/ncalc/pull/166) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Add support fo curly braces as alternative to square brackets](https://github.com/ncalc/ncalc/pull/169) by [Andrey Bykiev](https://github.com/Bykiev)
+
 # 4.0
 
 * [Parlot is used instead of Antlr for parsing](https://github.com/ncalc/ncalc/issues/137) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros) and [Sébastien Ros](https://github.com/sebastienros)
