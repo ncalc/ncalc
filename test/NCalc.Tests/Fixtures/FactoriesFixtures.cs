@@ -31,7 +31,10 @@ public sealed class FactoriesWithMemoryCacheFixture : FactoriesFixtureBase
         var serviceProvider = new ServiceCollection()
             .AddMemoryCache()
             .AddNCalc()
-            .WithMemoryCache()
+            .WithMemoryCache(options =>
+            {
+                options.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+            })
             .Services.BuildServiceProvider();
         ExpressionFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
         LogicalExpressionFactory = serviceProvider.GetRequiredService<ILogicalExpressionFactory>();

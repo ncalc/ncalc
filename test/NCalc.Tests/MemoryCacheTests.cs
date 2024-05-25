@@ -7,7 +7,6 @@ namespace NCalc.Tests;
 public class MemoryCacheTests(FactoriesWithMemoryCacheFixture fixture) : IClassFixture<FactoriesWithMemoryCacheFixture>
 {
     private readonly IExpressionFactory _expressionFactory = fixture.ExpressionFactory;
-    private readonly ILogicalExpressionFactory _logicalExpressionFactory = fixture.LogicalExpressionFactory;
 
     [Fact]
     public void Logical_Expression_From_Cache_Should_Be_The_Same()
