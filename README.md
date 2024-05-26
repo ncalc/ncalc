@@ -97,7 +97,7 @@ This example uses [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Js
 
 Serializing
 ```c#
-var parsedExpression = LogicalExpressionFactory.Create(expression, true);
+var parsedExpression = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
 var serialized = JsonConvert.SerializeObject(parsedExpression, new JsonSerializerSettings
 {
     TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
