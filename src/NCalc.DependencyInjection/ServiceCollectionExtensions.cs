@@ -43,7 +43,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IExpressionFactory,ExpressionFactory>();
 
-        services.AddSingleton<ILogicalExpressionFactory>(_ => LogicalExpressionFactoryWrapper.GetInstance());
+        services.AddSingleton<ILogicalExpressionFactory>(_ => LogicalExpressionFactory.GetInstance());
     }
 
     private static void AddVisitors(this IServiceCollection services)

@@ -7,8 +7,20 @@ namespace NCalc.Factories;
 /// <summary>
 /// Class responsible to create <see cref="LogicalExpression"/> objects. Parlot is used for parsing strings.
 /// </summary>
-public static class LogicalExpressionFactory
+public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
 {
+    private static LogicalExpressionFactory? _instance;
+    
+    public static LogicalExpressionFactory GetInstance()
+    {
+        return _instance ??= new LogicalExpressionFactory();
+    }
+
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionContext? expressionContext)
+    {
+        return Create(expression, expressionContext);
+    }
+
     public static LogicalExpression Create(string expression, ExpressionContext? expressionContext = null)
     {
         LogicalExpression? logicalExpression;
