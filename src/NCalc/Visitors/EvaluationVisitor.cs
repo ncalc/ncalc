@@ -522,7 +522,7 @@ public class EvaluationVisitor : IEvaluationVisitor
             OnEvaluateParameter(identifier.Name, args);
 
             if (!args.HasResult)
-                throw new NCalcParameterNotFoundException(identifier.Name);
+                throw new NCalcParameterNotDefinedException(identifier.Name);
 
             Result = args.Result;
         }

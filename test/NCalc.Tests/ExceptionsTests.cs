@@ -13,7 +13,7 @@ public class ExceptionsTests
     [InlineData("ifs([divider] > 0, [divider] / [divided], [divider < 0], [divider] + [divided])")]
     public void Ifs_With_Improper_Arguments_Should_Throw_Exceptions(string expression)
     {
-        Assert.Throws<ArgumentException>(() => new Expression(expression).Evaluate());
+        Assert.Throws<NCalcEvaluationException>(() => new Expression(expression).Evaluate());
     }
 
     [Theory]
@@ -109,7 +109,7 @@ public class ExceptionsTests
     public void Should_Throw_Parameter_Not_Found()
     {
         var expression = new Expression("{Name} == 'Spinella'");
-        var exception = Assert.Throws<NCalcParameterNotFoundException>(() => expression.Evaluate());
+        var exception = Assert.Throws<NCalcParameterNotDefinedException>(() => expression.Evaluate());
         Assert.Equal("Name",exception.ParameterName);
     }
 }

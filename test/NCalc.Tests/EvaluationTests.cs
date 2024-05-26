@@ -1,3 +1,4 @@
+using NCalc.Exceptions;
 using NCalc.Tests.TestData;
 
 namespace NCalc.Tests;
@@ -129,7 +130,7 @@ public class EvaluationTests
         Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.IgnoreCase).Evaluate());
         Assert.Equal(1M, new Expression("Abs(-1)").Evaluate());
 
-        Assert.Throws<ArgumentException>(() => new Expression("aBs(-1)").Evaluate());
+        Assert.Throws<NCalcFunctionNotFoundException>(() => new Expression("aBs(-1)").Evaluate());
     }
 
     [Fact]
