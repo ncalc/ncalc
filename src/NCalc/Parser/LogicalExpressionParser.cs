@@ -1,4 +1,6 @@
 using NCalc.Domain;
+using NCalc.Exceptions;
+using Parlot;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
 using Identifier = NCalc.Domain.Identifier;
@@ -371,6 +373,20 @@ public static class LogicalExpressionParser
         expression.Parser = ternary;
         Parser = expression.Compile();
     }
-    
-    public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
+
+    public static LogicalExpression Parse(LogicalExpressionParserContext context)
+    {
+        if (!Parser.TryParse(context, out LogicalExpression result, out ParseError error))
+        {
+            string message;
+            if (error != null)
+                message = $"{error.Message} at position {error.Position}";
+            else
+                message = $"Error parsing the expression at position {context.Scanner.Cursor.Position}";
+
+            throw new NCalcParserException(message);
+        }
+
+        return result;
+    }
 }

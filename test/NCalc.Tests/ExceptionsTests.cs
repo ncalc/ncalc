@@ -3,7 +3,7 @@ using NCalc.Factories;
 
 namespace NCalc.Tests;
 
-[Trait("Category","Exceptions")]
+[Trait("Category", "Exceptions")]
 public class ExceptionsTests
 {
     [Theory]
@@ -26,9 +26,9 @@ public class ExceptionsTests
     [InlineData("42.3e-5a")]
     public void Should_Throw_Parse_Exception(string expression)
     {
-        Assert.Throws<NCalcParserException>(() =>new Expression(expression).Evaluate());
+        Assert.Throws<NCalcParserException>(() => new Expression(expression).Evaluate());
     }
-    
+
     [Fact]
     public void Should_Detect_Syntax_Errors_Before_Evaluation()
     {
@@ -43,7 +43,7 @@ public class ExceptionsTests
         Assert.True(e.HasErrors());
         Assert.NotNull(e.Error);
     }
-    
+
     [Fact]
     public void Should_Display_Error_If_UncompatibleTypes()
     {
@@ -61,7 +61,7 @@ public class ExceptionsTests
             e.Evaluate();
         });
     }
-    
+
     [Fact]
     public void Should_Throw_Exception_On_Lexer_Errors_Issue_6()
     {
@@ -79,6 +79,21 @@ public class ExceptionsTests
         catch
         {
             Assert.Fail("No exception should be thrown here.");
+        }
+    }
+
+    [Fact]
+    public void ShouldProvideErrorPosition()
+    {
+        var expression = new Expression("42a");
+        try
+        {
+            expression.Evaluate();
+            Assert.Throws<NCalcParserException>(() => true);
+        }
+        catch (NCalcParserException ex)
+        {
+            Assert.Equal("Invalid token in expression at position (1:3)", ex.InnerException.Message);
         }
     }
 }
