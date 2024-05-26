@@ -6,7 +6,7 @@ using NCalc.DependencyInjection.Configuration;
 
 namespace NCalc.MemoryCache.Configuration;
 
-public static class NCalcBuilderExtensions
+public static class NCalcServiceBuilderExtensions
 {
     /// <summary>
     /// Replaces NCalc default cache with Microsoft.Extensions.MemoryCache.
