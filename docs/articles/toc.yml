@@ -20,6 +20,8 @@
   href: dependency_injection.md
 - name: Plugins
   items:
+    - name: ANTLR
+      href: plugins/antlr.md
     - name: Memory Cache
       href: plugins/memory_cache.md
 - name: Publishing a New Release

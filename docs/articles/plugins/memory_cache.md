@@ -24,4 +24,4 @@ builder.Services.AddNCalc().WithMemoryCache(options =>
 })
 ```
 
-After this, simply create expressions from <xref:NCalc.Factories.IExpressionFactory>.
+After this, simply create expressions from <xref:NCalc.Factories.IExpressionFactory>. For more information see [this article](../dependency_injection.md).
