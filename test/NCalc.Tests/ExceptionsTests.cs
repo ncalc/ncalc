@@ -96,4 +96,20 @@ public class ExceptionsTests
             Assert.Equal("Invalid token in expression at position (1:3)", ex.InnerException.Message);
         }
     }
+    
+    [Fact]
+    public void Should_Throw_Function_Not_Found()
+    {
+        var expression = new Expression("drop_database()");
+        var exception = Assert.Throws<NCalcFunctionNotFoundException>(() => expression.Evaluate());
+        Assert.Equal("drop_database",exception.FunctionName);
+    }
+    
+    [Fact]
+    public void Should_Throw_Parameter_Not_Found()
+    {
+        var expression = new Expression("{Name} == 'Spinella'");
+        var exception = Assert.Throws<NCalcParameterNotFoundException>(() => expression.Evaluate());
+        Assert.Equal("Name",exception.ParameterName);
+    }
 }

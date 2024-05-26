@@ -181,9 +181,9 @@ public class SerializationVisitor : ILogicalExpressionVisitor
         Result.Append(") ");
     }
 
-    public void Visit(Identifier parameter)
+    public void Visit(Identifier identifier)
     {
-        Result.Append('[').Append(parameter.Name).Append("] ");
+        Result.Append('[').Append(identifier.Name).Append("] ");
     }
 
     protected virtual void EncapsulateNoValue(LogicalExpression expression)
