@@ -1,7 +1,5 @@
 - name: Intro  
   href: index.md
-- name: Description
-  href: description.md
 - name: Functions
   href: functions.md
 - name: Operators

@@ -4,7 +4,7 @@ using NCalc.Cache;
 using NCalc.Factories;
 using NCalc.Visitors;
 
-namespace NCalc.DependencyInjection.Configuration;
+namespace NCalc.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {

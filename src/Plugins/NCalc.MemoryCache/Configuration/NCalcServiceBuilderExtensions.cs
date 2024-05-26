@@ -2,9 +2,9 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using NCalc.DependencyInjection.Configuration;
+using NCalc.DependencyInjection;
 
-namespace NCalc.MemoryCache.Configuration;
+namespace NCalc.Cache.Configuration;
 
 public static class NCalcServiceBuilderExtensions
 {

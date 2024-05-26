@@ -1,4 +1,4 @@
-using NCalc.DependencyInjection.Configuration;
+using NCalc.DependencyInjection;
 
 namespace NCalc.Antlr.Configuration;
 

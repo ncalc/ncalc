@@ -42,16 +42,17 @@ public class MyService(IExpressionFactory expressionFactory)
 }
 ```
 
-## Extension Methods
+## Methods
 
-### <xref:NCalc.DependencyInjection.Configuration.NCalcServiceBuilder.WithExpressionFactory>
+See <xref:NCalc.DependencyInjection.NCalcServiceBuilder> to see all methods.
 
+### `WithExpressionFactory`
 Use this method to specify a custom implementation of <xref:NCalc.Factories.IExpressionFactory>. This factory is
 responsible for creating
 <xref:NCalc.Expression> objets that NCalc will evaluate. You can for example create a custom implementation with an
 object pool to re-use expression objects.
 
-### <xref:NCalc.DependencyInjection.Configuration.NCalcServiceBuilder.WithCache>
+### `WithCache`
 
 Use this method to specify a custom implementation of <xref:NCalc.Cache.ILogicalExpressionCache>. This cache is used to
 store and
@@ -64,8 +65,7 @@ services.AddNCalc()
         .WithCache<MyCustomCache>();
 ```
 
-### <xref:NCalc.DependencyInjection.Configuration.NCalcServiceBuilder.WithLogicalExpressionFactory>
-
+### `WithLogicalExpressionFactory`
 Use this method to specify a custom implementation of <xref:NCalc.Factories.ILogicalExpressionFactory>. This factory is
 responsible for creating
 <xref:NCalc.Domain.LogicalExpression> objects. These objects represent a parsed string into an expression. You can for
@@ -79,8 +79,7 @@ services.AddNCalc()
         .WithLogicalExpressionFactory<MyCustomLogicalExpressionFactory>();
 ```
 
-### <xref:NCalc.DependencyInjection.Configuration.NCalcServiceBuilder.WithEvaluationVisitor>
-
+### `WithEvaluationVisitor`
 Use this method to specify a custom implementation of <xref:NCalc.Visitors.IEvaluationVisitor>.
 The evaluation visitor is used to traverse and evaluate expressions after an <xref:NCalc.Domain.LogicalExpression> is
 retrieved.
@@ -92,8 +91,7 @@ services.AddNCalc()
         .WithEvaluationVisitor<MyCustomEvaluationVisitor>();
 ```
 
-### <xref:NCalc.DependencyInjection.Configuration.NCalcServiceBuilder.WithParameterExtractionVisitor>
-
+### `WithParameterExtractionVisitor`
 Use this method to specify a custom implementation of <xref:NCalc.Visitors.IParameterExtractionVisitor>. This visitor is
 responsible for
 extracting parameters from expressions.

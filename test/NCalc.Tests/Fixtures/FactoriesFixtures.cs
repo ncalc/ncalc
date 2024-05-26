@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NCalc.Antlr.Configuration;
-using NCalc.DependencyInjection.Configuration;
+using NCalc.Cache.Configuration;
+using NCalc.DependencyInjection;
 using NCalc.Factories;
-using NCalc.MemoryCache.Configuration;
 
 namespace NCalc.Tests.Fixtures;
 

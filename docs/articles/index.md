@@ -20,7 +20,7 @@ For additional information on the technique we used to create this framework ple
 
 ## <xref:NCalc.Expression> class
 This is the main class of NCalc.
-This class has a method <xref:NCalc.Expression.Evaluate> returning the actual value of its **String** representation.
+This class has a method <xref:NCalc.Expression.Evaluate> returning the actual value of its <xref:System.String> representation.
 
 Example:
 
@@ -31,8 +31,8 @@ Example:
   Console.WriteLine(result);
 ```
 
-This example above first creates an instance of <xref:NCalc.Expression> using a valued constructor. This constructor takes a `string` as parameter.
-Then the method <xref:NCalc.Evaluate> is called to parse the `string`, and returns the actual value represented by the `string`.
+This example above first creates an instance of <xref:NCalc.Expression> using a valued constructor. This constructor takes a <xref:System.String> as parameter.
+Then the method <xref:NCalc.Expression.Evaluate> is called to parse the <xref:System.String>, and returns the actual value represented by the <xref:System.String>.
 
 To create expressions you can combine several [Operators](operators.md) and [Values](values.md).
 

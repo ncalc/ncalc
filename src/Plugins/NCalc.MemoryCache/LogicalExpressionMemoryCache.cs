@@ -1,10 +1,9 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using NCalc.Cache;
+using NCalc.Cache.Configuration;
 using NCalc.Domain;
-using NCalc.MemoryCache.Configuration;
 
-namespace NCalc.MemoryCache;
+namespace NCalc.Cache;
 
 internal sealed class LogicalExpressionMemoryCache(
     IMemoryCache memoryCache,

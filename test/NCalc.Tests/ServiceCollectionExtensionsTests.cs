@@ -1,7 +1,6 @@
-﻿using System.Globalization;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using NCalc.Cache;
-using NCalc.DependencyInjection.Configuration;
+using NCalc.DependencyInjection;
 using NCalc.Domain;
 using NCalc.Factories;
 using NCalc.Handlers;

@@ -3,15 +3,15 @@ using NCalc.Cache;
 using NCalc.Factories;
 using NCalc.Visitors;
 
-namespace NCalc.DependencyInjection.Configuration;
+namespace NCalc.DependencyInjection;
 
 public class NCalcServiceBuilder(IServiceCollection services)
 {
     public IServiceCollection Services { get; } = services;
     
-    public NCalcServiceBuilder WithExpressionFactory<TFactory>()  where TFactory : class, IExpressionFactory
+    public NCalcServiceBuilder WithExpressionFactory<TExpressionFactory>()  where TExpressionFactory : class, IExpressionFactory
     {
-        Services.ReplaceScoped<IExpressionFactory, TFactory>();
+        Services.ReplaceScoped<IExpressionFactory, TExpressionFactory>();
         return this;
     }
     
