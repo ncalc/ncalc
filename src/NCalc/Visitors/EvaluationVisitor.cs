@@ -300,10 +300,8 @@ public class EvaluationVisitor : IEvaluationVisitor
             args.Parameters[i].Parameters = Parameters;
         }
 
-        bool ignoreCase = Options.HasOption(ExpressionOptions.IgnoreCase);
-
         // Calls external implementation
-        OnEvaluateFunction(ignoreCase ? function.Identifier.Name.ToLower() : function.Identifier.Name, args);
+        OnEvaluateFunction(function.Identifier.Name, args);
 
         // If an external implementation was found get the result back
         if (args.HasResult)
