@@ -13,7 +13,7 @@ public sealed class BinaryExpression(
 
     public BinaryExpressionType Type { get; set; } = type;
 
-    public override void Accept(LogicalExpressionVisitor visitor)
+    public override void Accept(ILogicalExpressionVisitor visitor)
     {
         visitor.Visit(this);
     }

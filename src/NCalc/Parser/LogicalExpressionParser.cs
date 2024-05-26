@@ -5,6 +5,9 @@ using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
 
+/// <summary>
+/// Class responsible for parsing strings into <see cref="LogicalExpression"/> objects.
+/// </summary>
 public static class LogicalExpressionParser
 {
     private static readonly Parser<LogicalExpression> Parser;
@@ -31,7 +34,7 @@ public static class LogicalExpressionParser
          *                  | STRING
          *                  | "true"
          *                  | "false"
-         *                  | "[" anything "]"
+         *                  | ("[" | "{") anything ("]" | "}")
          *                  | function
          *                  | "(" expression ")" ;
          *
@@ -48,12 +51,15 @@ public static class LogicalExpressionParser
             SkipWhiteSpace(OneOf(
                 Literals.Char('.')
                     .SkipAnd(Terms.Integer().Then<long?>(x => x))
-                    .And(exponentNumberPart.ThenElse<long?>(x => x, null)).Then(x => (0L, x.Item1, x.Item2)),
+                    .And(exponentNumberPart.ThenElse<long?>(x => x, null))
+                    .AndSkip(Not(Literals.Identifier()).ElseError("Invalid token in expression"))
+                    .Then(x => (0L, x.Item1, x.Item2)),
                 Literals.Integer(NumberOptions.AllowSign)
                     .And(Literals.Char('.')
                     .SkipAnd(ZeroOrOne(Terms.Integer()))
                     .ThenElse<long?>(x => x, null))
                     .And(exponentNumberPart.ThenElse<long?>(x => x, null))
+                    .AndSkip(Not(Literals.Identifier()).ElseError("Invalid token in expression"))
                     .Then(x => (x.Item1, x.Item2, x.Item3))
                 ))
             .Then<LogicalExpression>((ctx, x) =>
@@ -89,7 +95,7 @@ public static class LogicalExpressionParser
 
                 return new ValueExpression((long)result);
             });
-        
+
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
         var times = Terms.Char('*');
@@ -102,19 +108,21 @@ public static class LogicalExpressionParser
         var closeParen = Terms.Char(')');
         var openBrace = Terms.Char('[');
         var closeBrace = Terms.Char(']');
+        var openCurlyBrace = Terms.Char('{');
+        var closeCurlyBrace = Terms.Char('}');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
-        
+
         var negate = Terms.Text("!");
         var not = Terms.Text("not", true);
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
 
-        // "[" identifier "]"
-        var identifierExpression = openBrace
-            .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true))
+        // ("[" | "{") identifier ("]" | "}")
+        var identifierExpression = openBrace.Or(openCurlyBrace)
+            .SkipAnd(AnyCharBefore(closeBrace.Or(closeCurlyBrace), consumeDelimiter: true))
             .Or(Terms.Identifier())
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
@@ -131,23 +139,23 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), []));
 
         var function = OneOf(functionWithArguments, functionWithoutArguments);
-        
+
         var booleanTrue = Terms.Text("true", true)
             .Then<LogicalExpression>(True);
         var booleanFalse = Terms.Text("false", true)
             .Then<LogicalExpression>(False);
-        
+
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
         var charIsNumber = Literals.Pattern(char.IsNumber);
-        
+
         var dateDefinition = charIsNumber
             .AndSkip(divided)
             .And(charIsNumber)
             .AndSkip(divided)
             .And(charIsNumber);
-        
+
         // date => number/number/number
         var date = dateDefinition.Then<LogicalExpression>(date =>
             {
@@ -165,7 +173,7 @@ public static class LogicalExpressionParser
             .And(charIsNumber)
             .AndSkip(Terms.Char(':'))
             .And(charIsNumber);
-        
+
         var time = timeDefinition.Then<LogicalExpression>(time =>
         {
             if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
@@ -191,16 +199,16 @@ public static class LogicalExpressionParser
         // datetime => '#' dateAndTime | date | time  '#';
         var dateTime = Terms
             .Char('#')
-            .SkipAnd(OneOf( dateAndTime, date, time ))
+            .SkipAnd(OneOf(dateAndTime, date, time))
             .AndSkip(Literals.Char('#'));
-        
+
         // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
         var primary = OneOf(
-            number, 
-            booleanTrue, 
+            number,
+            booleanTrue,
             booleanFalse,
             dateTime,
-            stringValue, 
+            stringValue,
             function,
             groupExpression,
             identifierExpression);
@@ -243,7 +251,7 @@ public static class LogicalExpressionParser
                 .And(u).Then<LogicalExpression>(static x => new UnaryExpression(x.Item1, x.Item2))
                 .Or(exponential)
                 );
-        
+
         // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
         var multiplicative = unary.And(ZeroOrMany(
             divided.Then(BinaryExpressionType.Div)
@@ -363,6 +371,6 @@ public static class LogicalExpressionParser
         expression.Parser = ternary;
         Parser = expression.Compile();
     }
-
+    
     public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
 }

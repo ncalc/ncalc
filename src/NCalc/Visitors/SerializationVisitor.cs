@@ -3,7 +3,7 @@ using ValueType = NCalc.Domain.ValueType;
 
 namespace NCalc.Visitors;
 
-public class SerializationVisitor : LogicalExpressionVisitor
+public class SerializationVisitor : ILogicalExpressionVisitor
 {
     private readonly NumberFormatInfo _numberFormatInfo = new()
     {
@@ -12,12 +12,12 @@ public class SerializationVisitor : LogicalExpressionVisitor
 
     public StringBuilder Result { get; } = new();
 
-    public override void Visit(LogicalExpression expression)
+    public void Visit(LogicalExpression expression)
     {
         throw new NotSupportedException("The Visit method is not supported for this class.");
     }
 
-    public override void Visit(TernaryExpression expression)
+    public void Visit(TernaryExpression expression)
     {
         EncapsulateNoValue(expression.LeftExpression);
 
@@ -30,7 +30,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
         EncapsulateNoValue(expression.RightExpression);
     }
 
-    public override void Visit(BinaryExpression expression)
+    public void Visit(BinaryExpression expression)
     {
         EncapsulateNoValue(expression.LeftExpression);
 
@@ -112,7 +112,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
         EncapsulateNoValue(expression.RightExpression);
     }
 
-    public override void Visit(UnaryExpression expression)
+    public void Visit(UnaryExpression expression)
     {
         switch (expression.Type)
         {
@@ -132,7 +132,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
         EncapsulateNoValue(expression.Expression);
     }
 
-    public override void Visit(ValueExpression expression)
+    public void Visit(ValueExpression expression)
     {
         switch (expression.Type)
         {
@@ -158,7 +158,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
         }
     }
 
-    public override void Visit(Function function)
+    public void Visit(Function function)
     {
         Result.Append(function.Identifier.Name);
 
@@ -181,7 +181,7 @@ public class SerializationVisitor : LogicalExpressionVisitor
         Result.Append(") ");
     }
 
-    public override void Visit(Identifier parameter)
+    public void Visit(Identifier parameter)
     {
         Result.Append('[').Append(parameter.Name).Append("] ");
     }
