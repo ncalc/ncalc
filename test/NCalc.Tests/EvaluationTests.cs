@@ -1,3 +1,5 @@
+using NCalc.Tests.TestData;
+
 namespace NCalc.Tests;
 
 [Trait("Category","Evaluations")]
@@ -5,31 +7,15 @@ public class EvaluationTests
 {
     
     [Theory]
-    [InlineData("2 + 3 + 5", 10)]
-    [InlineData("2 * 3 + 5", 11)]
-    [InlineData("2 * (3 + 5)", 16)]
-    [InlineData("2 * (2*(2*(2+1)))", 24)]
-    [InlineData("10 % 3", 1)]
-    [InlineData("true or false", true)]
-    [InlineData("not true", false)]
-    [InlineData("false || not (false and true)", true)]
-    [InlineData("3 > 2 and 1 <= (3-2)", true)]
-    [InlineData("3 % 2 != 10 % 3", false)]
+    [ClassData(typeof(EvaluationTestData))]
     public void Expression_Should_Evaluate(string expression, object expected)
     {
         Assert.Equal(expected, new Expression(expression).Evaluate());
     }
     
     [Theory]
-    [InlineData("123456", 123456)]
-    [InlineData(".2", 0.2d)]
-    [InlineData("123.456", 123.456d)]
-    [InlineData("123.", 123d)]
-    [InlineData("123.E2", 12300d)]
-    [InlineData("true", true)]
-    [InlineData("'true'", "true")]
-    [InlineData("'azerty'", "azerty")]
-    public void Should_Parse_Values(string input, object expectedValue, params object[] args)
+    [ClassData(typeof(ValuesTestData))]
+    public void Should_Parse_Values(string input, object expectedValue)
     {
         var expression = new Expression(input);
         var result = expression.Evaluate();
