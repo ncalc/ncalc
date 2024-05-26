@@ -1,4 +1,5 @@
 # 4.2
+* [Improve Parlot error handling](https://github.com/ncalc/ncalc/pull/181) by [Andrey Bykiev](https://github.com/Bykiev)
 
 ## Breaking Changes
 * [Do not convert external function name to lower case when ExpressionOptions.IgnoreCase option is used](https://github.com/ncalc/ncalc/pull/179) by [Andrey Bykiev](https://github.com/Bykiev)
