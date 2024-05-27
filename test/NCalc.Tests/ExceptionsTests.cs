@@ -13,7 +13,7 @@ public class ExceptionsTests
     [InlineData("ifs([divider] > 0, [divider] / [divided], [divider < 0], [divider] + [divided])")]
     public void Ifs_With_Improper_Arguments_Should_Throw_Exceptions(string expression)
     {
-        Assert.Throws<ArgumentException>(() => new Expression(expression).Evaluate());
+        Assert.Throws<NCalcEvaluationException>(() => new Expression(expression).Evaluate());
     }
 
     [Theory]
@@ -95,5 +95,21 @@ public class ExceptionsTests
         {
             Assert.Equal("Invalid token in expression at position (1:3)", ex.InnerException.Message);
         }
+    }
+    
+    [Fact]
+    public void Should_Throw_Function_Not_Found()
+    {
+        var expression = new Expression("drop_database()");
+        var exception = Assert.Throws<NCalcFunctionNotFoundException>(() => expression.Evaluate());
+        Assert.Equal("drop_database",exception.FunctionName);
+    }
+    
+    [Fact]
+    public void Should_Throw_Parameter_Not_Found()
+    {
+        var expression = new Expression("{Name} == 'Spinella'");
+        var exception = Assert.Throws<NCalcParameterNotDefinedException>(() => expression.Evaluate());
+        Assert.Equal("Name",exception.ParameterName);
     }
 }

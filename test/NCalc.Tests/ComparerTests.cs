@@ -1,3 +1,5 @@
+using NCalc.Exceptions;
+
 namespace NCalc.Tests;
 
 [Trait("Category","Comparer")]
@@ -95,7 +97,7 @@ public class ComparerTests
     {
         var e = new Expression("'a string' == null");
 
-        var ex = Assert.Throws<ArgumentException>(() => e.Evaluate());
-        Assert.Contains("Parameter was not defined", ex.Message);
+        var ex = Assert.Throws<NCalcParameterNotDefinedException>(() => e.Evaluate());
+        Assert.Contains("not defined", ex.Message);
     }
 }
