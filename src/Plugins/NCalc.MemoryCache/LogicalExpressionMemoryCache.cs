@@ -7,7 +7,7 @@ namespace NCalc.Cache;
 
 internal sealed class LogicalExpressionMemoryCache(
     IMemoryCache memoryCache,
-    IOptionsSnapshot<LogicalExpressionMemoryCacheOptions> optionsSnapshot) : ILogicalExpressionCache
+    IOptions<LogicalExpressionMemoryCacheOptions> optionsSnapshot) : ILogicalExpressionCache
 {
     public bool TryGetValue(string expression, out LogicalExpression logicalExpression)
     {
