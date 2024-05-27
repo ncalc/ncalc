@@ -244,7 +244,7 @@ public class Expression
                 }
                 else if (localsize != size)
                 {
-                    throw new NCalcEvaluationException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
+                    throw new NCalcException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
                 }
             }
         }

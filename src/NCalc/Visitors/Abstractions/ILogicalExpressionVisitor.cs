@@ -11,5 +11,5 @@ public interface ILogicalExpressionVisitor
     public void Visit(UnaryExpression expression);
     public void Visit(ValueExpression expression);
     public void Visit(Function function);
-    public void Visit(Identifier function);
+    public void Visit(Identifier identifier);
 }

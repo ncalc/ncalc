@@ -160,7 +160,7 @@ public class ServiceCollectionExtensionsTests
             throw new NotImplementedException();
         }
 
-        public void Visit(Identifier function)
+        public void Visit(Identifier identifier)
         {
             throw new NotImplementedException();
         }
@@ -204,7 +204,7 @@ public class ServiceCollectionExtensionsTests
             throw new NotImplementedException();
         }
 
-        public void Visit(Identifier function)
+        public void Visit(Identifier identifier)
         {
             throw new NotImplementedException();
         }
