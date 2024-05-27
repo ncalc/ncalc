@@ -205,14 +205,17 @@ public class Expression
         if (string.IsNullOrEmpty(ExpressionString))
             throw new NCalcException("Expression cannot be null or empty.");
 
+        var isCacheEnabled = IsCacheEnabled();
+        
         LogicalExpression? logicalExpression = null;
-        if (IsCacheEnabled() && LogicalExpressionCache.TryGetValue(ExpressionString!, out logicalExpression))
+        
+        if (isCacheEnabled && LogicalExpressionCache.TryGetValue(ExpressionString!, out logicalExpression))
             return logicalExpression!;
 
         try
         {
             logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
-            if(IsCacheEnabled())
+            if(isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
         catch (Exception exception)
