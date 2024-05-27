@@ -1,4 +1,3 @@
-using System.Globalization;
 using NCalc.Tests.TestData;
 
 namespace NCalc.Tests;
