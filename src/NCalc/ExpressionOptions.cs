@@ -44,7 +44,12 @@ public enum ExpressionOptions
     /// <summary>
     /// Defines a "null" parameter and allows comparison of values to null.
     /// </summary>
-    AllowNullParameter = 1 << 7
+    AllowNullParameter = 1 << 7,
+    
+    /// <summary>
+    /// Use checked math
+    /// </summary>
+    OverflowProtection = 1 << 8,
 }
     
 public static class ExpressionOptionsExtensions

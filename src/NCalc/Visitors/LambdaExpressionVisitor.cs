@@ -5,31 +5,36 @@ using System.Reflection;
 using NCalc.Reflection;
 using Linq = System.Linq.Expressions;
 using LinqExpression = System.Linq.Expressions.Expression;
+using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
 namespace NCalc.Visitors;
 
 internal class LambdaExpressionVistor : ILogicalExpressionVisitor
 {
     private readonly IDictionary<string, object> _parameters;
-    private LinqExpression _result;
     private readonly LinqExpression _context;
     private readonly ExpressionOptions _options;
-    private readonly Dictionary<Type, HashSet<Type>> _implicitPrimitiveConversionTable = new() {
+
+    private readonly Dictionary<Type, HashSet<Type>> _implicitPrimitiveConversionTable = new()
+    {
         { typeof(sbyte), [typeof(short), typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal)] },
-        { typeof(byte),
+        {
+            typeof(byte),
             [
                 typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float),
                 typeof(double), typeof(decimal)
             ]
         },
         { typeof(short), [typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal)] },
-        { typeof(ushort),
+        {
+            typeof(ushort),
             [typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal)]
         },
         { typeof(int), [typeof(long), typeof(float), typeof(double), typeof(decimal)] },
         { typeof(uint), [typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal)] },
         { typeof(long), [typeof(float), typeof(double), typeof(decimal)] },
-        { typeof(char),
+        {
+            typeof(char),
             [
                 typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double),
                 typeof(decimal)
@@ -48,53 +53,60 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
     private static MathCallFunction GetMathCallFunctionHelper(string method, int argCount) => new()
     {
         MathMethodInfo = typeof(Math).GetMethod(method, Enumerable.Repeat(typeof(double), argCount).ToArray()),
-        ArgumentCount = argCount };
+        ArgumentCount = argCount
+    };
 
     private static readonly Dictionary<string, MathCallFunction> MathCallFunctions = new()
     {
-        { "ABS",           GetMathCallFunctionHelper(nameof(Math.Abs),           1 ) },
-        { "ACOS",          GetMathCallFunctionHelper(nameof(Math.Acos),          1 ) },
-        { "ASIN",          GetMathCallFunctionHelper(nameof(Math.Asin),          1 ) },
-        { "ATAN",          GetMathCallFunctionHelper(nameof(Math.Atan),          1 ) },
-        { "ATAN2",         GetMathCallFunctionHelper(nameof(Math.Atan2),         2 ) },
-        { "CEILING",       GetMathCallFunctionHelper(nameof(Math.Ceiling),       1 ) },
-        { "COS",           GetMathCallFunctionHelper(nameof(Math.Cos),           1 ) },
-        { "COSH",          GetMathCallFunctionHelper(nameof(Math.Cosh),          1 ) },
-        { "EXP",           GetMathCallFunctionHelper(nameof(Math.Exp),           1 ) },
-        { "FLOOR",         GetMathCallFunctionHelper(nameof(Math.Floor),         1 ) },
-        { "IEEEREMAINDER", GetMathCallFunctionHelper(nameof(Math.IEEERemainder), 2 ) },
-        { "LOG",           GetMathCallFunctionHelper(nameof(Math.Log),           2 ) },
-        { "LOG10",         GetMathCallFunctionHelper(nameof(Math.Log10),         1 ) },
-        { "SIGN",          GetMathCallFunctionHelper(nameof(Math.Sign),          1 ) },
-        { "SIN",           GetMathCallFunctionHelper(nameof(Math.Sin),           1 ) },
-        { "SINH",          GetMathCallFunctionHelper(nameof(Math.Sinh),          1 ) },
-        { "SQRT",          GetMathCallFunctionHelper(nameof(Math.Sqrt),          1 ) },
-        { "TAN",           GetMathCallFunctionHelper(nameof(Math.Tan),           1 ) },
-        { "TANH",          GetMathCallFunctionHelper(nameof(Math.Tanh),          1 ) },
-        { "TRUNCATE",      GetMathCallFunctionHelper(nameof(Math.Truncate),      1 ) },
+        { "ABS", GetMathCallFunctionHelper(nameof(Math.Abs), 1) },
+        { "ACOS", GetMathCallFunctionHelper(nameof(Math.Acos), 1) },
+        { "ASIN", GetMathCallFunctionHelper(nameof(Math.Asin), 1) },
+        { "ATAN", GetMathCallFunctionHelper(nameof(Math.Atan), 1) },
+        { "ATAN2", GetMathCallFunctionHelper(nameof(Math.Atan2), 2) },
+        { "CEILING", GetMathCallFunctionHelper(nameof(Math.Ceiling), 1) },
+        { "COS", GetMathCallFunctionHelper(nameof(Math.Cos), 1) },
+        { "COSH", GetMathCallFunctionHelper(nameof(Math.Cosh), 1) },
+        { "EXP", GetMathCallFunctionHelper(nameof(Math.Exp), 1) },
+        { "FLOOR", GetMathCallFunctionHelper(nameof(Math.Floor), 1) },
+        { "IEEEREMAINDER", GetMathCallFunctionHelper(nameof(Math.IEEERemainder), 2) },
+        { "LOG", GetMathCallFunctionHelper(nameof(Math.Log), 2) },
+        { "LOG10", GetMathCallFunctionHelper(nameof(Math.Log10), 1) },
+        { "SIGN", GetMathCallFunctionHelper(nameof(Math.Sign), 1) },
+        { "SIN", GetMathCallFunctionHelper(nameof(Math.Sin), 1) },
+        { "SINH", GetMathCallFunctionHelper(nameof(Math.Sinh), 1) },
+        { "SQRT", GetMathCallFunctionHelper(nameof(Math.Sqrt), 1) },
+        { "TAN", GetMathCallFunctionHelper(nameof(Math.Tan), 1) },
+        { "TANH", GetMathCallFunctionHelper(nameof(Math.Tanh), 1) },
+        { "TRUNCATE", GetMathCallFunctionHelper(nameof(Math.Truncate), 1) },
 
         // Exceptional handling
-        { "ROUND",         new() { 
-            MathMethodInfo = typeof(Math).GetMethod(nameof(Math.Round), [typeof(double), typeof(int), typeof(MidpointRounding)
-            ]),
-            ArgumentCount = 2 } }
+        {
+            "ROUND", new()
+            {
+                MathMethodInfo = typeof(Math).GetMethod(nameof(Math.Round), [
+                    typeof(double), typeof(int), typeof(MidpointRounding)
+                ]),
+                ArgumentCount = 2
+            }
+        }
     };
 
-    private bool CaseInsensitiveComparer => _options.HasFlag(ExpressionOptions.CaseInsensitiveComparer);
+    private bool CaseInsensitiveComparer => _options.HasOption(ExpressionOptions.CaseInsensitiveComparer);
 
+    // ReSharper disable once ConvertToPrimaryConstructor
     public LambdaExpressionVistor(IDictionary<string, object> parameters, ExpressionOptions options)
     {
         _parameters = parameters;
         _options = options;
     }
 
-    public LambdaExpressionVistor(Linq.ParameterExpression context, ExpressionOptions options)
+    public LambdaExpressionVistor(LinqParameterExpression context, ExpressionOptions options)
     {
         _context = context;
         _options = options;
     }
 
-    public LinqExpression Result => _result;
+    public LinqExpression Result { get; private set; }
 
     public void Visit(LogicalExpression expression)
     {
@@ -104,80 +116,80 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
     public void Visit(TernaryExpression expression)
     {
         expression.LeftExpression.Accept(this);
-        var test = _result;
+        var test = Result;
 
         expression.MiddleExpression.Accept(this);
-        var ifTrue = _result;
+        var ifTrue = Result;
 
         expression.RightExpression.Accept(this);
-        var ifFalse = _result;
+        var ifFalse = Result;
 
-        _result = LinqExpression.Condition(test, ifTrue, ifFalse);
+        Result = LinqExpression.Condition(test, ifTrue, ifFalse);
     }
 
     public void Visit(BinaryExpression expression)
     {
         expression.LeftExpression.Accept(this);
-        var left = _result;
+        var left = Result;
 
         expression.RightExpression.Accept(this);
-        var right = _result;
+        var right = Result;
 
         switch (expression.Type)
         {
             case BinaryExpressionType.And:
-                _result = LinqExpression.AndAlso(left, right);
+                Result = LinqExpression.AndAlso(left, right);
                 break;
             case BinaryExpressionType.Or:
-                _result = LinqExpression.OrElse(left, right);
+                Result = LinqExpression.OrElse(left, right);
                 break;
             case BinaryExpressionType.NotEqual:
-                _result = WithCommonNumericType(left, right, LinqExpression.NotEqual, expression.Type);
+                Result = WithCommonNumericType(left, right, LinqExpression.NotEqual, expression.Type);
                 break;
             case BinaryExpressionType.LesserOrEqual:
-                _result = WithCommonNumericType(left, right, LinqExpression.LessThanOrEqual, expression.Type);
+                Result = WithCommonNumericType(left, right, LinqExpression.LessThanOrEqual, expression.Type);
                 break;
             case BinaryExpressionType.GreaterOrEqual:
-                _result = WithCommonNumericType(left, right, LinqExpression.GreaterThanOrEqual, expression.Type);
+                Result = WithCommonNumericType(left, right, LinqExpression.GreaterThanOrEqual, expression.Type);
                 break;
             case BinaryExpressionType.Lesser:
-                _result = WithCommonNumericType(left, right, LinqExpression.LessThan, expression.Type);
+                Result = WithCommonNumericType(left, right, LinqExpression.LessThan, expression.Type);
                 break;
             case BinaryExpressionType.Greater:
-                _result = WithCommonNumericType(left, right, LinqExpression.GreaterThan, expression.Type);
+                Result = WithCommonNumericType(left, right, LinqExpression.GreaterThan, expression.Type);
                 break;
             case BinaryExpressionType.Equal:
-                _result = WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type);
+                Result = WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type);
                 break;
             case BinaryExpressionType.Minus:
-                _result = WithCommonNumericType(left, right, LinqExpression.Subtract);
+                Result = WithCommonNumericType(left, right, LinqExpression.Subtract);
                 break;
             case BinaryExpressionType.Plus:
-                _result = WithCommonNumericType(left, right, LinqExpression.Add);
+                Result = WithCommonNumericType(left, right, LinqExpression.Add);
                 break;
             case BinaryExpressionType.Modulo:
-                _result = WithCommonNumericType(left, right, LinqExpression.Modulo);
+                Result = WithCommonNumericType(left, right, LinqExpression.Modulo);
                 break;
             case BinaryExpressionType.Div:
-                _result = WithCommonNumericType(left, right, LinqExpression.Divide);
+                Result = WithCommonNumericType(left, right, LinqExpression.Divide);
                 break;
             case BinaryExpressionType.Times:
-                _result = WithCommonNumericType(left, right, LinqExpression.Multiply);
+                Result = WithCommonNumericType(left, right, LinqExpression.Multiply);
                 break;
             case BinaryExpressionType.BitwiseOr:
-                _result = LinqExpression.Or(left, right);
+                Result = LinqExpression.Or(left, right);
                 break;
             case BinaryExpressionType.BitwiseAnd:
-                _result = LinqExpression.And(left, right);
+                Result = LinqExpression.And(left, right);
                 break;
             case BinaryExpressionType.BitwiseXOr:
-                _result = LinqExpression.ExclusiveOr(left, right);
+                Result = LinqExpression.ExclusiveOr(left, right);
                 break;
             case BinaryExpressionType.LeftShift:
-                _result = LinqExpression.LeftShift(left, right);
+                Result = LinqExpression.LeftShift(left, right);
                 break;
             case BinaryExpressionType.RightShift:
-                _result = LinqExpression.RightShift(left, right);
+                Result = LinqExpression.RightShift(left, right);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -190,13 +202,13 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         switch (expression.Type)
         {
             case UnaryExpressionType.Not:
-                _result = LinqExpression.Not(_result);
+                Result = LinqExpression.Not(Result);
                 break;
             case UnaryExpressionType.Negate:
-                _result = LinqExpression.Negate(_result);
+                Result = LinqExpression.Negate(Result);
                 break;
             case UnaryExpressionType.BitwiseNot:
-                _result = LinqExpression.Not(_result);
+                Result = LinqExpression.Not(Result);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -205,7 +217,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
 
     public void Visit(ValueExpression expression)
     {
-        _result = LinqExpression.Constant(expression.Value);
+        Result = LinqExpression.Constant(expression.Value);
     }
 
     public void Visit(Function function)
@@ -214,7 +226,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         for (var i = 0; i < function.Expressions.Length; i++)
         {
             function.Expressions[i].Accept(this);
-            args[i] = _result;
+            args[i] = Result;
         }
 
         var functionName = function.Identifier.Name.ToUpperInvariant();
@@ -222,7 +234,8 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         {
             case "IF":
             {
-                var numberTypePriority = new Type[] { typeof(double), typeof(float), typeof(long), typeof(int), typeof(short) };
+                var numberTypePriority = new Type[]
+                    { typeof(double), typeof(float), typeof(long), typeof(int), typeof(short) };
                 var index1 = Array.IndexOf(numberTypePriority, args[1].Type);
                 var index2 = Array.IndexOf(numberTypePriority, args[2].Type);
                 if (index1 >= 0 && index2 >= 0 && index1 != index2)
@@ -230,7 +243,8 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                     args[1] = LinqExpression.Convert(args[1], numberTypePriority[Math.Min(index1, index2)]);
                     args[2] = LinqExpression.Convert(args[2], numberTypePriority[Math.Min(index1, index2)]);
                 }
-                _result = LinqExpression.Condition(args[0], args[1], args[2]);
+
+                Result = LinqExpression.Condition(args[0], args[1], args[2]);
                 return;
             }
             case "IN":
@@ -238,8 +252,9 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 var items = LinqExpression.NewArrayInit(args[0].Type,
                     new ArraySegment<LinqExpression>(args, 1, args.Length - 1));
                 var smi = typeof(Array).GetRuntimeMethod("IndexOf", [typeof(Array), typeof(object)]);
-                var r = LinqExpression.Call(smi, LinqExpression.Convert(items, typeof(Array)), LinqExpression.Convert(args[0], typeof(object)));
-                _result = LinqExpression.GreaterThanOrEqual(r, LinqExpression.Constant(0));
+                var r = LinqExpression.Call(smi, LinqExpression.Convert(items, typeof(Array)),
+                    LinqExpression.Convert(args[0], typeof(object)));
+                Result = LinqExpression.GreaterThanOrEqual(r, LinqExpression.Constant(0));
                 return;
             }
         }
@@ -248,7 +263,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         var mi = FindMethod(function.Identifier.Name, args);
         if (mi != null)
         {
-            _result = LinqExpression.Call(_context, mi.BaseMethodInfo, mi.PreparedArguments);
+            Result = LinqExpression.Call(_context, mi.BaseMethodInfo, mi.PreparedArguments);
             return;
         }
 
@@ -264,26 +279,29 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
-                _result = LinqExpression.Condition(LinqExpression.GreaterThan(arg0, arg1), arg0, arg1);
+                Result = LinqExpression.Condition(LinqExpression.GreaterThan(arg0, arg1), arg0, arg1);
                 break;
             case "MIN":
                 CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
-                _result = LinqExpression.Condition(LinqExpression.LessThan(arg0, arg1), arg0, arg1);
+                Result = LinqExpression.Condition(LinqExpression.LessThan(arg0, arg1), arg0, arg1);
                 break;
             case "POW":
                 CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
-                _result = LinqExpression.Power(arg0, arg1);
+                Result = LinqExpression.Power(arg0, arg1);
                 break;
             case "ROUND":
                 CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(int));
-                var rounding = (_options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
-                _result = LinqExpression.Call(MathCallFunctions["ROUND"].MathMethodInfo, arg0, arg1, LinqExpression.Constant(rounding));
+                var rounding = (_options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero
+                    ? MidpointRounding.AwayFromZero
+                    : MidpointRounding.ToEven;
+                Result = LinqExpression.Call(MathCallFunctions["ROUND"].MathMethodInfo, arg0, arg1,
+                    LinqExpression.Constant(rounding));
                 break;
             default:
                 // Regular handling
@@ -295,6 +313,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 {
                     throw new MissingMethodException($"method not found: {functionName}");
                 }
+
                 break;
         }
 
@@ -310,8 +329,8 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         {
             CheckArgumentsLengthForFunction(mathMethod.MathMethodInfo.Name, argsNumActual, mathMethod.ArgumentCount);
 
-            _result = LinqExpression.Call(mathMethod.MathMethodInfo,
-                Enumerable.Range(0, argsNumActual).Select( i => LinqExpression.Convert(args[i], typeof(double)) ));
+            Result = LinqExpression.Call(mathMethod.MathMethodInfo,
+                Enumerable.Range(0, argsNumActual).Select(i => LinqExpression.Convert(args[i], typeof(double))));
         }
     }
 
@@ -319,11 +338,11 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
     {
         if (_context == null)
         {
-            _result = LinqExpression.Constant(_parameters[function.Name]);
+            Result = LinqExpression.Constant(_parameters[function.Name]);
         }
         else
         {
-            _result = LinqExpression.PropertyOrField(_context, function.Name);
+            Result = LinqExpression.PropertyOrField(_context, function.Name);
         }
     }
 
@@ -335,7 +354,8 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         var objectTypeInfo = typeof(object).GetTypeInfo();
         do
         {
-            var methods = contextTypeInfo.DeclaredMethods.Where(m => m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase) && m.IsPublic && !m.IsStatic);
+            var methods = contextTypeInfo.DeclaredMethods.Where(m =>
+                m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase) && m.IsPublic && !m.IsStatic);
             var candidates = new List<ExtendedMethodInfo>();
             foreach (var potentialMethod in methods)
             {
@@ -344,7 +364,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
 
                 if (preparedArguments != null)
                 {
-                    var candidate = new ExtendedMethodInfo()
+                    var candidate = new ExtendedMethodInfo
                     {
                         BaseMethodInfo = potentialMethod,
                         PreparedArguments = preparedArguments.Item2,
@@ -354,9 +374,11 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                     candidates.Add(candidate);
                 }
             }
+
             if (candidates.Count != 0) return candidates.OrderBy(method => method.Score).First();
             contextTypeInfo = contextTypeInfo.BaseType.GetTypeInfo();
         } while (contextTypeInfo != objectTypeInfo);
+
         return null;
     }
 
@@ -368,7 +390,8 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
     /// <param name="parameters"></param>
     /// <param name="arguments"></param>
     /// <returns></returns>
-    private Tuple<int, LinqExpression[]> PrepareMethodArgumentsIfValid(ParameterInfo[] parameters, LinqExpression[] arguments)
+    private Tuple<int, LinqExpression[]> PrepareMethodArgumentsIfValid(ParameterInfo[] parameters,
+        LinqExpression[] arguments)
     {
         switch (parameters.Length)
         {
@@ -409,6 +432,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 if (!canCastImplicitly) return null;
                 functionMemberScore++;
             }
+
             if (!isParamsElement)
             {
                 newArguments[i] = argument;
@@ -421,25 +445,30 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
 
         if (hasParamsKeyword)
         {
-            newArguments[paramsParameterPosition] = LinqExpression.NewArrayInit(paramsElementType, paramsKeywordArgument);
+            newArguments[paramsParameterPosition] =
+                LinqExpression.NewArrayInit(paramsElementType, paramsKeywordArgument);
         }
+
         return Tuple.Create(functionMemberScore, newArguments);
     }
 
     private bool TryCastImplicitly(Type from, Type to, ref LinqExpression argument)
     {
-        var convertingFromPrimitiveType = _implicitPrimitiveConversionTable.TryGetValue(from, out var possibleConversions);
+        var convertingFromPrimitiveType =
+            _implicitPrimitiveConversionTable.TryGetValue(from, out var possibleConversions);
         if (!convertingFromPrimitiveType || !possibleConversions.Contains(to))
         {
             argument = null;
             return false;
         }
+
         argument = LinqExpression.Convert(argument, to);
         return true;
     }
 
     private LinqExpression WithCommonNumericType(LinqExpression left, LinqExpression right,
-        Func<LinqExpression, LinqExpression, LinqExpression> action, BinaryExpressionType expressiontype = BinaryExpressionType.Unknown)
+        Func<LinqExpression, LinqExpression, LinqExpression> action,
+        BinaryExpressionType expressiontype = BinaryExpressionType.Unknown)
     {
         left = UnwrapNullable(left);
         right = UnwrapNullable(right);
@@ -488,31 +517,45 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 right = LinqExpression.Convert(right, type);
             }
         }
+
         LinqExpression comparer;
         if (CaseInsensitiveComparer)
         {
             comparer = LinqExpression.Property(null, typeof(StringComparer), "CurrentCultureIgnoreCase");
         }
-        else comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
+        else
+            comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
 
         if ((typeof(string) == left.Type || typeof(string) == right.Type))
         {
             switch (expressiontype)
             {
-                case BinaryExpressionType.Equal: return LinqExpression.Call(comparer, typeof(StringComparer).GetRuntimeMethod("Equals",
-                    [typeof(string), typeof(string)]), [left, right]);
-                case BinaryExpressionType.NotEqual: return LinqExpression.Not(LinqExpression.Call(comparer, typeof(StringComparer).GetRuntimeMethod("Equals",
-                    [typeof(string), typeof(string)]), [left, right]));
-                case BinaryExpressionType.GreaterOrEqual: return LinqExpression.GreaterThanOrEqual(LinqExpression.Call(comparer, typeof(StringComparer).GetRuntimeMethod("Compare",
-                    [typeof(string), typeof(string)]), [left, right]), LinqExpression.Constant(0));
-                case BinaryExpressionType.LesserOrEqual: return LinqExpression.LessThanOrEqual(LinqExpression.Call(comparer, typeof(StringComparer).GetRuntimeMethod("Compare",
-                    [typeof(string), typeof(string)]), [left, right]), LinqExpression.Constant(0));
-                case BinaryExpressionType.Greater: return LinqExpression.GreaterThan(LinqExpression.Call(comparer, typeof(StringComparer).GetRuntimeMethod("Compare",
-                    [typeof(string), typeof(string)]), [left, right]), LinqExpression.Constant(0));
-                case BinaryExpressionType.Lesser: return LinqExpression.LessThan(LinqExpression.Call(comparer, typeof(StringComparer).GetRuntimeMethod("Compare",
-                    [typeof(string), typeof(string)]), [left, right]), LinqExpression.Constant(0));
+                case BinaryExpressionType.Equal:
+                    return LinqExpression.Call(comparer, typeof(StringComparer).GetRuntimeMethod("Equals",
+                        [typeof(string), typeof(string)]), [left, right]);
+                case BinaryExpressionType.NotEqual:
+                    return LinqExpression.Not(LinqExpression.Call(comparer, typeof(StringComparer).GetRuntimeMethod(
+                        "Equals",
+                        [typeof(string), typeof(string)]), [left, right]));
+                case BinaryExpressionType.GreaterOrEqual:
+                    return LinqExpression.GreaterThanOrEqual(LinqExpression.Call(comparer,
+                        typeof(StringComparer).GetRuntimeMethod("Compare",
+                            [typeof(string), typeof(string)]), [left, right]), LinqExpression.Constant(0));
+                case BinaryExpressionType.LesserOrEqual:
+                    return LinqExpression.LessThanOrEqual(LinqExpression.Call(comparer,
+                        typeof(StringComparer).GetRuntimeMethod("Compare",
+                            [typeof(string), typeof(string)]), [left, right]), LinqExpression.Constant(0));
+                case BinaryExpressionType.Greater:
+                    return LinqExpression.GreaterThan(LinqExpression.Call(comparer,
+                        typeof(StringComparer).GetRuntimeMethod("Compare",
+                            [typeof(string), typeof(string)]), [left, right]), LinqExpression.Constant(0));
+                case BinaryExpressionType.Lesser:
+                    return LinqExpression.LessThan(LinqExpression.Call(comparer,
+                        typeof(StringComparer).GetRuntimeMethod("Compare",
+                            [typeof(string), typeof(string)]), [left, right]), LinqExpression.Constant(0));
             }
         }
+
         return action(left, right);
     }
 
