@@ -358,7 +358,8 @@ public class MathsTests
     [InlineData("2*(X1 = 1)", 2)]
     [InlineData("2/(X1 = 1)", 2.0)]
     [InlineData("1+(X1 = 1)", 2)]
-    [InlineData("1-(X1 = 1)", 0)]
+    [InlineData("true-(X1 = 1)", 0)]
+    [InlineData("true-(X1 = true - false)", 0)]
     public void ShouldOptionallyCalculateWithBoolean(string formula, object expectedValue)
     {
         var expression = new Expression(formula, ExpressionOptions.AllowBooleanCalculation);
@@ -367,8 +368,8 @@ public class MathsTests
         Assert.Equal(expectedValue, expression.Evaluate());
 
 
-        var lambda = expression.ToLambda<object>();
+        var lambda = expression.ToLambda<double>();
         
-        Assert.Equal(expectedValue, lambda());
+        Assert.Equal(Convert.ToDouble(expectedValue), lambda());
     }
 }
