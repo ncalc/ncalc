@@ -70,29 +70,29 @@ public static class LogicalExpressionParser
                 long? decimalPart = x.Item2;
                 long? exponentPart = x.Item3;
 
-                decimal result = integralValue;
+                double result = integralValue;
 
                 // decimal part?
                 if (decimalPart != null && decimalPart.Value != 0)
                 {
                     var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1);
-                    result += decimalPart.Value / (decimal)Math.Pow(10, digits);
+                    result += decimalPart.Value / Math.Pow(10, digits);
                 }
 
                 // exponent part?
                 if (exponentPart != null)
                 {
-                    result *= (decimal)Math.Pow(10, exponentPart.Value);
+                    result *= Math.Pow(10, exponentPart.Value);
                 }
 
                 if (ctx is LogicalExpressionParserContext { UseDecimalsAsDefault: true })
                 {
-                    return new ValueExpression(result);
+                    return new ValueExpression((decimal)result);
                 }
 
                 if (decimalPart != null || (exponentPart != null))
                 {
-                    return new ValueExpression((double)result);
+                    return new ValueExpression(result);
                 }
 
                 return new ValueExpression((long)result);

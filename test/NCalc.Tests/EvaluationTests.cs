@@ -1,5 +1,6 @@
 using NCalc.Exceptions;
 using NCalc.Tests.TestData;
+using System.Globalization;
 
 namespace NCalc.Tests;
 
@@ -193,5 +194,14 @@ public class EvaluationTests
     {
         var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
         Assert.Equal(expected, e.Evaluate());
+    }
+
+    [Fact]
+    public void ShouldEvaluateDouble()
+    {
+        var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
+        var res = expr.Evaluate();
+
+        Assert.Equal(Math.Floor(double.MaxValue), res);
     }
 }
