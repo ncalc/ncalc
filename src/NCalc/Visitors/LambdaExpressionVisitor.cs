@@ -378,20 +378,19 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
     {
         left = UnwrapNullable(left);
         right = UnwrapNullable(right);
-
-        //TODO:
-        // if (_options.HasFlag(ExpressionOptions.BooleanCalculation))
-        // {
-        //     if (left.Type == typeof(bool))
-        //     {
-        //         left = LinqExpression.Condition(left, LinqExpression.Constant(1.0), LinqExpression.Constant(0.0));
-        //     }
-        //
-        //     if (right.Type == typeof(bool))
-        //     {
-        //         right = LinqExpression.Condition(right, LinqExpression.Constant(1.0), LinqExpression.Constant(0.0));
-        //     }
-        // }
+        
+        if (_options.HasOption(ExpressionOptions.BooleanCalculation))
+        {
+            if (left.Type == typeof(bool))
+            {
+                left = LinqExpression.Condition(left, LinqExpression.Constant(1.0), LinqExpression.Constant(0.0));
+            }
+        
+            if (right.Type == typeof(bool))
+            {
+                right = LinqExpression.Condition(right, LinqExpression.Constant(1.0), LinqExpression.Constant(0.0));
+            }
+        }
 
         var precedence = new[]
         {

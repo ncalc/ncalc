@@ -21,11 +21,11 @@ public class ExpressionContext
     
     public static implicit operator ExpressionContext(ExpressionOptions options)
     {
-        return new ExpressionContext { Options = options };
+        return new() { Options = options };
     }
     
     public static implicit operator ExpressionContext(CultureInfo cultureInfo)
     {
-        return new ExpressionContext { CultureInfo = cultureInfo };
+        return new() { CultureInfo = cultureInfo };
     }
 }

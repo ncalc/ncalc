@@ -58,6 +58,11 @@ public enum ExpressionOptions
     /// Use ordinal culture on string compare
     /// </summary>
     OrdinalStringComparer = 1 << 9,
+    
+    /// <summary>
+    /// Allow calculation with boolean values
+    /// </summary>
+    BooleanCalculation = 1 << 10,
 }
     
 public static class ExpressionOptionsExtensions

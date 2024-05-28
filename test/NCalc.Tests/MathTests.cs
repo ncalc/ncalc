@@ -349,4 +349,26 @@ public class MathsTests
         var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
         Assert.Equal(minValue,expr.Evaluate());
     }
+    
+    [Theory]
+    [InlineData("(X1 = 1)/2", 0.5)]
+    [InlineData("(X1 = 1)*2", 2)]
+    [InlineData("(X1 = 1)+1", 2)]
+    [InlineData("(X1 = 1)-1", 0)]
+    [InlineData("2*(X1 = 1)", 2)]
+    [InlineData("2/(X1 = 1)", 2.0)]
+    [InlineData("1+(X1 = 1)", 2)]
+    [InlineData("1-(X1 = 1)", 0)]
+    public void ShouldOptionallyCalculateWithBoolean(string formula, object expectedValue)
+    {
+        var expression = new Expression(formula, ExpressionOptions.BooleanCalculation);
+        expression.Parameters["X1"] = 1;
+
+        Assert.Equal(expectedValue, expression.Evaluate());
+
+
+        var lambda = expression.ToLambda<object>();
+        
+        Assert.Equal(expectedValue, lambda());
+    }
 }

@@ -1,5 +1,13 @@
 ﻿namespace NCalc.Helpers;
 
+public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool EnableBooleanCalculation)
+{
+    public static implicit operator MathHelperOptions(CultureInfo cultureInfo)
+    {
+        return new(cultureInfo, false);
+    }
+};
+
 /// <summary>
 /// Utilities for doing mathematical operations between different object types.
 /// </summary>
@@ -9,19 +17,37 @@ public static class MathHelper
     {
         return s is string or char ? decimal.Parse(s.ToString()!, cultureInfo) : s;
     }
+    
+    private static object? ConvertIfBoolean(object? input)
+    {
+        if (input is bool boolean)
+        {
+            return boolean ? 1 : 0;
+        }
+
+        return input;
+    }
 
     public static object? Add(object? a, object? b)
     {
         return Add(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object? Add(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Add(object? a, object? b, MathHelperOptions options)
     {
+        var cultureInfo = options.CultureInfo;
+        
         if (a == null || b == null)
             return null;
-
+        
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
+        
+        if (options.EnableBooleanCalculation)
+        {
+            a = ConvertIfBoolean(a);
+            b = ConvertIfBoolean(b);
+        }
 
         switch (a)
         {
@@ -225,13 +251,21 @@ public static class MathHelper
         return Subtract(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object? Subtract(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Subtract(object? a, object? b, MathHelperOptions options)
     {
         if (a == null || b == null)
             return null;
 
+        var cultureInfo = options.CultureInfo;
+
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
+        
+        if (options.EnableBooleanCalculation)
+        {
+            a = ConvertIfBoolean(a);
+            b = ConvertIfBoolean(b);
+        }
 
         switch (a)
         {
@@ -434,14 +468,21 @@ public static class MathHelper
         return Multiply(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object? Multiply(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Multiply(object? a, object? b, MathHelperOptions options)
     {
         if (a == null || b == null)
             return null;
 
+        var cultureInfo = options.CultureInfo;
+
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
-
+        
+        if (options.EnableBooleanCalculation)
+        {
+            a = ConvertIfBoolean(a);
+            b = ConvertIfBoolean(b);
+        }
         switch (a)
         {
             case bool:
@@ -645,13 +686,21 @@ public static class MathHelper
         return Divide(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object? Divide(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Divide(object? a, object? b, MathHelperOptions options)
     {
         if (a == null || b == null)
             return null;
 
+        var cultureInfo = options.CultureInfo;
+
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
+        
+        if (options.EnableBooleanCalculation)
+        {
+            a = ConvertIfBoolean(a);
+            b = ConvertIfBoolean(b);
+        }
 
         switch (a)
         {
@@ -855,14 +904,21 @@ public static class MathHelper
         return Modulo(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object? Modulo(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Modulo(object? a, object? b, MathHelperOptions options)
     {
         if (a == null || b == null)
             return null;
 
+        var cultureInfo = options.CultureInfo;
+
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
-
+        
+        if (options.EnableBooleanCalculation)
+        {
+            a = ConvertIfBoolean(a);
+            b = ConvertIfBoolean(b);
+        }
         switch (a)
         {
             case bool:
@@ -1064,10 +1120,18 @@ public static class MathHelper
         return Max(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object? Max(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Max(object? a, object? b, MathHelperOptions options)
     {
+        var cultureInfo = options.CultureInfo;
+        
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
+        
+        if (options.EnableBooleanCalculation)
+        {
+            a = ConvertIfBoolean(a);
+            b = ConvertIfBoolean(b);
+        }
 
         if (a == null && b == null)
         {
@@ -1117,11 +1181,19 @@ public static class MathHelper
         return Min(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object? Min(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Min(object? a, object? b, MathHelperOptions options)
     {
+        var cultureInfo = options.CultureInfo;
+        
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
-
+        
+        if (options.EnableBooleanCalculation)
+        {
+            a = ConvertIfBoolean(a);
+            b = ConvertIfBoolean(b);
+        }
+        
         if (a == null && b == null)
         {
             return null;

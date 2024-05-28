@@ -1,5 +1,7 @@
 ﻿#if NET8_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+
 // ReSharper disable MemberCanBeProtected.Local
 
 namespace NCalc.Tests;
@@ -429,6 +431,8 @@ public class LambdaTests
     [Fact]
     public void ExpressionAndLambdaFuncBehaviorMatch()
     {
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+        
         // Arrange
         double[] testValues = [double.MinValue, -Math.PI, -1, Math.BitDecrement(0), 0, Math.BitIncrement(0), 0.001, 1, 2, 3.14, Math.PI, 10, 100, double.MaxValue
         ];
@@ -459,7 +463,7 @@ public class LambdaTests
 
                 currentContext.Func = expressionString;
 
-                var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction | ExpressionOptions.IgnoreCase);
+                var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction | ExpressionOptions.IgnoreCase, CultureInfo.InvariantCulture);
                 var lambda = expression.ToLambda<ContextAndResult, double>();
 
                 for (var i = 0; i < testValues.Length; ++i)

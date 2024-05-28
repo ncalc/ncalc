@@ -28,6 +28,9 @@ public class EvaluationVisitor : IEvaluationVisitor
 
     public object? Result { get; set; }
 
+    private MathHelperOptions MathHelperOptions => new(Context.CultureInfo,
+        Context.Options.HasOption(ExpressionOptions.BooleanCalculation));
+    
     public EvaluationVisitor()
     {
     }
@@ -84,8 +87,8 @@ public class EvaluationVisitor : IEvaluationVisitor
 
             case BinaryExpressionType.Div:
                 Result = TypeHelper.IsReal(Left()) || TypeHelper.IsReal(Right())
-                    ? MathHelper.Divide(Left(), Right(), CultureInfo)
-                    : MathHelper.Divide(Convert.ToDouble(Left(), CultureInfo), Right(), CultureInfo);
+                    ? MathHelper.Divide(Left(), Right(), MathHelperOptions)
+                    : MathHelper.Divide(Convert.ToDouble(Left(), CultureInfo), Right(), MathHelperOptions);
                 break;
 
             case BinaryExpressionType.Equal:
@@ -114,11 +117,11 @@ public class EvaluationVisitor : IEvaluationVisitor
                 break;
 
             case BinaryExpressionType.Minus:
-                Result = MathHelper.Subtract(Left(), Right(), CultureInfo);
+                Result = MathHelper.Subtract(Left(), Right(), MathHelperOptions);
                 break;
 
             case BinaryExpressionType.Modulo:
-                Result = MathHelper.Modulo(Left(), Right(), CultureInfo);
+                Result = MathHelper.Modulo(Left(), Right(), MathHelperOptions);
                 break;
 
             case BinaryExpressionType.NotEqual:
@@ -133,13 +136,13 @@ public class EvaluationVisitor : IEvaluationVisitor
                 }
                 else
                 {
-                    Result = MathHelper.Add(Left(), Right(), CultureInfo);
+                    Result = MathHelper.Add(Left(), Right(), MathHelperOptions);
                 }
 
                 break;
 
             case BinaryExpressionType.Times:
-                Result = MathHelper.Multiply(Left(), Right(), CultureInfo);
+                Result = MathHelper.Multiply(Left(), Right(), MathHelperOptions);
                 break;
 
             case BinaryExpressionType.BitwiseAnd:
@@ -204,7 +207,7 @@ public class EvaluationVisitor : IEvaluationVisitor
                 break;
 
             case UnaryExpressionType.Negate:
-                Result = MathHelper.Subtract(0, Result, CultureInfo);
+                Result = MathHelper.Subtract(0, Result, MathHelperOptions);
                 break;
 
             case UnaryExpressionType.BitwiseNot:
@@ -425,7 +428,7 @@ public class EvaluationVisitor : IEvaluationVisitor
                     throw new NCalcEvaluationException("Max() takes exactly 2 arguments");
                 var maxleft = Evaluate(function.Expressions[0]);
                 var maxright = Evaluate(function.Expressions[1]);
-                Result = MathHelper.Max(maxleft, maxright, CultureInfo);
+                Result = MathHelper.Max(maxleft, maxright, MathHelperOptions);
                 break;
 
             case "MIN":
@@ -434,7 +437,7 @@ public class EvaluationVisitor : IEvaluationVisitor
                     throw new NCalcEvaluationException("Min() takes exactly 2 arguments");
                 var minleft = Evaluate(function.Expressions[0]);
                 var minright = Evaluate(function.Expressions[1]);
-                Result = MathHelper.Min(minleft, minright, CultureInfo);
+                Result = MathHelper.Min(minleft, minright, MathHelperOptions);
                 break;
 
             case "IFS":
