@@ -1,5 +1,6 @@
 ﻿#nullable disable
 
+using System.Collections.Frozen;
 using NCalc.Domain;
 using System.Reflection;
 using NCalc.Reflection;
@@ -56,7 +57,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         ArgumentCount = argCount
     };
 
-    private static readonly Dictionary<string, MathCallFunction> MathCallFunctions = new()
+    private static readonly FrozenDictionary<string, MathCallFunction> MathCallFunctions = new Dictionary<string, MathCallFunction>()
     {
         { "ABS", GetMathCallFunctionHelper(nameof(Math.Abs), 1) },
         { "ACOS", GetMathCallFunctionHelper(nameof(Math.Acos), 1) },
@@ -89,7 +90,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 ArgumentCount = 2
             }
         }
-    };
+    }.ToFrozenDictionary();
 
     private bool CaseInsensitiveComparer => _options.HasOption(ExpressionOptions.CaseInsensitiveComparer);
 

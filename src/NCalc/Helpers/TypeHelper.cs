@@ -1,9 +1,11 @@
-﻿namespace NCalc.Helpers;
+﻿using System.Collections.Frozen;
+
+namespace NCalc.Helpers;
 
 public static class TypeHelper
 {
-    private static readonly Type[] BuiltInTypes =
-    [
+    private static readonly FrozenSet<Type> BuiltInTypes =
+    new[]{
         typeof(decimal),
         typeof(double),
         typeof(float),
@@ -19,7 +21,7 @@ public static class TypeHelper
         typeof(bool),
         typeof(string),
         typeof(object)
-    ];
+    }.ToFrozenSet();
     
     /// <summary>
     /// Gets the the most precise type.

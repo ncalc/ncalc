@@ -1,10 +1,15 @@
-﻿#if NETCOREAPP
+﻿#if NET8_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+// ReSharper disable MemberCanBeProtected.Local
 
-#nullable enable
 namespace NCalc.Tests;
 
+[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Reflection")]
+[SuppressMessage("ReSharper", "UnusedMember.Local", Justification = "Reflection")]
+[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Style")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local", Justification = "Reflection")]
 [Trait("Category", "Lambdas")]
-public class LambdasTests
+public class LambdaTests
 {
     private class Context
     {
@@ -14,6 +19,7 @@ public class LambdasTests
         public decimal? FieldD { get; set; }
         public int? FieldE { get; set; }
 
+        // ReSharper disable once MemberCanBeMadeStatic.Local
         public int Test(int a, int b)
         {
             return a + b;
@@ -36,23 +42,21 @@ public class LambdasTests
 
         public string Sum(string msg, params int[] numbers)
         {
-            int total = 0;
+            var total = 0;
             foreach (var num in numbers)
             {
                 total += num;
             }
-
             return msg + total;
         }
 
         public int Sum(params int[] numbers)
         {
-            int total = 0;
+            var total = 0;
             foreach (var num in numbers)
             {
                 total += num;
             }
-
             return total;
         }
 
@@ -178,9 +182,7 @@ public class LambdasTests
     [Fact]
     public void ShouldHandleOverloadingObjectParameters()
     {
-        var expression =
-            new Expression(
-                "Sum(CreateTestObject1(2), CreateTestObject2(2)) + Sum(CreateTestObject2(1), CreateTestObject1(5))");
+        var expression = new Expression("Sum(CreateTestObject1(2), CreateTestObject2(2)) + Sum(CreateTestObject2(1), CreateTestObject1(5))");
         var sut = expression.ToLambda<Context, int>();
         var context = new Context();
 
@@ -252,16 +254,17 @@ public class LambdasTests
         var expression = new Expression("MissingMethod(1)");
         try
         {
-            var sut = expression.ToLambda<Context, int>();
+            _ = expression.ToLambda<Context, int>();
         }
-        catch (System.MissingMethodException ex)
+        catch (MissingMethodException ex)
         {
+
             System.Diagnostics.Debug.Write(ex);
             Assert.True(true);
             return;
         }
-
         Assert.True(false);
+
     }
 
     [Fact]
@@ -279,9 +282,9 @@ public class LambdasTests
     {
         var expr = new Expression("2 + 2 - a - b - x");
 
-        decimal x = 5m;
-        decimal a = 6m;
-        decimal b = 7m;
+        var x = 5m;
+        var a = 6m;
+        var b = 7m;
 
         expr.Parameters["x"] = x;
         expr.Parameters["a"] = a;
@@ -421,148 +424,152 @@ public class LambdasTests
         public double LambdaResult;
     }
 
-        [Fact]
-        public void ExpressionAndLambdaFuncBehaviorMatch()
+    [Fact]
+    public void ExpressionAndLambdaFuncBehaviorMatch()
+    {
+        // Arrange
+        double[] testValues = [double.MinValue, -Math.PI, -1, Math.BitDecrement(0), 0, Math.BitIncrement(0), 0.001, 1, 2, 3.14, Math.PI, 10, 100, double.MaxValue
+        ];
+
+        string[] functionsImplemented =
+        [
+            "Abs", "Acos", "Asin", "Atan", "Ceiling", "Cos", "Exp", "Floor", "IEEERemainder",
+            "Log", "Log10", "Max", "Min", "Pow", "Round", "Sin", "Sqrt", "Tan", "Truncate"
+        ];
+        var functionsWithTwoArguments = new HashSet<string>()
         {
-            // Arrange
-            double[] testValues = [double.MinValue, -Math.PI, -1, Math.BitDecrement(0), 0, Math.BitIncrement(0), 0.001, 1, 2, 3.14, Math.PI, 10, 100, double.MaxValue
-            ];
+            "Round", "IEEERemainder", "Log", "Max", "Min", "Pow"
+        };
 
-            string[] functionsImplemented =
-            [
-                "Abs", "Acos", "Asin", "Atan", "Ceiling", "Cos", "Exp", "Floor", "IEEERemainder",
-                "Log", "Log10", "Max", "Min", "Pow", "Round", "Sin", "Sqrt", "Tan", "Truncate"
-            ];
-            HashSet<string> functionsWithTwoArguments = ["Round", "IEEERemainder", "Log", "Max", "Min", "Pow"];
+        var doubleToStringFormats = new [] { "F17", "0" };
 
-            string[] doubleToStringFormats = ["F17", "0"];
+        List<ContextAndResult> testResults = [];
+        ContextAndResult currentContext = new();
 
-            List<ContextAndResult> testResults = [];
-            ContextAndResult currentContext = new();
-
-            // Act
-            try
+        // Act
+        try
+        {
+            // Iterate each function name with context
+            foreach (var funcName in functionsImplemented)
             {
-                // Iterate each function name with context
-                foreach (string funcName in functionsImplemented)
+                var isTwoArgumentFunc = functionsWithTwoArguments.Contains(funcName);
+                var expressionString = isTwoArgumentFunc ? funcName + "(x, y)" : funcName + "(x)";
+
+                currentContext.Func = expressionString;
+
+                var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction);
+                var lambda = expression.ToLambda<ContextAndResult, double>();
+
+                for (var i = 0; i < testValues.Length; ++i)
                 {
-                    bool isTwoArgumentFunc = functionsWithTwoArguments.Contains(funcName);
-                    string expressionString = isTwoArgumentFunc ? funcName + "(x, y)" : funcName + "(x)";
+                    currentContext.x = testValues[i];
+                    expression.Parameters["x"] = currentContext.x;
 
-                    currentContext.Func = expressionString;
-
-                    var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction);
-                    var lambda = expression.ToLambda<ContextAndResult, double>();
-
-                    for (int i = 0; i < testValues.Length; ++i)
+                    if (isTwoArgumentFunc)
                     {
-                        currentContext.x = testValues[i];
-                        expression.Parameters["x"] = currentContext.x;
+                        currentContext.y = testValues[(i + 1) % testValues.Length];
+                        // Edge case (Round second argument is int decimal places to round from 0 to 15)
+                        if (funcName == "Round")
+                            currentContext.y = Math.Clamp(currentContext.y, 0, 15);
+                        expression.Parameters["y"] = currentContext.y;
+                    }
+
+                    currentContext.ExpressionResult = (double)expression.Evaluate()!;
+                    currentContext.LambdaResult = lambda(currentContext);
+
+                    testResults.Add(currentContext);
+                }
+            }
+
+            // Iterate each function name without context with numbers of format 123.456 (doubles) or 123 (integers)
+            foreach (var doubleToStringFormat in doubleToStringFormats)
+            {
+                for (var i = 0; i < testValues.Length; ++i)
+                {
+                    currentContext.x = testValues[i];
+                    // Edge case (Exception when too big doubles not fit into Int64)
+                    // We are multiplying by 0.99 because after clamping exception is still thrown
+                    // Int64.MinValue = -9223372036854775808, (double)Int64.MinValue = -9223372036854780000 which is lesser)
+                    if (doubleToStringFormat == "0" && Math.Abs(currentContext.x) > Int64.MaxValue)
+                    {
+                        currentContext.x = Math.Clamp(currentContext.x, Int64.MinValue, Int64.MaxValue) * 0.99;
+                    }
+
+                    var doubleParam1 = currentContext.x.ToString(doubleToStringFormat);
+
+                    foreach (var funcName in functionsImplemented)
+                    {
+                        var isTwoArgumentFunc = functionsWithTwoArguments.Contains(funcName);
+
+                        string expressionString;
 
                         if (isTwoArgumentFunc)
                         {
                             currentContext.y = testValues[(i + 1) % testValues.Length];
+                            // Edge case (see previous)
+                            if (doubleToStringFormat == "0" && Math.Abs(currentContext.y) > Int64.MaxValue)
+                            {
+                                currentContext.y = Math.Clamp(currentContext.y, Int64.MinValue, Int64.MaxValue) * 0.99;
+                            }
                             // Edge case (Round second argument is int decimal places to round from 0 to 15)
                             if (funcName == "Round")
                                 currentContext.y = Math.Clamp(currentContext.y, 0, 15);
-                            expression.Parameters["y"] = currentContext.y;
+
+                            var doubleParam2 = currentContext.y.ToString(doubleToStringFormat);
+                            expressionString = funcName + $"({doubleParam1}, {doubleParam2})";
                         }
+                        else
+                        {
+                            expressionString = funcName + $"({doubleParam1})";
+                        }
+                        currentContext.Func = expressionString;
 
-                        currentContext.ExpressionResult = (double)expression.Evaluate();
-                        currentContext.LambdaResult = lambda(currentContext);
+                        var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction);
+                        var lambda = expression.ToLambda<double>();
 
+                        currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate());
+                        currentContext.LambdaResult = lambda();
                         testResults.Add(currentContext);
                     }
-                }
 
-                // Iterate each function name without context with numbers of format 123.456 (doubles) or 123 (integers)
-                foreach (string doubleToStringFormat in doubleToStringFormats)
-                {
-                    for (int i = 0; i < testValues.Length; ++i)
-                    {
-                        currentContext.x = testValues[i];
-                        // Edge case (Exception when too big doubles not fit into Int64)
-                        // We are multiplying by 0.99 because after clamping exception is still thrown
-                        // Int64.MinValue = -9223372036854775808, (double)Int64.MinValue = -9223372036854780000 which is lesser)
-                        if (doubleToStringFormat == "0" && Math.Abs(currentContext.x) > long.MaxValue)
-                        {
-                            currentContext.x = Math.Clamp(currentContext.x, long.MinValue, long.MaxValue) * 0.99;
-                        }
-
-                        string doubleParam1 = currentContext.x.ToString(doubleToStringFormat);
-
-                        foreach (string funcName in functionsImplemented)
-                        {
-                            bool isTwoArgumentFunc = functionsWithTwoArguments.Contains(funcName);
-
-                            string expressionString;
-
-                            if (isTwoArgumentFunc)
-                            {
-                                currentContext.y = testValues[(i + 1) % testValues.Length];
-                                // Edge case (see previous)
-                                if (doubleToStringFormat == "0" && Math.Abs(currentContext.y) > long.MaxValue)
-                                {
-                                    currentContext.y = Math.Clamp(currentContext.y, long.MinValue, long.MaxValue) * 0.99;
-                                }
-                                // Edge case (Round second argument is int decimal places to round from 0 to 15)
-                                if (funcName == "Round")
-                                    currentContext.y = Math.Clamp(currentContext.y, 0, 15);
-
-                                string doubleParam2 = currentContext.y.ToString(doubleToStringFormat);
-                                expressionString = funcName + $"({doubleParam1}, {doubleParam2})";
-                            }
-                            else
-                            {
-                                expressionString = funcName + $"({doubleParam1})";
-                            }
-                            currentContext.Func = expressionString;
-
-                            var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction);
-                            var lambda = expression.ToLambda<double>();
-
-                            currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate());
-                            currentContext.LambdaResult = lambda();
-                            testResults.Add(currentContext);
-                        }
-
-                    }
                 }
             }
-            // Serves to find an exact spot of error. Change Exception to non-related (for ex. OutOfMemoryException) to navigate via links in Test Explorer
-            catch (Exception ex)
-            {
-                Assert.Fail($@"{ex.GetType()}, context x: {currentContext.x},
+        }
+        // Serves to find an exact spot of error. Change Exception to non-related (for ex. OutOfMemoryException) to navigate via links in Test Explorer
+        catch (Exception ex)
+        {
+            Assert.Fail($@"{ex.GetType()}, context x: {currentContext.x},
                     func: {currentContext.Func},
                     Expression result: {currentContext.ExpressionResult},
                     Lambda result: {currentContext.LambdaResult}
                     exception message: {ex.Message}
                     exception stack: {ex.StackTrace}");
-            }
+        }
 
-            static bool IsEqual(double a, double b)
-            {
-                if (double.IsNaN(a) && double.IsNaN(b))
-                {
-                    return true;
-                }
-
-                return a == b;
-                //double tol = Math.Clamp(Math.Max(a, b) * 1e-12, 1e-12, 1);
-                //return Math.Abs(a - b) < tol;
-            }
-
-            // Assert
-            foreach (ContextAndResult testContext in testResults)
-            {
-                Assert.True(IsEqual(testContext.ExpressionResult, testContext.LambdaResult),
-                    $@"context x: {testContext.x},
+        // Assert
+        foreach (var testContext in testResults)
+        {
+            Assert.True(IsEqual(testContext.ExpressionResult, testContext.LambdaResult),
+                $@"context x: {testContext.x},
                     func: {testContext.Func},
                     Expression result: {testContext.ExpressionResult},
                     Lambda result: {testContext.LambdaResult}");
-            }
         }
 
+        return;
+
+        static bool IsEqual(double a, double b)
+        {
+            if (double.IsNaN(a) && double.IsNaN(b))
+            {
+                return true;
+            }
+
+            return a == b;
+            //double tol = Math.Clamp(Math.Max(a, b) * 1e-12, 1e-12, 1);
+            //return Math.Abs(a - b) < tol;
+        }
+    }
 
     struct ContextWithOverridenMethods
     {
@@ -597,17 +604,17 @@ public class LambdasTests
         var lambdaLog2 = expressionLog2.ToLambda<ContextWithOverridenMethods, double>();
 
         // Act
-        double actualAbs = lambdaAbs(context);
-        double expectedAbs = Math.Abs(context.x);
+        var actualAbs = lambdaAbs(context);
+        var expectedAbs = Math.Abs(context.x);
 
-        double actualCos = lambdaCos(context);
-        double expectedCos = context.Cos(context.x);
+        var actualCos = lambdaCos(context);
+        var expectedCos = context.Cos(context.x);
 
-        double actualLog1 = lambdaLog1(context);
-        double expectedLog1 = context.Log(context.x);
+        var actualLog1 = lambdaLog1(context);
+        var expectedLog1 = context.Log(context.x);
 
-        double actualLog2 = lambdaLog2(context);
-        double expectedLog2 = context.Log(context.x, context.y);
+        var actualLog2 = lambdaLog2(context);
+        var expectedLog2 = context.Log(context.x, context.y);
 
         // Assert
         Assert.Equal(expectedAbs, actualAbs);
