@@ -4,11 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NCalc.Tests;
 
+[SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Local", Justification = "Reflection")]
 [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Reflection")]
 [SuppressMessage("ReSharper", "UnusedMember.Local", Justification = "Reflection")]
 [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Style")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local", Justification = "Reflection")]
 [Trait("Category", "Lambdas")]
+
 public class LambdaTests
 {
     private class Context
@@ -436,7 +438,7 @@ public class LambdaTests
             "Abs", "Acos", "Asin", "Atan", "Ceiling", "Cos", "Exp", "Floor", "IEEERemainder",
             "Log", "Log10", "Max", "Min", "Pow", "Round", "Sin", "Sqrt", "Tan", "Truncate"
         ];
-        var functionsWithTwoArguments = new HashSet<string>()
+        var functionsWithTwoArguments = new HashSet<string>
         {
             "Round", "IEEERemainder", "Log", "Max", "Min", "Pow"
         };
@@ -457,7 +459,7 @@ public class LambdaTests
 
                 currentContext.Func = expressionString;
 
-                var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction);
+                var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction | ExpressionOptions.IgnoreCase);
                 var lambda = expression.ToLambda<ContextAndResult, double>();
 
                 for (var i = 0; i < testValues.Length; ++i)
@@ -490,9 +492,9 @@ public class LambdaTests
                     // Edge case (Exception when too big doubles not fit into Int64)
                     // We are multiplying by 0.99 because after clamping exception is still thrown
                     // Int64.MinValue = -9223372036854775808, (double)Int64.MinValue = -9223372036854780000 which is lesser)
-                    if (doubleToStringFormat == "0" && Math.Abs(currentContext.x) > Int64.MaxValue)
+                    if (doubleToStringFormat == "0" && Math.Abs(currentContext.x) > long.MaxValue)
                     {
-                        currentContext.x = Math.Clamp(currentContext.x, Int64.MinValue, Int64.MaxValue) * 0.99;
+                        currentContext.x = Math.Clamp(currentContext.x, long.MinValue, long.MaxValue) * 0.99;
                     }
 
                     var doubleParam1 = currentContext.x.ToString(doubleToStringFormat);
@@ -507,9 +509,9 @@ public class LambdaTests
                         {
                             currentContext.y = testValues[(i + 1) % testValues.Length];
                             // Edge case (see previous)
-                            if (doubleToStringFormat == "0" && Math.Abs(currentContext.y) > Int64.MaxValue)
+                            if (doubleToStringFormat == "0" && Math.Abs(currentContext.y) > long.MaxValue)
                             {
-                                currentContext.y = Math.Clamp(currentContext.y, Int64.MinValue, Int64.MaxValue) * 0.99;
+                                currentContext.y = Math.Clamp(currentContext.y, long.MinValue, long.MaxValue) * 0.99;
                             }
                             // Edge case (Round second argument is int decimal places to round from 0 to 15)
                             if (funcName == "Round")
@@ -524,7 +526,7 @@ public class LambdaTests
                         }
                         currentContext.Func = expressionString;
 
-                        var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction);
+                        var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction | ExpressionOptions.IgnoreCase);
                         var lambda = expression.ToLambda<double>();
 
                         currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate());
@@ -538,22 +540,26 @@ public class LambdaTests
         // Serves to find an exact spot of error. Change Exception to non-related (for ex. OutOfMemoryException) to navigate via links in Test Explorer
         catch (Exception ex)
         {
-            Assert.Fail($@"{ex.GetType()}, context x: {currentContext.x},
-                    func: {currentContext.Func},
-                    Expression result: {currentContext.ExpressionResult},
-                    Lambda result: {currentContext.LambdaResult}
-                    exception message: {ex.Message}
-                    exception stack: {ex.StackTrace}");
+            Assert.Fail($"""
+                         {ex.GetType()}, context x: {currentContext.x},
+                                             func: {currentContext.Func},
+                                             Expression result: {currentContext.ExpressionResult},
+                                             Lambda result: {currentContext.LambdaResult}
+                                             exception message: {ex.Message}
+                                             exception stack: {ex.StackTrace}
+                         """);
         }
 
         // Assert
         foreach (var testContext in testResults)
         {
             Assert.True(IsEqual(testContext.ExpressionResult, testContext.LambdaResult),
-                $@"context x: {testContext.x},
-                    func: {testContext.Func},
-                    Expression result: {testContext.ExpressionResult},
-                    Lambda result: {testContext.LambdaResult}");
+                $"""
+                 context x: {testContext.x},
+                                     func: {testContext.Func},
+                                     Expression result: {testContext.ExpressionResult},
+                                     Lambda result: {testContext.LambdaResult}
+                 """);
         }
 
         return;

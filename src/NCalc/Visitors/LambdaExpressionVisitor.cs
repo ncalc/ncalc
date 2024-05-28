@@ -3,6 +3,7 @@
 using System.Collections.Frozen;
 using NCalc.Domain;
 using System.Reflection;
+using NCalc.Helpers;
 using NCalc.Reflection;
 using Linq = System.Linq.Expressions;
 using LinqExpression = System.Linq.Expressions.Expression;
@@ -15,36 +16,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
     private readonly IDictionary<string, object> _parameters;
     private readonly LinqExpression _context;
     private readonly ExpressionOptions _options;
-
-    private readonly Dictionary<Type, HashSet<Type>> _implicitPrimitiveConversionTable = new()
-    {
-        { typeof(sbyte), [typeof(short), typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal)] },
-        {
-            typeof(byte),
-            [
-                typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float),
-                typeof(double), typeof(decimal)
-            ]
-        },
-        { typeof(short), [typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal)] },
-        {
-            typeof(ushort),
-            [typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal)]
-        },
-        { typeof(int), [typeof(long), typeof(float), typeof(double), typeof(decimal)] },
-        { typeof(uint), [typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal)] },
-        { typeof(long), [typeof(float), typeof(double), typeof(decimal)] },
-        {
-            typeof(char),
-            [
-                typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double),
-                typeof(decimal)
-            ]
-        },
-        { typeof(float), [typeof(double)] },
-        { typeof(ulong), [typeof(float), typeof(double), typeof(decimal)] },
-    };
-
+    
     private struct MathCallFunction
     {
         public MethodInfo MathMethodInfo;
@@ -235,7 +207,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         {
             case "IF":
             {
-                var numberTypePriority = new Type[]
+                var numberTypePriority = new[]
                     { typeof(double), typeof(float), typeof(long), typeof(int), typeof(short) };
                 var index1 = Array.IndexOf(numberTypePriority, args[1].Type);
                 var index2 = Array.IndexOf(numberTypePriority, args[2].Type);
@@ -453,10 +425,10 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         return Tuple.Create(functionMemberScore, newArguments);
     }
 
-    private bool TryCastImplicitly(Type from, Type to, ref LinqExpression argument)
+    private static bool TryCastImplicitly(Type from, Type to, ref LinqExpression argument)
     {
         var convertingFromPrimitiveType =
-            _implicitPrimitiveConversionTable.TryGetValue(from, out var possibleConversions);
+            TypeHelper.ImplicitPrimitiveConversionTable.TryGetValue(from, out var possibleConversions);
         if (!convertingFromPrimitiveType || !possibleConversions.Contains(to))
         {
             argument = null;

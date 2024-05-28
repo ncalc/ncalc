@@ -23,6 +23,20 @@ public static class TypeHelper
         typeof(object)
     }.ToFrozenSet();
     
+    public static readonly FrozenDictionary<Type, FrozenSet<Type>> ImplicitPrimitiveConversionTable = new Dictionary<Type, FrozenSet<Type>> {
+        { typeof(sbyte), new[] { typeof(short), typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
+        { typeof(byte), new[] { typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
+        { typeof(short), new[] { typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
+        { typeof(ushort), new[] { typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
+        { typeof(int), new[] { typeof(long), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
+        { typeof(uint), new[] { typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
+        { typeof(long), new[] { typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
+        { typeof(char), new[] { typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
+        { typeof(float), new[] { typeof(double) }.ToFrozenSet()},
+        { typeof(ulong), new[] { typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
+    }.ToFrozenDictionary();
+
+    
     /// <summary>
     /// Gets the the most precise type.
     /// </summary>
