@@ -47,9 +47,9 @@ public enum ExpressionOptions
     AllowNullParameter = 1 << 7,
     
     /// <summary>
-    /// Use checked math
+    /// When using Abs(), return a double instead of a decimal.
     /// </summary>
-    OverflowProtection = 1 << 8,
+    UseDoubleForAbsFunction = 1 << 8,
 }
     
 public static class ExpressionOptionsExtensions

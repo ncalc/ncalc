@@ -425,21 +425,19 @@ public class LambdasTests
         public void ExpressionAndLambdaFuncBehaviorMatch()
         {
             // Arrange
-            double[] testValues = { double.MinValue, -Math.PI, -1, Math.BitDecrement(0), 0, Math.BitIncrement(0), 0.001, 1, 2, 3.14, Math.PI, 10, 100, double.MaxValue };
+            double[] testValues = [double.MinValue, -Math.PI, -1, Math.BitDecrement(0), 0, Math.BitIncrement(0), 0.001, 1, 2, 3.14, Math.PI, 10, 100, double.MaxValue
+            ];
 
             string[] functionsImplemented =
-            {
+            [
                 "Abs", "Acos", "Asin", "Atan", "Ceiling", "Cos", "Exp", "Floor", "IEEERemainder",
                 "Log", "Log10", "Max", "Min", "Pow", "Round", "Sin", "Sqrt", "Tan", "Truncate"
-            };
-            HashSet<string> functionsWithTwoArguments = new HashSet<string>()
-            {
-                "Round", "IEEERemainder", "Log", "Max", "Min", "Pow"
-            };
+            ];
+            HashSet<string> functionsWithTwoArguments = ["Round", "IEEERemainder", "Log", "Max", "Min", "Pow"];
 
-            string[] doubleToStringFormats = new [] { "F17", "0" };
+            string[] doubleToStringFormats = ["F17", "0"];
 
-            List<ContextAndResult> testResults = new();
+            List<ContextAndResult> testResults = [];
             ContextAndResult currentContext = new();
 
             // Act
@@ -453,7 +451,7 @@ public class LambdasTests
 
                     currentContext.Func = expressionString;
 
-                    var expression = new Expression(expressionString);
+                    var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction);
                     var lambda = expression.ToLambda<ContextAndResult, double>();
 
                     for (int i = 0; i < testValues.Length; ++i)
@@ -486,9 +484,9 @@ public class LambdasTests
                         // Edge case (Exception when too big doubles not fit into Int64)
                         // We are multiplying by 0.99 because after clamping exception is still thrown
                         // Int64.MinValue = -9223372036854775808, (double)Int64.MinValue = -9223372036854780000 which is lesser)
-                        if (doubleToStringFormat == "0" && Math.Abs(currentContext.x) > Int64.MaxValue)
+                        if (doubleToStringFormat == "0" && Math.Abs(currentContext.x) > long.MaxValue)
                         {
-                            currentContext.x = Math.Clamp(currentContext.x, Int64.MinValue, Int64.MaxValue) * 0.99;
+                            currentContext.x = Math.Clamp(currentContext.x, long.MinValue, long.MaxValue) * 0.99;
                         }
 
                         string doubleParam1 = currentContext.x.ToString(doubleToStringFormat);
@@ -503,9 +501,9 @@ public class LambdasTests
                             {
                                 currentContext.y = testValues[(i + 1) % testValues.Length];
                                 // Edge case (see previous)
-                                if (doubleToStringFormat == "0" && Math.Abs(currentContext.y) > Int64.MaxValue)
+                                if (doubleToStringFormat == "0" && Math.Abs(currentContext.y) > long.MaxValue)
                                 {
-                                    currentContext.y = Math.Clamp(currentContext.y, Int64.MinValue, Int64.MaxValue) * 0.99;
+                                    currentContext.y = Math.Clamp(currentContext.y, long.MinValue, long.MaxValue) * 0.99;
                                 }
                                 // Edge case (Round second argument is int decimal places to round from 0 to 15)
                                 if (funcName == "Round")
@@ -520,7 +518,7 @@ public class LambdasTests
                             }
                             currentContext.Func = expressionString;
 
-                            var expression = new Expression(expressionString);
+                            var expression = new Expression(expressionString, ExpressionOptions.UseDoubleForAbsFunction);
                             var lambda = expression.ToLambda<double>();
 
                             currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate());

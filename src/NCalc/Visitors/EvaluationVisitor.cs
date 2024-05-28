@@ -265,7 +265,17 @@ public class EvaluationVisitor : IEvaluationVisitor
                 CheckCase("Abs", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Abs() takes exactly 1 argument");
-                Result = Math.Abs(Convert.ToDecimal(Evaluate(function.Expressions[0]), CultureInfo));
+                var useDouble = Options.HasOption(ExpressionOptions.UseDoubleForAbsFunction);
+                if (useDouble)
+                {
+                    Result = Math.Abs(Convert.ToDouble(
+                        Evaluate(function.Expressions[0]), CultureInfo));
+                }
+                else
+                {
+                    Result = Math.Abs(Convert.ToDecimal(
+                        Evaluate(function.Expressions[0]), CultureInfo));
+                }
                 break;
 
             case "ACOS":
