@@ -24,7 +24,7 @@ public static class TypeHelper
     ];
 
     public static readonly FrozenDictionary<Type, HashSet<Type>> ImplicitPrimitiveConversionTable =
-        new Dictionary<Type, HashSet<Type>>()
+        new Dictionary<Type, HashSet<Type>>
         {
             {
                 typeof(sbyte),

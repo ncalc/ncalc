@@ -423,18 +423,15 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 right = LinqExpression.Convert(right, type);
             }
         }
-        LinqExpression comparer = null;
+        LinqExpression comparer;
         if (CaseInsensitiveComparer)
         {
-            if (Ordinal) 
-                comparer = LinqExpression.Property(null, typeof(StringComparer), "OrdinalIgnoreCase");
-            else 
-                comparer = LinqExpression.Property(null, typeof(StringComparer), "CurrentCultureIgnoreCase");
+            comparer = LinqExpression.Property(null, typeof(StringComparer), Ordinal ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase");
         }
         else 
             comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
 
-        if (comparer != null && (typeof(string).Equals(left.Type) || typeof(string).Equals(right.Type)))
+        if ((typeof(string) == left.Type || typeof(string) == right.Type))
         {
             switch (expressiontype)
             {
