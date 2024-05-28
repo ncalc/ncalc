@@ -372,4 +372,17 @@ public class MathsTests
         
         Assert.Equal(Convert.ToDouble(expectedValue), lambda());
     }
+    
+    [Fact]
+    public void Should_Evaluate_Floor_Of_Double_Max_Value()
+    {
+        var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
+        var res = expr.Evaluate();
+
+#if NET8_0
+        Assert.Equal(Math.Floor(double.MaxValue), res);
+#else
+        Assert.Equal(double.PositiveInfinity, res);
+#endif
+    }
 }
