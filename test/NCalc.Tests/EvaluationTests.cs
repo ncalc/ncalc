@@ -1,3 +1,6 @@
+using NCalc.Exceptions;
+using NCalc.Tests.TestData;
+
 namespace NCalc.Tests;
 
 [Trait("Category","Evaluations")]
@@ -5,31 +8,15 @@ public class EvaluationTests
 {
     
     [Theory]
-    [InlineData("2 + 3 + 5", 10)]
-    [InlineData("2 * 3 + 5", 11)]
-    [InlineData("2 * (3 + 5)", 16)]
-    [InlineData("2 * (2*(2*(2+1)))", 24)]
-    [InlineData("10 % 3", 1)]
-    [InlineData("true or false", true)]
-    [InlineData("not true", false)]
-    [InlineData("false || not (false and true)", true)]
-    [InlineData("3 > 2 and 1 <= (3-2)", true)]
-    [InlineData("3 % 2 != 10 % 3", false)]
+    [ClassData(typeof(EvaluationTestData))]
     public void Expression_Should_Evaluate(string expression, object expected)
     {
         Assert.Equal(expected, new Expression(expression).Evaluate());
     }
     
     [Theory]
-    [InlineData("123456", 123456)]
-    [InlineData(".2", 0.2d)]
-    [InlineData("123.456", 123.456d)]
-    [InlineData("123.", 123d)]
-    [InlineData("123.E2", 12300d)]
-    [InlineData("true", true)]
-    [InlineData("'true'", "true")]
-    [InlineData("'azerty'", "azerty")]
-    public void Should_Parse_Values(string input, object expectedValue, params object[] args)
+    [ClassData(typeof(ValuesTestData))]
+    public void Should_Parse_Values(string input, object expectedValue)
     {
         var expression = new Expression(input);
         var result = expression.Evaluate();
@@ -44,12 +31,7 @@ public class EvaluationTests
         }
     }
     
-    [Fact]
-    public void Should_Parse_Date_Time()
-    {
-        Assert.Equal(new DateTime(2001,1,1), new Expression("#01/01/2001#").Evaluate());
-    }
-    
+
     [Fact]
     public void ShouldEvaluateInOperator()
     {
@@ -148,7 +130,7 @@ public class EvaluationTests
         Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.IgnoreCase).Evaluate());
         Assert.Equal(1M, new Expression("Abs(-1)").Evaluate());
 
-        Assert.Throws<ArgumentException>(() => new Expression("aBs(-1)").Evaluate());
+        Assert.Throws<NCalcFunctionNotFoundException>(() => new Expression("aBs(-1)").Evaluate());
     }
 
     [Fact]
@@ -176,5 +158,40 @@ public class EvaluationTests
         surface.Parameters["L"] = 2;
 
         Assert.Equal(6, volume.Evaluate());
+    }
+
+    [Theory]
+    [InlineData("Round(1.412; 2)", 1.41)]
+    [InlineData("Max(5.1; 10.2)", 10.2)]
+    [InlineData("Min(1.3; 2)", 1.3)]
+    [InlineData("Pow(5;2)", 25d)]
+    public void ShouldAllowSemicolonAsArgumentSeparator(string expression, object expected)
+    {
+        Assert.Equal(expected, new Expression(expression).Evaluate());
+    }
+
+    [Fact]
+    public void ShouldAllowToUseCurlyBraces()
+    {
+        var volume = new Expression("{surface} * h");
+        var surface = new Expression("{l} * {L}");
+        volume.Parameters["surface"] = surface;
+        volume.Parameters["h"] = 3;
+        surface.Parameters["l"] = 1;
+        surface.Parameters["L"] = 2;
+
+        Assert.Equal(6, volume.Evaluate());
+    }
+
+    [Theory]
+    [InlineData("if((5 + null > 0), 1, 2)", 2)]
+    [InlineData("if((5 - null > 0), 1, 2)", 2)]
+    [InlineData("if((5 / null > 0), 1, 2)", 2)]
+    [InlineData("if((5 * null > 0), 1, 2)", 2)]
+    [InlineData("if((5 % null > 0), 1, 2)", 2)]
+    public void ShouldAllowOperatorsWithNulls(string expression, object expected)
+    {
+        var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
+        Assert.Equal(expected, e.Evaluate());
     }
 }

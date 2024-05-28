@@ -6,5 +6,6 @@ public enum ValueType
     String,
     DateTime,
     Float,
-    Boolean
+    Boolean,
+    TimeSpan
 }

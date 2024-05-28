@@ -1,3 +1,5 @@
+using NCalc.Exceptions;
+
 namespace NCalc.Tests;
 
 [Trait("Category","Comparer")]
@@ -28,5 +30,74 @@ public class ComparerTests
         };
 
         Assert.Equal(expectedResult, (bool)issueExp.Evaluate());
+    }
+
+    [Fact]
+    public void ExpressionShouldHandleNullRightParameters()
+    {
+        var e = new Expression("'a string' == null", ExpressionOptions.AllowNullParameter);
+        Assert.False((bool)e.Evaluate());
+    }
+
+    [Fact]
+    public void ExpressionShouldHandleNullLeftParameters()
+    {
+        var e = new Expression("null == 'a string'", ExpressionOptions.AllowNullParameter);
+        Assert.False((bool)e.Evaluate());
+    }
+
+    [Fact]
+    public void ExpressionShouldHandleNullBothParameters()
+    {
+        var e = new Expression("null == null", ExpressionOptions.AllowNullParameter);
+        Assert.True((bool)e.Evaluate());
+    }
+
+    [Fact]
+    public void ShouldCompareNullToNull()
+    {
+        var e = new Expression("[x] = null", ExpressionOptions.AllowNullParameter);
+        e.Parameters["x"] = null;
+
+        Assert.True((bool)e.Evaluate());
+    }
+
+    [Fact]
+    public void ShouldCompareNullableToNonNullable()
+    {
+        var e = new Expression("[x] = 5", ExpressionOptions.AllowNullParameter);
+
+        e.Parameters["x"] = (int?)5;
+        Assert.True((bool)e.Evaluate());
+
+        e.Parameters["x"] = (int?)6;
+        Assert.False((bool)e.Evaluate());
+    }
+
+    [Fact]
+    public void ShouldCompareNullableNullToNonNullable()
+    {
+        var e = new Expression("[x] = 5", ExpressionOptions.AllowNullParameter);
+
+        e.Parameters["x"] = null;
+        Assert.False((bool)e.Evaluate());
+    }
+
+    [Fact]
+    public void ShouldCompareNullToString()
+    {
+        var e = new Expression("[x] = 'foo'", ExpressionOptions.AllowNullParameter);
+        e.Parameters["x"] = null;
+
+        Assert.False((bool)e.Evaluate());
+    }
+
+    [Fact]
+    public void ExpressionDoesNotDefineNullParameterWithoutNullOption()
+    {
+        var e = new Expression("'a string' == null");
+
+        var ex = Assert.Throws<NCalcParameterNotDefinedException>(() => e.Evaluate());
+        Assert.Contains("not defined", ex.Message);
     }
 }

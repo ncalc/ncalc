@@ -19,6 +19,7 @@ public sealed class ValueExpression : LogicalExpression
         {
             bool => ValueType.Boolean,
             DateTime => ValueType.DateTime,
+            TimeSpan => ValueType.TimeSpan,
             decimal or double or float => ValueType.Float,
             byte or sbyte or short or int or long or ushort or uint or ulong => ValueType.Integer,
             string => ValueType.String,
@@ -65,6 +66,13 @@ public sealed class ValueExpression : LogicalExpression
         Value = value;
         Type = ValueType.DateTime;
     }
+    
+    
+    public ValueExpression(TimeSpan value)
+    {
+        Value = value;
+        Type = ValueType.TimeSpan;
+    }
 
     public ValueExpression(bool value)
     {
@@ -72,7 +80,7 @@ public sealed class ValueExpression : LogicalExpression
         Type = ValueType.Boolean;
     }
 
-    public override void Accept(LogicalExpressionVisitor visitor)
+    public override void Accept(ILogicalExpressionVisitor visitor)
     {
         visitor.Visit(this);
     }

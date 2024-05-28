@@ -1,3 +1,21 @@
+# 4.2
+* [Improve Parlot error handling](https://github.com/ncalc/ncalc/pull/181) by [Andrey Bykiev](https://github.com/Bykiev)
+## Breaking Changes
+* [Do not convert external function name to lower case when ExpressionOptions.IgnoreCase option is used](https://github.com/ncalc/ncalc/pull/179) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Add support for using null with operators](https://github.com/ncalc/ncalc/pull/184) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Exceptions need to be handled as NCalcEvaluationException instead of ArgumentException and added TypeHelper](https://github.com/ncalc/ncalc/pull/182) by [Gustavo Barros](https://github.com/gumbarros)
+* [Use IOptions instead of IOptionsSnapshot at LogicalExpressionMemoryCache]  by [Gustavo Barros](https://github.com/gumbarros)
+
+# 4.1
+* [Remove excessive check for casing](https://github.com/ncalc/ncalc/pull/149) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Add support for comparison with null parameters](https://github.com/ncalc/ncalc/pull/156) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Fix support for TimeSpan and DateTime with hours, minutes and seconds](https://github.com/ncalc/ncalc/issues/158) by [Gustavo Barros](https://github.com/gumbarros)
+* [Add Dependency Injection support with IMemoryCache plugin](https://github.com/ncalc/ncalc/issues/154) by [Gustavo Barros](https://github.com/gumbarros)
+* [Add support for using semicolon as argument separator](https://github.com/ncalc/ncalc/pull/162) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Fix invalid token handling](https://github.com/ncalc/ncalc/pull/166) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Add support fo curly braces as alternative to square brackets](https://github.com/ncalc/ncalc/pull/169) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Re-added ANTLR as a plugin](https://github.com/ncalc/ncalc/pull/176) by [Gustavo Barros](https://github.com/gumbarros)
+
 # 4.0
 
 * [Parlot is used instead of Antlr for parsing](https://github.com/ncalc/ncalc/issues/137) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros) and [Sébastien Ros](https://github.com/sebastienros)

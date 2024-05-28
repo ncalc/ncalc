@@ -57,16 +57,13 @@
       "_disableContribution": false,
       "_enableSearch": true,
       "_gitContribute": {
-        "branch": "main",
+        "branch": "master",
         "apiSpecFolder":"api",
         "repo": "https://github.com/ncalc/ncalc"
       },
       "_gitUrlPattern": "github",
       "_disableSideFilter":true,
-      "_appLogoPath": "logo.png",
-
-      "_appFooter": "4.0.x",
-      "_copyrightFooter":"2024 NCalc. All rights reserved."
+      "_appLogoPath": "logo.png"
     },
     "globalMetadataFiles": [],
     "fileMetadataFiles": [],

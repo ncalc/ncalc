@@ -10,7 +10,7 @@ public sealed class Function(Identifier identifier, LogicalExpression[] expressi
 
     public LogicalExpression[] Expressions { get; set; } = expressions;
 
-    public override void Accept(LogicalExpressionVisitor visitor)
+    public override void Accept(ILogicalExpressionVisitor visitor)
     {
         visitor.Visit(this);
     }

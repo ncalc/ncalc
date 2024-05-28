@@ -1,10 +1,15 @@
 using NCalc.Domain;
+using NCalc.Exceptions;
+using Parlot;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
 using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
 
+/// <summary>
+/// Class responsible for parsing strings into <see cref="LogicalExpression"/> objects.
+/// </summary>
 public static class LogicalExpressionParser
 {
     private static readonly Parser<LogicalExpression> Parser;
@@ -31,12 +36,12 @@ public static class LogicalExpressionParser
          *                  | STRING
          *                  | "true"
          *                  | "false"
-         *                  | "[" anything "]"
+         *                  | ("[" | "{") anything ("]" | "}")
          *                  | function
          *                  | "(" expression ")" ;
          *
          * function       => Identifier "(" arguments ")"
-         * arguments      => expression ( "," expression )*
+         * arguments      => expression ( ("," | ";") expression )*
          */
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
@@ -48,12 +53,15 @@ public static class LogicalExpressionParser
             SkipWhiteSpace(OneOf(
                 Literals.Char('.')
                     .SkipAnd(Terms.Integer().Then<long?>(x => x))
-                    .And(exponentNumberPart.ThenElse<long?>(x => x, null)).Then(x => (0L, x.Item1, x.Item2)),
+                    .And(exponentNumberPart.ThenElse<long?>(x => x, null))
+                    .AndSkip(Not(Literals.Identifier()).ElseError("Invalid token in expression"))
+                    .Then(x => (0L, x.Item1, x.Item2)),
                 Literals.Integer(NumberOptions.AllowSign)
                     .And(Literals.Char('.')
                     .SkipAnd(ZeroOrOne(Terms.Integer()))
                     .ThenElse<long?>(x => x, null))
                     .And(exponentNumberPart.ThenElse<long?>(x => x, null))
+                    .AndSkip(Not(Literals.Identifier()).ElseError("Invalid token in expression"))
                     .Then(x => (x.Item1, x.Item2, x.Item3))
                 ))
             .Then<LogicalExpression>((ctx, x) =>
@@ -89,7 +97,7 @@ public static class LogicalExpressionParser
 
                 return new ValueExpression((long)result);
             });
-        
+
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
         var times = Terms.Char('*');
@@ -102,22 +110,25 @@ public static class LogicalExpressionParser
         var closeParen = Terms.Char(')');
         var openBrace = Terms.Char('[');
         var closeBrace = Terms.Char(']');
+        var openCurlyBrace = Terms.Char('{');
+        var closeCurlyBrace = Terms.Char('}');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
-        
+        var semicolon = Terms.Char(';');
+
         var negate = Terms.Text("!");
         var not = Terms.Text("not", true);
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
 
-        // "[" identifier "]"
-        var identifierExpression = openBrace
-            .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true))
+        // ("[" | "{") identifier ("]" | "}")
+        var identifierExpression = openBrace.Or(openCurlyBrace)
+            .SkipAnd(AnyCharBefore(closeBrace.Or(closeCurlyBrace), consumeDelimiter: true))
             .Or(Terms.Identifier())
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
-        var arguments = Separated(comma, expression);
+        var arguments = Separated(comma.Or(semicolon), expression);
 
         var functionWithArguments = Terms
             .Identifier()
@@ -130,43 +141,76 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), []));
 
         var function = OneOf(functionWithArguments, functionWithoutArguments);
-        
+
         var booleanTrue = Terms.Text("true", true)
             .Then<LogicalExpression>(True);
         var booleanFalse = Terms.Text("false", true)
             .Then<LogicalExpression>(False);
-        
+
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
             .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
 
         var charIsNumber = Literals.Pattern(char.IsNumber);
 
-        var dateTimeParser = Terms
-            .Char('#')
-            .SkipAnd(charIsNumber)
+        var dateDefinition = charIsNumber
             .AndSkip(divided)
             .And(charIsNumber)
             .AndSkip(divided)
-            .And(charIsNumber)
-            .AndSkip(Literals.Char('#'))
-            .Then<LogicalExpression>(date =>
+            .And(charIsNumber);
+
+        // date => number/number/number
+        var date = dateDefinition.Then<LogicalExpression>(date =>
             {
                 if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
                 {
                     return new ValueExpression(result);
                 }
 
-                throw new FormatException("Invalid date format.");
+                throw new FormatException("Invalid DateTime format.");
             });
 
+        // time => number:number:number
+        var timeDefinition = charIsNumber
+            .AndSkip(Terms.Char(':'))
+            .And(charIsNumber)
+            .AndSkip(Terms.Char(':'))
+            .And(charIsNumber);
+
+        var time = timeDefinition.Then<LogicalExpression>(time =>
+        {
+            if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
+            {
+                return new ValueExpression(result);
+            }
+
+            throw new FormatException("Invalid TimeSpan format.");
+        });
+
+
+        // dateAndTime => number/number/number number:number:number
+        var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(dateTime =>
+        {
+            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", out var result))
+            {
+                return new ValueExpression(result);
+            }
+
+            throw new FormatException("Invalid DateTime format.");
+        });
+
+        // datetime => '#' dateAndTime | date | time  '#';
+        var dateTime = Terms
+            .Char('#')
+            .SkipAnd(OneOf(dateAndTime, date, time))
+            .AndSkip(Literals.Char('#'));
+
         // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
-        
         var primary = OneOf(
-            number, 
-            booleanTrue, 
+            number,
+            booleanTrue,
             booleanFalse,
-            dateTimeParser,
-            stringValue, 
+            dateTime,
+            stringValue,
             function,
             groupExpression,
             identifierExpression);
@@ -209,7 +253,7 @@ public static class LogicalExpressionParser
                 .And(u).Then<LogicalExpression>(static x => new UnaryExpression(x.Item1, x.Item2))
                 .Or(exponential)
                 );
-        
+
         // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
         var multiplicative = unary.And(ZeroOrMany(
             divided.Then(BinaryExpressionType.Div)
@@ -330,5 +374,19 @@ public static class LogicalExpressionParser
         Parser = expression.Compile();
     }
 
-    public static LogicalExpression Parse(LogicalExpressionParserContext context) => Parser.Parse(context);
+    public static LogicalExpression Parse(LogicalExpressionParserContext context)
+    {
+        if (!Parser.TryParse(context, out LogicalExpression result, out ParseError error))
+        {
+            string message;
+            if (error != null)
+                message = $"{error.Message} at position {error.Position}";
+            else
+                message = $"Error parsing the expression at position {context.Scanner.Cursor.Position}";
+
+            throw new NCalcParserException(message);
+        }
+
+        return result;
+    }
 }

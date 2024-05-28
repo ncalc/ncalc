@@ -1,7 +1,5 @@
-- name: Home  
+- name: Intro  
   href: index.md
-- name: Description
-  href: description.md
 - name: Functions
   href: functions.md
 - name: Operators
@@ -10,5 +8,19 @@
   href: values.md
 - name: Parameters
   href: parameters.md
+- name: Handling Errors
+  href: handling_errors.md
+- name: Case Sensitivity
+  href: case_sensitivity.md
+- name: Caching
+  href: caching.md
+- name: Dependency Injection
+  href: dependency_injection.md
+- name: Plugins
+  items:
+    - name: ANTLR
+      href: plugins/antlr.md
+    - name: Memory Cache
+      href: plugins/memory_cache.md
 - name: Publishing a New Release
   href: new_release.md

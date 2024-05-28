@@ -1,5 +1,8 @@
 ﻿namespace NCalc.Helpers;
 
+/// <summary>
+/// Utilities for doing mathematical operations between different object types.
+/// </summary>
 public static class MathHelper
 {
     private static object? ConvertIfString(object? s, CultureInfo cultureInfo)
@@ -7,16 +10,19 @@ public static class MathHelper
         return s is string or char ? decimal.Parse(s.ToString()!, cultureInfo) : s;
     }
 
-    public static object Add(object? a, object? b)
+    public static object? Add(object? a, object? b)
     {
         return Add(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object Add(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Add(object? a, object? b, CultureInfo cultureInfo)
     {
+        if (a == null || b == null)
+            return null;
+
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
-        
+
         switch (a)
         {
             case bool:
@@ -214,19 +220,22 @@ public static class MathHelper
         }
     }
 
-    public static object Subtract(object? a, object? b)
+    public static object? Subtract(object? a, object? b)
     {
         return Subtract(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object Subtract(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Subtract(object? a, object? b, CultureInfo cultureInfo)
     {
+        if (a == null || b == null)
+            return null;
+
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
 
         switch (a)
         {
-            case bool: 
+            case bool:
                 throw new InvalidOperationException($"Operator '-' can't be applied to operands of types 'bool' and {b?.GetType()}");
             case byte b1:
                 switch (b)
@@ -420,17 +429,18 @@ public static class MathHelper
         }
     }
 
-    public static object Multiply(object? a, object? b)
+    public static object? Multiply(object? a, object? b)
     {
         return Multiply(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object Multiply(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Multiply(object? a, object? b, CultureInfo cultureInfo)
     {
+        if (a == null || b == null)
+            return null;
+
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
-
-
 
         switch (a)
         {
@@ -591,7 +601,7 @@ public static class MathHelper
                     case decimal @decimal: return Convert.ToDecimal(a) * @decimal;
                     default: throw new InvalidOperationException($"Operator '*' not implemented for operands of types 'float' and {b?.GetType()}");
                 }
- 
+
             case double d:
                 switch (b)
                 {
@@ -629,14 +639,17 @@ public static class MathHelper
             default: throw new InvalidOperationException($"Operator '*' not implemented for operands of types {a} and {b?.GetType()}");
         }
     }
-        
-    public static object Divide(object? a, object? b)
+
+    public static object? Divide(object? a, object? b)
     {
         return Divide(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object Divide(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Divide(object? a, object? b, CultureInfo cultureInfo)
     {
+        if (a == null || b == null)
+            return null;
+
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
 
@@ -837,17 +850,18 @@ public static class MathHelper
         }
     }
 
-    public static object Modulo(object? a, object? b)
+    public static object? Modulo(object? a, object? b)
     {
         return Modulo(a, b, CultureInfo.CurrentCulture);
     }
 
-    public static object Modulo(object? a, object? b, CultureInfo cultureInfo)
+    public static object? Modulo(object? a, object? b, CultureInfo cultureInfo)
     {
+        if (a == null || b == null)
+            return null;
+
         a = ConvertIfString(a, cultureInfo);
         b = ConvertIfString(b, cultureInfo);
-
-
 
         switch (a)
         {
@@ -1069,7 +1083,7 @@ public static class MathHelper
         {
             return a;
         }
-        
+
         switch (a)
         {
             case byte b1:

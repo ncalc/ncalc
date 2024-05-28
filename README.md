@@ -22,13 +22,6 @@ It is supported by any target framework that accommodates .NET Standard 2.0.
 
 For additional information on the technique we used to create this framework please read this article: https://www.codeproject.com/Articles/18880/State-of-the-Art-Expression-Evaluation.
 
-For documentation here is the table of content:
-* [description](https://github.com/ncalc/ncalc/wiki/Description): overall concepts, usage and extensibility points
-* [operators](https://github.com/ncalc/ncalc/wiki/Operators): available standard operators and structures
-* [values](https://github.com/ncalc/ncalc/wiki/Values): authorized values like types, functions, ...
-* [functions](https://github.com/ncalc/ncalc/wiki/Functions): list of already implemented functions
-* [parameters](https://github.com/ncalc/ncalc/wiki/Parameters): on how to use parameters expressions
-
 > [!IMPORTANT]
 > If you need help, please open an issue and include the expression to help us better understand the problem. 
 > Providing this information will aid in resolving the issue effectively.
@@ -37,8 +30,8 @@ For documentation here is the table of content:
 **Simple Expressions**
 
 ```c#
-Expression e = new Expression("2 + 3 * 5");
-Debug.Assert(17 == e.Evaluate());
+var expression = new Expression("2 + 3 * 5");
+Debug.Assert(17 == expression.Evaluate());
 ```
 
 **Evaluates .NET data types**
@@ -62,14 +55,14 @@ Debug.Assert(0 == new Expression("Tan(0)").Evaluate());
 **Evaluates custom functions**
 
 ```c#
-Expression e = new Expression("SecretOperation(3, 6)");
-e.EvaluateFunction += delegate(string name, FunctionArgs args)
+var expression = new Expression("SecretOperation(3, 6)");
+expression.EvaluateFunction += delegate(string name, FunctionArgs args)
     {
         if (name == "SecretOperation")
             args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
     };
 
-Debug.Assert(9 == e.Evaluate());
+Debug.Assert(9 == expression.Evaluate());
 ```
 
 **Handles unicode characters**
@@ -84,18 +77,18 @@ Debug.Assert("\u0100" == new Expression(@"'\u0100'").Evaluate());
 **Define parameters, even dynamic or expressions**
 
 ```c#
-Expression e = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
+var expression = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
 
-e.Parameters["Pi2"] = new Expression("Pi * [Pi]");
-e.Parameters["X"] = 10;
+expression.Parameters["Pi2"] = new Expression("Pi * [Pi]");
+expression.Parameters["X"] = 10;
 
-e.EvaluateParameter += delegate(string name, ParameterArgs args)
+expression.EvaluateParameter += delegate(string name, ParameterArgs args)
   {
     if (name == "Pi")
     args.Result = 3.14;
   };
 
-Debug.Assert(117.07 == e.Evaluate());
+Debug.Assert(117.07 == expression.Evaluate());
 ```
 
 **Caching in a distributed cache**
@@ -104,8 +97,8 @@ This example uses [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Js
 
 Serializing
 ```c#
-var compiled = Expression.Compile(expression, true);
-var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
+var parsedExpression = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
+var serialized = JsonConvert.SerializeObject(parsedExpression, new JsonSerializerSettings
 {
     TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
 });
@@ -119,12 +112,13 @@ var deserialized = JsonConvert.DeserializeObject<LogicalExpression>(serialized, 
 });
 
 Expression.CacheEnabled = false; // We cannot use NCalc's built in cache at the same time.
-var exp = new Expression(deserialized);
-exp.Parameters = new Dictionary<string, object> {
+
+var expression = new Expression(deserialized);
+expression.Parameters = new Dictionary<string, object> {
     {"waterlevel", inputValue}
 };
 
-var evaluated = exp.Evaluate();
+var result = expression.Evaluate();
 ```
 
 ## Related projects
