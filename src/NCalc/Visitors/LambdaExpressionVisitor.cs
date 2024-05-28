@@ -379,7 +379,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         left = UnwrapNullable(left);
         right = UnwrapNullable(right);
         
-        if (_options.HasOption(ExpressionOptions.BooleanCalculation))
+        if (_options.HasOption(ExpressionOptions.AllowBooleanCalculation))
         {
             if (left.Type == typeof(bool))
             {

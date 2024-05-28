@@ -62,7 +62,7 @@ public enum ExpressionOptions
     /// <summary>
     /// Allow calculation with boolean values
     /// </summary>
-    BooleanCalculation = 1 << 10,
+    AllowBooleanCalculation = 1 << 10,
 }
     
 public static class ExpressionOptionsExtensions

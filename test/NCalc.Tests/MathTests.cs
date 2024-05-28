@@ -361,7 +361,7 @@ public class MathsTests
     [InlineData("1-(X1 = 1)", 0)]
     public void ShouldOptionallyCalculateWithBoolean(string formula, object expectedValue)
     {
-        var expression = new Expression(formula, ExpressionOptions.BooleanCalculation);
+        var expression = new Expression(formula, ExpressionOptions.AllowBooleanCalculation);
         expression.Parameters["X1"] = 1;
 
         Assert.Equal(expectedValue, expression.Evaluate());

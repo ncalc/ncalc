@@ -29,7 +29,7 @@ public class EvaluationVisitor : IEvaluationVisitor
     public object? Result { get; set; }
 
     private MathHelperOptions MathHelperOptions => new(Context.CultureInfo,
-        Context.Options.HasOption(ExpressionOptions.BooleanCalculation));
+        Context.Options.HasOption(ExpressionOptions.AllowBooleanCalculation));
     
     public EvaluationVisitor()
     {
