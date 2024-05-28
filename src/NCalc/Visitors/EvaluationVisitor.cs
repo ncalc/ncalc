@@ -490,7 +490,9 @@ public class EvaluationVisitor : IEvaluationVisitor
 
     public int CompareUsingMostPreciseType(object? a, object? b)
     {
-        return TypeHelper.CompareUsingMostPreciseType(a, b,new(CultureInfo, Options.HasOption(ExpressionOptions.CaseInsensitiveComparer)));
+        return TypeHelper.CompareUsingMostPreciseType(a,
+            b, new(CultureInfo, 
+                Options.HasOption(ExpressionOptions.CaseInsensitiveStringComparer), Options.HasOption(ExpressionOptions.OrdinalStringComparer)));
     }
 
     private void CheckCase(string function, string called)

@@ -34,8 +34,11 @@ public enum ExpressionOptions
     /// <summary>
     /// Specifies the use of CaseInsensitiveComparer for comparisons.
     /// </summary>
+    [Obsolete("Please use CaseInsensitiveStringComparer")]
     CaseInsensitiveComparer = 1 << 5,
 
+    CaseInsensitiveStringComparer = 1 << 5,
+    
     /// <summary>
     /// Uses decimals instead of doubles as default floating point data type.
     /// </summary>
@@ -50,6 +53,11 @@ public enum ExpressionOptions
     /// When using Abs(), return a double instead of a decimal.
     /// </summary>
     UseDoubleForAbsFunction = 1 << 8,
+    
+    /// <summary>
+    /// Use ordinal culture on string compare
+    /// </summary>
+    OrdinalStringComparer = 1 << 9,
 }
     
 public static class ExpressionOptionsExtensions

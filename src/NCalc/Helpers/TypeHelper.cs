@@ -4,8 +4,8 @@ namespace NCalc.Helpers;
 
 public static class TypeHelper
 {
-    private static readonly FrozenSet<Type> BuiltInTypes =
-    new[]{
+    private static readonly HashSet<Type> BuiltInTypes =
+    [
         typeof(decimal),
         typeof(double),
         typeof(float),
@@ -21,22 +21,43 @@ public static class TypeHelper
         typeof(bool),
         typeof(string),
         typeof(object)
-    }.ToFrozenSet();
-    
-    public static readonly FrozenDictionary<Type, FrozenSet<Type>> ImplicitPrimitiveConversionTable = new Dictionary<Type, FrozenSet<Type>> {
-        { typeof(sbyte), new[] { typeof(short), typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
-        { typeof(byte), new[] { typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
-        { typeof(short), new[] { typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
-        { typeof(ushort), new[] { typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
-        { typeof(int), new[] { typeof(long), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
-        { typeof(uint), new[] { typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
-        { typeof(long), new[] { typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
-        { typeof(char), new[] { typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
-        { typeof(float), new[] { typeof(double) }.ToFrozenSet()},
-        { typeof(ulong), new[] { typeof(float), typeof(double), typeof(decimal) }.ToFrozenSet()},
-    }.ToFrozenDictionary();
+    ];
 
-    
+    public static readonly FrozenDictionary<Type, HashSet<Type>> ImplicitPrimitiveConversionTable =
+        new Dictionary<Type, HashSet<Type>>()
+        {
+            {
+                typeof(sbyte),
+                [typeof(short), typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal)]
+            },
+            {
+                typeof(byte),
+                [
+                    typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong),
+                    typeof(float),
+                    typeof(double), typeof(decimal)
+                ]
+            },
+            { typeof(short), [typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal)] },
+            {
+                typeof(ushort),
+                [typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal)]
+            },
+            { typeof(int), [typeof(long), typeof(float), typeof(double), typeof(decimal)] },
+            { typeof(uint), [typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal)] },
+            { typeof(long), [typeof(float), typeof(double), typeof(decimal)] },
+            {
+                typeof(char),
+                [
+                    typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float),
+                    typeof(double),
+                    typeof(decimal)
+                ]
+            },
+            { typeof(float), [typeof(double)] },
+            { typeof(ulong), [typeof(float), typeof(double), typeof(decimal)] }
+        }.ToFrozenDictionary();
+
     /// <summary>
     /// Gets the the most precise type.
     /// </summary>
@@ -55,22 +76,26 @@ public static class TypeHelper
 
         return a ?? typeof(object);
     }
-    
+
     public static bool IsReal(object? value) => value is decimal or double or float;
 
-    public record struct ComparasionOptions(CultureInfo CultureInfo, bool IsCaseSensitive);
+    public record struct ComparasionOptions(CultureInfo CultureInfo, bool IsCaseInsensitive, bool IsOrdinal);
+
     public static int CompareUsingMostPreciseType(object? a, object? b, ComparasionOptions options)
     {
-        var (cultureInfo, isCaseInsensitiveComparer) = options;
+        var (cultureInfo, isCaseInsensitiveComparer, isOrdinal) = options;
 
         var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
 
         var aValue = a != null ? Convert.ChangeType(a, mpt, cultureInfo) : null;
         var bValue = b != null ? Convert.ChangeType(b, mpt, cultureInfo) : null;
 
-        if (isCaseInsensitiveComparer)
-            return CaseInsensitiveComparer.Default.Compare(aValue, bValue);
-
-        return Comparer.Default.Compare(aValue, bValue);
+        return isOrdinal switch
+        {
+            true when isCaseInsensitiveComparer => StringComparer.OrdinalIgnoreCase.Compare(aValue, bValue),
+            true => StringComparer.Ordinal.Compare(aValue, bValue),
+            false when isCaseInsensitiveComparer => CaseInsensitiveComparer.Default.Compare(aValue, bValue),
+            _ => Comparer.Default.Compare(aValue, bValue)
+        };
     }
 }
