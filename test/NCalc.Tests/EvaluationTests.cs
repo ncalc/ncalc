@@ -1,3 +1,4 @@
+using NCalc.Exceptions;
 using NCalc.Tests.TestData;
 
 namespace NCalc.Tests;
@@ -129,7 +130,7 @@ public class EvaluationTests
         Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.IgnoreCase).Evaluate());
         Assert.Equal(1M, new Expression("Abs(-1)").Evaluate());
 
-        Assert.Throws<ArgumentException>(() => new Expression("aBs(-1)").Evaluate());
+        Assert.Throws<NCalcFunctionNotFoundException>(() => new Expression("aBs(-1)").Evaluate());
     }
 
     [Fact]
@@ -180,5 +181,17 @@ public class EvaluationTests
         surface.Parameters["L"] = 2;
 
         Assert.Equal(6, volume.Evaluate());
+    }
+
+    [Theory]
+    [InlineData("if((5 + null > 0), 1, 2)", 2)]
+    [InlineData("if((5 - null > 0), 1, 2)", 2)]
+    [InlineData("if((5 / null > 0), 1, 2)", 2)]
+    [InlineData("if((5 * null > 0), 1, 2)", 2)]
+    [InlineData("if((5 % null > 0), 1, 2)", 2)]
+    public void ShouldAllowOperatorsWithNulls(string expression, object expected)
+    {
+        var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
+        Assert.Equal(expected, e.Evaluate());
     }
 }

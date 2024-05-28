@@ -11,5 +11,5 @@ public abstract class LogicalExpressionVisitor : ILogicalExpressionVisitor
     public abstract void Visit(UnaryExpression expression);
     public abstract void Visit(ValueExpression expression);
     public abstract void Visit(Function function);
-    public abstract void Visit(Identifier function);
+    public abstract void Visit(Identifier identifier);
 }
