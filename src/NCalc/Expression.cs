@@ -4,8 +4,6 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Visitors;
-using LinqExpression = System.Linq.Expressions.Expression;
-using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
 namespace NCalc;
 
@@ -14,7 +12,7 @@ namespace NCalc;
 /// It supports caching, custom parameter and function evaluation, and options for handling null parameters and iterating over parameter collections.
 /// The class manages the parsing, validation, and evaluation of expressions, and provides mechanisms for error detection and reporting.
 /// </summary>
-public class Expression
+public partial class Expression
 {
     /// <summary>
     /// Static property to enable or disable cache.
@@ -283,67 +281,5 @@ public class Expression
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
         LogicalExpression.Accept(ParameterExtractionVisitor);
         return ParameterExtractionVisitor.Parameters.ToList();
-    }
-
-    private struct Void;
-    protected record struct LinqExpressionWithParameter(LinqExpression Expression, LinqParameterExpression? Parameter);
-
-    private LinqExpressionWithParameter ToLinqExpressionInternal<TContext, TResult>()
-    {
-        LogicalExpression ??= GetLogicalExpression();
-
-        if (LogicalExpression is null)
-            throw Error!;
-        
-        LambdaExpressionVistor visitor;
-        LinqParameterExpression? parameter = null;
-        if (typeof(TContext) != typeof(Void))
-        {
-            parameter = LinqExpression.Parameter(typeof(TContext), "ctx");
-            visitor = new LambdaExpressionVistor(parameter, Options);
-        }
-        else
-        {
-            visitor = new LambdaExpressionVistor(Parameters, Options);
-        }
-
-        LogicalExpression.Accept(visitor);
-
-        var body = visitor.Result;
-        if (body.Type != typeof(TResult))
-        {
-            body = LinqExpression.Convert(body, typeof(TResult));
-        }
-
-        return new LinqExpressionWithParameter { Expression = body, Parameter = parameter };
-    }
-
-    protected virtual LinqExpression ToLinqExpression<TResult>()
-    {
-        return ToLinqExpressionInternal<Void, TResult>().Expression;
-    }
-
-    protected virtual LinqExpressionWithParameter ToLinqExpression<TContext, TResult>()
-    {
-        return ToLinqExpressionInternal<TContext, TResult>();
-    }
-
-    public virtual Func<TResult> ToLambda<TResult>()
-    {
-        var body = ToLinqExpression<TResult>();
-        var lambda = LinqExpression.Lambda<Func<TResult>>(body);
-        return lambda.Compile();
-    }
-
-    public virtual Func<TContext, TResult> ToLambda<TContext, TResult>()
-    {
-        var linqExp = ToLinqExpression<TContext, TResult>();
-        if (linqExp.Parameter != null)
-        {
-            var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter);
-            return lambda.Compile();
-        }
-
-        throw new NCalcException("Linq expression parameter cannot be null");
     }
 }
