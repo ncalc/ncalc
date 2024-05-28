@@ -60,6 +60,12 @@ public sealed class ValueExpression : LogicalExpression
         Value = value;
         Type = ValueType.Float;
     }
+    
+    public ValueExpression(decimal value)
+    {
+        Value = value;
+        Type = ValueType.Float;
+    }
 
     public ValueExpression(DateTime value)
     {

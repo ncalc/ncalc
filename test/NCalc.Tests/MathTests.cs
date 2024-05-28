@@ -341,4 +341,12 @@ public class MathsTests
         e.Parameters["b"] = 20M;
         Assert.Equal(100M, e.Evaluate());
     }
+    
+    [Fact]
+    public void Overflow_Issue_190()
+    {
+        const decimal minValue = decimal.MinValue;
+        var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        Assert.Equal(minValue,expr.Evaluate());
+    }
 }
