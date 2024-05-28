@@ -199,7 +199,7 @@ public class EvaluationTests
     [Fact]
     public void ShouldEvaluateDouble()
     {
-        var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
+        var expr = new Expression($"Floor({double.MaxValue})");
         var res = expr.Evaluate();
 
         Assert.Equal(Math.Floor(double.MaxValue), res);
