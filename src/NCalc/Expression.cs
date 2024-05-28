@@ -4,9 +4,10 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Visitors;
+using LinqExpression = System.Linq.Expressions.Expression;
+using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
 namespace NCalc;
-
 
 /// <summary>
 /// The Expression class represents a mathematical or logical expression that can be evaluated.
@@ -20,7 +21,7 @@ public class Expression
     /// Default Value: True
     /// </summary>
     public static bool CacheEnabled { get; set; } = true;
-    
+
     /// <summary>
     /// Event triggered to handle parameter evaluation.
     /// </summary>
@@ -33,12 +34,12 @@ public class Expression
     /// <summary>
     /// Event triggered to handle function evaluation.
     /// </summary>
-    public event EvaluateFunctionHandler EvaluateFunction 
+    public event EvaluateFunctionHandler EvaluateFunction
     {
         add => EvaluationVisitor.EvaluateFunction += value;
         remove => EvaluationVisitor.EvaluateFunction -= value;
     }
-    
+
     /// <summary>
     /// Options for the expression evaluation.
     /// </summary>
@@ -47,7 +48,7 @@ public class Expression
         get => Context.Options;
         set => Context.Options = value;
     }
-    
+
     /// <summary>
     /// Culture information for the expression evaluation.
     /// </summary>
@@ -58,6 +59,7 @@ public class Expression
     }
 
     private ExpressionContext _context = null!;
+
     protected ExpressionContext Context
     {
         get => _context;
@@ -83,7 +85,7 @@ public class Expression
     public string? ExpressionString { get; protected init; }
 
     public LogicalExpression? LogicalExpression { get; protected set; }
-    
+
     public Exception? Error { get; private set; }
 
     protected ILogicalExpressionCache LogicalExpressionCache { get; init; }
@@ -97,15 +99,15 @@ public class Expression
     private Expression()
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
-        LogicalExpressionFactory =  Factories.LogicalExpressionFactory.GetInstance();
+        LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
         ParameterExtractionVisitor = new ParameterExtractionVisitor();
         EvaluationVisitor = new EvaluationVisitor();
     }
-    
+
     protected Expression(
-        ILogicalExpressionFactory logicalExpressionFactory, 
+        ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
-        IEvaluationVisitor evaluationVisitor, 
+        IEvaluationVisitor evaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor)
     {
         LogicalExpressionCache = logicalExpressionCache;
@@ -113,50 +115,48 @@ public class Expression
         EvaluationVisitor = evaluationVisitor;
         ParameterExtractionVisitor = parameterExtractionVisitor;
     }
-    
+
     public Expression(string expression, ExpressionContext? context = null) : this()
     {
         Context = context ?? new();
         ExpressionString = expression;
     }
-    
-    
+
+
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, ExpressionContext have implicit conversions.
     public Expression(string expression) : this(expression, ExpressionOptions.None)
     {
-     
     }
-    
-    public Expression(string expression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null) : this(expression,new ExpressionContext(options, cultureInfo))
-    {
 
+    public Expression(string expression, ExpressionOptions options = ExpressionOptions.None,
+        CultureInfo? cultureInfo = null) : this(expression, new ExpressionContext(options, cultureInfo))
+    {
     }
-    
+
     public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this()
     {
         Context = context ?? new();
         LogicalExpression = logicalExpression ?? throw new
             ArgumentException("Expression can't be null", nameof(logicalExpression));
     }
-    
+
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, ExpressionContext have implicit conversions.
     public Expression(LogicalExpression logicalExpression) : this(logicalExpression, ExpressionOptions.None)
     {
-     
     }
-    
-    public Expression(LogicalExpression logicalExpression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
-    {
 
+    public Expression(LogicalExpression logicalExpression, ExpressionOptions options = ExpressionOptions.None,
+        CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
+    {
     }
 
     private bool IsCacheEnabled()
     {
         return CacheEnabled && !Options.HasOption(ExpressionOptions.NoCache);
     }
-    
+
     /// <summary>
     /// Create the LogicalExpression in order to check syntax errors.
     /// If errors are detected, the Error property contains the exception.
@@ -171,7 +171,7 @@ public class Expression
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             Error = exception;
             return true;
@@ -185,7 +185,7 @@ public class Expression
     public object? Evaluate()
     {
         LogicalExpression ??= GetLogicalExpression();
-        
+
         if (Error is not null)
             throw Error;
 
@@ -206,23 +206,23 @@ public class Expression
             throw new NCalcException("Expression cannot be null or empty.");
 
         var isCacheEnabled = IsCacheEnabled();
-        
+
         LogicalExpression? logicalExpression = null;
-        
+
         if (isCacheEnabled && LogicalExpressionCache.TryGetValue(ExpressionString!, out logicalExpression))
             return logicalExpression!;
 
         try
         {
             logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
-            if(isCacheEnabled)
+            if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
         catch (Exception exception)
         {
             Error = exception;
         }
-        
+
         return logicalExpression;
     }
 
@@ -244,7 +244,8 @@ public class Expression
                 }
                 else if (localsize != size)
                 {
-                    throw new NCalcException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
+                    throw new NCalcException(
+                        "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
                 }
             }
         }
@@ -253,7 +254,7 @@ public class Expression
         {
             if (Parameters[key] is IEnumerable parameter)
             {
-                parameterEnumerators.Add(key,parameter.GetEnumerator());
+                parameterEnumerators.Add(key, parameter.GetEnumerator());
             }
         }
 
@@ -282,5 +283,67 @@ public class Expression
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
         LogicalExpression.Accept(ParameterExtractionVisitor);
         return ParameterExtractionVisitor.Parameters.ToList();
+    }
+
+    private struct Void;
+    protected record struct LinqExpressionWithParameter(LinqExpression Expression, LinqParameterExpression? Parameter);
+
+    private LinqExpressionWithParameter ToLinqExpressionInternal<TContext, TResult>()
+    {
+        LogicalExpression ??= GetLogicalExpression();
+
+        if (LogicalExpression is null)
+            throw Error!;
+        
+        LambdaExpressionVistor visitor;
+        LinqParameterExpression? parameter = null;
+        if (typeof(TContext) != typeof(Void))
+        {
+            parameter = LinqExpression.Parameter(typeof(TContext), "ctx");
+            visitor = new LambdaExpressionVistor(parameter, Options);
+        }
+        else
+        {
+            visitor = new LambdaExpressionVistor(Parameters, Options);
+        }
+
+        LogicalExpression.Accept(visitor);
+
+        var body = visitor.Result;
+        if (body.Type != typeof(TResult))
+        {
+            body = LinqExpression.Convert(body, typeof(TResult));
+        }
+
+        return new LinqExpressionWithParameter { Expression = body, Parameter = parameter };
+    }
+
+    protected virtual LinqExpression ToLinqExpression<TResult>()
+    {
+        return ToLinqExpressionInternal<Void, TResult>().Expression;
+    }
+
+    protected virtual LinqExpressionWithParameter ToLinqExpression<TContext, TResult>()
+    {
+        return ToLinqExpressionInternal<TContext, TResult>();
+    }
+
+    public virtual Func<TResult> ToLambda<TResult>()
+    {
+        var body = ToLinqExpression<TResult>();
+        var lambda = LinqExpression.Lambda<Func<TResult>>(body);
+        return lambda.Compile();
+    }
+
+    public virtual Func<TContext, TResult> ToLambda<TContext, TResult>()
+    {
+        var linqExp = ToLinqExpression<TContext, TResult>();
+        if (linqExp.Parameter != null)
+        {
+            var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter);
+            return lambda.Compile();
+        }
+
+        throw new NCalcException("Linq expression parameter cannot be null");
     }
 }
