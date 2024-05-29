@@ -5,7 +5,7 @@
 NCalc is Mathematical Expressions Evaluator for .NET
 <br>
 
-To getting started, click on this [link](articles/Index.md).
+To getting started, click on this [link](articles/index.md).
 
 <br>
 
