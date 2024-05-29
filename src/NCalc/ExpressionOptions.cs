@@ -55,19 +55,14 @@ public enum ExpressionOptions
     AllowNullParameter = 1 << 7,
     
     /// <summary>
-    /// When using Abs(), return a double instead of a decimal.
-    /// </summary>
-    UseDoubleForAbsFunction = 1 << 8,
-    
-    /// <summary>
     /// Use ordinal culture on string compare
     /// </summary>
-    OrdinalStringComparer = 1 << 9,
+    OrdinalStringComparer = 1 << 8,
     
     /// <summary>
     /// Allow calculation with boolean values
     /// </summary>
-    AllowBooleanCalculation = 1 << 10,
+    AllowBooleanCalculation = 1 << 9,
 }
     
 public static class ExpressionOptionsExtensions

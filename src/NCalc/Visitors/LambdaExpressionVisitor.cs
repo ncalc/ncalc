@@ -200,11 +200,11 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 throw new ArgumentException($"{funcStr} takes exactly {argsNeed} argument");
         };
 
-        void MakeMathCallExpression(MathCallFunctionHelper.MathCallFunction mathMethod, int argsNumActual)
+        void MakeMathCallExpression(MathFunctionHelper.MathMethodInfo mathMethod, int argsNumActual)
         {
-            CheckArgumentsLengthForFunction(mathMethod.MathMethodInfo.Name, argsNumActual, mathMethod.ArgumentCount);
+            CheckArgumentsLengthForFunction(mathMethod.MethodInfo.Name, argsNumActual, mathMethod.ArgumentCount);
 
-            _result = LinqExpression.Call(mathMethod.MathMethodInfo,
+            _result = LinqExpression.Call(mathMethod.MethodInfo,
                 Enumerable.Range(0, argsNumActual).Select( i => LinqExpression.Convert(args[i], typeof(double)) ));
         }
 
@@ -239,11 +239,11 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(int));
                 var rounding = (_options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
-                _result = LinqExpression.Call(MathCallFunctionHelper.Functions["ROUND"].MathMethodInfo, arg0, arg1, LinqExpression.Constant(rounding));
+                _result = LinqExpression.Call(MathFunctionHelper.Functions["ROUND"].MethodInfo, arg0, arg1, LinqExpression.Constant(rounding));
                 break;
             default:
                 // Regular handling
-                if (MathCallFunctionHelper.Functions.TryGetValue(functionName, out var func))
+                if (MathFunctionHelper.Functions.TryGetValue(functionName, out var func))
                 {
                     MakeMathCallExpression(func, actualNumArgs);
                 }

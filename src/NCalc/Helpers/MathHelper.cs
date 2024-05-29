@@ -1,10 +1,10 @@
 ﻿namespace NCalc.Helpers;
 
-public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool EnableBooleanCalculation)
+public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool EnableBooleanCalculation, bool UseDecimals)
 {
     public static implicit operator MathHelperOptions(CultureInfo cultureInfo)
     {
-        return new(cultureInfo, false);
+        return new(cultureInfo, false, false);
     }
 };
 
@@ -13,20 +13,6 @@ public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool En
 /// </summary>
 public static class MathHelper
 {
-    private static object? ConvertIfString(object? s, CultureInfo cultureInfo)
-    {
-        return s is string or char ? decimal.Parse(s.ToString()!, cultureInfo) : s;
-    }
-
-    private static object? ConvertIfBoolean(object? input)
-    {
-        if (input is bool boolean)
-        {
-            return boolean ? 1 : 0;
-        }
-
-        return input;
-    }
 
     public static object? Add(object? a, object? b)
     {
@@ -35,19 +21,11 @@ public static class MathHelper
 
     public static object? Add(object? a, object? b, MathHelperOptions options)
     {
-        var cultureInfo = options.CultureInfo;
-
         if (a == null || b == null)
             return null;
 
-        a = ConvertIfString(a, cultureInfo);
-        b = ConvertIfString(b, cultureInfo);
-
-        if (options.EnableBooleanCalculation)
-        {
-            a = ConvertIfBoolean(a);
-            b = ConvertIfBoolean(b);
-        }
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
 
         switch (a)
         {
@@ -317,18 +295,10 @@ public static class MathHelper
     {
         if (a == null || b == null)
             return null;
-
-        var cultureInfo = options.CultureInfo;
-
-        a = ConvertIfString(a, cultureInfo);
-        b = ConvertIfString(b, cultureInfo);
-
-        if (options.EnableBooleanCalculation)
-        {
-            a = ConvertIfBoolean(a);
-            b = ConvertIfBoolean(b);
-        }
-
+        
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+        
         switch (a)
         {
             case bool:
@@ -600,16 +570,8 @@ public static class MathHelper
         if (a == null || b == null)
             return null;
 
-        var cultureInfo = options.CultureInfo;
-
-        a = ConvertIfString(a, cultureInfo);
-        b = ConvertIfString(b, cultureInfo);
-
-        if (options.EnableBooleanCalculation)
-        {
-            a = ConvertIfBoolean(a);
-            b = ConvertIfBoolean(b);
-        }
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
 
         switch (a)
         {
@@ -880,17 +842,10 @@ public static class MathHelper
     {
         if (a == null || b == null)
             return null;
+        
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
 
-        var cultureInfo = options.CultureInfo;
-
-        a = ConvertIfString(a, cultureInfo);
-        b = ConvertIfString(b, cultureInfo);
-
-        if (options.EnableBooleanCalculation)
-        {
-            a = ConvertIfBoolean(a);
-            b = ConvertIfBoolean(b);
-        }
 
         switch (a)
         {
@@ -1164,17 +1119,9 @@ public static class MathHelper
     {
         if (a == null || b == null)
             return null;
-
-        var cultureInfo = options.CultureInfo;
-
-        a = ConvertIfString(a, cultureInfo);
-        b = ConvertIfString(b, cultureInfo);
-
-        if (options.EnableBooleanCalculation)
-        {
-            a = ConvertIfBoolean(a);
-            b = ConvertIfBoolean(b);
-        }
+        
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
 
         switch (a)
         {
@@ -1449,16 +1396,8 @@ public static class MathHelper
 
     public static object? Max(object? a, object? b, MathHelperOptions options)
     {
-        var cultureInfo = options.CultureInfo;
-
-        a = ConvertIfString(a, cultureInfo);
-        b = ConvertIfString(b, cultureInfo);
-
-        if (options.EnableBooleanCalculation)
-        {
-            a = ConvertIfBoolean(a);
-            b = ConvertIfBoolean(b);
-        }
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
 
         if (a == null && b == null)
         {
@@ -1475,7 +1414,7 @@ public static class MathHelper
             return a;
         }
 
-        TypeCode typeCode = ConvertToHighestPrecision(ref a, ref b, cultureInfo);
+        TypeCode typeCode = ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
 
         switch (typeCode)
         {
@@ -1514,15 +1453,9 @@ public static class MathHelper
     public static object? Min(object? a, object? b, MathHelperOptions options)
     {
         var cultureInfo = options.CultureInfo;
-
-        a = ConvertIfString(a, cultureInfo);
-        b = ConvertIfString(b, cultureInfo);
         
-        if (options.EnableBooleanCalculation)
-        {
-            a = ConvertIfBoolean(a);
-            b = ConvertIfBoolean(b);
-        }
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
 
         if (a == null && b == null)
         {
@@ -1647,6 +1580,169 @@ public static class MathHelper
             TypeCode.Double => Convert.ToDouble(value, cultureInfo),
             TypeCode.Decimal => Convert.ToDecimal(value, cultureInfo),
             _ => null
+        };
+    }
+
+    
+     public static object Abs(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        
+        if (options.UseDecimals)
+            return Math.Abs(Convert.ToDecimal(a));
+        
+        return Math.Abs(Convert.ToDouble(a));
+    }
+
+    public static object Acos(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        return Math.Acos(Convert.ToDouble(a));
+    }
+
+    public static object Asin(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        return Math.Asin(Convert.ToDouble(a));
+    }
+
+    public static object Atan(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        
+        return Math.Atan(Convert.ToDouble(a));
+    }
+
+    public static object Atan2(object? a, object? b, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+        return Math.Atan2(Convert.ToDouble(a), Convert.ToDouble(b));
+    }
+
+    public static object Ceiling(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+
+        if (options.UseDecimals)
+            return Math.Ceiling(Convert.ToDecimal(a));
+        
+        return Math.Ceiling(Convert.ToDouble(a));
+    }
+
+    public static object Cos(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        return Math.Cos(Convert.ToDouble(a));
+    }
+
+    public static object Exp(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        return Math.Exp(Convert.ToDouble(a));
+    }
+
+    public static object Floor(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+
+        if (options.UseDecimals)
+            return Math.Floor(Convert.ToDecimal(a));
+        
+        return Math.Floor(Convert.ToDouble(a));
+    }
+
+    // ReSharper disable once InconsistentNaming
+    public static object IEEERemainder(object? a, object? b, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+        return Math.IEEERemainder(Convert.ToDouble(a), Convert.ToDouble(b));
+    }
+
+    public static object Ln(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        return Math.Log(Convert.ToDouble(a));
+    }
+
+    public static object Log(object? a, object? b, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+        return Math.Log(Convert.ToDouble(a), Convert.ToDouble(b));
+    }
+
+    public static object Log10(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        return Math.Log10(Convert.ToDouble(a));
+    }
+
+    public static object Pow(object? a, object? b, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+        return Math.Pow(Convert.ToDouble(a), Convert.ToDouble(b));
+    }
+
+    public static object Round(object? a, object? b, MidpointRounding rounding, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+
+        if (options.UseDecimals)
+            return Math.Round(Convert.ToDecimal(a), Convert.ToInt16(b), rounding);
+        
+        return Math.Round(Convert.ToDouble(a), Convert.ToInt16(b), rounding);
+    }
+
+    public static object Sign(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+
+        if (options.UseDecimals)
+            return Math.Sign(Convert.ToDecimal(a));
+        
+        return Math.Sign(Convert.ToDouble(a));
+    }
+
+    public static object Sin(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        return Math.Sin(Convert.ToDouble(a));
+    }
+
+    public static object Sqrt(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        return Math.Sqrt(Convert.ToDouble(a));
+    }
+
+    public static object Tan(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+        
+        return Math.Tan(Convert.ToDouble(a));
+    }
+
+    public static object Truncate(object? a, MathHelperOptions options)
+    {
+        a = ConvertIfNeeded(a, options);
+
+        if (options.UseDecimals)
+            return Math.Truncate(Convert.ToDecimal(a));
+        
+        return Math.Truncate(Convert.ToDouble(a));
+    }
+    
+    private static object? ConvertIfNeeded(object? value, MathHelperOptions options)
+    {
+        return value switch
+        {
+            string or char => double.Parse(value.ToString()!, options.CultureInfo),
+            bool boolean => boolean ? 1 : 0,
+            _ => value
         };
     }
 }

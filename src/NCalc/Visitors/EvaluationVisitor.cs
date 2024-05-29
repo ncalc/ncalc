@@ -9,19 +9,19 @@ public class EvaluationVisitor : IEvaluationVisitor
 {
     public event EvaluateFunctionHandler? EvaluateFunction;
     public event EvaluateParameterHandler? EvaluateParameter;
-    
+
     public ExpressionOptions Options
     {
         get => Context.Options;
         set => Context.Options = value;
     }
-    
+
     public CultureInfo CultureInfo
     {
         get => Context.CultureInfo;
         set => Context.CultureInfo = value;
     }
-    
+
     public Dictionary<string, object?> Parameters { get; set; } = new();
 
     public ExpressionContext Context { get; set; } = new();
@@ -29,8 +29,8 @@ public class EvaluationVisitor : IEvaluationVisitor
     public object? Result { get; set; }
 
     private MathHelperOptions MathHelperOptions => new(Context.CultureInfo,
-        Context.Options.HasOption(ExpressionOptions.AllowBooleanCalculation));
-    
+        Context.Options.HasOption(ExpressionOptions.AllowBooleanCalculation), Context.Options.HasOption(ExpressionOptions.DecimalAsDefault));
+
     public EvaluationVisitor()
     {
     }
@@ -39,7 +39,7 @@ public class EvaluationVisitor : IEvaluationVisitor
     {
         Context = new(options, cultureInfo);
     }
-    
+
     private object? Evaluate(LogicalExpression expression)
     {
         expression.Accept(this);
@@ -66,7 +66,7 @@ public class EvaluationVisitor : IEvaluationVisitor
             expression.RightExpression.Accept(this);
         }
     }
-    
+
     public void Visit(BinaryExpression expression)
     {
         // simulate Lazy<Func<>> behavior for late evaluation
@@ -176,7 +176,7 @@ public class EvaluationVisitor : IEvaluationVisitor
         {
             if (leftValue != null)
                 return leftValue;
-            
+
             expression.LeftExpression.Accept(this);
             leftValue = Result;
 
@@ -185,9 +185,9 @@ public class EvaluationVisitor : IEvaluationVisitor
 
         object? Right()
         {
-            if (rightValue != null) 
+            if (rightValue != null)
                 return rightValue;
-            
+
             expression.RightExpression.Accept(this);
             rightValue = Result;
 
@@ -258,6 +258,8 @@ public class EvaluationVisitor : IEvaluationVisitor
         ExecuteBuiltInFunction(function);
     }
 
+
+
     private void ExecuteBuiltInFunction(Function function)
     {
         var functionName = function.Identifier.Name.ToUpperInvariant();
@@ -268,112 +270,102 @@ public class EvaluationVisitor : IEvaluationVisitor
                 CheckCase("Abs", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Abs() takes exactly 1 argument");
-                var useDouble = Options.HasOption(ExpressionOptions.UseDoubleForAbsFunction);
-                if (useDouble)
-                {
-                    Result = Math.Abs(Convert.ToDouble(
-                        Evaluate(function.Expressions[0]), CultureInfo));
-                }
-                else
-                {
-                    Result = Math.Abs(Convert.ToDecimal(
-                        Evaluate(function.Expressions[0]), CultureInfo));
-                }
+                Result = MathHelper.Abs(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "ACOS":
                 CheckCase("Acos", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Acos() takes exactly 1 argument");
-                Result = Math.Acos(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Acos(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "ASIN":
                 CheckCase("Asin", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Asin() takes exactly 1 argument");
-                Result = Math.Asin(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Asin(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "ATAN":
                 CheckCase("Atan", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Atan() takes exactly 1 argument");
-                Result = Math.Atan(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Atan(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "ATAN2":
                 CheckCase("Atan2", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
-                    throw new NCalcEvaluationException("Atan2() takes exactly 2 argument");
-                Result = Math.Atan2(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo),
-                    Convert.ToDouble(Evaluate(function.Expressions[1]), CultureInfo));
+                    throw new NCalcEvaluationException("Atan2() takes exactly 2 arguments");
+                Result = MathHelper.Atan2(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                    MathHelperOptions);
                 break;
 
             case "CEILING":
                 CheckCase("Ceiling", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Ceiling() takes exactly 1 argument");
-                Result = Math.Ceiling(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Ceiling(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "COS":
                 CheckCase("Cos", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Cos() takes exactly 1 argument");
-                Result = Math.Cos(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Cos(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "EXP":
                 CheckCase("Exp", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Exp() takes exactly 1 argument");
-                Result = Math.Exp(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Exp(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "FLOOR":
                 CheckCase("Floor", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Floor() takes exactly 1 argument");
-                Result = Math.Floor(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Floor(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "IEEEREMAINDER":
                 CheckCase("IEEERemainder", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("IEEERemainder() takes exactly 2 arguments");
-                Result = Math.IEEERemainder(Convert.ToDouble(Evaluate(function.Expressions[0])),
-                    Convert.ToDouble(Evaluate(function.Expressions[1]), CultureInfo));
+                Result = MathHelper.IEEERemainder(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                    MathHelperOptions);
                 break;
 
             case "LN":
                 CheckCase("Ln", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Ln() takes exactly 1 argument");
-                Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Ln(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "LOG":
                 CheckCase("Log", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("Log() takes exactly 2 arguments");
-                Result = Math.Log(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo),
-                    Convert.ToDouble(Evaluate(function.Expressions[1]), CultureInfo));
+                Result = MathHelper.Log(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                    MathHelperOptions);
                 break;
 
             case "LOG10":
                 CheckCase("Log10", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Log10() takes exactly 1 argument");
-                Result = Math.Log10(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Log10(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "POW":
                 CheckCase("Pow", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("Pow() takes exactly 2 arguments");
-                Result = Math.Pow(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo),
-                    Convert.ToDouble(Evaluate(function.Expressions[1]), CultureInfo));
+                Result = MathHelper.Pow(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                    MathHelperOptions);
                 break;
 
             case "ROUND":
@@ -381,45 +373,47 @@ public class EvaluationVisitor : IEvaluationVisitor
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("Round() takes exactly 2 arguments");
 
-                var rounding = (Options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven;
+                var rounding = (Options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero
+                    ? MidpointRounding.AwayFromZero
+                    : MidpointRounding.ToEven;
 
-                Result = Math.Round(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo), Convert.ToInt16(Evaluate(function.Expressions[1]), CultureInfo), rounding);
-
+                Result = MathHelper.Round(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                    rounding, MathHelperOptions);
                 break;
 
             case "SIGN":
                 CheckCase("Sign", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Sign() takes exactly 1 argument");
-                Result = Math.Sign(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Sign(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "SIN":
                 CheckCase("Sin", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Sin() takes exactly 1 argument");
-                Result = Math.Sin(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Sin(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "SQRT":
                 CheckCase("Sqrt", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Sqrt() takes exactly 1 argument");
-                Result = Math.Sqrt(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Sqrt(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "TAN":
                 CheckCase("Tan", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Tan() takes exactly 1 argument");
-                Result = Math.Tan(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Tan(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "TRUNCATE":
                 CheckCase("Truncate", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Truncate() takes exactly 1 argument");
-                Result = Math.Truncate(Convert.ToDouble(Evaluate(function.Expressions[0]), CultureInfo));
+                Result = MathHelper.Truncate(Evaluate(function.Expressions[0]), MathHelperOptions);
                 break;
 
             case "MAX":
@@ -443,7 +437,8 @@ public class EvaluationVisitor : IEvaluationVisitor
             case "IFS":
                 CheckCase("ifs", function.Identifier.Name);
                 if (function.Expressions.Length < 3 || function.Expressions.Length % 2 != 1)
-                    throw new NCalcEvaluationException("ifs() takes at least 3 arguments, or an odd number of arguments");
+                    throw new NCalcEvaluationException(
+                        "ifs() takes at least 3 arguments, or an odd number of arguments");
                 foreach (var eval in function.Expressions.Where((_, i) => i % 2 == 0))
                 {
                     var index = Array.IndexOf(function.Expressions, eval);
@@ -487,15 +482,17 @@ public class EvaluationVisitor : IEvaluationVisitor
                 break;
 
             default:
-                throw new NCalcFunctionNotFoundException($"Function {function.Identifier.Name} not found", function.Identifier.Name);
+                throw new NCalcFunctionNotFoundException($"Function {function.Identifier.Name} not found",
+                    function.Identifier.Name);
         }
     }
 
     public int CompareUsingMostPreciseType(object? a, object? b)
     {
         return TypeHelper.CompareUsingMostPreciseType(a,
-            b, new(CultureInfo, 
-                Options.HasOption(ExpressionOptions.CaseInsensitiveStringComparer), Options.HasOption(ExpressionOptions.OrdinalStringComparer)));
+            b, new(CultureInfo,
+                Options.HasOption(ExpressionOptions.CaseInsensitiveStringComparer),
+                Options.HasOption(ExpressionOptions.OrdinalStringComparer)));
     }
 
     private void CheckCase(string function, string called)
@@ -505,7 +502,7 @@ public class EvaluationVisitor : IEvaluationVisitor
         if (!ignoreCase && function != called)
             throw new NCalcFunctionNotFoundException($"Function {called} not found. Try {function} instead.", called);
     }
-    
+
     public void Visit(Identifier identifier)
     {
         if (Parameters.TryGetValue(identifier.Name, out var parameterValue))
@@ -516,7 +513,7 @@ public class EvaluationVisitor : IEvaluationVisitor
                 // Overloads parameters 
                 foreach (var p in Parameters)
                 {
-                    if (expression.Parameters != null) 
+                    if (expression.Parameters != null)
                         expression.Parameters[p.Key] = p.Value;
                 }
 
@@ -542,7 +539,7 @@ public class EvaluationVisitor : IEvaluationVisitor
             Result = args.Result;
         }
     }
-    
+
     protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
         EvaluateFunction?.Invoke(name, args);
