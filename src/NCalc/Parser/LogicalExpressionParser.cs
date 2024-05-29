@@ -94,7 +94,7 @@ public static class LogicalExpressionParser
                     else if (res < double.MinValue)
                         result = double.MinValue;
                     else
-                        result = (double)BigDecimal.Multiply(left, right);
+                        result = (double)res;
                 }
 
                 if (ctx is LogicalExpressionParserContext { UseDecimalsAsDefault: true })
