@@ -1,5 +1,4 @@
 using System.Globalization;
-using NCalc.Exceptions;
 using Assert = Xunit.Assert;
 
 namespace NCalc.Tests;
@@ -382,7 +381,7 @@ public class MathsTests
 #if NET8_0
         Assert.Equal(Math.Floor(double.MaxValue), expr.Evaluate());
 #else
-        Assert.Throws<NCalcParserException>(() => expr.Evaluate());
+        Assert.Equal(double.PositiveInfinity, expr.Evaluate());
 #endif
     }
 

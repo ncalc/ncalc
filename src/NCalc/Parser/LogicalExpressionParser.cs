@@ -48,8 +48,8 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var exponentNumberPart = Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
-
-
+        
+        
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
@@ -89,10 +89,12 @@ public static class LogicalExpressionParser
 
                     var res = BigDecimal.Multiply(left, right);
 
-                    if (res > double.MaxValue || res < double.MinValue)
-                        throw new OverflowException();
-
-                    result = (double)res;
+                    if (res > double.MaxValue)
+                        result = double.PositiveInfinity;
+                    else if (res < double.MinValue)
+                        result = double.NegativeInfinity;
+                    else
+                        result = (double)res;
                 }
 
                 if (ctx is LogicalExpressionParserContext { UseDecimalsAsDefault: true })
@@ -214,10 +216,10 @@ public static class LogicalExpressionParser
             .SkipAnd(OneOf(dateAndTime, date, time))
             .AndSkip(Literals.Char('#'));
 
-
-        var decimalNumber = Terms.Decimal().Then<LogicalExpression>(d => new ValueExpression(d));
-        var doubleNumber = Terms.Double().Then<LogicalExpression>(d => new ValueExpression(d));
-
+        
+        var decimalNumber = Terms.Decimal().Then<LogicalExpression>(d=> new ValueExpression(d));
+        var doubleNumber = Terms.Double().Then<LogicalExpression>(d=> new ValueExpression(d));
+        
         // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
         var primary = OneOf(
             number,
