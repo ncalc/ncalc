@@ -21,7 +21,7 @@ public class DecimalsTests
         var expression = new Expression("0.3 - 0.2 - 0.1", ExpressionOptions.DecimalAsDefault);
 
         var result = expression.Evaluate();
-        Assert.Equal(0m, result);
+        Assert.Equal(0M, result);
     }
     
     [Fact]
@@ -30,7 +30,7 @@ public class DecimalsTests
         var e = new Expression("1.8 + Abs([var1])");
         e.Parameters["var1"] = 9.2;
 
-        Assert.Equal(11, e.Evaluate());
+        Assert.Equal(11M, e.Evaluate());
     }
 
     [Fact]
