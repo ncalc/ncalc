@@ -33,6 +33,6 @@ public class StringTests
     [Fact]
     public void ShouldHandleStringAddition()
     {
-        Assert.Equal(3m, new Expression("1 + '2'").Evaluate());
+        Assert.Equal(3m, new Expression("1 + '2'", ExpressionOptions.DecimalAsDefault).Evaluate());
     }
 }

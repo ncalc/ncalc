@@ -10,7 +10,7 @@ public class MathsTests
     {
         var data = new TheoryData<string, object, double?>
         {
-            { "Abs(-1)", 1M, null },
+            { "Abs(-1)", 1d, null },
             { "Acos(1)", 0d, null },
             { "Asin(0)", 0d, null },
             { "Atan(0)", 0d, null },

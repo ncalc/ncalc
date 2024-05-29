@@ -1740,8 +1740,9 @@ public static class MathHelper
     {
         return value switch
         {
+            string or char when options.UseDecimals => decimal.Parse(value.ToString()!, options.CultureInfo),
             string or char => double.Parse(value.ToString()!, options.CultureInfo),
-            bool boolean => boolean ? 1 : 0,
+            bool boolean when options.EnableBooleanCalculation => boolean ? 1 : 0,
             _ => value
         };
     }
