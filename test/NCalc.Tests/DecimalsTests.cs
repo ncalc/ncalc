@@ -20,8 +20,8 @@ public class DecimalsTests
     {
         var expression = new Expression("0.3 - 0.2 - 0.1", ExpressionOptions.DecimalAsDefault);
 
-        var result = (decimal)expression.Evaluate()!;
-        Assert.Equal("0.0", result.ToString(CultureInfo.InvariantCulture)); // Fails without decimals due to FP rounding
+        var result = expression.Evaluate();
+        Assert.Equal(0M, result);
     }
     
     [Fact]
