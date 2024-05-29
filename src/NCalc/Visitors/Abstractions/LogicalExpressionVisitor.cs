@@ -1,9 +1,9 @@
-
-using NCalc.Domain;
+﻿using NCalc.Domain;
 
 namespace NCalc.Visitors;
 
-public abstract class LogicalExpressionVisitor
+[Obsolete("Please use ILogicalExpressionVisitor.")]
+public abstract class LogicalExpressionVisitor : ILogicalExpressionVisitor
 {
     public abstract void Visit(LogicalExpression expression);
     public abstract void Visit(TernaryExpression expression);
@@ -11,5 +11,5 @@ public abstract class LogicalExpressionVisitor
     public abstract void Visit(UnaryExpression expression);
     public abstract void Visit(ValueExpression expression);
     public abstract void Visit(Function function);
-    public abstract void Visit(Identifier function);
+    public abstract void Visit(Identifier identifier);
 }

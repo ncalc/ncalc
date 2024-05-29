@@ -10,7 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		appveyor.yml = appveyor.yml
 		CHANGELOG.md = CHANGELOG.md
 		Directory.Build.props = Directory.Build.props
-		.github\workflows\docs.yml = .github\workflows\docs.yml
 		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 		.github\workflows\publish-nuget.yml = .github\workflows\publish-nuget.yml
 		README.md = README.md
@@ -24,8 +23,19 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalc.Docs", "docs\NCalc.Docs.csproj", "{FC5C9A17-744F-4F97-B0FC-330B0514B395}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{E423BF0C-4F9F-4C8D-B432-52FD873E5929}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\docs.yml = .github\workflows\docs.yml
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalc.Play", "test\NCalc.Play\NCalc.Play.csproj", "{C36CFACB-111E-45F6-94A8-ED9A084C6410}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.DependencyInjection", "src\NCalc.DependencyInjection\NCalc.DependencyInjection.csproj", "{1201E3C1-1973-49DF-8D67-7763DD6DA570}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{EA9E75C0-E2D9-40FC-8642-407A327561D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.MemoryCache", "src\Plugins\NCalc.MemoryCache\NCalc.MemoryCache.csproj", "{8C8E6031-247B-4B56-B2DF-6DB9023CDCF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Antlr", "src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj", "{78E2D7EB-6FC3-4668-9F23-95967A301CC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,12 +68,32 @@ Global
 		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.SignedRelease|Any CPU.ActiveCfg = SignedRelease|Any CPU
 		{C36CFACB-111E-45F6-94A8-ED9A084C6410}.SignedRelease|Any CPU.Build.0 = SignedRelease|Any CPU
+		{1201E3C1-1973-49DF-8D67-7763DD6DA570}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1201E3C1-1973-49DF-8D67-7763DD6DA570}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1201E3C1-1973-49DF-8D67-7763DD6DA570}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1201E3C1-1973-49DF-8D67-7763DD6DA570}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1201E3C1-1973-49DF-8D67-7763DD6DA570}.SignedRelease|Any CPU.ActiveCfg = Debug|Any CPU
+		{1201E3C1-1973-49DF-8D67-7763DD6DA570}.SignedRelease|Any CPU.Build.0 = Debug|Any CPU
+		{8C8E6031-247B-4B56-B2DF-6DB9023CDCF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C8E6031-247B-4B56-B2DF-6DB9023CDCF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C8E6031-247B-4B56-B2DF-6DB9023CDCF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C8E6031-247B-4B56-B2DF-6DB9023CDCF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C8E6031-247B-4B56-B2DF-6DB9023CDCF2}.SignedRelease|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C8E6031-247B-4B56-B2DF-6DB9023CDCF2}.SignedRelease|Any CPU.Build.0 = Debug|Any CPU
+		{78E2D7EB-6FC3-4668-9F23-95967A301CC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78E2D7EB-6FC3-4668-9F23-95967A301CC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78E2D7EB-6FC3-4668-9F23-95967A301CC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78E2D7EB-6FC3-4668-9F23-95967A301CC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78E2D7EB-6FC3-4668-9F23-95967A301CC3}.SignedRelease|Any CPU.ActiveCfg = Debug|Any CPU
+		{78E2D7EB-6FC3-4668-9F23-95967A301CC3}.SignedRelease|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FC5C9A17-744F-4F97-B0FC-330B0514B395} = {E423BF0C-4F9F-4C8D-B432-52FD873E5929}
+		{8C8E6031-247B-4B56-B2DF-6DB9023CDCF2} = {EA9E75C0-E2D9-40FC-8642-407A327561D1}
+		{78E2D7EB-6FC3-4668-9F23-95967A301CC3} = {EA9E75C0-E2D9-40FC-8642-407A327561D1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27068E02-1682-44D7-819A-74759A261167}

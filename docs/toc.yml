@@ -1,6 +1,6 @@
 - name: Articles
   href: articles/
-  homepage: articles/Index.md
+  homepage: articles/index.md
 - name: API Reference
   href: api/
   homepage: api/NCalc.html

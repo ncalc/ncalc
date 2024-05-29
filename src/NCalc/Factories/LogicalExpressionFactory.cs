@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Parser;
@@ -6,84 +5,42 @@ using NCalc.Parser;
 namespace NCalc.Factories;
 
 /// <summary>
-/// Class responsible to create LogicalExpression objects.
+/// Class responsible to create <see cref="LogicalExpression"/> objects. Parlot is used for parsing strings.
 /// </summary>
-public static class LogicalExpressionFactory
+public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
 {
-    private static bool _enableCache = true;
-    private static readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> CompiledExpressions = new();
+    private static LogicalExpressionFactory? _instance;
     
-    internal static bool EnableCache
+    public static LogicalExpressionFactory GetInstance()
     {
-        get => _enableCache;
-        set
-        {
-            _enableCache = value;
-
-            if (!EnableCache)
-            {
-                // Clears cache
-                CompiledExpressions.Clear();
-            }
-        }
+        return _instance ??= new LogicalExpressionFactory();
     }
 
-    /// <summary>
-    /// Removed unused entries from cached compiled expression
-    /// </summary>
-    private static void ClearCache()
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionContext? expressionContext)
     {
-        foreach (var kvp in CompiledExpressions)
-        {
-            if (kvp.Value.TryGetTarget(out _)) 
-                continue;
-
-            if (CompiledExpressions.TryRemove(kvp.Key, out _))
-                Trace.TraceInformation("Cache entry released: " + kvp.Key);
-        }
+        return Create(expression, expressionContext);
     }
 
-    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, ExpressionContext? expressionContext = null)
     {
-        LogicalExpression logicalExpression;
-
-        if (_enableCache && !options.HasOption(ExpressionOptions.NoCache))
-        {
-            if (CompiledExpressions.TryGetValue(expression, out var wr))
-            {
-                Trace.TraceInformation("Expression retrieved from cache: " + expression);
-
-                if (wr.TryGetTarget(out var target))
-                    return target;
-            }
-        }
-        
+        LogicalExpression? logicalExpression;
         try
         {
-            var context = new LogicalExpressionParserContext(expression)
+            var options = expressionContext?.Options ?? ExpressionOptions.None;
+            var parserContext = new LogicalExpressionParserContext(expression)
             {
                 UseDecimalsAsDefault = options.HasOption(ExpressionOptions.DecimalAsDefault)
             };
-            logicalExpression = LogicalExpressionParser.Parse(context);
-
+            logicalExpression = LogicalExpressionParser.Parse(parserContext);
+            
             if (logicalExpression is null)
                 throw new ArgumentNullException(nameof(logicalExpression));
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             throw new NCalcParserException("Error parsing the expression.", exception);
         }
-
-        if (!_enableCache || options.HasOption(ExpressionOptions.NoCache))
-            return logicalExpression;
-        
-        CompiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
-            
-        ClearCache();
-
-        Trace.TraceInformation("Expression added to cache: " + expression);
         
         return logicalExpression;
     }
-
 }

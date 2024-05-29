@@ -1,3 +1,5 @@
+# Operators
+
 Expressions can be combined using operators. Each operator as a precedence priority. Here is the list of those expression's priority.
 1. primary
 2. unary
@@ -60,6 +62,15 @@ The **and** operator has more priority than the **or**, thus in the example abov
 ```
   not true
 ```
+
+## Exponential
+
+* **
+
+```
+  2 ** 2
+```
+
 
 ## Primary
 

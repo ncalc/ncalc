@@ -1,48 +1,57 @@
 namespace NCalc;
 
+/// <summary>
+/// Options used for both parsing and evaluation of an expression.
+/// </summary>
 [Flags]
 public enum ExpressionOptions
 {
-    // Summary:
-    //     Specifies that no options are set.
-    None = 1,
+    /// <summary>
+    /// Specifies that no options are set.
+    /// </summary>
+    None = 1 << 0,
 
-    //
-    // Summary:
-    //     Specifies case-insensitive matching.
-    IgnoreCase = 2,
+    /// <summary>
+    /// Specifies case-insensitive matching.
+    /// </summary>
+    IgnoreCase = 1 << 1,
 
-    //
-    // Summary:
-    //     No-cache mode. Ingores any pre-compiled expression in the cache.
-    NoCache = 4,
+    /// <summary>
+    /// No-cache mode. Ignores any pre-compiled expression in the cache.
+    /// </summary>
+    NoCache = 1 << 2,
 
-    //
-    // Summary:
-    //     Treats parameters as arrays and result a set of results.
-    IterateParameters = 8,
+    /// <summary>
+    /// Treats parameters as arrays and returns a set of results.
+    /// </summary>
+    IterateParameters = 1 << 3,
 
-    //
-    // Summary:
-    //     When using Round(), if a number is halfway between two others, it is rounded toward the nearest number that is away from zero. 
-    RoundAwayFromZero = 16,
+    /// <summary>
+    /// When using Round(), if a number is halfway between two others, it is rounded toward the nearest number that is away from zero.
+    /// </summary>
+    RoundAwayFromZero = 1 << 4,
 
-    //
-    // Summary:
-    //     Specifies the use of CaseInsensitiveComparer for comparasions.
-    CaseInsensitiveComparer = 32,
+    /// <summary>
+    /// Specifies the use of CaseInsensitiveComparer for comparisons.
+    /// </summary>
+    CaseInsensitiveComparer = 1 << 5,
 
-    //
-    // Summary:
-    //     Uses decimals instead of doubles as default floating point data type
-    DecimalAsDefault = 64
+    /// <summary>
+    /// Uses decimals instead of doubles as default floating point data type.
+    /// </summary>
+    DecimalAsDefault = 1 << 6,
+
+    /// <summary>
+    /// Defines a "null" parameter and allows comparison of values to null.
+    /// </summary>
+    AllowNullParameter = 1 << 7
 }
-
-// Summary:
-//     Provides enumerated values to use to set evaluation options.
-//
+    
 public static class ExpressionOptionsExtensions
 {
+    /// <summary>
+    /// Checks if the ExpressionOptions enum have an option selected.
+    /// </summary>
     public static bool HasOption(this ExpressionOptions options, ExpressionOptions option)
     {
         return (options & option) == option;

@@ -1,14 +1,26 @@
-- name: Home  
-  href: Index.md
-- name: Description
-  href: Description.md
+- name: Intro  
+  href: index.md
 - name: Functions
-  href: Functions.md
+  href: functions.md
 - name: Operators
-  href: Operators.md
+  href: operators.md
 - name: Values
-  href: Values.md
+  href: values.md
 - name: Parameters
-  href: Parameters.md
+  href: parameters.md
+- name: Handling Errors
+  href: handling_errors.md
+- name: Case Sensitivity
+  href: case_sensitivity.md
+- name: Caching
+  href: caching.md
+- name: Dependency Injection
+  href: dependency_injection.md
+- name: Plugins
+  items:
+    - name: ANTLR
+      href: plugins/antlr.md
+    - name: Memory Cache
+      href: plugins/memory_cache.md
 - name: Publishing a New Release
-  href: PublishingANewRelease.md
+  href: new_release.md
