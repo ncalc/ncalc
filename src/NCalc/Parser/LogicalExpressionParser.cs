@@ -1,3 +1,4 @@
+using ExtendedNumerics;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using Parlot;
@@ -83,7 +84,17 @@ public static class LogicalExpressionParser
                 // exponent part?
                 if (exponentPart != null)
                 {
-                    result *= Math.Pow(10, exponentPart.Value);
+                    var left = BigDecimal.Parse(result);
+                    var right = BigDecimal.Pow(10, exponentPart.Value);
+
+                    var res = BigDecimal.Multiply(left, right);
+
+                    if (res > double.MaxValue)
+                        result = double.MaxValue;
+                    else if (res < double.MinValue)
+                        result = double.MinValue;
+                    else
+                        result = (double)BigDecimal.Multiply(left, right);
                 }
 
                 if (ctx is LogicalExpressionParserContext { UseDecimalsAsDefault: true })
