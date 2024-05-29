@@ -64,7 +64,9 @@ This package contains the unsigned assembly 'NCalc'. For the stronly signed asse
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Parlot" Version="0.0.27" />
+
+		<PackageReference Include="Parlot" Version="0.0.28" />
+
 		<PackageReference Include="PolySharp" Version="1.14.1">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
