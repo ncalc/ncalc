@@ -385,4 +385,13 @@ public class MathsTests
         Assert.Equal(double.PositiveInfinity, res);
 #endif
     }
+
+    [Fact]
+    public void Should_Not_Change_Double_Precision()
+    {
+        var expr = new Expression($"Floor(12e+100)");
+        var res = expr.Evaluate();
+
+        Assert.Equal(Math.Floor(12e+100), res);
+    }
 }
