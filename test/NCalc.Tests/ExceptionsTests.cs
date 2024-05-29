@@ -1,4 +1,3 @@
-using System.Globalization;
 using NCalc.Exceptions;
 using NCalc.Factories;
 
