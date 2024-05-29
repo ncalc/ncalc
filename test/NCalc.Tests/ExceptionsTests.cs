@@ -1,3 +1,4 @@
+using System.Globalization;
 using NCalc.Exceptions;
 using NCalc.Factories;
 
@@ -111,5 +112,12 @@ public class ExceptionsTests
         var expression = new Expression("{Name} == 'Spinella'");
         var exception = Assert.Throws<NCalcParameterNotDefinedException>(() => expression.Evaluate());
         Assert.Equal("Name",exception.ParameterName);
+    }
+
+    [Fact]
+    public void Should_Handle_Overflow()
+    {
+        var expression = new Expression($"{double.MaxValue.ToString(CultureInfo.InvariantCulture) + 1}");
+        Assert.Throws<NCalcParserException>(() => expression.Evaluate());
     }
 }

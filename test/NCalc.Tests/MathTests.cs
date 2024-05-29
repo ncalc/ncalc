@@ -1,4 +1,5 @@
 using System.Globalization;
+using NCalc.Exceptions;
 using Assert = Xunit.Assert;
 
 namespace NCalc.Tests;
@@ -377,9 +378,12 @@ public class MathsTests
     public void Should_Evaluate_Floor_Of_Double_Max_Value()
     {
         var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
-        var res = expr.Evaluate();
 
-        Assert.Equal(Math.Floor(double.MaxValue), res);
+#if NET8_0
+        Assert.Equal(Math.Floor(double.MaxValue), expr.Evaluate());
+#else
+        Assert.Throws<NCalcParserException>(() => expr.Evaluate());
+#endif
     }
 
     [Fact]
