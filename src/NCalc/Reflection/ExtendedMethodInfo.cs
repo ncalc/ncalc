@@ -5,7 +5,7 @@ using LinqExpression = System.Linq.Expressions.Expression;
 
 namespace NCalc.Reflection;
 
-internal class ExtendedMethodInfo
+internal sealed class ExtendedMethodInfo
 {
     public MethodInfo BaseMethodInfo { get; init; }
     public LinqExpression[] PreparedArguments { get; init; }
