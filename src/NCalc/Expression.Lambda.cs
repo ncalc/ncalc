@@ -22,11 +22,11 @@ public partial class Expression
         if (typeof(TContext) != typeof(Void))
         {
             parameter = LinqExpression.Parameter(typeof(TContext), "ctx");
-            visitor = new LambdaExpressionVistor(parameter, Options);
+            visitor = new(parameter, Options);
         }
         else
         {
-            visitor = new LambdaExpressionVistor(Parameters, Options);
+            visitor = new(Parameters, Options);
         }
 
         LogicalExpression.Accept(visitor);
@@ -37,7 +37,7 @@ public partial class Expression
             body = LinqExpression.Convert(body, typeof(TResult));
         }
 
-        return new LinqExpressionWithParameter { Expression = body, Parameter = parameter };
+        return new() { Expression = body, Parameter = parameter };
     }
 
     protected virtual LinqExpression ToLinqExpression<TResult>()
