@@ -36,8 +36,13 @@ public enum ExpressionOptions
     /// </summary>
     [Obsolete("Please use CaseInsensitiveStringComparer")]
     CaseInsensitiveComparer = 1 << 5,
-
+    
+    /// <summary>
+    /// Specifies the use of CaseInsensitiveComparer for comparisons.
+    /// </summary>
+#pragma warning disable CA1069
     CaseInsensitiveStringComparer = 1 << 5,
+#pragma warning restore CA1069
     
     /// <summary>
     /// Uses decimals instead of doubles as default floating point data type.
