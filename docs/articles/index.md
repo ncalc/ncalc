@@ -16,6 +16,7 @@ For additional information on the technique we used to create this framework ple
 - [Handling Errors](handling_errors.md):  How to handle errors.
 - [Case Sensitivity](case_sensitivity.md): Options in how to handle case sensitivity.
 - [Caching](caching.md): How caching works.
+- [Improve performance](lambda_compilation.md): How to use compilation of expressions to CLR lambdas
 - [Dependency Injection](dependency_injection.md): Bring expressions to the next level with dependency injection.
 
 ## <xref:NCalc.Expression> class

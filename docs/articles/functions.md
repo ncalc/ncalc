@@ -4,7 +4,7 @@ The framework includes a set of already implemented functions.
 
 | Name		         | Description	                                                                                                                                                                                                     | Usage	               | Result |
 |----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|--------|
-| Abs		          | Returns the absolute value of a specified number.	                                                                                                                                                               | Abs(-1)	             | 1M     |
+| Abs		          | Returns the absolute value of a specified number.	                                                                                                                                                               | Abs(-1)	             | 1d     |
 | Acos		         | Returns the angle whose cosine is the specified number.	                                                                                                                                                         | Acos(1)	             | 0d     |
 | Asin		         | Returns the angle whose sine is the specified number.	                                                                                                                                                           | Asin(0)	             | 0d     |
 | Atan		         | Returns the angle whose tangent is the specified number.	                                                                                                                                                        | Atan(0)	             | 0d     |
@@ -34,3 +34,5 @@ It also includes other general purpose ones.
 | ifs    | Returns a value based on evaluating a number of conditions, returning a default if none are true. | ifs(foo > 50, "bar", foo > 75, "baz", "quux")     | if foo is between 50 and 75 "bar", foo greater than 75 "baz", otherwise "quux" |  
 
 You can use comma (,) or semicolon (;) for argument separator.
+
+If `ExpressionOptions.DecimalAsDefault` is used all function expects the `decimal` arguments.
