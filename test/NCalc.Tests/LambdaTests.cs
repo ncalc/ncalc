@@ -463,7 +463,7 @@ public class LambdaTests
 
                 currentContext.Func = expressionString;
 
-                var expression = new Expression(expressionString, ExpressionOptions.DecimalAsDefault | ExpressionOptions.IgnoreCase, CultureInfo.InvariantCulture);
+                var expression = new Expression(expressionString, ExpressionOptions.IgnoreCase, CultureInfo.InvariantCulture);
                 var lambda = expression.ToLambda<ContextAndResult, double>();
 
                 for (var i = 0; i < testValues.Length; ++i)
@@ -530,7 +530,7 @@ public class LambdaTests
                         }
                         currentContext.Func = expressionString;
 
-                        var expression = new Expression(expressionString, ExpressionOptions.DecimalAsDefault | ExpressionOptions.IgnoreCase);
+                        var expression = new Expression(expressionString, ExpressionOptions.IgnoreCase);
                         var lambda = expression.ToLambda<double>();
 
                         currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate());
