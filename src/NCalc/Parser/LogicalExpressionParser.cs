@@ -48,8 +48,8 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var exponentNumberPart = Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
-        
-        
+
+
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
@@ -216,10 +216,10 @@ public static class LogicalExpressionParser
             .SkipAnd(OneOf(dateAndTime, date, time))
             .AndSkip(Literals.Char('#'));
 
-        
-        var decimalNumber = Terms.Decimal().Then<LogicalExpression>(d=> new ValueExpression(d));
-        var doubleNumber = Terms.Double().Then<LogicalExpression>(d=> new ValueExpression(d));
-        
+
+        var decimalNumber = Terms.Decimal(NumberOptions.AllowSign).Then<LogicalExpression>(d => new ValueExpression(d));
+        var doubleNumber = Terms.Double(NumberOptions.AllowSign).Then<LogicalExpression>(d => new ValueExpression(d));
+
         // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
         var primary = OneOf(
             number,
@@ -263,26 +263,26 @@ public static class LogicalExpressionParser
         // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
         var unary = exponential.Unary(
-            (not, value => new UnaryExpression(UnaryExpressionType.Not,value)),
-            (negate, value => new UnaryExpression(UnaryExpressionType.Not,value)),
-            (minus, value => new UnaryExpression(UnaryExpressionType.Negate,value)),
-            (bitwiseNot, value => new UnaryExpression(UnaryExpressionType.BitwiseNot,value))
+            (not, value => new UnaryExpression(UnaryExpressionType.Not, value)),
+            (negate, value => new UnaryExpression(UnaryExpressionType.Not, value)),
+            (minus, value => new UnaryExpression(UnaryExpressionType.Negate, value)),
+            (bitwiseNot, value => new UnaryExpression(UnaryExpressionType.BitwiseNot, value))
         );
-        
+
         // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
 
         var multiplicative = unary.LeftAssociative(
-            (divided, static (a, b) => new BinaryExpression(BinaryExpressionType.Div,a, b)),
-            (times, static (a, b) => new BinaryExpression(BinaryExpressionType.Times,a, b)),
-            (modulo, static (a, b) => new BinaryExpression(BinaryExpressionType.Modulo,a, b))
+            (divided, static (a, b) => new BinaryExpression(BinaryExpressionType.Div, a, b)),
+            (times, static (a, b) => new BinaryExpression(BinaryExpressionType.Times, a, b)),
+            (modulo, static (a, b) => new BinaryExpression(BinaryExpressionType.Modulo, a, b))
         );
-        
+
         // additive => multiplicative ( ( "-" | "+" ) multiplicative )* ;
         var additive = multiplicative.LeftAssociative(
-            (plus, static (a, b) => new BinaryExpression(BinaryExpressionType.Plus,a, b)),
-            (minus, static (a, b) => new BinaryExpression(BinaryExpressionType.Minus,a, b))
+            (plus, static (a, b) => new BinaryExpression(BinaryExpressionType.Plus, a, b)),
+            (minus, static (a, b) => new BinaryExpression(BinaryExpressionType.Minus, a, b))
         );
-        
+
         // shift => additive ( ( "<<" | ">>" ) additive )* ;
         var shift = additive.And(ZeroOrMany(
                 Terms.Text("<<").Then(BinaryExpressionType.LeftShift)
