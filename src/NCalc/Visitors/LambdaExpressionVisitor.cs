@@ -391,26 +391,9 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
             }
         }
 
-        var precedence = new[]
+        var type = TypeHelper.GetMostPreciseNumberType(left.Type, right.Type);
+        if (type != null)
         {
-            typeof(decimal),
-            typeof(double),
-            typeof(float),
-            typeof(ulong),
-            typeof(long),
-            typeof(uint),
-            typeof(int),
-            typeof(ushort),
-            typeof(short),
-            typeof(byte),
-            typeof(sbyte)
-        };
-
-        var l = Array.IndexOf(precedence, left.Type);
-        var r = Array.IndexOf(precedence, right.Type);
-        if (l >= 0 && r >= 0)
-        {
-            var type = precedence[Math.Min(l, r)];
             if (left.Type != type)
             {
                 left = LinqExpression.Convert(left, type);
@@ -421,6 +404,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
                 right = LinqExpression.Convert(right, type);
             }
         }
+
         LinqExpression comparer;
         if (CaseInsensitiveComparer)
         {

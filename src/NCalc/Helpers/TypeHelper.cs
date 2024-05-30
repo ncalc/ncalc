@@ -4,7 +4,7 @@ namespace NCalc.Helpers;
 
 public static class TypeHelper
 {
-    private static readonly HashSet<Type> BuiltInTypes =
+    private static readonly Type[] BuiltInTypes =
     [
         typeof(decimal),
         typeof(double),
@@ -23,8 +23,23 @@ public static class TypeHelper
         typeof(object)
     ];
 
-    public static readonly FrozenDictionary<Type, HashSet<Type>> ImplicitPrimitiveConversionTable =
-        new Dictionary<Type, HashSet<Type>>
+    private static readonly Type[] NumbersPrecedence =
+    [
+        typeof(decimal),
+        typeof(double),
+        typeof(float),
+        typeof(ulong),
+        typeof(long),
+        typeof(uint),
+        typeof(int),
+        typeof(ushort),
+        typeof(short),
+        typeof(byte),
+        typeof(sbyte)
+    ];
+
+    public static readonly FrozenDictionary<Type, Type[]> ImplicitPrimitiveConversionTable =
+        new Dictionary<Type, Type[]>
         {
             {
                 typeof(sbyte),
@@ -75,6 +90,23 @@ public static class TypeHelper
         }
 
         return a ?? typeof(object);
+    }
+
+    /// <summary>
+    /// Gets the the most precise number type.
+    /// </summary>
+    /// <param name="a">Type a.</param>
+    /// <param name="b">Type b.</param>
+    /// <returns></returns>
+    public static Type? GetMostPreciseNumberType(Type a, Type b)
+    {
+        var l = Array.IndexOf(NumbersPrecedence, a);
+        var r = Array.IndexOf(NumbersPrecedence, b);
+
+        if (l >= 0 && r >= 0)
+            return NumbersPrecedence[Math.Min(l, r)];
+
+        return null;
     }
 
     public static bool IsReal(object? value) => value is decimal or double or float;
