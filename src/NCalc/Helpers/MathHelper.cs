@@ -295,10 +295,10 @@ public static class MathHelper
     {
         if (a == null || b == null)
             return null;
-        
+
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
-        
+
         switch (a)
         {
             case bool:
@@ -842,7 +842,7 @@ public static class MathHelper
     {
         if (a == null || b == null)
             return null;
-        
+
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
@@ -1119,7 +1119,7 @@ public static class MathHelper
     {
         if (a == null || b == null)
             return null;
-        
+
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
@@ -1453,7 +1453,7 @@ public static class MathHelper
     public static object? Min(object? a, object? b, MathHelperOptions options)
     {
         var cultureInfo = options.CultureInfo;
-        
+
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
@@ -1494,7 +1494,7 @@ public static class MathHelper
     private static TypeCode ConvertToHighestPrecision(ref object? a, ref object? b, CultureInfo cultureInfo)
     {
         var typeCodeA = Type.GetTypeCode(a?.GetType());
-        var typeCodeB = Type.GetTypeCode( b?.GetType());
+        var typeCodeB = Type.GetTypeCode(b?.GetType());
 
         if (typeCodeA == typeCodeB)
             return typeCodeA;
@@ -1535,21 +1535,21 @@ public static class MathHelper
         floatingPoint = false;
         switch (typeCode)
         {
-            case TypeCode.SByte: 
+            case TypeCode.SByte:
                 return 8;
             case TypeCode.Byte:
                 return 8;
-            case TypeCode.Int16: 
+            case TypeCode.Int16:
                 return 16;
             case TypeCode.UInt16:
                 return 16;
-            case TypeCode.Int32: 
+            case TypeCode.Int32:
                 return 32;
             case TypeCode.UInt32:
                 return 32;
             case TypeCode.Int64:
                 return 64;
-            case TypeCode.UInt64: 
+            case TypeCode.UInt64:
                 return 64;
             case TypeCode.Single:
                 floatingPoint = true;
@@ -1583,14 +1583,14 @@ public static class MathHelper
         };
     }
 
-    
-     public static object Abs(object? a, MathHelperOptions options)
+
+    public static object Abs(object? a, MathHelperOptions options)
     {
         a = ConvertIfNeeded(a, options);
-        
+
         if (options.UseDecimals)
             return Math.Abs(Convert.ToDecimal(a));
-        
+
         return Math.Abs(Convert.ToDouble(a));
     }
 
@@ -1609,7 +1609,7 @@ public static class MathHelper
     public static object Atan(object? a, MathHelperOptions options)
     {
         a = ConvertIfNeeded(a, options);
-        
+
         return Math.Atan(Convert.ToDouble(a));
     }
 
@@ -1626,7 +1626,7 @@ public static class MathHelper
 
         if (options.UseDecimals)
             return Math.Ceiling(Convert.ToDecimal(a));
-        
+
         return Math.Ceiling(Convert.ToDouble(a));
     }
 
@@ -1648,7 +1648,7 @@ public static class MathHelper
 
         if (options.UseDecimals)
             return Math.Floor(Convert.ToDecimal(a));
-        
+
         return Math.Floor(Convert.ToDouble(a));
     }
 
@@ -1693,7 +1693,7 @@ public static class MathHelper
 
         if (options.UseDecimals)
             return Math.Round(Convert.ToDecimal(a), Convert.ToInt16(b), rounding);
-        
+
         return Math.Round(Convert.ToDouble(a), Convert.ToInt16(b), rounding);
     }
 
@@ -1703,7 +1703,7 @@ public static class MathHelper
 
         if (options.UseDecimals)
             return Math.Sign(Convert.ToDecimal(a));
-        
+
         return Math.Sign(Convert.ToDouble(a));
     }
 
@@ -1722,7 +1722,7 @@ public static class MathHelper
     public static object Tan(object? a, MathHelperOptions options)
     {
         a = ConvertIfNeeded(a, options);
-        
+
         return Math.Tan(Convert.ToDouble(a));
     }
 
@@ -1732,10 +1732,10 @@ public static class MathHelper
 
         if (options.UseDecimals)
             return Math.Truncate(Convert.ToDecimal(a));
-        
+
         return Math.Truncate(Convert.ToDouble(a));
     }
-    
+
     private static object? ConvertIfNeeded(object? value, MathHelperOptions options)
     {
         return value switch

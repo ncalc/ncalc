@@ -60,7 +60,7 @@ public sealed class ValueExpression : LogicalExpression
         Value = value;
         Type = ValueType.Float;
     }
-    
+
     public ValueExpression(decimal value)
     {
         Value = value;
@@ -72,8 +72,8 @@ public sealed class ValueExpression : LogicalExpression
         Value = value;
         Type = ValueType.DateTime;
     }
-    
-    
+
+
     public ValueExpression(TimeSpan value)
     {
         Value = value;

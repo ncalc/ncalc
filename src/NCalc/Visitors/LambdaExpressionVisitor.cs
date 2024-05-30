@@ -6,7 +6,6 @@ using NCalc.Helpers;
 using NCalc.Reflection;
 using Linq = System.Linq.Expressions;
 using LinqExpression = System.Linq.Expressions.Expression;
-using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 namespace NCalc.Visitors;
 
 internal class LambdaExpressionVistor : ILogicalExpressionVisitor
@@ -15,11 +14,11 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
     private LinqExpression _result;
     private readonly LinqExpression _context;
     private readonly ExpressionOptions _options;
-    
+
     private bool Ordinal => _options.HasOption(ExpressionOptions.OrdinalStringComparer);
 
     private bool CaseInsensitiveComparer => _options.HasOption(ExpressionOptions.CaseInsensitiveStringComparer);
-    
+
     //TODO:
     private static bool Checked => false; //{ get //{ return (_options & ExpressionOptions.OverflowProtection) == ExpressionOptions.OverflowProtection; } }
 
@@ -205,7 +204,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
             CheckArgumentsLengthForFunction(mathMethod.MethodInfo.Name, argsNumActual, mathMethod.ArgumentCount);
 
             _result = LinqExpression.Call(mathMethod.MethodInfo,
-                Enumerable.Range(0, argsNumActual).Select( i => LinqExpression.Convert(args[i], typeof(double)) ));
+                Enumerable.Range(0, argsNumActual).Select(i => LinqExpression.Convert(args[i], typeof(double))));
         }
 
         Linq.UnaryExpression arg0;
@@ -378,14 +377,14 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
     {
         left = UnwrapNullable(left);
         right = UnwrapNullable(right);
-        
+
         if (_options.HasOption(ExpressionOptions.AllowBooleanCalculation))
         {
             if (left.Type == typeof(bool))
             {
                 left = LinqExpression.Condition(left, LinqExpression.Constant(1.0), LinqExpression.Constant(0.0));
             }
-        
+
             if (right.Type == typeof(bool))
             {
                 right = LinqExpression.Condition(right, LinqExpression.Constant(1.0), LinqExpression.Constant(0.0));
@@ -427,7 +426,7 @@ internal class LambdaExpressionVistor : ILogicalExpressionVisitor
         {
             comparer = LinqExpression.Property(null, typeof(StringComparer), Ordinal ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase");
         }
-        else 
+        else
             comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
 
         if ((typeof(string) == left.Type || typeof(string) == right.Type))
