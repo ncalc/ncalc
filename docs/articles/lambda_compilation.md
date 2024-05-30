@@ -1,6 +1,6 @@
 ﻿# Compilation of expressions to CLR lambdas
 
-If you need a better preformance you should use compilation of expressions to CLR lambdas feature. 
+If you need a better performance you should use compilation of expressions to CLR lambdas feature. 
 
 ## Functionalities
 **Simple Expressions**
