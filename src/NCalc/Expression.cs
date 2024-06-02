@@ -152,7 +152,7 @@ public partial class Expression
 
     private bool IsCacheEnabled()
     {
-        return CacheEnabled && !Options.HasOption(ExpressionOptions.NoCache);
+        return CacheEnabled && !Options.HasFlag(ExpressionOptions.NoCache);
     }
 
     /// <summary>
@@ -187,11 +187,11 @@ public partial class Expression
         if (Error is not null)
             throw Error;
 
-        if (Options.HasOption(ExpressionOptions.AllowNullParameter))
+        if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
             EvaluationVisitor.Parameters["null"] = null;
 
         // If array evaluation, execute the same expression multiple times
-        if (Options.HasOption(ExpressionOptions.IterateParameters))
+        if (Options.HasFlag(ExpressionOptions.IterateParameters))
             return IterateParameters();
 
         LogicalExpression!.Accept(EvaluationVisitor);

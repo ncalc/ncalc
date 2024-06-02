@@ -29,7 +29,7 @@ public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
             var options = expressionContext?.Options ?? ExpressionOptions.None;
             var parserContext = new LogicalExpressionParserContext(expression)
             {
-                UseDecimalsAsDefault = options.HasOption(ExpressionOptions.DecimalAsDefault)
+                UseDecimalsAsDefault = options.HasFlag(ExpressionOptions.DecimalAsDefault)
             };
             logicalExpression = LogicalExpressionParser.Parse(parserContext);
 

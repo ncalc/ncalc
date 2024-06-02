@@ -16,8 +16,8 @@ internal sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
     private readonly LinqExpression _context;
     private readonly ExpressionOptions _options;
 
-    private bool OrdinalStringComparer => _options.HasOption(ExpressionOptions.OrdinalStringComparer);
-    private bool CaseInsensitiveStringComparer => _options.HasOption(ExpressionOptions.CaseInsensitiveStringComparer);
+    private bool OrdinalStringComparer => _options.HasFlag(ExpressionOptions.OrdinalStringComparer);
+    private bool CaseInsensitiveStringComparer => _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
 
     //TODO:
     private static bool Checked =>
@@ -317,7 +317,7 @@ internal sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
         left = LinqUtils.UnwrapNullable(left);
         right = LinqUtils.UnwrapNullable(right);
 
-        if (_options.HasOption(ExpressionOptions.AllowBooleanCalculation))
+        if (_options.HasFlag(ExpressionOptions.AllowBooleanCalculation))
         {
             if (left.Type == typeof(bool))
             {
