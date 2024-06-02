@@ -20,7 +20,7 @@ public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
         lexer.AddErrorListener(errorListenerLexer);
 
         var parser = new NCalcParser(new CommonTokenStream(lexer)) {
-            UseDecimal = expressionContext?.Options.HasOption(ExpressionOptions.DecimalAsDefault) ?? false
+            UseDecimal = expressionContext?.Options.HasFlag(ExpressionOptions.DecimalAsDefault) ?? false
         };
 
         var errorListenerParser = new ErrorListenerParser();

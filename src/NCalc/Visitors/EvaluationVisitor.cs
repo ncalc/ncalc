@@ -29,7 +29,7 @@ public class EvaluationVisitor : IEvaluationVisitor
     public object? Result { get; set; }
 
     private MathHelperOptions MathHelperOptions => new(Context.CultureInfo,
-        Context.Options.HasOption(ExpressionOptions.AllowBooleanCalculation), Context.Options.HasOption(ExpressionOptions.DecimalAsDefault));
+        Context.Options.HasFlag(ExpressionOptions.AllowBooleanCalculation), Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault));
 
     public EvaluationVisitor()
     {
@@ -486,13 +486,13 @@ public class EvaluationVisitor : IEvaluationVisitor
     {
         return TypeHelper.CompareUsingMostPreciseType(a,
             b, new(CultureInfo,
-                Options.HasOption(ExpressionOptions.CaseInsensitiveStringComparer),
-                Options.HasOption(ExpressionOptions.OrdinalStringComparer)));
+                Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer),
+                Options.HasFlag(ExpressionOptions.OrdinalStringComparer)));
     }
 
     private void CheckCase(string function, string called)
     {
-        bool ignoreCase = Options.HasOption(ExpressionOptions.IgnoreCase);
+        bool ignoreCase = Options.HasFlag(ExpressionOptions.IgnoreCase);
 
         if (!ignoreCase && function != called)
             throw new NCalcFunctionNotFoundException($"Function {called} not found. Try {function} instead.", called);
