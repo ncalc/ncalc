@@ -1,6 +1,7 @@
 ﻿# Compilation of expressions to CLR lambdas
 
 If you need a better performance you should use compilation of expressions to CLR lambdas feature. 
+Especial thanks to the [NCalc2 fork](https://github.com/sklose/NCalc2) for the original implementation.
 
 ## Functionalities
 
@@ -30,5 +31,5 @@ var exp = new Expression("Foo([Param1], 2) = 4 && [Param2] = 'test'");
 Func<Context, bool> function = exp.ToLambda<Context, bool>();
 
 var context = new Context { Param1 = 2, Param2 = "test" };
-Debug.Assert(function(context)) //true;
+Debug.Assert(function(context)); //true
 ```
