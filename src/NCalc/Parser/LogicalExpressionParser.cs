@@ -118,6 +118,8 @@ public static class LogicalExpressionParser
         var modulo = Terms.Char('%');
         var minus = Terms.Text("-");
         var plus = Terms.Text("+");
+        var leftShift = Terms.Text("<<");
+        var rightShift = Terms.Text(">>");
         var bitwiseNot = Terms.Text("~");
         var exponent = Terms.Text("**");
         var openParen = Terms.Char('(');
@@ -286,20 +288,10 @@ public static class LogicalExpressionParser
         );
 
         // shift => additive ( ( "<<" | ">>" ) additive )* ;
-        var shift = additive.And(ZeroOrMany(
-                Terms.Text("<<").Then(BinaryExpressionType.LeftShift)
-                .Or(Terms.Text(">>").Then(BinaryExpressionType.RightShift))
-                .And(additive)))
-            .Then(static x =>
-            {
-                var result = x.Item1;
-                foreach (var op in x.Item2)
-                {
-                    result = new BinaryExpression(op.Item1, result, op.Item2);
-                }
-
-                return result;
-            }).Or(additive);
+        var shift = additive.LeftAssociative(
+            (leftShift, static (a, b) => new BinaryExpression(BinaryExpressionType.LeftShift, a, b)),
+            (rightShift, static (a, b) => new BinaryExpression(BinaryExpressionType.RightShift, a, b))
+        );
 
         // relational => shift ( ( ">=" | "<=" | "<" | ">" ) shift )* ;
         var relational = shift.And(ZeroOrMany(OneOf(
