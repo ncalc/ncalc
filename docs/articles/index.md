@@ -16,6 +16,7 @@ For additional information on the technique we used to create this framework ple
 - [Handling Errors](handling_errors.md):  How to handle errors.
 - [Case Sensitivity](case_sensitivity.md): Options in how to handle case sensitivity.
 - [Caching](caching.md): How caching works.
+- [Improve performance](lambda_compilation.md): How to use compilation of expressions to CLR lambdas.
 - [Dependency Injection](dependency_injection.md): Bring expressions to the next level with dependency injection.
 
 ## <xref:NCalc.Expression> class
@@ -26,7 +27,7 @@ Example:
 
 ```c#
   var expression = new Expression("2 * 3");
-  object result = e.Evaluate();
+  object result = expression.Evaluate();
   
   Console.WriteLine(result);
 ```
@@ -41,7 +42,7 @@ To create expressions you can combine several [Operators](operators.md) and [Val
 
 ```c#
 var expression = new Expression("2 + 3 * 5");
-Debug.Assert(17 == e.Evaluate());
+Debug.Assert(17 == expression.Evaluate());
 ```
 
 **Evaluates .NET data types**
@@ -66,13 +67,13 @@ Debug.Assert(0 == new Expression("Tan(0)").Evaluate());
 
 ```c#
 var expression = new Expression("SecretOperation(3, 6)");
-e.EvaluateFunction += delegate(string name, FunctionArgs args)
+expression.EvaluateFunction += delegate(string name, FunctionArgs args)
     {
         if (name == "SecretOperation")
             args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
     };
 
-Debug.Assert(9 == e.Evaluate());
+Debug.Assert(9 == expression.Evaluate());
 ```
 
 **Handles unicode characters**
@@ -89,14 +90,14 @@ Debug.Assert("\u0100" == new Expression(@"'\u0100'").Evaluate());
 ```c#
 var expression = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
 
-e.Parameters["Pi2"] = new Expression("Pi * [Pi]");
-e.Parameters["X"] = 10;
+expression.Parameters["Pi2"] = new Expression("Pi * [Pi]");
+expression.Parameters["X"] = 10;
 
-e.EvaluateParameter += delegate(string name, ParameterArgs args)
+expression.EvaluateParameter += delegate(string name, ParameterArgs args)
   {
     if (name == "Pi")
-    args.Result = 3.14;
+        args.Result = 3.14;
   };
 
-Debug.Assert(117.07 == e.Evaluate());
+Debug.Assert(117.07 == expression.Evaluate());
 ```

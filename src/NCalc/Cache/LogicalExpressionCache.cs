@@ -6,18 +6,18 @@ namespace NCalc.Cache;
 public sealed class LogicalExpressionCache : ILogicalExpressionCache
 {
     private readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
-    
+
     private static LogicalExpressionCache? _instance;
-    
+
     private LogicalExpressionCache()
     {
-        
+
     }
     public static LogicalExpressionCache GetInstance()
     {
         return _instance ??= new LogicalExpressionCache();
     }
-    
+
     public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)
     {
         logicalExpression = null;
@@ -29,7 +29,7 @@ public sealed class LogicalExpressionCache : ILogicalExpressionCache
                 return true;
             }
         }
-        
+
         return false;
     }
 

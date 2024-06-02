@@ -10,7 +10,7 @@ namespace NCalc.Factories;
 public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
 {
     private static LogicalExpressionFactory? _instance;
-    
+
     public static LogicalExpressionFactory GetInstance()
     {
         return _instance ??= new LogicalExpressionFactory();
@@ -32,7 +32,7 @@ public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
                 UseDecimalsAsDefault = options.HasOption(ExpressionOptions.DecimalAsDefault)
             };
             logicalExpression = LogicalExpressionParser.Parse(parserContext);
-            
+
             if (logicalExpression is null)
                 throw new ArgumentNullException(nameof(logicalExpression));
         }
@@ -40,7 +40,7 @@ public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
         {
             throw new NCalcParserException("Error parsing the expression.", exception);
         }
-        
+
         return logicalExpression;
     }
 }

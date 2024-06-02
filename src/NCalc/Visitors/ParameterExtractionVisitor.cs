@@ -38,8 +38,6 @@ public sealed class ParameterExtractionVisitor : IParameterExtractionVisitor
             expression.Accept(this);
     }
 
-    public void Visit(LogicalExpression expression) => expression.Accept(this);
-
     public void Visit(ValueExpression expression)
     {
     }
