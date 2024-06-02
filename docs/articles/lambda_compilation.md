@@ -3,12 +3,13 @@
 If you need a better performance you should use compilation of expressions to CLR lambdas feature. 
 
 ## Functionalities
+
 **Simple Expressions**
 
 ```c#
-var expr = new Expression("1 + 2");
-Func<int> f = expr.ToLambda<int>();
-Debug.Assert(f());
+var expression = new Expression("1 + 2");
+Func<int> function = expression.ToLambda<int>();
+Debug.Assert(function());
 ```
 
 **Expressions with Functions and Parameters**
@@ -25,9 +26,9 @@ class Context
   }
 }
 
-var expr = new Expression("Foo([Param1], 2) = 4 && [Param2] = 'test'");
-Func<Context, bool> f = expr.ToLambda<Context, bool>();
+var exp = new Expression("Foo([Param1], 2) = 4 && [Param2] = 'test'");
+Func<Context, bool> function = exp.ToLambda<Context, bool>();
 
 var context = new Context { Param1 = 2, Param2 = "test" };
-Debug.Assert(f(context));
+Debug.Assert(function(context));
 ```
