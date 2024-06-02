@@ -12,8 +12,5 @@ public abstract class LogicalExpression
         return serializer.Result.ToString().TrimEnd(' ');
     }
 
-    public virtual void Accept(ILogicalExpressionVisitor visitor)
-    {
-        visitor.Visit(this);
-    }
+    public abstract void Accept(ILogicalExpressionVisitor visitor);
 }

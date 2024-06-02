@@ -39,11 +39,6 @@ internal sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
 
     public LinqExpression Result { get; private set; }
 
-    public void Visit(LogicalExpression expression)
-    {
-        throw new NotImplementedException();
-    }
-
     public void Visit(TernaryExpression expression)
     {
         expression.LeftExpression.Accept(this);

@@ -46,11 +46,6 @@ public class EvaluationVisitor : IEvaluationVisitor
         return Result;
     }
 
-    public void Visit(LogicalExpression expression)
-    {
-        throw new NotSupportedException("The Visit method is not supported for this class.");
-    }
-
     public void Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value

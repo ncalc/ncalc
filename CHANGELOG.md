@@ -1,4 +1,4 @@
-# 4.2
+# 5.0
 * [Improve Parlot error handling](https://github.com/ncalc/ncalc/pull/181) by [Andrey Bykiev](https://github.com/Bykiev)
 * [Fix OverflowException with double values](https://github.com/ncalc/ncalc/pull/188) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 * [Fix double value precision loss](https://github.com/ncalc/ncalc/pull/188) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros)
@@ -10,7 +10,8 @@
 * [Add support for using null with operators](https://github.com/ncalc/ncalc/pull/184) by [Andrey Bykiev](https://github.com/Bykiev)
 * [Exceptions need to be handled as NCalcEvaluationException instead of ArgumentException and added TypeHelper](https://github.com/ncalc/ncalc/pull/182) by [Gustavo Barros](https://github.com/gumbarros)
 * [Use IOptions instead of IOptionsSnapshot at LogicalExpressionMemoryCache](https://github.com/ncalc/ncalc/pull/187) by [Gustavo Barros](https://github.com/gumbarros)
-* [Changed the logic of ExpressionOptions.DecimalAsDefault. When this option is specified, all function parameters expected to be decimal](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Changed the logic of ExpressionOptions.DecimalAsDefault. When this option is specified, all function parameters are expected to be decimal](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Barros](https://github.com/gumbarros)
+* [Fully removed LogicalExpressionVisitor, please use ILogicalExpressionVisitor](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Barros](https://github.com/gumbarros)
 
 # 4.1
 * [Remove excessive check for casing](https://github.com/ncalc/ncalc/pull/149) by [Andrey Bykiev](https://github.com/Bykiev)
