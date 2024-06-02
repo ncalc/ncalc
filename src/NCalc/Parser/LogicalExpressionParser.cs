@@ -19,7 +19,7 @@ public static class LogicalExpressionParser
     private static readonly ValueExpression False = new(false);
 
     private const string InvalidTokenMessage = "Invalid token in expression";
-    
+
     static LogicalExpressionParser()
     {
         /*
@@ -49,68 +49,69 @@ public static class LogicalExpressionParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-        var exponentNumberPart = Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
+        var exponentNumberPart =
+            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
 
 
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
-                Literals.Char('.')
-                    .SkipAnd(Terms.Integer().Then<long?>(x => x))
-                    .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                    .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
-                    .Then(x => (0L, x.Item1, x.Item2)),
-                Literals.Integer(NumberOptions.AllowSign)
-                    .And(Literals.Char('.')
-                    .SkipAnd(ZeroOrOne(Terms.Integer()))
-                    .ThenElse<long?>(x => x, null))
-                    .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                    .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
-                    .Then(x => (x.Item1, x.Item2, x.Item3))
+                    Literals.Char('.')
+                        .SkipAnd(Terms.Integer().Then<long?>(x => x))
+                        .And(exponentNumberPart.ThenElse<long?>(x => x, null))
+                        .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
+                        .Then(x => (0L, x.Item1, x.Item2)),
+                    Literals.Integer(NumberOptions.AllowSign)
+                        .And(Literals.Char('.')
+                            .SkipAnd(ZeroOrOne(Terms.Integer()))
+                            .ThenElse<long?>(x => x, null))
+                        .And(exponentNumberPart.ThenElse<long?>(x => x, null))
+                        .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
+                        .Then(x => (x.Item1, x.Item2, x.Item3))
                 ))
-            .Then<LogicalExpression>((ctx, x) =>
-            {
-                long integralValue = x.Item1;
-                long? decimalPart = x.Item2;
-                long? exponentPart = x.Item3;
-
-                double result = integralValue;
-
-                // decimal part?
-                if (decimalPart != null && decimalPart.Value != 0)
+                .Then<LogicalExpression>((ctx, x) =>
                 {
-                    var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1);
-                    result += decimalPart.Value / Math.Pow(10, digits);
-                }
+                    long integralValue = x.Item1;
+                    long? decimalPart = x.Item2;
+                    long? exponentPart = x.Item3;
 
-                // exponent part?
-                if (exponentPart != null)
-                {
-                    var left = BigDecimal.Parse(result);
-                    var right = BigDecimal.Pow(10, exponentPart.Value);
+                    double result = integralValue;
 
-                    var res = BigDecimal.Multiply(left, right);
+                    // decimal part?
+                    if (decimalPart != null && decimalPart.Value != 0)
+                    {
+                        var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1);
+                        result += decimalPart.Value / Math.Pow(10, digits);
+                    }
 
-                    if (res > double.MaxValue)
-                        result = double.PositiveInfinity;
-                    else if (res < double.MinValue)
-                        result = double.NegativeInfinity;
-                    else
-                        result = (double)res;
-                }
+                    // exponent part?
+                    if (exponentPart != null)
+                    {
+                        var left = BigDecimal.Parse(result);
+                        var right = BigDecimal.Pow(10, exponentPart.Value);
 
-                if (ctx is LogicalExpressionParserContext { UseDecimalsAsDefault: true })
-                {
-                    return new ValueExpression((decimal)result);
-                }
+                        var res = BigDecimal.Multiply(left, right);
 
-                if (decimalPart != null || exponentPart != null)
-                {
-                    return new ValueExpression(result);
-                }
+                        if (res > double.MaxValue)
+                            result = double.PositiveInfinity;
+                        else if (res < double.MinValue)
+                            result = double.NegativeInfinity;
+                        else
+                            result = (double)res;
+                    }
 
-                return new ValueExpression((long)result);
-            });
+                    if (ctx is LogicalExpressionParserContext { UseDecimalsAsDefault: true })
+                    {
+                        return new ValueExpression((decimal)result);
+                    }
+
+                    if (decimalPart != null || exponentPart != null)
+                    {
+                        return new ValueExpression(result);
+                    }
+
+                    return new ValueExpression((long)result);
+                });
 
         var comma = Terms.Char(',');
         var divided = Terms.Char('/');
@@ -118,8 +119,18 @@ public static class LogicalExpressionParser
         var modulo = Terms.Char('%');
         var minus = Terms.Text("-");
         var plus = Terms.Text("+");
+
+        var equal = OneOf(Terms.Text("=="), Terms.Text("="));
+        var notEqual = OneOf(Terms.Text("<>"), Terms.Text("!="));
+
+        var greater = Terms.Text(">");
+        var greaterOrEqual = Terms.Text(">=");
+        var lesser = Terms.Text("<");
+        var lesserOrEqual = Terms.Text("<=");
+
         var leftShift = Terms.Text("<<");
         var rightShift = Terms.Text(">>");
+
         var bitwiseNot = Terms.Text("~");
         var exponent = Terms.Text("**");
         var openParen = Terms.Char('(');
@@ -176,14 +187,14 @@ public static class LogicalExpressionParser
 
         // date => number/number/number
         var date = dateDefinition.Then<LogicalExpression>(date =>
+        {
+            if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
             {
-                if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
-                {
-                    return new ValueExpression(result);
-                }
+                return new ValueExpression(result);
+            }
 
-                throw new FormatException("Invalid DateTime format.");
-            });
+            throw new FormatException("Invalid DateTime format.");
+        });
 
         // time => number:number:number
         var timeDefinition = charIsNumber
@@ -204,15 +215,18 @@ public static class LogicalExpressionParser
 
 
         // dateAndTime => number/number/number number:number:number
-        var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(dateTime =>
-        {
-            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", out var result))
+        var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
+            dateTime =>
             {
-                return new ValueExpression(result);
-            }
+                if (DateTime.TryParse(
+                        $"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}",
+                        out var result))
+                {
+                    return new ValueExpression(result);
+                }
 
-            throw new FormatException("Invalid DateTime format.");
-        });
+                throw new FormatException("Invalid DateTime format.");
+            });
 
         // datetime => '#' dateAndTime | date | time  '#';
         var dateTime = Terms
@@ -255,7 +269,8 @@ public static class LogicalExpressionParser
                 {
                     for (int i = x.Item2.Count - 1; i > 0; i--)
                     {
-                        result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item2[i - 1].Item2, x.Item2[i].Item2);
+                        result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item2[i - 1].Item2,
+                            x.Item2[i].Item2);
                     }
 
                     result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, result);
@@ -295,10 +310,10 @@ public static class LogicalExpressionParser
 
         // relational => shift ( ( ">=" | "<=" | "<" | ">" ) shift )* ;
         var relational = shift.And(ZeroOrMany(OneOf(
-                    Terms.Text(">=").Then(BinaryExpressionType.GreaterOrEqual),
-                    Terms.Text("<=").Then(BinaryExpressionType.LesserOrEqual),
-                    Terms.Text("<").Then(BinaryExpressionType.Lesser),
-                    Terms.Text(">").Then(BinaryExpressionType.Greater))
+                    greaterOrEqual.Then(BinaryExpressionType.GreaterOrEqual),
+                    lesserOrEqual.Then(BinaryExpressionType.LesserOrEqual),
+                    lesser.Then(BinaryExpressionType.Lesser),
+                    greater.Then(BinaryExpressionType.Greater))
                 .And(shift)))
             .Then(static x =>
             {
@@ -312,10 +327,8 @@ public static class LogicalExpressionParser
             });
 
         var equality = relational.And(ZeroOrMany(OneOf(
-                    Terms.Text("<>").Then(BinaryExpressionType.NotEqual),
-                    Terms.Text("==").Then(BinaryExpressionType.Equal),
-                    Terms.Text("!=").Then(BinaryExpressionType.NotEqual),
-                    Terms.Text("=").Then(BinaryExpressionType.Equal))
+                    equal.Then(BinaryExpressionType.Equal),
+                    notEqual.Then(BinaryExpressionType.NotEqual))
                 .And(relational)))
             .Then(static x =>
             {
