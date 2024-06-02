@@ -12,6 +12,7 @@
 * [Use IOptions instead of IOptionsSnapshot at LogicalExpressionMemoryCache](https://github.com/ncalc/ncalc/pull/187) by [Gustavo Barros](https://github.com/gumbarros)
 * [Changed the logic of ExpressionOptions.DecimalAsDefault. When this option is specified, all function parameters are expected to be decimal](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Barros](https://github.com/gumbarros)
 * [Fully removed LogicalExpressionVisitor, please use ILogicalExpressionVisitor](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Barros](https://github.com/gumbarros)
+* [Removed HasOption method from ExpressionOptions, please use HasFlag](https://github.com/ncalc/ncalc/pull/196) by [Gustavo Barros](https://github.com/gumbarros)
 
 # 4.1
 * [Remove excessive check for casing](https://github.com/ncalc/ncalc/pull/149) by [Andrey Bykiev](https://github.com/Bykiev)
