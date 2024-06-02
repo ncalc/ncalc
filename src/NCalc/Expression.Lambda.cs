@@ -50,14 +50,14 @@ public partial class Expression
         return ToLinqExpressionInternal<TContext, TResult>();
     }
 
-    public virtual Func<TResult> ToLambda<TResult>()
+    public Func<TResult> ToLambda<TResult>()
     {
         var body = ToLinqExpression<TResult>();
         var lambda = LinqExpression.Lambda<Func<TResult>>(body);
         return lambda.Compile();
     }
 
-    public virtual Func<TContext, TResult> ToLambda<TContext, TResult>()
+    public Func<TContext, TResult> ToLambda<TContext, TResult>()
     {
         var linqExp = ToLinqExpression<TContext, TResult>();
         if (linqExp.Parameter != null)
