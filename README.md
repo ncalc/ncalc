@@ -121,6 +121,13 @@ expression.Parameters = new Dictionary<string, object> {
 var result = expression.Evaluate();
 ```
 
+**Lambda Expressions**
+```cs
+var expression = new Expression("1 + 2");
+Func<int> function = expression.ToLambda<int>();
+Debug.Assert(function()); //3
+```
+
 ## Related projects
 
 ### [NCalc-Async](https://github.com/ncalc/ncalc-async/)
