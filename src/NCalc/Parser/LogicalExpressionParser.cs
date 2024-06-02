@@ -18,6 +18,8 @@ public static class LogicalExpressionParser
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
+    private const string InvalidTokenMessage = "Invalid token in expression";
+    
     static LogicalExpressionParser()
     {
         /*
@@ -56,14 +58,14 @@ public static class LogicalExpressionParser
                 Literals.Char('.')
                     .SkipAnd(Terms.Integer().Then<long?>(x => x))
                     .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                    .AndSkip(Not(Literals.Identifier()).ElseError("Invalid token in expression"))
+                    .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
                     .Then(x => (0L, x.Item1, x.Item2)),
                 Literals.Integer(NumberOptions.AllowSign)
                     .And(Literals.Char('.')
                     .SkipAnd(ZeroOrOne(Terms.Integer()))
                     .ThenElse<long?>(x => x, null))
                     .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                    .AndSkip(Not(Literals.Identifier()).ElseError("Invalid token in expression"))
+                    .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
                     .Then(x => (x.Item1, x.Item2, x.Item3))
                 ))
             .Then<LogicalExpression>((ctx, x) =>
