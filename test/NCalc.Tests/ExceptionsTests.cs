@@ -112,4 +112,12 @@ public class ExceptionsTests
         var exception = Assert.Throws<NCalcParameterNotDefinedException>(() => expression.Evaluate());
         Assert.Equal("Name",exception.ParameterName);
     }
+    
+    [Theory]
+    [InlineData("5+-*10")]
+    public void Should_Throw_Issue_195(string expressionString)
+    {
+        var expression = new Expression(expressionString);
+        Assert.Throws<NCalcParserException>(() => expression.Evaluate());
+    }
 }
