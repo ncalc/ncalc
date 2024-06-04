@@ -114,9 +114,9 @@ public static class LogicalExpressionParser
                 });
 
         var comma = Terms.Char(',');
-        var divided = Terms.Char('/');
-        var times = Terms.Char('*');
-        var modulo = Terms.Char('%');
+        var divided = Terms.Text("/");
+        var times = Terms.Text("*");
+        var modulo = Terms.Text("%");
         var minus = Terms.Text("-");
         var plus = Terms.Text("+");
 
@@ -368,9 +368,20 @@ public static class LogicalExpressionParser
         var ternary = logical.And(ZeroOrOne(questionMark.SkipAnd(logical).AndSkip(colon).And(logical)))
             .Then(x => x.Item2.Item1 == null
                 ? x.Item1
-                : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2));
+                : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2))
+            .Or(logical);
 
-        expression.Parser = ternary;
+        var operatorSequence = ternary.LeftAssociative(
+            (OneOrMany(divided.Or(times).Or(modulo).Or(plus).Or(minus)
+                       .Or(leftShift).Or(rightShift)
+                       .Or(greaterOrEqual).Or(lesserOrEqual).Or(greater).Or(lesser).Or(equal).Or(notEqual)
+                       ), static (a, b) =>
+            {
+                throw new NCalcParserException("Unknown operator sequence");
+            }
+        ));
+
+        expression.Parser = operatorSequence;
         Parser = expression.Compile();
     }
 

@@ -115,6 +115,8 @@ public class ExceptionsTests
     
     [Theory]
     [InlineData("5+-*10")]
+    [InlineData("5+*10")]
+    [InlineData("5/-*10")]
     public void Should_Throw_Issue_195(string expressionString)
     {
         var expression = new Expression(expressionString);
