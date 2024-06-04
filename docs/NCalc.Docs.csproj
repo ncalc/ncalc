@@ -2,4 +2,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="../NCalc.png">
+      <Pack>True</Pack>
+      <PackagePath>/</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>

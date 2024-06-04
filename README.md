@@ -10,7 +10,7 @@
 [![Discord](https://img.shields.io/discord/1237181265426387005?logo=discord&logoColor=white&label=%20&labelColor=%23697EC4&color=%237289DA
 )](https://discord.gg/TeJkmXbqFk)
 
-NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
+NCalc is a mathematical expression evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
 ## Docs
 Need help or want to learn more? [Check our docs.](https://ncalc.github.io/ncalc)
