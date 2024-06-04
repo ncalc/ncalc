@@ -9,6 +9,10 @@
             NCalc is a mathematical expression evaluator for .NET. This assembly brings support to Microsoft.Extensions.MemoryCache for NCalc.
         </Description>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../../NCalc.png" Pack="true" PackagePath="/" />
+    </ItemGroup>
     
     <ItemGroup>
       <ProjectReference Include="..\..\NCalc.DependencyInjection\NCalc.DependencyInjection.csproj" />
