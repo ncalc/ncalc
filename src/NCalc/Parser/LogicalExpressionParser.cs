@@ -130,7 +130,7 @@ public static class LogicalExpressionParser
 
         var leftShift = Terms.Text("<<");
         var rightShift = Terms.Text(">>");
-      
+
         var exponent = Terms.Text("**");
         var openParen = Terms.Char('(');
         var closeParen = Terms.Char(')');
@@ -148,7 +148,7 @@ public static class LogicalExpressionParser
 
         var bitwiseAnd = Terms.Text("&");
         var bitwiserOr = Terms.Text("|");
-        var bitwiseXOr = Terms.Text("^"); 
+        var bitwiseXOr = Terms.Text("^");
         var bitwiseNot = Terms.Text("~");
 
         // "(" expression ")"
@@ -372,14 +372,12 @@ public static class LogicalExpressionParser
             .Or(logical);
 
         var operatorSequence = ternary.LeftAssociative(
-            (OneOrMany(divided.Or(times).Or(modulo).Or(plus).Or(minus)
-                       .Or(leftShift).Or(rightShift)
-                       .Or(greaterOrEqual).Or(lesserOrEqual).Or(greater).Or(lesser).Or(equal).Or(notEqual)
-                       ), static (a, b) =>
-            {
-                throw new NCalcParserException("Unknown operator sequence");
-            }
-        ));
+            (OneOrMany(OneOf(
+                    divided, times, modulo, plus,
+                    minus, leftShift, rightShift, greaterOrEqual,
+                    lesserOrEqual, greater, lesser, equal,
+                    notEqual)),
+                static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
         Parser = expression.Compile();
@@ -387,17 +385,15 @@ public static class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        if (!Parser.TryParse(context, out LogicalExpression result, out ParseError error))
-        {
-            string message;
-            if (error != null)
-                message = $"{error.Message} at position {error.Position}";
-            else
-                message = $"Error parsing the expression at position {context.Scanner.Cursor.Position}";
+        if (Parser.TryParse(context, out LogicalExpression result, out ParseError error))
+            return result;
 
-            throw new NCalcParserException(message);
-        }
+        string message;
+        if (error != null)
+            message = $"{error.Message} at position {error.Position}";
+        else
+            message = $"Error parsing the expression at position {context.Scanner.Cursor.Position}";
 
-        return result;
+        throw new NCalcParserException(message);
     }
 }
