@@ -130,8 +130,7 @@ public static class LogicalExpressionParser
 
         var leftShift = Terms.Text("<<");
         var rightShift = Terms.Text(">>");
-
-        var bitwiseNot = Terms.Text("~");
+      
         var exponent = Terms.Text("**");
         var openParen = Terms.Char('(');
         var closeParen = Terms.Char(')');
@@ -143,8 +142,14 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
 
-        var negate = Terms.Text("!");
-        var not = Terms.Text("not", true);
+        var not = OneOf(Terms.Text("NOT", true), Terms.Text("!"));
+        var and = OneOf(Terms.Text("AND", true), Terms.Text("&&"));
+        var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
+
+        var bitwiseAnd = Terms.Text("&");
+        var bitwiserOr = Terms.Text("|");
+        var bitwiseXOr = Terms.Text("^"); 
+        var bitwiseNot = Terms.Text("~");
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
@@ -198,9 +203,9 @@ public static class LogicalExpressionParser
 
         // time => number:number:number
         var timeDefinition = charIsNumber
-            .AndSkip(Terms.Char(':'))
+            .AndSkip(colon)
             .And(charIsNumber)
-            .AndSkip(Terms.Char(':'))
+            .AndSkip(colon)
             .And(charIsNumber);
 
         var time = timeDefinition.Then<LogicalExpression>(time =>
@@ -279,17 +284,14 @@ public static class LogicalExpressionParser
                 return result;
             });
 
-        // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
         var unary = exponential.Unary(
             (not, value => new UnaryExpression(UnaryExpressionType.Not, value)),
-            (negate, value => new UnaryExpression(UnaryExpressionType.Not, value)),
             (minus, value => new UnaryExpression(UnaryExpressionType.Negate, value)),
             (bitwiseNot, value => new UnaryExpression(UnaryExpressionType.BitwiseNot, value))
         );
 
         // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
-
         var multiplicative = unary.LeftAssociative(
             (divided, static (a, b) => new BinaryExpression(BinaryExpressionType.Div, a, b)),
             (times, static (a, b) => new BinaryExpression(BinaryExpressionType.Times, a, b)),
@@ -341,20 +343,16 @@ public static class LogicalExpressionParser
                 return result;
             });
 
-        var and = Terms
-            .Text("AND", true).Then(BinaryExpressionType.And)
-            .Or(Terms.Text("&&").Then(BinaryExpressionType.And))
-            .Or(Terms.Text("&").Then(BinaryExpressionType.BitwiseAnd));
+        var andParser = and.Then(BinaryExpressionType.And)
+            .Or(bitwiseAnd.Then(BinaryExpressionType.BitwiseAnd));
 
-        var or = Terms
-            .Text("OR", true).Then(BinaryExpressionType.Or)
-            .Or(Terms.Text("||").Then(BinaryExpressionType.Or))
-            .Or(Terms.Text("|").Then(BinaryExpressionType.BitwiseOr));
+        var orParser = or.Then(BinaryExpressionType.Or)
+            .Or(bitwiserOr.Then(BinaryExpressionType.BitwiseOr));
 
-        var xor = Terms.Text("^").Then(BinaryExpressionType.BitwiseXOr);
+        var xorParser = bitwiseXOr.Then(BinaryExpressionType.BitwiseXOr);
 
         // logical => equality ( ( "and" | "or" ) equality )* ;
-        var logical = equality.And(ZeroOrMany(OneOf(and, or, xor).And(equality)))
+        var logical = equality.And(ZeroOrMany(OneOf(andParser, orParser, xorParser).And(equality)))
             .Then(static x =>
             {
                 var result = x.Item1;
