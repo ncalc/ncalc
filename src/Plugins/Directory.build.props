@@ -1,20 +1,14 @@
 <Project>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../../'))" />
+    
     <PropertyGroup>
-        <PackageIcon>NCalc.png</PackageIcon>
-        <Authors>Sebastien Ros and contributors</Authors>
-        <Copyright>Sebastien Ros and contributors</Copyright>
-        <Company>https://github.com/ncalc</Company>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
+    
     <ItemGroup>
-        <None Include="../../../NCalc.png">
-            <Pack>True</Pack>
-            <PackagePath>/</PackagePath>
-        </None>
-        <None Include="README.MD" Pack="true" PackagePath="" />
+        <None Include="README.md" Pack="true" PackagePath="" />
     </ItemGroup>
+    
     <ItemGroup>
         <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">
             <Version>3.4.244</Version>

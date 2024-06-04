@@ -11,6 +11,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <None Include="../../../NCalc.png" Pack="true" PackagePath="/" />
+    </ItemGroup>
+    
+    <ItemGroup>
       <ProjectReference Include="..\..\NCalc.DependencyInjection\NCalc.DependencyInjection.csproj" />
     </ItemGroup>
 
