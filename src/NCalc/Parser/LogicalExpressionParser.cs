@@ -18,6 +18,8 @@ public static class LogicalExpressionParser
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
+    private const string InvalidTokenMessage = "Invalid token in expression";
+
     static LogicalExpressionParser()
     {
         /*
@@ -57,14 +59,14 @@ public static class LogicalExpressionParser
                     Literals.Char('.')
                         .SkipAnd(Terms.Integer().Then<long?>(x => x))
                         .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                        .AndSkip(Not(Literals.Identifier()).ElseError("Invalid token in expression"))
+                        .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
                         .Then(x => (0L, x.Item1, x.Item2)),
                     Literals.Integer(NumberOptions.AllowSign)
                         .And(Literals.Char('.')
                             .SkipAnd(ZeroOrOne(Terms.Integer()))
                             .ThenElse<long?>(x => x, null))
                         .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                        .AndSkip(Not(Literals.Identifier()).ElseError("Invalid token in expression"))
+                        .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
                         .Then(x => (x.Item1, x.Item2, x.Item3))
                 ))
                 .Then<LogicalExpression>((ctx, x) =>
@@ -112,12 +114,23 @@ public static class LogicalExpressionParser
                 });
 
         var comma = Terms.Char(',');
-        var divided = Terms.Char('/');
-        var times = Terms.Char('*');
-        var modulo = Terms.Char('%');
+        var divided = Terms.Text("/");
+        var times = Terms.Text("*");
+        var modulo = Terms.Text("%");
         var minus = Terms.Text("-");
         var plus = Terms.Text("+");
-        var bitwiseNot = Terms.Text("~");
+
+        var equal = OneOf(Terms.Text("=="), Terms.Text("="));
+        var notEqual = OneOf(Terms.Text("<>"), Terms.Text("!="));
+
+        var greater = Terms.Text(">");
+        var greaterOrEqual = Terms.Text(">=");
+        var lesser = Terms.Text("<");
+        var lesserOrEqual = Terms.Text("<=");
+
+        var leftShift = Terms.Text("<<");
+        var rightShift = Terms.Text(">>");
+
         var exponent = Terms.Text("**");
         var openParen = Terms.Char('(');
         var closeParen = Terms.Char(')');
@@ -129,8 +142,14 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
 
-        var negate = Terms.Text("!");
-        var not = Terms.Text("not", true);
+        var not = OneOf(Terms.Text("NOT", true), Terms.Text("!"));
+        var and = OneOf(Terms.Text("AND", true), Terms.Text("&&"));
+        var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
+
+        var bitwiseAnd = Terms.Text("&");
+        var bitwiserOr = Terms.Text("|");
+        var bitwiseXOr = Terms.Text("^");
+        var bitwiseNot = Terms.Text("~");
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
@@ -184,9 +203,9 @@ public static class LogicalExpressionParser
 
         // time => number:number:number
         var timeDefinition = charIsNumber
-            .AndSkip(Terms.Char(':'))
+            .AndSkip(colon)
             .And(charIsNumber)
-            .AndSkip(Terms.Char(':'))
+            .AndSkip(colon)
             .And(charIsNumber);
 
         var time = timeDefinition.Then<LogicalExpression>(time =>
@@ -265,17 +284,14 @@ public static class LogicalExpressionParser
                 return result;
             });
 
-        // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" | "not" ) unary | primary;
         var unary = exponential.Unary(
             (not, value => new UnaryExpression(UnaryExpressionType.Not, value)),
-            (negate, value => new UnaryExpression(UnaryExpressionType.Not, value)),
             (minus, value => new UnaryExpression(UnaryExpressionType.Negate, value)),
             (bitwiseNot, value => new UnaryExpression(UnaryExpressionType.BitwiseNot, value))
         );
 
         // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
-
         var multiplicative = unary.LeftAssociative(
             (divided, static (a, b) => new BinaryExpression(BinaryExpressionType.Div, a, b)),
             (times, static (a, b) => new BinaryExpression(BinaryExpressionType.Times, a, b)),
@@ -289,27 +305,17 @@ public static class LogicalExpressionParser
         );
 
         // shift => additive ( ( "<<" | ">>" ) additive )* ;
-        var shift = additive.And(ZeroOrMany(
-                Terms.Text("<<").Then(BinaryExpressionType.LeftShift)
-                    .Or(Terms.Text(">>").Then(BinaryExpressionType.RightShift))
-                    .And(additive)))
-            .Then(static x =>
-            {
-                var result = x.Item1;
-                foreach (var op in x.Item2)
-                {
-                    result = new BinaryExpression(op.Item1, result, op.Item2);
-                }
-
-                return result;
-            }).Or(additive);
+        var shift = additive.LeftAssociative(
+            (leftShift, static (a, b) => new BinaryExpression(BinaryExpressionType.LeftShift, a, b)),
+            (rightShift, static (a, b) => new BinaryExpression(BinaryExpressionType.RightShift, a, b))
+        );
 
         // relational => shift ( ( ">=" | "<=" | "<" | ">" ) shift )* ;
         var relational = shift.And(ZeroOrMany(OneOf(
-                    Terms.Text(">=").Then(BinaryExpressionType.GreaterOrEqual),
-                    Terms.Text("<=").Then(BinaryExpressionType.LesserOrEqual),
-                    Terms.Text("<").Then(BinaryExpressionType.Lesser),
-                    Terms.Text(">").Then(BinaryExpressionType.Greater))
+                    greaterOrEqual.Then(BinaryExpressionType.GreaterOrEqual),
+                    lesserOrEqual.Then(BinaryExpressionType.LesserOrEqual),
+                    lesser.Then(BinaryExpressionType.Lesser),
+                    greater.Then(BinaryExpressionType.Greater))
                 .And(shift)))
             .Then(static x =>
             {
@@ -323,10 +329,8 @@ public static class LogicalExpressionParser
             });
 
         var equality = relational.And(ZeroOrMany(OneOf(
-                    Terms.Text("<>").Then(BinaryExpressionType.NotEqual),
-                    Terms.Text("==").Then(BinaryExpressionType.Equal),
-                    Terms.Text("!=").Then(BinaryExpressionType.NotEqual),
-                    Terms.Text("=").Then(BinaryExpressionType.Equal))
+                    equal.Then(BinaryExpressionType.Equal),
+                    notEqual.Then(BinaryExpressionType.NotEqual))
                 .And(relational)))
             .Then(static x =>
             {
@@ -339,20 +343,16 @@ public static class LogicalExpressionParser
                 return result;
             });
 
-        var and = Terms
-            .Text("AND", true).Then(BinaryExpressionType.And)
-            .Or(Terms.Text("&&").Then(BinaryExpressionType.And))
-            .Or(Terms.Text("&").Then(BinaryExpressionType.BitwiseAnd));
+        var andParser = and.Then(BinaryExpressionType.And)
+            .Or(bitwiseAnd.Then(BinaryExpressionType.BitwiseAnd));
 
-        var or = Terms
-            .Text("OR", true).Then(BinaryExpressionType.Or)
-            .Or(Terms.Text("||").Then(BinaryExpressionType.Or))
-            .Or(Terms.Text("|").Then(BinaryExpressionType.BitwiseOr));
+        var orParser = or.Then(BinaryExpressionType.Or)
+            .Or(bitwiserOr.Then(BinaryExpressionType.BitwiseOr));
 
-        var xor = Terms.Text("^").Then(BinaryExpressionType.BitwiseXOr);
+        var xorParser = bitwiseXOr.Then(BinaryExpressionType.BitwiseXOr);
 
         // logical => equality ( ( "and" | "or" ) equality )* ;
-        var logical = equality.And(ZeroOrMany(OneOf(and, or, xor).And(equality)))
+        var logical = equality.And(ZeroOrMany(OneOf(andParser, orParser, xorParser).And(equality)))
             .Then(static x =>
             {
                 var result = x.Item1;
@@ -368,10 +368,18 @@ public static class LogicalExpressionParser
         var ternary = logical.And(ZeroOrOne(questionMark.SkipAnd(logical).AndSkip(colon).And(logical)))
             .Then(x => x.Item2.Item1 == null
                 ? x.Item1
-                : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2));
+                : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2))
+            .Or(logical);
 
-        expression.Parser = ternary;
+        var operatorSequence = ternary.LeftAssociative(
+            (OneOrMany(OneOf(
+                    divided, times, modulo, plus,
+                    minus, leftShift, rightShift, greaterOrEqual,
+                    lesserOrEqual, greater, lesser, equal,
+                    notEqual)),
+                static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
+        expression.Parser = operatorSequence;
 #if NET6_0_OR_GREATER
         if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
             Parser = expression.Compile();
@@ -384,17 +392,15 @@ public static class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        if (!Parser.TryParse(context, out LogicalExpression result, out ParseError error))
-        {
-            string message;
-            if (error != null)
-                message = $"{error.Message} at position {error.Position}";
-            else
-                message = $"Error parsing the expression at position {context.Scanner.Cursor.Position}";
+        if (Parser.TryParse(context, out LogicalExpression result, out ParseError error))
+            return result;
 
-            throw new NCalcParserException(message);
-        }
+        string message;
+        if (error != null)
+            message = $"{error.Message} at position {error.Position}";
+        else
+            message = $"Error parsing the expression at position {context.Scanner.Cursor.Position}";
 
-        return result;
+        throw new NCalcParserException(message);
     }
 }
