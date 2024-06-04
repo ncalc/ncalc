@@ -1,10 +1,11 @@
-# 5.0
+# 4.2
 * [Improve Parlot error handling](https://github.com/ncalc/ncalc/pull/181) by [Andrey Bykiev](https://github.com/Bykiev)
 * [Fix OverflowException with double values](https://github.com/ncalc/ncalc/pull/188) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 * [Fix double value precision loss](https://github.com/ncalc/ncalc/pull/188) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 * [Add new ExpressionOptions.AllowBooleanCalculation and ExpressionOptions.OrdinalStringComparer options. ExpressionOptions.CaseInsensitiveComparer is now obsolete, please use ExpressionOptions.CaseInsensitiveStringComparer instead](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 * [Add support for compilation of expressions to CLR lambdas](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Mauricio de Barros](https://github.com/gumbarros). Credits to [Sebastian Klose](https://github.com/sklose) and [NCalc2 project](https://github.com/sklose/NCalc2) contributors
 * [HasOption method from ExpressionOptions is now obsolete, please use HasFlag](https://github.com/ncalc/ncalc/pull/196) by [Gustavo Barros](https://github.com/gumbarros)
+* [AOT apps now work again with NCalc](https://github.com/ncalc/ncalc/pull/200) by [Gustavo Barros](https://github.com/gumbarros)
 
 ## Breaking Changes
 * [Do not convert external function name to lower case when ExpressionOptions.IgnoreCase option is used](https://github.com/ncalc/ncalc/pull/179) by [Andrey Bykiev](https://github.com/Bykiev)

@@ -380,7 +380,14 @@ public static class LogicalExpressionParser
                 static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
+#if NET6_0_OR_GREATER
+        if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+            Parser = expression.Compile();
+        else
+            Parser = expression;
+#else
         Parser = expression.Compile();
+#endif
     }
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
