@@ -7,7 +7,6 @@
             NCalc is a mathematical expression evaluator for .NET. This assembly allows NCalc to use Antlr as an alternative parser.
         </Description>
     </PropertyGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\..\NCalc.DependencyInjection\NCalc.DependencyInjection.csproj"/>
     </ItemGroup>
