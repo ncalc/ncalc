@@ -4,6 +4,10 @@
         <TargetFrameworks>net462;netstandard2.0;net6.0;net8.0</TargetFrameworks>
         <LangVersion>12</LangVersion>
         <RootNamespace>NCalc.Cache</RootNamespace>
+        <PackageTags>ncalc,memorycache,cache,expressions</PackageTags>
+        <Description>
+            NCalc is a mathematical expression evaluator for .NET. This assembly brings support to Microsoft.Extensions.MemoryCache for NCalc.
+        </Description>
     </PropertyGroup>
 
     <ItemGroup>

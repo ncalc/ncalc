@@ -9,6 +9,7 @@
     <OutputType>Library</OutputType>
     <Configurations>Debug;Release;SignedRelease</Configurations>
     <Platforms>AnyCPU</Platforms>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
