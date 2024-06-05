@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using NCalc.Exceptions;
 using NCalc.Tests.TestData;
 
@@ -206,8 +207,9 @@ public class EvaluationTests
             }
         };
 
-        var result = ((IEnumerable<object>)e.Evaluate())!.ToList();
+        var result = (IList<object>)e.Evaluate();
 
+        Assert.NotNull(result);
         Assert.Equal(0, result[0]);
         Assert.Equal(1, result[1]);
         Assert.Equal(4, result[2]);

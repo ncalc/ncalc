@@ -37,7 +37,7 @@ public partial class Expression
         add => EvaluationVisitor.EvaluateFunction += value;
         remove => EvaluationVisitor.EvaluateFunction -= value;
     }
-    
+
     /// <summary>
     /// Event triggered to handle async function evaluation.
     /// </summary>
@@ -46,7 +46,7 @@ public partial class Expression
         add => AsyncEvaluationVisitor.EvaluateFunctionAsync += value;
         remove => AsyncEvaluationVisitor.EvaluateFunctionAsync -= value;
     }
-    
+
     /// <summary>
     /// Event triggered to handle async parameter evaluation.
     /// </summary>
@@ -55,7 +55,7 @@ public partial class Expression
         add => AsyncEvaluationVisitor.EvaluateParameterAsync += value;
         remove => AsyncEvaluationVisitor.EvaluateParameterAsync -= value;
     }
-    
+
     /// <summary>
     /// Options for the expression evaluation.
     /// </summary>
@@ -83,6 +83,7 @@ public partial class Expression
         {
             _context = value;
             EvaluationVisitor.Context = value;
+            AsyncEvaluationVisitor.Context = value;
         }
     }
 
@@ -91,8 +92,8 @@ public partial class Expression
     /// </summary>
     public Dictionary<string, object?> Parameters
     {
-        get => EvaluationVisitor.Parameters;
-        set => EvaluationVisitor.Parameters = value;
+        get => Context.Parameters;
+        set => Context.Parameters = value;
     }
 
     /// <summary>
@@ -110,7 +111,7 @@ public partial class Expression
 
     protected IEvaluationVisitor EvaluationVisitor { get; init; }
     protected IAsyncEvaluationVisitor AsyncEvaluationVisitor { get; init; }
-    
+
     protected IParameterExtractionVisitor ParameterExtractionVisitor { get; init; }
 
     private Expression()
@@ -219,7 +220,7 @@ public partial class Expression
         LogicalExpression!.Accept(EvaluationVisitor);
         return EvaluationVisitor.Result;
     }
-    
+
     /// <summary>
     /// Asynchronous evaluate the expression and return the Task.
     /// </summary>
@@ -236,7 +237,7 @@ public partial class Expression
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
-            return IterateParametersAsync();
+            return await IterateParametersAsync();
 
         await LogicalExpression!.AcceptAsync(AsyncEvaluationVisitor);
         return AsyncEvaluationVisitor.Result;
@@ -268,23 +269,26 @@ public partial class Expression
         return logicalExpression;
     }
 
-    private IEnumerable<object?> IterateParameters()
+    private List<object?> IterateParameters()
     {
         var parameterEnumerators = new Dictionary<string, IEnumerator>();
         int? size = null;
+        var results = new List<object?>();
 
         foreach (var parameter in Parameters.Values)
         {
             if (parameter is not IEnumerable enumerable)
                 continue;
-        
+
             var localsize = enumerable.Cast<object>().Count();
 
             if (size == null)
                 size = localsize;
             else if (localsize != size)
-                throw new NCalcException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
+                throw new NCalcException(
+                    "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
         }
+
         try
         {
             foreach (var key in Parameters.Keys)
@@ -294,6 +298,7 @@ public partial class Expression
                     parameterEnumerators[key] = parameter.GetEnumerator();
                 }
             }
+
             for (var i = 0; i < size; i++)
             {
                 foreach (var kvp in parameterEnumerators)
@@ -303,8 +308,10 @@ public partial class Expression
                 }
 
                 LogicalExpression!.Accept(EvaluationVisitor);
-                yield return EvaluationVisitor.Result;
+                results.Add(EvaluationVisitor.Result);
             }
+
+            return results;
         }
         finally
         {
@@ -317,24 +324,27 @@ public partial class Expression
             }
         }
     }
-    
-    private async IAsyncEnumerable<object?> IterateParametersAsync()
+
+    private async Task<List<object?>> IterateParametersAsync()
     {
         var parameterEnumerators = new Dictionary<string, IEnumerator>();
         int? size = null;
+        var results = new List<object?>();
 
         foreach (var parameter in Parameters.Values)
         {
             if (parameter is not IEnumerable enumerable)
                 continue;
-        
+
             var localsize = enumerable.Cast<object>().Count();
 
             if (size == null)
                 size = localsize;
             else if (localsize != size)
-                throw new NCalcException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
+                throw new NCalcException(
+                    "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
         }
+
         try
         {
             foreach (var key in Parameters.Keys)
@@ -344,7 +354,7 @@ public partial class Expression
                     parameterEnumerators[key] = parameter.GetEnumerator();
                 }
             }
-            
+
             for (var i = 0; i < size; i++)
             {
                 foreach (var kvp in parameterEnumerators)
@@ -354,8 +364,10 @@ public partial class Expression
                 }
 
                 await LogicalExpression!.AcceptAsync(AsyncEvaluationVisitor);
-                yield return EvaluationVisitor.Result;
+                results.Add(AsyncEvaluationVisitor.Result);
             }
+
+            return results;
         }
         finally
         {
@@ -368,6 +380,7 @@ public partial class Expression
             }
         }
     }
+
 
     /// <summary>
     /// Returns a list with all parameters names from the expression.

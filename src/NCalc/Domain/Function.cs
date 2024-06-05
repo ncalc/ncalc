@@ -13,5 +13,9 @@ public sealed class Function(Identifier identifier, LogicalExpression[] expressi
         visitor.Visit(this);
     }
 
-    public override Task AcceptAsync(IAsyncLogicalExpressionVisitor visitor) => throw new NotImplementedException();
+    public override Task AcceptAsync(IAsyncLogicalExpressionVisitor visitor)
+    {
+        return visitor.VisitAsync(this);
+    }
+    
 }

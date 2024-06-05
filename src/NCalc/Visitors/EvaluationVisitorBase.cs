@@ -18,7 +18,11 @@ public abstract class EvaluationVisitorBase
         set => Context.CultureInfo = value;
     }
 
-    public Dictionary<string, object?> Parameters { get; set; } = new();
+    public Dictionary<string, object?> Parameters
+    {
+        get => Context.Parameters;
+        set => Context.Parameters = value;
+    }
 
     public ExpressionContext Context { get; set; } = new();
 

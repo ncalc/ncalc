@@ -7,7 +7,8 @@ public class ExpressionContext
 {
     public ExpressionOptions Options { get; set; } = ExpressionOptions.None;
     public CultureInfo CultureInfo { get; set; } = CultureInfo.CurrentCulture;
-
+    public Dictionary<string,object?> Parameters { get; set; } = new();
+    
     public ExpressionContext()
     {
 
