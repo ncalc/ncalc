@@ -17,7 +17,10 @@ public sealed class ParameterExtractionVisitor : IParameterExtractionVisitor
         }
     }
 
-    public void Visit(UnaryExpression expression) => expression.Accept(this);
+    public void Visit(UnaryExpression expression)
+    {
+        expression.Expression.Accept(this);
+    }
 
     public void Visit(BinaryExpression expression)
     {
