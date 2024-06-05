@@ -41,4 +41,12 @@ public class ParameterExtractionTests
         
         Assert.Equal(2,parameters.Count);
     }
+
+    [Fact]
+    public void Should_Get_Parameters_With_Unary()
+    {
+        var expression = new Expression("-0.68");
+        var p = expression.GetParametersNames();
+        Assert.Empty(p);
+    }
 }
