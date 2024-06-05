@@ -1,10 +1,19 @@
 # 4.2
 * [Improve Parlot error handling](https://github.com/ncalc/ncalc/pull/181) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Fix OverflowException with double values](https://github.com/ncalc/ncalc/pull/188) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Fix double value precision loss](https://github.com/ncalc/ncalc/pull/188) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Add new ExpressionOptions.AllowBooleanCalculation and ExpressionOptions.OrdinalStringComparer options. ExpressionOptions.CaseInsensitiveComparer is now obsolete, please use ExpressionOptions.CaseInsensitiveStringComparer instead](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
+* [Add support for compilation of expressions to CLR lambdas](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Mauricio de Barros](https://github.com/gumbarros). Credits to [Sebastian Klose](https://github.com/sklose) and [NCalc2 project](https://github.com/sklose/NCalc2) contributors
+* [HasOption method from ExpressionOptions is now obsolete, please use HasFlag](https://github.com/ncalc/ncalc/pull/196) by [Gustavo Barros](https://github.com/gumbarros)
+* [AOT apps now work again with NCalc](https://github.com/ncalc/ncalc/pull/200) by [Gustavo Barros](https://github.com/gumbarros)
+
 ## Breaking Changes
 * [Do not convert external function name to lower case when ExpressionOptions.IgnoreCase option is used](https://github.com/ncalc/ncalc/pull/179) by [Andrey Bykiev](https://github.com/Bykiev)
 * [Add support for using null with operators](https://github.com/ncalc/ncalc/pull/184) by [Andrey Bykiev](https://github.com/Bykiev)
 * [Exceptions need to be handled as NCalcEvaluationException instead of ArgumentException and added TypeHelper](https://github.com/ncalc/ncalc/pull/182) by [Gustavo Barros](https://github.com/gumbarros)
-* [Use IOptions instead of IOptionsSnapshot at LogicalExpressionMemoryCache]  by [Gustavo Barros](https://github.com/gumbarros)
+* [Use IOptions instead of IOptionsSnapshot at LogicalExpressionMemoryCache](https://github.com/ncalc/ncalc/pull/187) by [Gustavo Barros](https://github.com/gumbarros)
+* [Changed the logic of ExpressionOptions.DecimalAsDefault. When this option is specified, all function parameters are expected to be decimal](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Barros](https://github.com/gumbarros)
+* [Fully removed LogicalExpressionVisitor, please use ILogicalExpressionVisitor](https://github.com/ncalc/ncalc/pull/188) by [Gustavo Barros](https://github.com/gumbarros)
 
 # 4.1
 * [Remove excessive check for casing](https://github.com/ncalc/ncalc/pull/149) by [Andrey Bykiev](https://github.com/Bykiev)
@@ -17,7 +26,6 @@
 * [Re-added ANTLR as a plugin](https://github.com/ncalc/ncalc/pull/176) by [Gustavo Barros](https://github.com/gumbarros)
 
 # 4.0
-
 * [Parlot is used instead of Antlr for parsing](https://github.com/ncalc/ncalc/issues/137) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros) and [Sébastien Ros](https://github.com/sebastienros)
 * [`GetParametersNames` no longer adds same parameter more than one time to the result](https://github.com/ncalc/ncalc/issues/141) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)
 * [xUnit is now used for unit tests](https://github.com/ncalc/ncalc/issues/138) by [Gustavo Mauricio de Barros](https://github.com/gumbarros)

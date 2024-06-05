@@ -127,8 +127,8 @@ public class EvaluationTests
     [Fact]
     public void ShouldHandleCaseSensitiveness()
     {
-        Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.IgnoreCase).Evaluate());
-        Assert.Equal(1M, new Expression("Abs(-1)").Evaluate());
+        Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.DecimalAsDefault | ExpressionOptions.IgnoreCase).Evaluate());
+        Assert.Equal(1M, new Expression("Abs(-1)", ExpressionOptions.DecimalAsDefault).Evaluate());
 
         Assert.Throws<NCalcFunctionNotFoundException>(() => new Expression("aBs(-1)").Evaluate());
     }

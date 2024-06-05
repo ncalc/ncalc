@@ -12,11 +12,6 @@ public class SerializationVisitor : ILogicalExpressionVisitor
 
     public StringBuilder Result { get; } = new();
 
-    public void Visit(LogicalExpression expression)
-    {
-        throw new NotSupportedException("The Visit method is not supported for this class.");
-    }
-
     public void Visit(TernaryExpression expression)
     {
         EncapsulateNoValue(expression.LeftExpression);

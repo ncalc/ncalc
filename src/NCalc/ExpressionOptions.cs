@@ -34,7 +34,15 @@ public enum ExpressionOptions
     /// <summary>
     /// Specifies the use of CaseInsensitiveComparer for comparisons.
     /// </summary>
+    [Obsolete("Please use CaseInsensitiveStringComparer")]
     CaseInsensitiveComparer = 1 << 5,
+
+    /// <summary>
+    /// Specifies the use of CaseInsensitiveComparer for comparisons.
+    /// </summary>
+#pragma warning disable CA1069
+    CaseInsensitiveStringComparer = 1 << 5,
+#pragma warning restore CA1069
 
     /// <summary>
     /// Uses decimals instead of doubles as default floating point data type.
@@ -44,14 +52,25 @@ public enum ExpressionOptions
     /// <summary>
     /// Defines a "null" parameter and allows comparison of values to null.
     /// </summary>
-    AllowNullParameter = 1 << 7
+    AllowNullParameter = 1 << 7,
+
+    /// <summary>
+    /// Use ordinal culture on string compare
+    /// </summary>
+    OrdinalStringComparer = 1 << 8,
+
+    /// <summary>
+    /// Allow calculation with boolean values
+    /// </summary>
+    AllowBooleanCalculation = 1 << 9,
 }
-    
+
 public static class ExpressionOptionsExtensions
 {
     /// <summary>
     /// Checks if the ExpressionOptions enum have an option selected.
     /// </summary>
+    [Obsolete("Please use HasFlag. This method have the exact same functionality.")]
     public static bool HasOption(this ExpressionOptions options, ExpressionOptions option)
     {
         return (options & option) == option;

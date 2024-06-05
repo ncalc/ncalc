@@ -8,7 +8,7 @@ namespace NCalc.Factories;
 /// Default <see cref="IExpressionFactory"/> implementation.
 /// </summary>
 public sealed class ExpressionFactory(
-    ILogicalExpressionFactory logicalExpressionFactory, 
+    ILogicalExpressionFactory logicalExpressionFactory,
     ILogicalExpressionCache cache,
     IEvaluationVisitor evaluationVisitor,
     IParameterExtractionVisitor parameterExtractionVisitor
@@ -16,11 +16,11 @@ public sealed class ExpressionFactory(
 {
     public Expression Create(string expression, ExpressionContext? expressionContext = null)
     {
-        return new AdvancedExpression(logicalExpressionFactory,cache,evaluationVisitor,parameterExtractionVisitor,expression, expressionContext);
+        return new AdvancedExpression(logicalExpressionFactory, cache, evaluationVisitor, parameterExtractionVisitor, expression, expressionContext);
     }
 
     public Expression Create(LogicalExpression logicalExpression, ExpressionContext? expressionContext = null)
     {
-        return new AdvancedExpression(logicalExpressionFactory,cache,evaluationVisitor,parameterExtractionVisitor,logicalExpression, expressionContext);
+        return new AdvancedExpression(logicalExpressionFactory, cache, evaluationVisitor, parameterExtractionVisitor, logicalExpression, expressionContext);
     }
 }

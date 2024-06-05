@@ -7,20 +7,19 @@ using NCalc.Visitors;
 
 namespace NCalc;
 
-
 /// <summary>
 /// The Expression class represents a mathematical or logical expression that can be evaluated.
 /// It supports caching, custom parameter and function evaluation, and options for handling null parameters and iterating over parameter collections.
 /// The class manages the parsing, validation, and evaluation of expressions, and provides mechanisms for error detection and reporting.
 /// </summary>
-public class Expression
+public partial class Expression
 {
     /// <summary>
     /// Static property to enable or disable cache.
     /// Default Value: True
     /// </summary>
     public static bool CacheEnabled { get; set; } = true;
-    
+
     /// <summary>
     /// Event triggered to handle parameter evaluation.
     /// </summary>
@@ -33,12 +32,12 @@ public class Expression
     /// <summary>
     /// Event triggered to handle function evaluation.
     /// </summary>
-    public event EvaluateFunctionHandler EvaluateFunction 
+    public event EvaluateFunctionHandler EvaluateFunction
     {
         add => EvaluationVisitor.EvaluateFunction += value;
         remove => EvaluationVisitor.EvaluateFunction -= value;
     }
-    
+
     /// <summary>
     /// Options for the expression evaluation.
     /// </summary>
@@ -47,7 +46,7 @@ public class Expression
         get => Context.Options;
         set => Context.Options = value;
     }
-    
+
     /// <summary>
     /// Culture information for the expression evaluation.
     /// </summary>
@@ -58,6 +57,7 @@ public class Expression
     }
 
     private ExpressionContext _context = null!;
+
     protected ExpressionContext Context
     {
         get => _context;
@@ -83,7 +83,7 @@ public class Expression
     public string? ExpressionString { get; protected init; }
 
     public LogicalExpression? LogicalExpression { get; protected set; }
-    
+
     public Exception? Error { get; private set; }
 
     protected ILogicalExpressionCache LogicalExpressionCache { get; init; }
@@ -97,15 +97,15 @@ public class Expression
     private Expression()
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
-        LogicalExpressionFactory =  Factories.LogicalExpressionFactory.GetInstance();
+        LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
         ParameterExtractionVisitor = new ParameterExtractionVisitor();
         EvaluationVisitor = new EvaluationVisitor();
     }
-    
+
     protected Expression(
-        ILogicalExpressionFactory logicalExpressionFactory, 
+        ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
-        IEvaluationVisitor evaluationVisitor, 
+        IEvaluationVisitor evaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor)
     {
         LogicalExpressionCache = logicalExpressionCache;
@@ -113,50 +113,48 @@ public class Expression
         EvaluationVisitor = evaluationVisitor;
         ParameterExtractionVisitor = parameterExtractionVisitor;
     }
-    
+
     public Expression(string expression, ExpressionContext? context = null) : this()
     {
         Context = context ?? new();
         ExpressionString = expression;
     }
-    
-    
+
+
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, ExpressionContext have implicit conversions.
     public Expression(string expression) : this(expression, ExpressionOptions.None)
     {
-     
     }
-    
-    public Expression(string expression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null) : this(expression,new ExpressionContext(options, cultureInfo))
-    {
 
+    public Expression(string expression, ExpressionOptions options = ExpressionOptions.None,
+        CultureInfo? cultureInfo = null) : this(expression, new ExpressionContext(options, cultureInfo))
+    {
     }
-    
+
     public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this()
     {
         Context = context ?? new();
         LogicalExpression = logicalExpression ?? throw new
             ArgumentException("Expression can't be null", nameof(logicalExpression));
     }
-    
+
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, ExpressionContext have implicit conversions.
     public Expression(LogicalExpression logicalExpression) : this(logicalExpression, ExpressionOptions.None)
     {
-     
     }
-    
-    public Expression(LogicalExpression logicalExpression, ExpressionOptions options = ExpressionOptions.None, CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
-    {
 
+    public Expression(LogicalExpression logicalExpression, ExpressionOptions options = ExpressionOptions.None,
+        CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
+    {
     }
 
     private bool IsCacheEnabled()
     {
-        return CacheEnabled && !Options.HasOption(ExpressionOptions.NoCache);
+        return CacheEnabled && !Options.HasFlag(ExpressionOptions.NoCache);
     }
-    
+
     /// <summary>
     /// Create the LogicalExpression in order to check syntax errors.
     /// If errors are detected, the Error property contains the exception.
@@ -171,7 +169,7 @@ public class Expression
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             Error = exception;
             return true;
@@ -185,15 +183,15 @@ public class Expression
     public object? Evaluate()
     {
         LogicalExpression ??= GetLogicalExpression();
-        
+
         if (Error is not null)
             throw Error;
 
-        if (Options.HasOption(ExpressionOptions.AllowNullParameter))
+        if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
             EvaluationVisitor.Parameters["null"] = null;
 
         // If array evaluation, execute the same expression multiple times
-        if (Options.HasOption(ExpressionOptions.IterateParameters))
+        if (Options.HasFlag(ExpressionOptions.IterateParameters))
             return IterateParameters();
 
         LogicalExpression!.Accept(EvaluationVisitor);
@@ -206,23 +204,23 @@ public class Expression
             throw new NCalcException("Expression cannot be null or empty.");
 
         var isCacheEnabled = IsCacheEnabled();
-        
+
         LogicalExpression? logicalExpression = null;
-        
+
         if (isCacheEnabled && LogicalExpressionCache.TryGetValue(ExpressionString!, out logicalExpression))
             return logicalExpression!;
 
         try
         {
             logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
-            if(isCacheEnabled)
+            if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
         catch (Exception exception)
         {
             Error = exception;
         }
-        
+
         return logicalExpression;
     }
 
@@ -244,7 +242,8 @@ public class Expression
                 }
                 else if (localsize != size)
                 {
-                    throw new NCalcException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
+                    throw new NCalcException(
+                        "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
                 }
             }
         }
@@ -253,7 +252,7 @@ public class Expression
         {
             if (Parameters[key] is IEnumerable parameter)
             {
-                parameterEnumerators.Add(key,parameter.GetEnumerator());
+                parameterEnumerators.Add(key, parameter.GetEnumerator());
             }
         }
 

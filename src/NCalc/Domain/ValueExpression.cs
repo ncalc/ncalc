@@ -61,13 +61,19 @@ public sealed class ValueExpression : LogicalExpression
         Type = ValueType.Float;
     }
 
+    public ValueExpression(decimal value)
+    {
+        Value = value;
+        Type = ValueType.Float;
+    }
+
     public ValueExpression(DateTime value)
     {
         Value = value;
         Type = ValueType.DateTime;
     }
-    
-    
+
+
     public ValueExpression(TimeSpan value)
     {
         Value = value;

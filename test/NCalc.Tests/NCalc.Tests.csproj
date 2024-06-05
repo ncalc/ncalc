@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net48</TargetFrameworks>
+    <TargetFrameworks>net8.0;net4.8</TargetFrameworks>
     <LangVersion>12</LangVersion>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
@@ -9,6 +9,7 @@
     <OutputType>Library</OutputType>
     <Configurations>Debug;Release;SignedRelease</Configurations>
     <Platforms>AnyCPU</Platforms>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

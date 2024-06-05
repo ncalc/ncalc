@@ -11,12 +11,12 @@ namespace NCalc;
 public class AdvancedExpression : Expression
 {
     public AdvancedExpression(
-        ILogicalExpressionFactory logicalExpressionFactory, 
+        ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
-        IEvaluationVisitor evaluationVisitor, 
+        IEvaluationVisitor evaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor,
-        string expression, 
-        ExpressionContext? context = null) : base(logicalExpressionFactory,logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
+        string expression,
+        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
     {
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
@@ -27,14 +27,14 @@ public class AdvancedExpression : Expression
     }
 
     public AdvancedExpression(
-        ILogicalExpressionFactory logicalExpressionFactory, 
-        ILogicalExpressionCache logicalExpressionCache, 
+        ILogicalExpressionFactory logicalExpressionFactory,
+        ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitor evaluationVisitor,
-        IParameterExtractionVisitor parameterExtractionVisitor, 
+        IParameterExtractionVisitor parameterExtractionVisitor,
         LogicalExpression logicalExpression,
-        ExpressionContext? context = null): base(logicalExpressionFactory,logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
+        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
     {
-        
+
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
         EvaluationVisitor = evaluationVisitor;

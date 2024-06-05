@@ -84,7 +84,7 @@ public class ServiceCollectionExtensionsTests
         var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
 
         var exp = expFactory.Create("1+1");
-        
+        Assert.Equal(42, exp.Evaluate());
         Assert.IsType<CustomEvaluationVisitor>(visitor);
     }
 
@@ -130,46 +130,41 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomEvaluationVisitor : IEvaluationVisitor
     {
-        public void Visit(LogicalExpression expression)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Visit(TernaryExpression expression)
         {
-            throw new NotImplementedException();
+
         }
 
         public void Visit(BinaryExpression expression)
         {
-            throw new NotImplementedException();
+
         }
 
         public void Visit(UnaryExpression expression)
         {
-            throw new NotImplementedException();
+
         }
 
         public void Visit(ValueExpression expression)
         {
-            throw new NotImplementedException();
+
         }
 
         public void Visit(Function function)
         {
-            throw new NotImplementedException();
+
         }
 
         public void Visit(Identifier identifier)
         {
-            throw new NotImplementedException();
+
         }
 
         public event EvaluateFunctionHandler EvaluateFunction;
         public event EvaluateParameterHandler EvaluateParameter;
         public ExpressionContext Context { get; set; }
         public Dictionary<string, object> Parameters { get; set; }
-        public object Result { get; }
+        public object Result => 42;
     }
 
     private class CustomParameterExtractionVisitor : IParameterExtractionVisitor

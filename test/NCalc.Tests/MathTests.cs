@@ -10,7 +10,7 @@ public class MathsTests
     {
         var data = new TheoryData<string, object, double?>
         {
-            { "Abs(-1)", 1M, null },
+            { "Abs(-1)", 1d, null },
             { "Acos(1)", 0d, null },
             { "Asin(0)", 0d, null },
             { "Atan(0)", 0d, null },
@@ -340,5 +340,58 @@ public class MathsTests
         e.Parameters["a"] = 20M;
         e.Parameters["b"] = 20M;
         Assert.Equal(100M, e.Evaluate());
+    }
+    
+    [Fact]
+    public void Overflow_Issue_190()
+    {
+        const decimal minValue = decimal.MinValue;
+        var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        Assert.Equal(minValue,expr.Evaluate());
+    }
+    
+    [Theory]
+    [InlineData("(X1 = 1)/2", 0.5)]
+    [InlineData("(X1 = 1)*2", 2)]
+    [InlineData("(X1 = 1)+1", 2)]
+    [InlineData("(X1 = 1)-1", 0)]
+    [InlineData("2*(X1 = 1)", 2)]
+    [InlineData("2/(X1 = 1)", 2.0)]
+    [InlineData("1+(X1 = 1)", 2)]
+    [InlineData("true-(X1 = 1)", 0)]
+    [InlineData("true-(X1 = true - false)", 0)]
+    public void ShouldOptionallyCalculateWithBoolean(string formula, object expectedValue)
+    {
+        var expression = new Expression(formula, ExpressionOptions.AllowBooleanCalculation);
+        expression.Parameters["X1"] = 1;
+
+        Assert.Equal(expectedValue, expression.Evaluate());
+
+
+        var lambda = expression.ToLambda<double>();
+        
+        Assert.Equal(Convert.ToDouble(expectedValue), lambda());
+    }
+    
+    [Fact]
+    public void Should_Evaluate_Floor_Of_Double_Max_Value()
+    {
+        var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
+        var res = expr.Evaluate();
+
+#if NET8_0
+        Assert.Equal(Math.Floor(double.MaxValue), res);
+#else
+        Assert.Equal(double.PositiveInfinity, res);
+#endif
+    }
+
+    [Fact]
+    public void Should_Not_Change_Double_Precision()
+    {
+        var expr = new Expression($"Floor(12e+100)");
+        var res = expr.Evaluate();
+
+        Assert.Equal(Math.Floor(12e+100), res);
     }
 }
