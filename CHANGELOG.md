@@ -1,3 +1,6 @@
+# 4.2.1
+* [Fix GetParametersNames() method inifinte loop with unary operators](https://github.com/ncalc/ncalc/pull/212) by [Andrey Bykiev](https://github.com/Bykiev)
+
 # 4.2
 * [Improve Parlot error handling](https://github.com/ncalc/ncalc/pull/181) by [Andrey Bykiev](https://github.com/Bykiev)
 * [Fix OverflowException with double values](https://github.com/ncalc/ncalc/pull/188) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros)
