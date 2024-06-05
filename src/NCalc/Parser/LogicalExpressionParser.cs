@@ -142,7 +142,7 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
 
-        var not = OneOf(Terms.Text("NOT", true), Terms.Text("!"));
+        var not = OneOf(Terms.Text("NOT", true).AndSkip(Literals.WhiteSpace()), Terms.Text("!"));
         var and = OneOf(Terms.Text("AND", true), Terms.Text("&&"));
         var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
 
