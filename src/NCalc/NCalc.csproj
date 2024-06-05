@@ -67,6 +67,7 @@ This package contains the unsigned assembly 'NCalc'. For the stronly signed asse
 
 	<ItemGroup>
 		<PackageReference Include="ExtendedNumerics.BigDecimal" Version="2025.1001.2.129" />
+		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
 		<PackageReference Include="Parlot" Version="0.0.28" />
 		<PackageReference Include="PolySharp" Version="1.14.1">
 		  <PrivateAssets>all</PrivateAssets>

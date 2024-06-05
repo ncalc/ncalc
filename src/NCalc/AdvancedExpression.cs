@@ -14,9 +14,10 @@ public class AdvancedExpression : Expression
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitor evaluationVisitor,
+        IAsyncEvaluationVisitor asyncEvaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor,
         string expression,
-        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
+        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, asyncEvaluationVisitor, parameterExtractionVisitor)
     {
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
@@ -30,9 +31,10 @@ public class AdvancedExpression : Expression
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitor evaluationVisitor,
+        IAsyncEvaluationVisitor asyncEvaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor,
         LogicalExpression logicalExpression,
-        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
+        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor,asyncEvaluationVisitor, parameterExtractionVisitor)
     {
 
         LogicalExpressionCache = logicalExpressionCache;

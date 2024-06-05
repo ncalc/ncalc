@@ -37,7 +37,25 @@ public partial class Expression
         add => EvaluationVisitor.EvaluateFunction += value;
         remove => EvaluationVisitor.EvaluateFunction -= value;
     }
-
+    
+    /// <summary>
+    /// Event triggered to handle async function evaluation.
+    /// </summary>
+    public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync
+    {
+        add => AsyncEvaluationVisitor.EvaluateFunctionAsync += value;
+        remove => AsyncEvaluationVisitor.EvaluateFunctionAsync -= value;
+    }
+    
+    /// <summary>
+    /// Event triggered to handle async parameter evaluation.
+    /// </summary>
+    public event AsyncEvaluateParameterHandler? EvaluateParameterAsync
+    {
+        add => AsyncEvaluationVisitor.EvaluateParameterAsync += value;
+        remove => AsyncEvaluationVisitor.EvaluateParameterAsync -= value;
+    }
+    
     /// <summary>
     /// Options for the expression evaluation.
     /// </summary>
@@ -91,7 +109,8 @@ public partial class Expression
     protected ILogicalExpressionFactory LogicalExpressionFactory { get; init; }
 
     protected IEvaluationVisitor EvaluationVisitor { get; init; }
-
+    protected IAsyncEvaluationVisitor AsyncEvaluationVisitor { get; init; }
+    
     protected IParameterExtractionVisitor ParameterExtractionVisitor { get; init; }
 
     private Expression()
@@ -100,17 +119,20 @@ public partial class Expression
         LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
         ParameterExtractionVisitor = new ParameterExtractionVisitor();
         EvaluationVisitor = new EvaluationVisitor();
+        AsyncEvaluationVisitor = new AsyncEvaluationVisitor();
     }
 
     protected Expression(
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitor evaluationVisitor,
+        IAsyncEvaluationVisitor asyncEvaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor)
     {
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
         EvaluationVisitor = evaluationVisitor;
+        AsyncEvaluationVisitor = asyncEvaluationVisitor;
         ParameterExtractionVisitor = parameterExtractionVisitor;
     }
 
@@ -197,6 +219,28 @@ public partial class Expression
         LogicalExpression!.Accept(EvaluationVisitor);
         return EvaluationVisitor.Result;
     }
+    
+    /// <summary>
+    /// Asynchronous evaluate the expression and return the Task.
+    /// </summary>
+    /// <returns>The result of the evaluation.</returns>
+    public async Task<object?> EvaluateAsync()
+    {
+        LogicalExpression ??= GetLogicalExpression();
+
+        if (Error is not null)
+            throw Error;
+
+        if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
+            EvaluationVisitor.Parameters["null"] = null;
+
+        // If array evaluation, execute the same expression multiple times
+        if (Options.HasFlag(ExpressionOptions.IterateParameters))
+            return IterateParametersAsync();
+
+        await LogicalExpression!.AcceptAsync(AsyncEvaluationVisitor);
+        return AsyncEvaluationVisitor.Result;
+    }
 
     private LogicalExpression? GetLogicalExpression()
     {
@@ -224,53 +268,105 @@ public partial class Expression
         return logicalExpression;
     }
 
-    private List<object?> IterateParameters()
+    private IEnumerable<object?> IterateParameters()
     {
-        var size = -1;
-
         var parameterEnumerators = new Dictionary<string, IEnumerator>();
+        int? size = null;
 
         foreach (var parameter in Parameters.Values)
         {
-            if (parameter is IEnumerable enumerable)
-            {
-                var localsize = enumerable.Cast<object>().Count();
+            if (parameter is not IEnumerable enumerable)
+                continue;
+        
+            var localsize = enumerable.Cast<object>().Count();
 
-                if (size == -1)
-                {
-                    size = localsize;
-                }
-                else if (localsize != size)
-                {
-                    throw new NCalcException(
-                        "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
-                }
-            }
+            if (size == null)
+                size = localsize;
+            else if (localsize != size)
+                throw new NCalcException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
         }
-
-        foreach (var key in Parameters.Keys)
+        try
         {
-            if (Parameters[key] is IEnumerable parameter)
+            foreach (var key in Parameters.Keys)
             {
-                parameterEnumerators.Add(key, parameter.GetEnumerator());
+                if (Parameters[key] is IEnumerable parameter)
+                {
+                    parameterEnumerators[key] = parameter.GetEnumerator();
+                }
+            }
+            for (var i = 0; i < size; i++)
+            {
+                foreach (var kvp in parameterEnumerators)
+                {
+                    kvp.Value.MoveNext();
+                    Parameters[kvp.Key] = kvp.Value.Current;
+                }
+
+                LogicalExpression!.Accept(EvaluationVisitor);
+                yield return EvaluationVisitor.Result;
             }
         }
-
-        var results = new List<object?>();
-        for (var i = 0; i < size; i++)
+        finally
         {
-            foreach (var key in parameterEnumerators.Keys)
+            foreach (var enumerator in parameterEnumerators.Values)
             {
-                var enumerator = parameterEnumerators[key];
-                enumerator.MoveNext();
-                Parameters[key] = enumerator.Current;
+                if (enumerator is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
             }
-
-            LogicalExpression!.Accept(EvaluationVisitor);
-            results.Add(EvaluationVisitor.Result);
         }
+    }
+    
+    private async IAsyncEnumerable<object?> IterateParametersAsync()
+    {
+        var parameterEnumerators = new Dictionary<string, IEnumerator>();
+        int? size = null;
 
-        return results;
+        foreach (var parameter in Parameters.Values)
+        {
+            if (parameter is not IEnumerable enumerable)
+                continue;
+        
+            var localsize = enumerable.Cast<object>().Count();
+
+            if (size == null)
+                size = localsize;
+            else if (localsize != size)
+                throw new NCalcException("When IterateParameters option is used, IEnumerable parameters must have the same number of items");
+        }
+        try
+        {
+            foreach (var key in Parameters.Keys)
+            {
+                if (Parameters[key] is IEnumerable parameter)
+                {
+                    parameterEnumerators[key] = parameter.GetEnumerator();
+                }
+            }
+            
+            for (var i = 0; i < size; i++)
+            {
+                foreach (var kvp in parameterEnumerators)
+                {
+                    kvp.Value.MoveNext();
+                    Parameters[kvp.Key] = kvp.Value.Current;
+                }
+
+                await LogicalExpression!.AcceptAsync(AsyncEvaluationVisitor);
+                yield return EvaluationVisitor.Result;
+            }
+        }
+        finally
+        {
+            foreach (var enumerator in parameterEnumerators.Values)
+            {
+                if (enumerator is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+        }
     }
 
     /// <summary>

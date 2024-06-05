@@ -8,11 +8,11 @@
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="" />
     </ItemGroup>
-    
-    <ItemGroup>
-        <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">
-            <Version>3.4.244</Version>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-    </ItemGroup>
+<!--    TODO: My machine is suddenly crying about this, will check CI.-->
+<!--    <ItemGroup>-->
+<!--        <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">-->
+<!--            <Version>3.4.244</Version>-->
+<!--            <PrivateAssets>all</PrivateAssets>-->
+<!--        </PackageReference>-->
+<!--    </ItemGroup>-->
 </Project>

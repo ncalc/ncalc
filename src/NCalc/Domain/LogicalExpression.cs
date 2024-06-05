@@ -13,4 +13,5 @@ public abstract class LogicalExpression
     }
 
     public abstract void Accept(ILogicalExpressionVisitor visitor);
+    public abstract Task AcceptAsync(IAsyncLogicalExpressionVisitor visitor);
 }

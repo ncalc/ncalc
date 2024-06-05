@@ -5,161 +5,140 @@ using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 
-public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
+public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVisitor
 {
-    public event EvaluateFunctionHandler? EvaluateFunction;
-    public event EvaluateParameterHandler? EvaluateParameter;
+    public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync;
+    public event AsyncEvaluateParameterHandler? EvaluateParameterAsync;
 
-    public EvaluationVisitor()
-    {
-    }
-
-    public EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInfo)
-    {
-        Context = new(options, cultureInfo);
-    }
-
-    private object? Evaluate(LogicalExpression expression)
-    {
-        expression.Accept(this);
-        return Result;
-    }
-
-    public void Visit(TernaryExpression expression)
+    public async Task VisitAsync(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
-        expression.LeftExpression.Accept(this);
+        await expression.LeftExpression.AcceptAsync(this);
         var left = Convert.ToBoolean(Result, CultureInfo);
 
         if (left)
         {
-            expression.MiddleExpression.Accept(this);
+            await expression.MiddleExpression.AcceptAsync(this);
         }
         else
         {
-            expression.RightExpression.Accept(this);
+            await expression.RightExpression.AcceptAsync(this);
         }
     }
 
-    public void Visit(BinaryExpression expression)
+    public async Task VisitAsync(BinaryExpression expression)
     {
-        var leftValue = new Lazy<object?>(() => Evaluate(expression.LeftExpression));
-        var rightValue = new Lazy<object?>(() => Evaluate(expression.RightExpression));
+        var leftValue = new Lazy<Task<object?>>(() => EvaluateAsync(expression.LeftExpression));
+        var rightValue = new Lazy<Task<object?>>(() => EvaluateAsync(expression.RightExpression));
 
         switch (expression.Type)
         {
             case BinaryExpressionType.And:
-                Result = Convert.ToBoolean(leftValue.Value, CultureInfo) &&
-                         Convert.ToBoolean(rightValue.Value, CultureInfo);
+                Result = Convert.ToBoolean(await leftValue.Value, CultureInfo) &&
+                         Convert.ToBoolean(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.Or:
-                Result = Convert.ToBoolean(leftValue.Value, CultureInfo) ||
-                         Convert.ToBoolean(rightValue.Value, CultureInfo);
+                Result = Convert.ToBoolean(await leftValue.Value, CultureInfo) ||
+                         Convert.ToBoolean(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.Div:
-                Result = TypeHelper.IsReal(leftValue.Value) || TypeHelper.IsReal(rightValue.Value)
-                    ? MathHelper.Divide(leftValue.Value, rightValue.Value, MathHelperOptions)
-                    : MathHelper.Divide(Convert.ToDouble(leftValue.Value, CultureInfo), rightValue.Value,
+                Result = TypeHelper.IsReal(await leftValue.Value) || TypeHelper.IsReal(await rightValue.Value)
+                    ? MathHelper.Divide(await leftValue.Value, await rightValue.Value, MathHelperOptions)
+                    : MathHelper.Divide(Convert.ToDouble(await leftValue.Value, CultureInfo), await rightValue.Value,
                         MathHelperOptions);
                 break;
 
             case BinaryExpressionType.Equal:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) == 0;
+                Result = CompareUsingMostPreciseType(await leftValue.Value, await rightValue.Value) == 0;
                 break;
 
             case BinaryExpressionType.Greater:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) > 0;
+                Result = CompareUsingMostPreciseType(await leftValue.Value, await rightValue.Value) > 0;
                 break;
 
             case BinaryExpressionType.GreaterOrEqual:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) >= 0;
+                Result = CompareUsingMostPreciseType(await leftValue.Value, await rightValue.Value) >= 0;
                 break;
 
             case BinaryExpressionType.Lesser:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) < 0;
+                Result = CompareUsingMostPreciseType(await leftValue.Value, await rightValue.Value) < 0;
                 break;
 
             case BinaryExpressionType.LesserOrEqual:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) <= 0;
+                Result = CompareUsingMostPreciseType(await leftValue.Value, await rightValue.Value) <= 0;
                 break;
 
             case BinaryExpressionType.Minus:
-                Result = MathHelper.Subtract(leftValue.Value, rightValue.Value, MathHelperOptions);
+                Result = MathHelper.Subtract(await leftValue.Value, await rightValue.Value, MathHelperOptions);
                 break;
 
             case BinaryExpressionType.Modulo:
-                Result = MathHelper.Modulo(leftValue.Value, rightValue.Value, MathHelperOptions);
+                Result = MathHelper.Modulo(await leftValue.Value, await rightValue.Value, MathHelperOptions);
                 break;
 
             case BinaryExpressionType.NotEqual:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) != 0;
+                Result = CompareUsingMostPreciseType(await leftValue.Value, await rightValue.Value) != 0;
                 break;
 
             case BinaryExpressionType.Plus:
-                if (leftValue.Value is string)
+                if (await leftValue.Value is string)
                 {
-                    Result = string.Concat(leftValue.Value, rightValue.Value);
+                    Result = string.Concat(await leftValue.Value, await rightValue.Value);
                 }
                 else
                 {
-                    Result = MathHelper.Add(leftValue.Value, rightValue.Value, MathHelperOptions);
+                    Result = MathHelper.Add(await leftValue.Value, await rightValue.Value, MathHelperOptions);
                 }
 
                 break;
 
             case BinaryExpressionType.Times:
-                Result = MathHelper.Multiply(leftValue.Value, rightValue.Value, MathHelperOptions);
+                Result = MathHelper.Multiply(await leftValue.Value, await rightValue.Value, MathHelperOptions);
                 break;
 
             case BinaryExpressionType.BitwiseAnd:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) &
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) &
+                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseOr:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) |
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) |
+                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseXOr:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) ^
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) ^
+                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.LeftShift:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) <<
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) <<
+                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.RightShift:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) >>
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) >>
+                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.Exponentiation:
-                Result = Math.Pow(Convert.ToDouble(leftValue.Value, CultureInfo),
-                    Convert.ToDouble(rightValue.Value, CultureInfo));
+                Result = Math.Pow(Convert.ToDouble(await leftValue.Value, CultureInfo),
+                    Convert.ToDouble(await rightValue.Value, CultureInfo));
                 break;
         }
     }
 
-
-    public void Visit(UnaryExpression expression)
+    public async Task VisitAsync(UnaryExpression expression)
     {
         // Recursively evaluates the underlying expression
-        expression.Expression.Accept(this);
+        await expression.Expression.AcceptAsync(this);
 
         ExecuteUnaryExpression(expression);
     }
 
-    public void Visit(ValueExpression expression)
-    {
-        Result = expression.Value;
-    }
-
-    public void Visit(Function function)
+    public async Task VisitAsync(Function function)
     {
         var args = new FunctionArgs
         {
@@ -172,15 +151,15 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
         for (var i = 0; i < function.Expressions.Length; i++)
         {
             args.Parameters[i] = new Expression(function.Expressions[i], Options, CultureInfo);
-            args.Parameters[i].EvaluateFunction += EvaluateFunction;
-            args.Parameters[i].EvaluateParameter += EvaluateParameter;
+            args.Parameters[i].EvaluateFunctionAsync += EvaluateFunctionAsync;
+            args.Parameters[i].EvaluateParameterAsync += EvaluateParameterAsync;
 
             // Assign the parameters of the Expression to the arguments so that custom Functions and Parameters can use them
             args.Parameters[i].Parameters = Parameters;
         }
 
         // Calls external implementation
-        OnEvaluateFunction(function.Identifier.Name, args);
+        await OnEvaluateFunctionAsync(function.Identifier.Name, args);
 
         // If an external implementation was found get the result back
         if (args.HasResult)
@@ -189,13 +168,13 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
             return;
         }
 
-        Result = ExecuteBuiltInFunction(function);
+        Result = await ExecuteBuiltInFunctionAsync(function);
     }
 
-    private object? ExecuteBuiltInFunction(Function function)
+    private async Task<object?> ExecuteBuiltInFunctionAsync(Function function)
     {
         var functionName = function.Identifier.Name.ToUpperInvariant();
-        object? result = null;
+
 
         switch (functionName)
         {
@@ -203,104 +182,84 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
                 CheckCase("Abs", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Abs() takes exactly 1 argument");
-                result = MathHelper.Abs(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
+                return MathHelper.Abs(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
 
             case "ACOS":
                 CheckCase("Acos", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Acos() takes exactly 1 argument");
-                result = MathHelper.Acos(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Acos(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "ASIN":
                 CheckCase("Asin", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Asin() takes exactly 1 argument");
-                result = MathHelper.Asin(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Asin(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "ATAN":
                 CheckCase("Atan", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Atan() takes exactly 1 argument");
-                result = MathHelper.Atan(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Atan(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "ATAN2":
                 CheckCase("Atan2", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("Atan2() takes exactly 2 arguments");
-                result = MathHelper.Atan2(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                return MathHelper.Atan2(await EvaluateAsync(function.Expressions[0]),
+                    await EvaluateAsync(function.Expressions[1]),
                     MathHelperOptions);
-                break;
-
             case "CEILING":
                 CheckCase("Ceiling", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Ceiling() takes exactly 1 argument");
-                result = MathHelper.Ceiling(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Ceiling(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "COS":
                 CheckCase("Cos", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Cos() takes exactly 1 argument");
-                result = MathHelper.Cos(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Cos(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "EXP":
                 CheckCase("Exp", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Exp() takes exactly 1 argument");
-                result = MathHelper.Exp(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Exp(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "FLOOR":
                 CheckCase("Floor", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Floor() takes exactly 1 argument");
-                result = MathHelper.Floor(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
+                return MathHelper.Floor(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
 
             case "IEEEREMAINDER":
                 CheckCase("IEEERemainder", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("IEEERemainder() takes exactly 2 arguments");
-                result = MathHelper.IEEERemainder(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                return MathHelper.IEEERemainder(await EvaluateAsync(function.Expressions[0]),
+                    await EvaluateAsync(function.Expressions[1]),
                     MathHelperOptions);
-                break;
 
             case "LN":
                 CheckCase("Ln", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Ln() takes exactly 1 argument");
-                result = MathHelper.Ln(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
+                return MathHelper.Ln(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
 
             case "LOG":
                 CheckCase("Log", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("Log() takes exactly 2 arguments");
-                result = MathHelper.Log(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                return MathHelper.Log(await EvaluateAsync(function.Expressions[0]),
+                    await EvaluateAsync(function.Expressions[1]),
                     MathHelperOptions);
-                break;
-
             case "LOG10":
                 CheckCase("Log10", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Log10() takes exactly 1 argument");
-                result = MathHelper.Log10(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Log10(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "POW":
                 CheckCase("Pow", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("Pow() takes exactly 2 arguments");
-                result = MathHelper.Pow(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                return MathHelper.Pow(await EvaluateAsync(function.Expressions[0]),
+                    await EvaluateAsync(function.Expressions[1]),
                     MathHelperOptions);
-                break;
-
             case "ROUND":
                 CheckCase("Round", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
@@ -310,62 +269,49 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
                     ? MidpointRounding.AwayFromZero
                     : MidpointRounding.ToEven;
 
-                result = MathHelper.Round(Evaluate(function.Expressions[0]), Evaluate(function.Expressions[1]),
+                return MathHelper.Round(await EvaluateAsync(function.Expressions[0]),
+                    await EvaluateAsync(function.Expressions[1]),
                     rounding, MathHelperOptions);
-                break;
-
             case "SIGN":
                 CheckCase("Sign", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Sign() takes exactly 1 argument");
-                result = MathHelper.Sign(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Sign(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "SIN":
                 CheckCase("Sin", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Sin() takes exactly 1 argument");
-                result = MathHelper.Sin(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Sin(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "SQRT":
                 CheckCase("Sqrt", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Sqrt() takes exactly 1 argument");
-                result = MathHelper.Sqrt(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Sqrt(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "TAN":
                 CheckCase("Tan", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Tan() takes exactly 1 argument");
-                result = MathHelper.Tan(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Tan(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "TRUNCATE":
                 CheckCase("Truncate", function.Identifier.Name);
                 if (function.Expressions.Length != 1)
                     throw new NCalcEvaluationException("Truncate() takes exactly 1 argument");
-                result = MathHelper.Truncate(Evaluate(function.Expressions[0]), MathHelperOptions);
-                break;
-
+                return MathHelper.Truncate(await EvaluateAsync(function.Expressions[0]), MathHelperOptions);
             case "MAX":
                 CheckCase("Max", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("Max() takes exactly 2 arguments");
-                var maxleft = Evaluate(function.Expressions[0]);
-                var maxright = Evaluate(function.Expressions[1]);
-                result = MathHelper.Max(maxleft, maxright, MathHelperOptions);
-                break;
+                var maxleft = await EvaluateAsync(function.Expressions[0]);
+                var maxright = await EvaluateAsync(function.Expressions[1]);
+                return MathHelper.Max(maxleft, maxright, MathHelperOptions);
 
             case "MIN":
                 CheckCase("Min", function.Identifier.Name);
                 if (function.Expressions.Length != 2)
                     throw new NCalcEvaluationException("Min() takes exactly 2 arguments");
-                var minleft = Evaluate(function.Expressions[0]);
-                var minright = Evaluate(function.Expressions[1]);
-                result = MathHelper.Min(minleft, minright, MathHelperOptions);
-                break;
+                var minleft = await EvaluateAsync(function.Expressions[0]);
+                var minright = await EvaluateAsync(function.Expressions[1]);
+                return MathHelper.Min(minleft, minright, MathHelperOptions);
 
             case "IFS":
                 CheckCase("ifs", function.Identifier.Name);
@@ -375,13 +321,12 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
                 foreach (var eval in function.Expressions.Where((_, i) => i % 2 == 0))
                 {
                     var index = Array.IndexOf(function.Expressions, eval);
-                    var tf = Convert.ToBoolean(Evaluate(eval), CultureInfo);
+                    var tf = Convert.ToBoolean(await EvaluateAsync(eval), CultureInfo);
                     if (index == function.Expressions.Length - 1)
-                        result = Evaluate(eval);
+                        return await EvaluateAsync(eval);
                     else if (tf)
                     {
-                        result = Evaluate(function.Expressions[index + 1]);
-                        break;
+                        return await EvaluateAsync(function.Expressions[index + 1]);
                     }
                 }
 
@@ -391,19 +336,19 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
                 CheckCase("if", function.Identifier.Name);
                 if (function.Expressions.Length != 3)
                     throw new NCalcEvaluationException("if() takes exactly 3 arguments");
-                var cond = Convert.ToBoolean(Evaluate(function.Expressions[0]), CultureInfo);
-                result = cond ? Evaluate(function.Expressions[1]) : Evaluate(function.Expressions[2]);
-                break;
-
+                var cond = Convert.ToBoolean(await EvaluateAsync(function.Expressions[0]), CultureInfo);
+                return cond
+                    ? await EvaluateAsync(function.Expressions[1])
+                    : await EvaluateAsync(function.Expressions[2]);
             case "IN":
                 CheckCase("in", function.Identifier.Name);
                 if (function.Expressions.Length < 2)
                     throw new NCalcEvaluationException("in() takes at least 2 arguments");
-                var parameter = Evaluate(function.Expressions[0]);
+                var parameter = EvaluateAsync(function.Expressions[0]);
                 var evaluation = false;
                 for (var i = 1; i < function.Expressions.Length; i++)
                 {
-                    var argument = Evaluate(function.Expressions[i]);
+                    var argument = await EvaluateAsync(function.Expressions[i]);
                     if (CompareUsingMostPreciseType(parameter, argument) == 0)
                     {
                         evaluation = true;
@@ -411,19 +356,22 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
                     }
                 }
 
-                result = evaluation;
-                break;
-
+                return evaluation;
             default:
                 throw new NCalcFunctionNotFoundException($"Function {function.Identifier.Name} not found",
                     function.Identifier.Name);
         }
 
-        return result;
+        throw new InvalidOperationException();
     }
 
+    private async Task<object?> EvaluateAsync(LogicalExpression expression)
+    {
+        await expression.AcceptAsync(this);
+        return Result;
+    }
 
-    public void Visit(Identifier identifier)
+    public async Task VisitAsync(Identifier identifier)
     {
         if (Parameters.TryGetValue(identifier.Name, out var parameterValue))
         {
@@ -437,10 +385,10 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
                         expression.Parameters[p.Key] = p.Value;
                 }
 
-                expression.EvaluateFunction += EvaluateFunction;
-                expression.EvaluateParameter += EvaluateParameter;
+                expression.EvaluateFunctionAsync += EvaluateFunctionAsync;
+                expression.EvaluateParameterAsync += EvaluateParameterAsync;
 
-                Result = expression.Evaluate();
+                Result = await expression.EvaluateAsync();
             }
             else
                 Result = parameterValue;
@@ -451,7 +399,7 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
             var args = new ParameterArgs();
 
             // Calls external implementation
-            OnEvaluateParameter(identifier.Name, args);
+            await OnEvaluateParameterAsync(identifier.Name, args);
 
             if (!args.HasResult)
                 throw new NCalcParameterNotDefinedException(identifier.Name);
@@ -460,13 +408,29 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
         }
     }
 
-    protected void OnEvaluateFunction(string name, FunctionArgs args)
+    public Task VisitAsync(ValueExpression expression)
     {
-        EvaluateFunction?.Invoke(name, args);
+        Result = expression.Value;
+        return Task.CompletedTask;
     }
 
-    protected void OnEvaluateParameter(string name, ParameterArgs args)
+    protected Task OnEvaluateFunctionAsync(string name, FunctionArgs args)
     {
-        EvaluateParameter?.Invoke(name, args);
+        if (EvaluateFunctionAsync is not null)
+        {
+            return EvaluateFunctionAsync(name, args);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    protected Task OnEvaluateParameterAsync(string name, ParameterArgs args)
+    {
+        if (EvaluateParameterAsync is not null)
+        {
+            return EvaluateParameterAsync(name, args);
+        }
+
+        return Task.CompletedTask;
     }
 }

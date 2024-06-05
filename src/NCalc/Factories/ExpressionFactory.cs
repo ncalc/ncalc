@@ -11,16 +11,19 @@ public sealed class ExpressionFactory(
     ILogicalExpressionFactory logicalExpressionFactory,
     ILogicalExpressionCache cache,
     IEvaluationVisitor evaluationVisitor,
+    IAsyncEvaluationVisitor asyncEvaluationVisitor,
     IParameterExtractionVisitor parameterExtractionVisitor
-    ) : IExpressionFactory
+) : IExpressionFactory
 {
     public Expression Create(string expression, ExpressionContext? expressionContext = null)
     {
-        return new AdvancedExpression(logicalExpressionFactory, cache, evaluationVisitor, parameterExtractionVisitor, expression, expressionContext);
+        return new AdvancedExpression(logicalExpressionFactory, cache, evaluationVisitor, asyncEvaluationVisitor,
+            parameterExtractionVisitor, expression, expressionContext);
     }
 
     public Expression Create(LogicalExpression logicalExpression, ExpressionContext? expressionContext = null)
     {
-        return new AdvancedExpression(logicalExpressionFactory, cache, evaluationVisitor, parameterExtractionVisitor, logicalExpression, expressionContext);
+        return new AdvancedExpression(logicalExpressionFactory, cache, evaluationVisitor, asyncEvaluationVisitor,
+            parameterExtractionVisitor, logicalExpression, expressionContext);
     }
 }

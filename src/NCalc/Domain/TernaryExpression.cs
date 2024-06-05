@@ -18,4 +18,8 @@ public sealed class TernaryExpression(
     {
         visitor.Visit(this);
     }
+    public override Task AcceptAsync(IAsyncLogicalExpressionVisitor visitor)
+    {
+        return visitor.VisitAsync(this);
+    }
 }

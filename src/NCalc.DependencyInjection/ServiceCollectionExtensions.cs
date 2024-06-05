@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
     private static void AddVisitors(this IServiceCollection services)
     {
         services.AddTransient<IEvaluationVisitor, EvaluationVisitor>();
+        services.AddTransient<IAsyncEvaluationVisitor, AsyncEvaluationVisitor>();
         services.AddTransient<IParameterExtractionVisitor, ParameterExtractionVisitor>();
     }
 }

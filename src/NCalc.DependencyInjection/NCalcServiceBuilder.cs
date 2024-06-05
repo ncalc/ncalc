@@ -33,6 +33,12 @@ public class NCalcServiceBuilder(IServiceCollection services)
         return this;
     }
     
+    public NCalcServiceBuilder WithAsyncEvaluationVisitor<TAsyncEvaluationVisitor>() where TAsyncEvaluationVisitor : class, IAsyncEvaluationVisitor
+    {
+        Services.ReplaceTransient<IAsyncEvaluationVisitor,TAsyncEvaluationVisitor>();
+        return this;
+    }
+    
     public NCalcServiceBuilder WithParameterExtractionVisitor<TParameterExtractionVisitor>() where TParameterExtractionVisitor : class, IParameterExtractionVisitor
     {
         Services.ReplaceTransient<IParameterExtractionVisitor,TParameterExtractionVisitor>();
