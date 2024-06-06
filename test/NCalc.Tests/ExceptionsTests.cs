@@ -122,4 +122,11 @@ public class ExceptionsTests
         var expression = new Expression(expressionString);
         Assert.Throws<NCalcParserException>(() => expression.Evaluate());
     }
+
+    [Fact]
+    public void Should_Throw_Issue_208()
+    {
+        var expression = new Expression("1.3,4.5");
+        Assert.Throws<NCalcParserException>(() => expression.Evaluate());
+    }
 }
