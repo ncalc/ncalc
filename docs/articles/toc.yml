@@ -14,6 +14,8 @@
   href: case_sensitivity.md
 - name: Caching
   href: caching.md
+- name: Lambda Compilation
+  href: lambda_compilation.md
 - name: Dependency Injection
   href: dependency_injection.md
 - name: Plugins

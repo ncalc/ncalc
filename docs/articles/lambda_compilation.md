@@ -27,8 +27,8 @@ class Context
   }
 }
 
-var exp = new Expression("Foo([Param1], 2) = 4 && [Param2] = 'test'");
-Func<Context, bool> function = exp.ToLambda<Context, bool>();
+var expression = new Expression("Foo([Param1], 2) = 4 && [Param2] = 'test'");
+Func<Context, bool> function = expression.ToLambda<Context, bool>();
 
 var context = new Context { Param1 = 2, Param2 = "test" };
 Debug.Assert(function(context)); //true
