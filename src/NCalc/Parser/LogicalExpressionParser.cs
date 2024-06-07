@@ -52,7 +52,6 @@ public static class LogicalExpressionParser
         var exponentNumberPart =
             Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
 
-
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
@@ -383,13 +382,15 @@ public static class LogicalExpressionParser
                 static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
+        var expressionParser = expression.Eof().ElseError(InvalidTokenMessage);
+
 #if NET6_0_OR_GREATER
         if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
-            Parser = expression.Compile();
+            Parser = expressionParser.Compile();
         else
-            Parser = expression;
+            Parser = expressionParser;
 #else
-        Parser = expression.Compile();
+        Parser = expressionParser.Compile();
 #endif
     }
 
