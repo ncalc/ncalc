@@ -52,35 +52,37 @@ public static class LogicalExpressionParser
         var exponentNumberPart =
             Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
 
-
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
                     Literals.Char('.')
-                        .SkipAnd(Terms.Integer().Then<long?>(x => x))
+                        .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
+                        .And(Terms.Integer().Then<long?>(x => x))
                         .And(exponentNumberPart.ThenElse<long?>(x => x, null))
                         .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
-                        .Then(x => (0L, x.Item1, x.Item2)),
+                        .Then(x => (0L, x.Item1, x.Item2, x.Item3)),
                     Literals.Integer(NumberOptions.AllowSign)
                         .And(Literals.Char('.')
-                            .SkipAnd(ZeroOrOne(Terms.Integer()))
-                            .ThenElse<long?>(x => x, null))
+                            .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
+                            .And(ZeroOrOne(Terms.Integer()))
+                            .ThenElse<(int, long?)>(x => (x.Item1, x.Item2), (0, null)))
                         .And(exponentNumberPart.ThenElse<long?>(x => x, null))
                         .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
-                        .Then(x => (x.Item1, x.Item2, x.Item3))
+                        .Then(x => (x.Item1, x.Item2.Item1, x.Item2.Item2, x.Item3))
                 ))
                 .Then<LogicalExpression>((ctx, x) =>
                 {
                     long integralValue = x.Item1;
-                    long? decimalPart = x.Item2;
-                    long? exponentPart = x.Item3;
+                    int zeroCount = x.Item2;
+                    long? decimalPart = x.Item3;
+                    long? exponentPart = x.Item4;
 
                     double result = integralValue;
 
                     // decimal part?
                     if (decimalPart != null && decimalPart.Value != 0)
                     {
-                        var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1);
+                        var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
                         result += decimalPart.Value / Math.Pow(10, digits);
                     }
 
@@ -142,7 +144,7 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
 
-        var not = OneOf(Terms.Text("NOT", true), Terms.Text("!"));
+        var not = OneOf(Terms.Text("NOT", true).AndSkip(Literals.WhiteSpace()), Terms.Text("!"));
         var and = OneOf(Terms.Text("AND", true), Terms.Text("&&"));
         var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
 
@@ -380,13 +382,15 @@ public static class LogicalExpressionParser
                 static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
+        var expressionParser = expression.Eof().ElseError(InvalidTokenMessage);
+
 #if NET6_0_OR_GREATER
         if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
-            Parser = expression.Compile();
+            Parser = expressionParser.Compile();
         else
-            Parser = expression;
+            Parser = expressionParser;
 #else
-        Parser = expression.Compile();
+        Parser = expressionParser.Compile();
 #endif
     }
 
