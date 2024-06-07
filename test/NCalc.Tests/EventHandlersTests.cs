@@ -186,4 +186,18 @@ public class EventHandlersTests
 
         Assert.Null(e.Evaluate());
     }
+
+
+    [Fact]
+    public void Should_Treat_NOT_Without_Whitespace_As_Function_Name()
+    {
+        Expression expression = new Expression("notexistingfunction(3.14)");
+        expression.EvaluateFunction += (string name, Handlers.FunctionArgs args) =>
+        {
+            if (name.Equals("notexistingfunction", StringComparison.OrdinalIgnoreCase))
+                args.Result = 1;
+        };
+
+        Assert.Equal(1, expression.Evaluate());
+    }
 }
