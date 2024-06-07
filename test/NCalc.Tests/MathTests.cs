@@ -389,9 +389,20 @@ public class MathsTests
     [Fact]
     public void Should_Not_Change_Double_Precision()
     {
-        var expr = new Expression($"Floor(12e+100)");
+        var expr = new Expression("Floor(12e+100)");
         var res = expr.Evaluate();
 
         Assert.Equal(Math.Floor(12e+100), res);
+    }
+
+    [Theory]
+    [InlineData(".05", 0.05)]
+    [InlineData("0.05", 0.05)]
+    public void Should_Correctly_Parse_Floating_Point_Numbers(string formula, object expectedValue)
+    {
+        var expr = new Expression(formula, CultureInfo.InvariantCulture);
+        var res = expr.Evaluate();
+
+        Assert.Equal(expectedValue, res);
     }
 }
