@@ -211,7 +211,7 @@ public partial class Expression
             throw Error;
 
         if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
-            EvaluationVisitor.Parameters["null"] = null;
+            EvaluationVisitor.Context.Parameters["null"] = null;
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
@@ -233,7 +233,7 @@ public partial class Expression
             throw Error;
 
         if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
-            EvaluationVisitor.Parameters["null"] = null;
+            EvaluationVisitor.Context.Parameters["null"] = null;
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))

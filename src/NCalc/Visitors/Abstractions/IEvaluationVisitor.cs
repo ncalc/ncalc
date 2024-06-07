@@ -9,8 +9,5 @@ public interface IEvaluationVisitor : ILogicalExpressionVisitor
 
     ExpressionContext Context { get; set; }
 
-    public Dictionary<string, object?> Parameters { get; set; }
-
     public object? Result { get; }
-
 }
