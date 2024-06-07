@@ -57,30 +57,33 @@ public static class LogicalExpressionParser
         var number =
             SkipWhiteSpace(OneOf(
                     Literals.Char('.')
-                        .SkipAnd(Terms.Integer().Then<long?>(x => x))
+                        .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
+                        .And(Terms.Integer().Then<long?>(x => x))
                         .And(exponentNumberPart.ThenElse<long?>(x => x, null))
                         .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
-                        .Then(x => (0L, x.Item1, x.Item2)),
+                        .Then(x => (0L, x.Item1, x.Item2, x.Item3)),
                     Literals.Integer(NumberOptions.AllowSign)
                         .And(Literals.Char('.')
-                            .SkipAnd(ZeroOrOne(Terms.Integer()))
-                            .ThenElse<long?>(x => x, null))
+                            .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
+                            .And(ZeroOrOne(Terms.Integer()))
+                            .ThenElse<(int, long?)>(x => (x.Item1, x.Item2), (0, null)))
                         .And(exponentNumberPart.ThenElse<long?>(x => x, null))
                         .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
-                        .Then(x => (x.Item1, x.Item2, x.Item3))
+                        .Then(x => (x.Item1, x.Item2.Item1, x.Item2.Item2, x.Item3))
                 ))
                 .Then<LogicalExpression>((ctx, x) =>
                 {
                     long integralValue = x.Item1;
-                    long? decimalPart = x.Item2;
-                    long? exponentPart = x.Item3;
+                    int zeroCount = x.Item2;
+                    long? decimalPart = x.Item3;
+                    long? exponentPart = x.Item4;
 
                     double result = integralValue;
 
                     // decimal part?
                     if (decimalPart != null && decimalPart.Value != 0)
                     {
-                        var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1);
+                        var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
                         result += decimalPart.Value / Math.Pow(10, digits);
                     }
 
