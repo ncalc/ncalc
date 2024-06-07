@@ -1,6 +1,7 @@
 # 4.2.1
 * [Fix treating NOT as unary in function name](https://github.com/ncalc/ncalc/pull/211) by [Andrey Bykiev](https://github.com/Bykiev)
 * [Fix GetParametersNames() method inifinte loop with unary operators](https://github.com/ncalc/ncalc/pull/212) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Fix parsing floating-point numbers](https://github.com/ncalc/ncalc/pull/215) by [Andrey Bykiev](https://github.com/Bykiev)
 
 # 4.2
 * [Improve Parlot error handling](https://github.com/ncalc/ncalc/pull/181) by [Andrey Bykiev](https://github.com/Bykiev)
