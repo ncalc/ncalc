@@ -6,7 +6,7 @@ using NCalc.Visitors;
 namespace NCalc;
 
 /// <summary>
-/// An Expression object with dependency injection friendly constructors.
+/// An <see cref="Expression"/> object with dependency injection friendly constructors.
 /// </summary>
 public class AdvancedExpression : Expression
 {
@@ -14,10 +14,9 @@ public class AdvancedExpression : Expression
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitor evaluationVisitor,
-        IAsyncEvaluationVisitor asyncEvaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor,
         string expression,
-        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, asyncEvaluationVisitor, parameterExtractionVisitor)
+        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
     {
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
@@ -31,10 +30,9 @@ public class AdvancedExpression : Expression
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitor evaluationVisitor,
-        IAsyncEvaluationVisitor asyncEvaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor,
         LogicalExpression logicalExpression,
-        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor,asyncEvaluationVisitor, parameterExtractionVisitor)
+        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
     {
 
         LogicalExpressionCache = logicalExpressionCache;

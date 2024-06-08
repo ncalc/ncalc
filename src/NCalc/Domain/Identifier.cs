@@ -10,8 +10,4 @@ public sealed class Identifier(string name) : LogicalExpression
     {
         visitor.Visit(this);
     }
-    public override Task AcceptAsync(IAsyncLogicalExpressionVisitor visitor)
-    {
-        return visitor.VisitAsync(this);
-    }
 }

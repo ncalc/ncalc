@@ -12,8 +12,4 @@ public sealed class UnaryExpression(UnaryExpressionType type, LogicalExpression 
     {
         visitor.Visit(this);
     }
-    public override Task AcceptAsync(IAsyncLogicalExpressionVisitor visitor)
-    {
-        return visitor.VisitAsync(this);
-    }
 }

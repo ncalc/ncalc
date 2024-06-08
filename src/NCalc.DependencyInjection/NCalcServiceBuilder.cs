@@ -15,6 +15,12 @@ public class NCalcServiceBuilder(IServiceCollection services)
         return this;
     }
     
+    public NCalcServiceBuilder WithAsyncExpressionFactory<TAsyncExpressionFactory>()  where TAsyncExpressionFactory : class, IAsyncExpressionFactory
+    {
+        Services.ReplaceScoped<IAsyncExpressionFactory, TAsyncExpressionFactory>();
+        return this;
+    }
+    
     public NCalcServiceBuilder WithCache<TCache>()  where TCache : class, ILogicalExpressionCache
     {
         Services.ReplaceSingleton<ILogicalExpressionCache,TCache>();

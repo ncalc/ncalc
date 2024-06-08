@@ -9,13 +9,13 @@ public class AsyncTests
     [ClassData(typeof(EvaluationTestData))]
     public async Task ShouldEvaluateAsync(string expression, object expected)
     {
-        Assert.Equal(expected, await new Expression(expression).EvaluateAsync());
+        Assert.Equal(expected, await new AsyncExpression(expression).EvaluateAsync());
     }
 
     [Fact]
     public async Task ShouldEvaluateAsyncFunction()
     {
-        var expression = new Expression("database_operation('SELECT FOO') == 'FOO'");
+        var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
         expression.EvaluateFunctionAsync += async (name, args) =>
         {
             if (name == "database_operation")
@@ -34,7 +34,7 @@ public class AsyncTests
     [Fact]
     public async Task ShouldEvaluateArrayParameters()
     {
-        var e = new Expression("x * x", ExpressionOptions.IterateParameters)
+        var e = new AsyncExpression("x * x", ExpressionOptions.IterateParameters)
         {
             Parameters =
             {

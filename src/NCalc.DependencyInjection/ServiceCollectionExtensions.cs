@@ -42,7 +42,8 @@ public static class ServiceCollectionExtensions
     private static void AddFactories(this IServiceCollection services)
     {
         services.AddScoped<IExpressionFactory,ExpressionFactory>();
-
+        services.AddScoped<IAsyncExpressionFactory,AsyncExpressionFactory>();
+        
         services.AddSingleton<ILogicalExpressionFactory>(_ => LogicalExpressionFactory.GetInstance());
     }
 

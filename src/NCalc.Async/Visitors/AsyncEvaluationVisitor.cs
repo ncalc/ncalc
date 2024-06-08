@@ -1,7 +1,11 @@
-﻿using NCalc.Domain;
+﻿using System.Linq.Expressions;
+using NCalc.Domain;
 using NCalc.Exceptions;
+using NCalc.Extensions;
 using NCalc.Handlers;
 using NCalc.Helpers;
+using BinaryExpression = NCalc.Domain.BinaryExpression;
+using UnaryExpression = NCalc.Domain.UnaryExpression;
 
 namespace NCalc.Visitors;
 
@@ -140,9 +144,9 @@ public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVis
 
     public async Task VisitAsync(Function function)
     {
-        var args = new FunctionArgs
+        var args = new AsyncFunctionArgs
         {
-            Parameters = new Expression[function.Expressions.Length]
+            Parameters = new AsyncExpression[function.Expressions.Length]
         };
 
         // Don't call parameters right now, instead let the function do it as needed.
@@ -150,7 +154,7 @@ public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVis
         // Evaluating every value could produce unexpected behaviour
         for (var i = 0; i < function.Expressions.Length; i++)
         {
-            args.Parameters[i] = new Expression(function.Expressions[i], Options, CultureInfo);
+            args.Parameters[i] = new AsyncExpression(function.Expressions[i], Options, CultureInfo);
             args.Parameters[i].EvaluateFunctionAsync += EvaluateFunctionAsync;
             args.Parameters[i].EvaluateParameterAsync += EvaluateParameterAsync;
 
@@ -376,7 +380,7 @@ public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVis
         if (Parameters.TryGetValue(identifier.Name, out var parameterValue))
         {
             // The parameter is defined in the hashtable
-            if (parameterValue is Expression expression)
+            if (parameterValue is AsyncExpression expression)
             {
                 // Overloads parameters 
                 foreach (var p in Parameters)
@@ -396,7 +400,7 @@ public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVis
         else
         {
             // The parameter should be defined in a call back method
-            var args = new ParameterArgs();
+            var args = new AsyncParameterArgs();
 
             // Calls external implementation
             await OnEvaluateParameterAsync(identifier.Name, args);
@@ -414,7 +418,7 @@ public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVis
         return Task.CompletedTask;
     }
 
-    protected Task OnEvaluateFunctionAsync(string name, FunctionArgs args)
+    protected Task OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)
     {
         if (EvaluateFunctionAsync is not null)
         {
@@ -424,7 +428,7 @@ public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVis
         return Task.CompletedTask;
     }
 
-    protected Task OnEvaluateParameterAsync(string name, ParameterArgs args)
+    protected Task OnEvaluateParameterAsync(string name, AsyncParameterArgs args)
     {
         if (EvaluateParameterAsync is not null)
         {

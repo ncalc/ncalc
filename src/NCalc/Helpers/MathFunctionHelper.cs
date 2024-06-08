@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace NCalc.Helpers;
 
-internal static class MathFunctionHelper
+public static class MathFunctionHelper
 {
     public struct MathMethodInfo
     {

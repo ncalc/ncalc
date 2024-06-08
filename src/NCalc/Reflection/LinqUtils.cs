@@ -5,7 +5,7 @@ using NCalc.Helpers;
 
 namespace NCalc.Reflection;
 
-internal static class LinqUtils
+public static class LinqUtils
 {
     /// <summary>
     /// Returns a tuple where the first item is a score, and the second is a list of prepared arguments. 

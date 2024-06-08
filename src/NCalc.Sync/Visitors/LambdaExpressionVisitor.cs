@@ -10,7 +10,7 @@ using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
 namespace NCalc.Visitors;
 
-internal sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
+public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
 {
     private readonly Dictionary<string, object> _parameters;
     private readonly LinqExpression _context;

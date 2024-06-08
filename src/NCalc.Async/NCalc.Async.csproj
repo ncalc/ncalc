@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net462;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+        <LangVersion>12</LangVersion>
+        <Nullable>enable</Nullable>
+        <IncludeSymbols>true</IncludeSymbols>
+        <PackageProjectUrl>https://github.com/ncalc/ncalc</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <RootNamespace>NCalc</RootNamespace>
+        <PackageId>NCalcAsync</PackageId>
+        <AssemblyName>NCalc.Async</AssemblyName>
+        <PackageTags>ncalc; async; expressions; math; evaluation;</PackageTags>
+        <Description>NCalcAsync is a fully async port of the NCalc mathematical expressions evaluator in .NET, targeting netstandard 2.0. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../NCalc.png">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\NCalc\NCalc.csproj" />
+    </ItemGroup>
+
+</Project>
