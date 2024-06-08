@@ -12,6 +12,7 @@
         <PackageId>NCalcAsync</PackageId>
         <AssemblyName>NCalc.Async</AssemblyName>
         <PackageTags>ncalc; async; expressions; math; evaluation;</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <Description>NCalcAsync is a fully async port of the NCalc mathematical expressions evaluator in .NET, targeting netstandard 2.0. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.</Description>
     </PropertyGroup>
 

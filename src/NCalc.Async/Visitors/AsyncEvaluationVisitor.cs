@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using NCalc.Domain;
+﻿using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Extensions;
 using NCalc.Handlers;
@@ -9,7 +8,7 @@ using UnaryExpression = NCalc.Domain.UnaryExpression;
 
 namespace NCalc.Visitors;
 
-public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVisitor
+public class AsyncEvaluationVisitor : ExpressionEvaluator, IAsyncEvaluationVisitor
 {
     public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync;
     public event AsyncEvaluateParameterHandler? EvaluateParameterAsync;
@@ -175,11 +174,53 @@ public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVis
         Result = await ExecuteBuiltInFunctionAsync(function);
     }
 
+    public async Task VisitAsync(Identifier identifier)
+    {
+        if (Parameters.TryGetValue(identifier.Name, out var parameterValue))
+        {
+            // The parameter is defined in the hashtable
+            if (parameterValue is AsyncExpression expression)
+            {
+                // Overloads parameters 
+                foreach (var p in Parameters)
+                {
+                    if (expression.Parameters != null)
+                        expression.Parameters[p.Key] = p.Value;
+                }
+
+                expression.EvaluateFunctionAsync += EvaluateFunctionAsync;
+                expression.EvaluateParameterAsync += EvaluateParameterAsync;
+
+                Result = await expression.EvaluateAsync();
+            }
+            else
+                Result = parameterValue;
+        }
+        else
+        {
+            // The parameter should be defined in a call back method
+            var args = new AsyncParameterArgs();
+
+            // Calls external implementation
+            await OnEvaluateParameterAsync(identifier.Name, args);
+
+            if (!args.HasResult)
+                throw new NCalcParameterNotDefinedException(identifier.Name);
+
+            Result = args.Result;
+        }
+    }
+
+    public Task VisitAsync(ValueExpression expression)
+    {
+        Result = expression.Value;
+        return Task.CompletedTask;
+    }
+    
     private async Task<object?> ExecuteBuiltInFunctionAsync(Function function)
     {
         var functionName = function.Identifier.Name.ToUpperInvariant();
-
-
+        
         switch (functionName)
         {
             case "ABS":
@@ -328,7 +369,8 @@ public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVis
                     var tf = Convert.ToBoolean(await EvaluateAsync(eval), CultureInfo);
                     if (index == function.Expressions.Length - 1)
                         return await EvaluateAsync(eval);
-                    else if (tf)
+                    
+                    if (tf)
                     {
                         return await EvaluateAsync(function.Expressions[index + 1]);
                     }
@@ -373,49 +415,6 @@ public class AsyncEvaluationVisitor : EvaluationVisitorBase, IAsyncEvaluationVis
     {
         await expression.AcceptAsync(this);
         return Result;
-    }
-
-    public async Task VisitAsync(Identifier identifier)
-    {
-        if (Parameters.TryGetValue(identifier.Name, out var parameterValue))
-        {
-            // The parameter is defined in the hashtable
-            if (parameterValue is AsyncExpression expression)
-            {
-                // Overloads parameters 
-                foreach (var p in Parameters)
-                {
-                    if (expression.Parameters != null)
-                        expression.Parameters[p.Key] = p.Value;
-                }
-
-                expression.EvaluateFunctionAsync += EvaluateFunctionAsync;
-                expression.EvaluateParameterAsync += EvaluateParameterAsync;
-
-                Result = await expression.EvaluateAsync();
-            }
-            else
-                Result = parameterValue;
-        }
-        else
-        {
-            // The parameter should be defined in a call back method
-            var args = new AsyncParameterArgs();
-
-            // Calls external implementation
-            await OnEvaluateParameterAsync(identifier.Name, args);
-
-            if (!args.HasResult)
-                throw new NCalcParameterNotDefinedException(identifier.Name);
-
-            Result = args.Result;
-        }
-    }
-
-    public Task VisitAsync(ValueExpression expression)
-    {
-        Result = expression.Value;
-        return Task.CompletedTask;
     }
 
     protected Task OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)

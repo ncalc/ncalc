@@ -17,7 +17,7 @@ public class EvaluationTests
     
     [Theory]
     [ClassData(typeof(ValuesTestData))]
-    public void Should_Parse_Values(string input, object expectedValue)
+    public void ShouldParseValues(string input, object expectedValue)
     {
         var expression = new Expression(input);
         var result = expression.Evaluate();
@@ -185,11 +185,7 @@ public class EvaluationTests
     }
 
     [Theory]
-    [InlineData("if((5 + null > 0), 1, 2)", 2)]
-    [InlineData("if((5 - null > 0), 1, 2)", 2)]
-    [InlineData("if((5 / null > 0), 1, 2)", 2)]
-    [InlineData("if((5 * null > 0), 1, 2)", 2)]
-    [InlineData("if((5 % null > 0), 1, 2)", 2)]
+    [ClassData(typeof(NullCheckTestData))]
     public void ShouldAllowOperatorsWithNulls(string expression, object expected)
     {
         var e = new Expression(expression, ExpressionOptions.AllowNullParameter);

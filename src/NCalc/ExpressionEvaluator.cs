@@ -2,9 +2,12 @@
 using NCalc.Exceptions;
 using NCalc.Helpers;
 
-namespace NCalc.Visitors;
+namespace NCalc;
 
-public abstract class EvaluationVisitorBase
+/// <summary>
+/// Class that have support to expressions evaluation.
+/// </summary>
+public abstract class ExpressionEvaluator
 {
     public ExpressionOptions Options
     {

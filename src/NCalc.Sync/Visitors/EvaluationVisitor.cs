@@ -5,7 +5,7 @@ using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 
-public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
+public class EvaluationVisitor : ExpressionEvaluator, IEvaluationVisitor
 {
     public event EvaluateFunctionHandler? EvaluateFunction;
     public event EvaluateParameterHandler? EvaluateParameter;
@@ -17,12 +17,6 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
     public EvaluationVisitor(ExpressionOptions options, CultureInfo cultureInfo)
     {
         Context = new(options, cultureInfo);
-    }
-
-    private object? Evaluate(LogicalExpression expression)
-    {
-        expression.Accept(this);
-        return Result;
     }
 
     public void Visit(TernaryExpression expression)
@@ -144,8 +138,7 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
                 break;
         }
     }
-
-
+    
     public void Visit(UnaryExpression expression)
     {
         // Recursively evaluates the underlying expression
@@ -191,7 +184,44 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
 
         Result = ExecuteBuiltInFunction(function);
     }
+    
+    public void Visit(Identifier identifier)
+    {
+        if (Parameters.TryGetValue(identifier.Name, out var parameterValue))
+        {
+            // The parameter is defined in the hashtable
+            if (parameterValue is Expression expression)
+            {
+                // Overloads parameters 
+                foreach (var p in Parameters)
+                {
+                    if (expression.Parameters != null)
+                        expression.Parameters[p.Key] = p.Value;
+                }
 
+                expression.EvaluateFunction += EvaluateFunction;
+                expression.EvaluateParameter += EvaluateParameter;
+
+                Result = expression.Evaluate();
+            }
+            else
+                Result = parameterValue;
+        }
+        else
+        {
+            // The parameter should be defined in a call back method
+            var args = new ParameterArgs();
+
+            // Calls external implementation
+            OnEvaluateParameter(identifier.Name, args);
+
+            if (!args.HasResult)
+                throw new NCalcParameterNotDefinedException(identifier.Name);
+
+            Result = args.Result;
+        }
+    }
+    
     private object? ExecuteBuiltInFunction(Function function)
     {
         var functionName = function.Identifier.Name.ToUpperInvariant();
@@ -421,43 +451,11 @@ public class EvaluationVisitor : EvaluationVisitorBase, IEvaluationVisitor
 
         return result;
     }
-
-
-    public void Visit(Identifier identifier)
+    
+    private object? Evaluate(LogicalExpression expression)
     {
-        if (Parameters.TryGetValue(identifier.Name, out var parameterValue))
-        {
-            // The parameter is defined in the hashtable
-            if (parameterValue is Expression expression)
-            {
-                // Overloads parameters 
-                foreach (var p in Parameters)
-                {
-                    if (expression.Parameters != null)
-                        expression.Parameters[p.Key] = p.Value;
-                }
-
-                expression.EvaluateFunction += EvaluateFunction;
-                expression.EvaluateParameter += EvaluateParameter;
-
-                Result = expression.Evaluate();
-            }
-            else
-                Result = parameterValue;
-        }
-        else
-        {
-            // The parameter should be defined in a call back method
-            var args = new ParameterArgs();
-
-            // Calls external implementation
-            OnEvaluateParameter(identifier.Name, args);
-
-            if (!args.HasResult)
-                throw new NCalcParameterNotDefinedException(identifier.Name);
-
-            Result = args.Result;
-        }
+        expression.Accept(this);
+        return Result;
     }
 
     protected void OnEvaluateFunction(string name, FunctionArgs args)

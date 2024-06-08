@@ -1,7 +1,7 @@
 ﻿namespace NCalc;
 
 /// <summary>
-/// Stores the context of an <see cref="Expression"/>, for both parsing and evaluation.
+/// Stores the context of an Expression, for both parsing and evaluation.
 /// </summary>
 public class ExpressionContext
 {
