@@ -34,7 +34,7 @@ dotnet add package NCalcSync
 ```
 Want async support at event handlers?
 ```
-dotnet add package NCalcASync 
+dotnet add package NCalcAsync 
 ```
 Dependency Injection? We got you covered:
 ```
