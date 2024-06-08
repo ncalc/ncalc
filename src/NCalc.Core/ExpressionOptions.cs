@@ -30,19 +30,11 @@ public enum ExpressionOptions
     /// When using Round(), if a number is halfway between two others, it is rounded toward the nearest number that is away from zero.
     /// </summary>
     RoundAwayFromZero = 1 << 4,
-
+    
     /// <summary>
     /// Specifies the use of CaseInsensitiveComparer for comparisons.
     /// </summary>
-    [Obsolete("Please use CaseInsensitiveStringComparer")]
-    CaseInsensitiveComparer = 1 << 5,
-
-    /// <summary>
-    /// Specifies the use of CaseInsensitiveComparer for comparisons.
-    /// </summary>
-#pragma warning disable CA1069
     CaseInsensitiveStringComparer = 1 << 5,
-#pragma warning restore CA1069
 
     /// <summary>
     /// Uses decimals instead of doubles as default floating point data type.
