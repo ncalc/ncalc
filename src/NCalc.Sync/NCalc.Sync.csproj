@@ -53,7 +53,7 @@ This package contains the unsigned assembly 'NCalc'. For the stronly signed asse
 		<None Include="..\..\README.md" Pack="true" PackagePath="" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\NCalc\NCalc.csproj" />
+	  <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj" />
 	</ItemGroup>
 
 	<!-- Common Additional Configuration for Release Builds -->

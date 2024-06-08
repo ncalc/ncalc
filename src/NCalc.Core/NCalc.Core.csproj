@@ -9,6 +9,7 @@
         <Description>Assembly with the core logic of NCalc.</Description>
         <SignAssembly>true</SignAssembly>
         <AssemblyOriginatorKeyFile>../../NCalc.snk</AssemblyOriginatorKeyFile>
+        <RootNamespace>NCalc</RootNamespace>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' != 'net8.0'">
         <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />

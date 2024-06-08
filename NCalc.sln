@@ -42,7 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Docs", "1. Docs", "{A65E
 		.github\workflows\docs.yml = .github\workflows\docs.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc", "src\NCalc\NCalc.csproj", "{B0928742-B4DF-4D52-A048-553A11D69B83}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Core", "src\NCalc.Core\NCalc.Core.csproj", "{B0928742-B4DF-4D52-A048-553A11D69B83}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Async", "src\NCalc.Async\NCalc.Async.csproj", "{A9F7265C-4D93-4994-8BFF-81BE9FCC4325}"
 EndProject
