@@ -2,6 +2,7 @@
 using NCalc.Cache;
 using NCalc.DependencyInjection;
 using NCalc.Domain;
+using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Visitors;
@@ -26,7 +27,7 @@ public class ServiceCollectionExtensionsTests
         Assert.NotNull(serviceProvider.GetService<IEvaluationVisitor>());
         Assert.NotNull(serviceProvider.GetService<IParameterExtractionVisitor>());
     }
-    
+
     [Fact]
     public void WithExpressionFactory_ShouldReplaceExpressionFactory()
     {
@@ -89,6 +90,24 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public async Task WithAsyncEvaluationVisitor_ShouldReplaceEvaluationVisitor()
+    {
+        var services = new ServiceCollection();
+
+        services.AddNCalc()
+            .WithAsyncEvaluationVisitor<CustomAsyncEvaluationVisitor>();
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        var visitor = serviceProvider.GetService<IAsyncEvaluationVisitor>();
+        var expFactory = serviceProvider.GetRequiredService<IAsyncExpressionFactory>();
+
+        var exp = expFactory.Create("1+1");
+        Assert.Equal(42, await exp.EvaluateAsync());
+        Assert.IsType<CustomAsyncEvaluationVisitor>(visitor);
+    }
+
+    [Fact]
     public void WithParameterExtractionVisitor_ShouldReplaceParameterExtractionVisitor()
     {
         var services = new ServiceCollection();
@@ -106,102 +125,126 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomExpressionFactory : IExpressionFactory
     {
-        public Expression Create(string expression, ExpressionContext expressionContext = null) => throw new NotImplementedException();
+        public Expression Create(string expression, ExpressionContext expressionContext = null) => throw new NCalcException("Stub method intented for testing.");
 
-        public Expression Create(LogicalExpression logicalExpression, ExpressionContext expressionContext = null) => throw new NotImplementedException();
+        public Expression Create(LogicalExpression logicalExpression, ExpressionContext expressionContext = null) => throw new NCalcException("Stub method intented for testing.");
     }
-    
+
     private class CustomCache : ILogicalExpressionCache
     {
-        public bool TryGetValue(string expression, out LogicalExpression logicalExpression) =>
-            throw new NotImplementedException();
+        public bool TryGetValue(string expression, out LogicalExpression logicalExpression) => throw new NCalcException("Stub method intented for testing.");
+
 
         public void Set(string expression, LogicalExpression logicalExpression)
         {
-            throw new NotImplementedException();
         }
     }
 
     private class CustomLogicalExpressionFactory : ILogicalExpressionFactory
     {
-        public LogicalExpression Create(string expression,ExpressionContext context) =>
-            throw new NotImplementedException();
+        public LogicalExpression Create(string expression, ExpressionContext context) => throw new NCalcException("Stub method intented for testing.");
     }
 
     private class CustomEvaluationVisitor : IEvaluationVisitor
     {
         public void Visit(TernaryExpression expression)
         {
-
         }
 
         public void Visit(BinaryExpression expression)
         {
-
         }
 
         public void Visit(UnaryExpression expression)
         {
-
         }
 
         public void Visit(ValueExpression expression)
         {
-
         }
 
         public void Visit(Function function)
         {
-
         }
 
         public void Visit(Identifier identifier)
         {
-
         }
 
         public event EvaluateFunctionHandler EvaluateFunction;
         public event EvaluateParameterHandler EvaluateParameter;
         public ExpressionContext Context { get; set; }
-        public Dictionary<string, object> Parameters { get; set; }
         public object Result => 42;
     }
+
+    private class CustomAsyncEvaluationVisitor : IAsyncEvaluationVisitor
+    {
+        public Task VisitAsync(TernaryExpression expression)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task VisitAsync(BinaryExpression expression)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task VisitAsync(UnaryExpression expression)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task VisitAsync(ValueExpression expression)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task VisitAsync(Function function)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task VisitAsync(Identifier identifier)
+        {
+            return Task.CompletedTask;
+        }
+
+        public ExpressionContext Context { get; set; }
+
+        public event AsyncEvaluateFunctionHandler EvaluateFunctionAsync;
+        public event AsyncEvaluateParameterHandler EvaluateParameterAsync;
+        public object Result => 42;
+    }
+
 
     private class CustomParameterExtractionVisitor : IParameterExtractionVisitor
     {
         public void Visit(LogicalExpression expression)
         {
-            throw new NotImplementedException();
         }
 
         public void Visit(TernaryExpression expression)
         {
-            throw new NotImplementedException();
         }
 
         public void Visit(BinaryExpression expression)
         {
-            throw new NotImplementedException();
         }
 
         public void Visit(UnaryExpression expression)
         {
-            throw new NotImplementedException();
         }
 
         public void Visit(ValueExpression expression)
         {
-            throw new NotImplementedException();
         }
 
         public void Visit(Function function)
         {
-            throw new NotImplementedException();
         }
 
         public void Visit(Identifier identifier)
         {
-            throw new NotImplementedException();
         }
 
         public List<string> Parameters { get; }

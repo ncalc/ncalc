@@ -12,8 +12,12 @@
   href: handling_errors.md
 - name: Case Sensitivity
   href: case_sensitivity.md
+- name: Async Support
+  href: async.md
 - name: Caching
   href: caching.md
+- name: Lambda Compilation
+  href: lambda_compilation.md
 - name: Dependency Injection
   href: dependency_injection.md
 - name: Plugins

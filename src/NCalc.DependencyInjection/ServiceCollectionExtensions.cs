@@ -42,13 +42,15 @@ public static class ServiceCollectionExtensions
     private static void AddFactories(this IServiceCollection services)
     {
         services.AddScoped<IExpressionFactory,ExpressionFactory>();
-
+        services.AddScoped<IAsyncExpressionFactory,AsyncExpressionFactory>();
+        
         services.AddSingleton<ILogicalExpressionFactory>(_ => LogicalExpressionFactory.GetInstance());
     }
 
     private static void AddVisitors(this IServiceCollection services)
     {
         services.AddTransient<IEvaluationVisitor, EvaluationVisitor>();
+        services.AddTransient<IAsyncEvaluationVisitor, AsyncEvaluationVisitor>();
         services.AddTransient<IParameterExtractionVisitor, ParameterExtractionVisitor>();
     }
 }

@@ -105,7 +105,7 @@ public partial class NCalcParser : Parser {
 	private const char BS = '\\';
 	private static NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
 
-	private string extractString(string text) {
+	private static string extractString(string text) {
 	    
 	    StringBuilder sb = new StringBuilder(text);
 	    int startIndex = 1; // Skip initial quote
