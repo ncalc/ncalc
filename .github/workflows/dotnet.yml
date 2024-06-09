@@ -27,6 +27,6 @@ jobs:
           6.0.x
           8.0.x
     - name: Build
-      run: dotnet build src/NCalc/NCalc.csproj
+      run: dotnet build
     - name: Test
       run: dotnet test --verbosity normal

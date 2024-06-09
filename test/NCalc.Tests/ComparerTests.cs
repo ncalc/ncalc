@@ -8,7 +8,7 @@ public class ComparerTests
     [Fact]
     public void Should_Use_Case_Insensitive_Comparer_Issue_85()
     {
-        var eif = new Expression("PageState == 'LIST'", ExpressionOptions.CaseInsensitiveComparer);
+        var eif = new Expression("PageState == 'LIST'", ExpressionOptions.CaseInsensitiveStringComparer);
         eif.Parameters["PageState"] = "List";
 
         Assert.True((bool)eif.Evaluate());

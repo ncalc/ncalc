@@ -17,7 +17,7 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\src\NCalc\NCalc.csproj" />
+      <ProjectReference Include="..\..\src\NCalc.Sync\NCalc.Sync.csproj" />
     </ItemGroup>
 
 </Project>
