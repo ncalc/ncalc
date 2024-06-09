@@ -14,8 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NCalc\NCalc.csproj" Aliases="CsProjVersion"/>
-    <PackageReference Include="NCalcSync" Version="3.13.1" />
+    <ProjectReference Include="..\..\src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
