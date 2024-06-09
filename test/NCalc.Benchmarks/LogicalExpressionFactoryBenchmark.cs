@@ -1,6 +1,4 @@
-﻿#nullable disable
-
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using NCalc.Antlr;
 using NCalc.Domain;
@@ -14,7 +12,9 @@ namespace NCalc.Benchmarks;
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class LogicalExpressionFactoryBenchmark
 {
+#pragma warning disable CA1859
     private ILogicalExpressionFactory AntlrFactory { get; set; }
+#pragma warning restore CA1859
     private ILogicalExpressionFactory ParlotFactory { get; set; }
 
     private const string SimpleExpression = "(3.2 < waterlevel AND 5.3 >= waterlevel)";
