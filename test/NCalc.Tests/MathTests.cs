@@ -374,4 +374,16 @@ public class MathsTests
 
         Assert.Equal(expectedValue, res);
     }
+
+    [Theory]
+    [InlineData("11+33 ", 44)]
+    [InlineData(" 11+33", 44)]
+    [InlineData(" 11+33 ", 44)]
+    public void Should_Ignore_Whitespaces(string formula, object expectedValue)
+    {
+        var expr = new Expression(formula, CultureInfo.InvariantCulture);
+        var res = expr.Evaluate();
+
+        Assert.Equal(expectedValue, res);
+    }
 }
