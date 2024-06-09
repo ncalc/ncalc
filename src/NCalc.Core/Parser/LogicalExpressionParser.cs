@@ -59,7 +59,6 @@ public static class LogicalExpressionParser
                         .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
                         .And(Terms.Integer().Then<long?>(x => x))
                         .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                        .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
                         .Then(x => (0L, x.Item1, x.Item2, x.Item3)),
                     Literals.Integer(NumberOptions.AllowSign)
                         .And(Literals.Char('.')
@@ -67,7 +66,6 @@ public static class LogicalExpressionParser
                             .And(ZeroOrOne(Terms.Integer()))
                             .ThenElse<(int, long?)>(x => (x.Item1, x.Item2), (0, null)))
                         .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                        .AndSkip(Not(Literals.Identifier()).ElseError(InvalidTokenMessage))
                         .Then(x => (x.Item1, x.Item2.Item1, x.Item2.Item2, x.Item3))
                 ))
                 .Then<LogicalExpression>((ctx, x) =>
