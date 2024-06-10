@@ -54,16 +54,13 @@ BenchmarkDotNet v0.13.12, Windows 11 (10.0.22631.3672/23H2/2023Update/SunValley3
 [Host]     : .NET 8.0.5 (8.0.524.21615), X64 RyuJIT AVX2
 DefaultJob : .NET 8.0.5 (8.0.524.21615), X64 RyuJIT AVX2
 
-| Method                   | Mean           | Error       | StdDev      | Median         | Rank | Gen0   | Gen1   | Allocated |
-|------------------------- |---------------:|------------:|------------:|---------------:|-----:|-------:|-------:|----------:|
-| LambdaWithoutCompilation |      0.3309 ns |   0.0132 ns |   0.0117 ns |      0.3294 ns |    1 |      - |      - |         - |
-| Evaluate                 |    694.6179 ns |  51.5536 ns | 152.0071 ns |    746.4118 ns |    2 | 0.2842 |      - |    1784 B |
-| LambdaWithCompilation    | 11,633.8508 ns | 231.8332 ns | 541.9027 ns | 11,606.7932 ns |    3 | 0.7935 | 0.7629 |    5024 B |
 
-// * Warnings *
-MultimodalDistribution
-EvaluateVsLambdaBenchmark.Evaluate: Default -> It seems that the distribution is bimodal (mValue = 3.83)
+| Method                   | Mean           | Error         | StdDev        | Median         | Rank | Gen0   | Gen1   | Allocated |
+|------------------------- |---------------:|--------------:|--------------:|---------------:|-----:|-------:|-------:|----------:|
+| LambdaWithoutCompilation |      0.3677 ns |     0.0183 ns |     0.0171 ns |      0.3630 ns |    1 |      - |      - |         - |
+| Evaluate                 |    450.3889 ns |     1.8740 ns |     1.6612 ns |    450.0070 ns |    2 | 0.2842 | 0.0005 |    1784 B |
+| LambdaWithCompilation    | 15,692.3791 ns | 2,925.1680 ns | 8,624.9239 ns | 10,760.3775 ns |    3 | 0.7935 | 0.7629 |    5024 B |
 
 // * Hints *
 Outliers
-EvaluateVsLambdaBenchmark.LambdaWithoutCompilation: Default -> 1 outlier  was  removed (1.87 ns)
+EvaluateVsLambdaBenchmark.Evaluate: Default -> 1 outlier  was  removed (460.11 ns)

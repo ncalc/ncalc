@@ -31,4 +31,4 @@ jobs:
       - name: Test
         run: dotnet test --verbosity normal
       - name: Benchmark
-        run: dotnet run test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release
+        run: dotnet run --project test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release

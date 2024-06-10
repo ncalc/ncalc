@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
+using NCalc.Factories;
 
 namespace NCalc.Benchmarks;
 
@@ -15,7 +16,8 @@ public class EvaluateVsLambdaBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        var expression = new Expression("(1 + a == 5 + b) == (42 == answer)")
+        var logicalExpression = LogicalExpressionFactory.Create("(1 + a == 5 + b) == (42 == answer)");
+        var expression = new Expression(logicalExpression)
         {
             Parameters =
             {
