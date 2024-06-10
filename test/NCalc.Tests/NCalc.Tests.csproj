@@ -10,6 +10,7 @@
     <Configurations>Debug;Release;SignedRelease</Configurations>
     <Platforms>AnyCPU</Platforms>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

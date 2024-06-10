@@ -11,6 +11,13 @@
         <AssemblyOriginatorKeyFile>../../NCalc.snk</AssemblyOriginatorKeyFile>
         <RootNamespace>NCalc</RootNamespace>
     </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="../../NCalc.png">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+    </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' != 'net8.0'">
         <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
     </ItemGroup>
