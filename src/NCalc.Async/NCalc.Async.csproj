@@ -9,7 +9,7 @@
         <RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <RootNamespace>NCalc</RootNamespace>
-        <PackageId>NCalc.Async</PackageId>
+        <PackageId>NCalcAsync</PackageId>
         <AssemblyName>NCalc.Async</AssemblyName>
         <PackageTags>ncalc; async; expressions; math; evaluation;</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
