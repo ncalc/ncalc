@@ -19,7 +19,7 @@ For additional information on the technique we used to create this framework ple
 - [Caching](caching.md): How caching works.
 - [Improve performance](lambda_compilation.md): How to use compilation of expressions to CLR lambdas.
 - [Dependency Injection](dependency_injection.md): Bring expressions to the next level with dependency injection.
-
+- [Benchmarks](benchmarks.md): Check some numbers to see the speed of someNCalc components
 ## <xref:NCalc.Expression> class
 This is the main class of NCalc.
 This class has a method <xref:NCalc.Expression.Evaluate> returning the actual value of its <xref:System.String> representation.
