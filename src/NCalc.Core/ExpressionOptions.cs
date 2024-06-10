@@ -56,15 +56,3 @@ public enum ExpressionOptions
     /// </summary>
     AllowBooleanCalculation = 1 << 9,
 }
-
-public static class ExpressionOptionsExtensions
-{
-    /// <summary>
-    /// Checks if the ExpressionOptions enum have an option selected.
-    /// </summary>
-    [Obsolete("Please use HasFlag. This method have the exact same functionality.")]
-    public static bool HasOption(this ExpressionOptions options, ExpressionOptions option)
-    {
-        return (options & option) == option;
-    }
-}
