@@ -18,6 +18,8 @@ public class ParserTests
     [Theory]
     [InlineData("not( true )", false)]
     [InlineData("not ( true )", false)]
+    [InlineData("not(true)", false)]
+    [InlineData(" not(true) ", false)]
     public void NotBehaviorIssue226(string formula, object expectedValue)
     {
         var expression = new Expression(formula, CultureInfo.InvariantCulture);
