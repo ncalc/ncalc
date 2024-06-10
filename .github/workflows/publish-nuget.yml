@@ -35,8 +35,8 @@ jobs:
       run: |
           dotnet nuget push src/NCalc.Core/bin/Release/NCalc.Core*.nupkg -k "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
           dotnet nuget push src/NCalc.Sync/bin/Release/NCalcSync*.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push src/NCalc/bin/SignedRelease/NCalcSync*.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push src/NCalc.Async/bin/Release/NCalcAsync*.nupkg -k "$${{ secrets.NUGET_API_TOKEN }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.Sync/bin/SignedRelease/NCalcSync*.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.Async/bin/Release/NCalcAsync*.nupkg -k "$${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
           dotnet nuget push src/NCalc.DependencyInjection/bin/Release/NCalc.DependencyInjection*.nupkg -k "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
           dotnet nuget push src/Plugins/NCalc.MemoryCache/bin/Release/NCalc.MemoryCache*.nupkg -k "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
           dotnet nuget push src/Plugins/NCalc.Antlr/bin/Release/NCalc.Antlr*.nupkg -k "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" -s https://api.nuget.org/v3/index.json --skip-duplicate
