@@ -1,4 +1,5 @@
 ﻿using System.Collections.Frozen;
+using System.Runtime.CompilerServices;
 
 namespace NCalc.Helpers;
 
@@ -109,6 +110,7 @@ public static class TypeHelper
         return null;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsReal(object? value) => value is decimal or double or float;
 
     public record struct ComparasionOptions(CultureInfo CultureInfo, bool IsCaseInsensitive, bool IsOrdinal);
