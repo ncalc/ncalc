@@ -143,8 +143,11 @@ public static class LogicalExpressionParser
         var semicolon = Terms.Char(';');
 
         var identifier = Terms.Identifier();
-        
-        var not = OneOf(Terms.Text("NOT", true).AndSkip(OneOf(Literals.WhiteSpace(), openParen.Then(e=>new TextSpan(e.ToString())))), Terms.Text("!"));
+
+        var not = OneOf(
+            Terms.Text("NOT", true)
+                .AndSkip(OneOf(Literals.WhiteSpace(), openParen.Then(e => new TextSpan(e.ToString())))),
+            Terms.Text("!"));
         var and = OneOf(Terms.Text("AND", true), Terms.Text("&&"));
         var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
 
@@ -152,7 +155,7 @@ public static class LogicalExpressionParser
         var bitwiserOr = Terms.Text("|");
         var bitwiseXOr = Terms.Text("^");
         var bitwiseNot = Terms.Text("~");
-        
+
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
 
