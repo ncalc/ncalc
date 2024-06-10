@@ -380,7 +380,8 @@ public static class LogicalExpressionParser
                 static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
-        var expressionParser = OneOf( expression.AndSkip(Literals.WhiteSpace()),expression.Eof()).ElseError(InvalidTokenMessage);
+        var expressionParser = OneOf(expression.AndSkip(Literals.WhiteSpace()), expression.Eof())
+            .ElseError(InvalidTokenMessage);
 
 #if NET6_0_OR_GREATER
         if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)

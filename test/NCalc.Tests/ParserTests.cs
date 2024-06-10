@@ -1,6 +1,6 @@
 ﻿namespace NCalc.Tests;
 
-[Trait("Category","Parser")]
+[Trait("Category", "Parser")]
 public class ParserTests
 {
     [Theory]
