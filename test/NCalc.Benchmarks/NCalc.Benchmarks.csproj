@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <OutputType>Exe</OutputType>
     <Configurations>Debug;Release;SignedRelease</Configurations>
     <Platforms>AnyCPU</Platforms>
@@ -14,8 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NCalc\NCalc.csproj" Aliases="CsProjVersion"/>
-    <PackageReference Include="NCalcSync" Version="3.13.1" />
+    <ProjectReference Include="..\..\src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">

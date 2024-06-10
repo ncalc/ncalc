@@ -42,7 +42,8 @@ dotnet add package NCalc.DependencyInjection
 ```
 
 ## Functionalities
-**Simple Expressions**
+
+### Simple Expressions
 
 ```c#
 var expression = new Expression("2 + 3 * 5");
@@ -106,7 +107,7 @@ expression.EvaluateParameter += delegate(string name, ParameterArgs args)
 Debug.Assert(117.07 == expression.Evaluate());
 ```
 
-**Caching in a distributed cache**
+**Caching and Serializing**
 
 This example uses [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/).
 
@@ -135,6 +136,7 @@ expression.Parameters = new Dictionary<string, object> {
 
 var result = expression.Evaluate();
 ```
+You can also use our [Memory Cache plugin.](https://ncalc.github.io/ncalc/articles/plugins/memory_cache.html)
 
 **Lambda Expressions**
 ```cs

@@ -46,6 +46,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Core", "src\NCalc.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Async", "src\NCalc.Async\NCalc.Async.csproj", "{A9F7265C-4D93-4994-8BFF-81BE9FCC4325}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Benchmarks", "test\NCalc.Benchmarks\NCalc.Benchmarks.csproj", "{247B97B7-9A1D-40ED-8A79-ED4ED8761695}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +109,12 @@ Global
 		{A9F7265C-4D93-4994-8BFF-81BE9FCC4325}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A9F7265C-4D93-4994-8BFF-81BE9FCC4325}.SignedRelease|Any CPU.ActiveCfg = Debug|Any CPU
 		{A9F7265C-4D93-4994-8BFF-81BE9FCC4325}.SignedRelease|Any CPU.Build.0 = Debug|Any CPU
+		{247B97B7-9A1D-40ED-8A79-ED4ED8761695}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{247B97B7-9A1D-40ED-8A79-ED4ED8761695}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{247B97B7-9A1D-40ED-8A79-ED4ED8761695}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{247B97B7-9A1D-40ED-8A79-ED4ED8761695}.Release|Any CPU.Build.0 = Release|Any CPU
+		{247B97B7-9A1D-40ED-8A79-ED4ED8761695}.SignedRelease|Any CPU.ActiveCfg = SignedRelease|Any CPU
+		{247B97B7-9A1D-40ED-8A79-ED4ED8761695}.SignedRelease|Any CPU.Build.0 = SignedRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -118,6 +126,7 @@ Global
 		{F8E5E800-F842-4F84-A0C6-B3E1E5DB2BB4} = {C6FBA292-F491-45A2-BE21-2F4A2B4B689F}
 		{FC5C9A17-744F-4F97-B0FC-330B0514B395} = {A65E42B9-EEE8-49E5-B6FF-5A1214E19580}
 		{1201E3C1-1973-49DF-8D67-7763DD6DA570} = {EA9E75C0-E2D9-40FC-8642-407A327561D1}
+		{247B97B7-9A1D-40ED-8A79-ED4ED8761695} = {C6FBA292-F491-45A2-BE21-2F4A2B4B689F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27068E02-1682-44D7-819A-74759A261167}

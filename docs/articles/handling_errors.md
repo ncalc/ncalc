@@ -21,7 +21,7 @@ Though, you can also detect syntax errors before the evaluation by using the <xr
 
 ```c#
  var expression = new Expression("a + b * (");
- if(e.HasErrors())
+ if(expression.HasErrors())
  {
-     Console.WriteLine(e.Error);
+     Console.WriteLine(expression.Error);
  }

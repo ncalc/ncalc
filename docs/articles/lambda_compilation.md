@@ -1,6 +1,10 @@
-﻿# Compilation of expressions to CLR lambdas
+﻿# Lambda Compilation
 
-If you need a better performance you should use compilation of expressions to CLR lambdas feature. 
+Using the concept
+of [lambda compilation](https://learn.microsoft.com/en-us/dotnet/api/system.linq.expressions.expression-1.compile?view=net-8.0),
+NCalc can convert a <xref:NCalc.Domain.LogicalExpression> object to an anonymous function.
+Using this you can write complex functions and even have greater performance when evaluating the expression.
+
 Especial thanks to the [NCalc2 fork](https://github.com/sklose/NCalc2) for the original implementation.
 
 ## Functionalities
@@ -33,3 +37,7 @@ Func<Context, bool> function = expression.ToLambda<Context, bool>();
 var context = new Context { Param1 = 2, Param2 = "test" };
 Debug.Assert(function(context)); //true
 ```
+
+## Performance
+You should cache the result of <xref:NCalc.Expression.ToLambda>. The evaluation is indeed faster, but the compilation of the lambda is very slow.
+See [benchmarks](benchmarks.md) for more info.
