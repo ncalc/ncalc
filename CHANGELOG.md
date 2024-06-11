@@ -1,3 +1,6 @@
+# 4.3.1
+* Fix handling new lines in expression by @Bykiev in https://github.com/ncalc/ncalc/pull/234
+
 # 4.3.0
 * Added `async` support by @gumbarros in https://github.com/ncalc/ncalc/pull/207
 * Remove unused Parlot rule by @Bykiev in https://github.com/ncalc/ncalc/pull/221
