@@ -141,23 +141,23 @@ public class EvaluationVisitor : IEvaluationVisitor
                 break;
 
             case BinaryExpressionType.BitwiseAnd:
-                Result = Convert.ToUInt16(Left(), CultureInfo) & Convert.ToUInt16(Right(), CultureInfo);
+                Result = Convert.ToUInt64(Left(), CultureInfo) & Convert.ToUInt64(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseOr:
-                Result = Convert.ToUInt16(Left(), CultureInfo) | Convert.ToUInt16(Right(), CultureInfo);
+                Result = Convert.ToUInt64(Left(), CultureInfo) | Convert.ToUInt64(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseXOr:
-                Result = Convert.ToUInt16(Left(), CultureInfo) ^ Convert.ToUInt16(Right(), CultureInfo);
+                Result = Convert.ToUInt64(Left(), CultureInfo) ^ Convert.ToUInt64(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.LeftShift:
-                Result = Convert.ToUInt16(Left(), CultureInfo) << Convert.ToUInt16(Right(), CultureInfo);
+                Result = Convert.ToUInt64(Left(), CultureInfo) << Convert.ToInt32(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.RightShift:
-                Result = Convert.ToUInt16(Left(), CultureInfo) >> Convert.ToUInt16(Right(), CultureInfo);
+                Result = Convert.ToUInt64(Left(), CultureInfo) >> Convert.ToInt32(Right(), CultureInfo);
                 break;
 
             case BinaryExpressionType.Exponentiation:

@@ -394,4 +394,18 @@ public class MathsTests
 
         Assert.Equal(Math.Floor(12e+100), res);
     }
+
+    [Theory]
+    [InlineData("131055 ^ 8", 131047ul)]
+    [InlineData("524288 | 128", 524416ul)]
+    [InlineData("262143 & 131055", 131055ul)]
+    [InlineData("262143 << 2", 1048572ul)]
+    [InlineData("262143 >> 2", 65535ul)]
+    public void Should_Not_Overflow_Bitwise(string formula, object expectedValue)
+    {
+        var e = new Expression(formula, CultureInfo.InvariantCulture);
+        var res = e.Evaluate();
+
+        Assert.Equal(expectedValue, res);
+    }
 }
