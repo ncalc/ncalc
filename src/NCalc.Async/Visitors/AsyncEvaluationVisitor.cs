@@ -102,28 +102,28 @@ public class AsyncEvaluationVisitor : ExpressionEvaluator, IAsyncEvaluationVisit
                 break;
 
             case BinaryExpressionType.BitwiseAnd:
-                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) &
-                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(await leftValue.Value, CultureInfo) &
+                         Convert.ToUInt64(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseOr:
-                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) |
-                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(await leftValue.Value, CultureInfo) |
+                         Convert.ToUInt64(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseXOr:
-                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) ^
-                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(await leftValue.Value, CultureInfo) ^
+                         Convert.ToUInt64(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.LeftShift:
-                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) <<
-                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(await leftValue.Value, CultureInfo) <<
+                         Convert.ToInt32(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.RightShift:
-                Result = Convert.ToUInt16(await leftValue.Value, CultureInfo) >>
-                         Convert.ToUInt16(await rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(await leftValue.Value, CultureInfo) >>
+                         Convert.ToInt32(await rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.Exponentiation:
