@@ -345,7 +345,7 @@ public class MathsTests
     [Fact]
     public void Should_Evaluate_Floor_Of_Double_Max_Value()
     {
-        var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
+        var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})", CultureInfo.InvariantCulture);
         var res = expr.Evaluate();
 
 #if NET8_0

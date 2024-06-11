@@ -65,7 +65,7 @@ public class DecimalsTests
     {
         // https://github.com/ncalc/ncalc/issues/16
 
-        var e = new Expression("x / 1.0");
+        var e = new Expression("x / 1.0", CultureInfo.InvariantCulture);
         e.Parameters["x"] = 1m;
 
         Assert.Equal(1m, e.Evaluate());

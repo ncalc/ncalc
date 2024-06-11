@@ -16,14 +16,18 @@ public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
         return _instance ??= new LogicalExpressionFactory();
     }
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionContext? expressionContext)
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionContext? expressionContext, CultureInfo? cultureInfo)
     {
-        return Create(expression, expressionContext);
+        return Create(expression, expressionContext, cultureInfo);
     }
 
-    public static LogicalExpression Create(string expression, ExpressionContext? expressionContext = null)
+    public static LogicalExpression Create(string expression, ExpressionContext? expressionContext = null, CultureInfo? cultureInfo = null)
     {
         LogicalExpression? logicalExpression;
+
+        if (cultureInfo == null)
+            cultureInfo = CultureInfo.CurrentCulture;
+
         try
         {
             var options = expressionContext?.Options ?? ExpressionOptions.None;
@@ -31,7 +35,9 @@ public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
             {
                 UseDecimalsAsDefault = options.HasFlag(ExpressionOptions.DecimalAsDefault)
             };
-            logicalExpression = LogicalExpressionParser.Parse(parserContext);
+
+            var parser = new LogicalExpressionParser(cultureInfo);
+            logicalExpression = parser.Parse(parserContext);
 
             if (logicalExpression is null)
                 throw new ArgumentNullException(nameof(logicalExpression));

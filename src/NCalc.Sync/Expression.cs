@@ -159,7 +159,7 @@ public partial class Expression
     {
         try
         {
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options, CultureInfo);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -207,7 +207,7 @@ public partial class Expression
 
         try
         {
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context, CultureInfo);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
@@ -280,7 +280,7 @@ public partial class Expression
     /// </summary>
     public List<string> GetParametersNames()
     {
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context, CultureInfo);
         LogicalExpression.Accept(ParameterExtractionVisitor);
         return ParameterExtractionVisitor.Parameters.ToList();
     }

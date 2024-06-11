@@ -11,16 +11,16 @@ namespace NCalc.Parser;
 /// <summary>
 /// Class responsible for parsing strings into <see cref="LogicalExpression"/> objects.
 /// </summary>
-public static class LogicalExpressionParser
+public class LogicalExpressionParser
 {
-    private static readonly Parser<LogicalExpression> Parser;
+    private static Parser<LogicalExpression>? Parser;
 
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
     private const string InvalidTokenMessage = "Invalid token in expression";
 
-    static LogicalExpressionParser()
+    public LogicalExpressionParser(CultureInfo cultureInfo)
     {
         /*
          * Grammar:
@@ -52,16 +52,18 @@ public static class LogicalExpressionParser
         var exponentNumberPart =
             Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
 
-        // [integral_value]['.'decimal_value}]['e'exponent_value]
+        char decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator[0];
+
+        // [integral_value]['{decimalSeparator}'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
-                    Literals.Char('.')
+                    Literals.Char(decimalSeparator)
                         .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
                         .And(Terms.Integer().Then<long?>(x => x))
                         .And(exponentNumberPart.ThenElse<long?>(x => x, null))
                         .Then(x => (0L, x.Item1, x.Item2, x.Item3)),
                     Literals.Integer(NumberOptions.AllowSign)
-                        .And(Literals.Char('.')
+                        .And(Literals.Char(decimalSeparator)
                             .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
                             .And(ZeroOrOne(Terms.Integer()))
                             .ThenElse<(int, long?)>(x => (x.Item1, x.Item2), (0, null)))
@@ -396,9 +398,9 @@ public static class LogicalExpressionParser
 #endif
     }
 
-    public static LogicalExpression Parse(LogicalExpressionParserContext context)
+    public LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        if (Parser.TryParse(context, out LogicalExpression result, out ParseError error))
+        if (Parser!.TryParse(context, out LogicalExpression result, out ParseError error))
             return result;
 
         string message;

@@ -194,7 +194,7 @@ public class EventHandlersTests
     [InlineData("andDoThis")]
     public void ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName)
     {
-        var expression = new Expression($"{functionName}(3.14)");
+        var expression = new Expression($"{functionName}(3.14)", CultureInfo.InvariantCulture);
         expression.EvaluateFunction += (name, args) =>
         {
             if (name.Equals(functionName, StringComparison.OrdinalIgnoreCase))

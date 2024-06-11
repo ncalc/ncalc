@@ -162,7 +162,7 @@ public class AsyncExpression
 
         try
         {
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context, CultureInfo);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
@@ -257,7 +257,7 @@ public class AsyncExpression
     /// </summary>
     public List<string> GetParametersNames()
     {
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context, CultureInfo);
         LogicalExpression.Accept(ParameterExtractionVisitor);
         return ParameterExtractionVisitor.Parameters.ToList();
     }
