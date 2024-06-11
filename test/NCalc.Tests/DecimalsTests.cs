@@ -20,8 +20,8 @@ public class DecimalsTests
     {
         var expression = new Expression("0.3 - 0.2 - 0.1", ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
 
-        var result = (decimal)expression.Evaluate()!;
-        Assert.Equal("0.0", result.ToString(CultureInfo.InvariantCulture)); // Fails without decimals due to FP rounding
+        var result = expression.Evaluate();
+        Assert.Equal(0M, result);
     }
     
     [Fact]
@@ -30,7 +30,7 @@ public class DecimalsTests
         var e = new Expression("1.8 + Abs([var1])", CultureInfo.InvariantCulture);
         e.Parameters["var1"] = 9.2;
 
-        Assert.Equal(11M, e.Evaluate());
+        Assert.Equal(11d, e.Evaluate());
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class DecimalsTests
         var e = new Expression("1.8 - Abs([var1])", CultureInfo.InvariantCulture);
         e.Parameters["var1"] = 0.8;
 
-        Assert.Equal(1M, e.Evaluate());
+        Assert.Equal(1d, e.Evaluate());
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class DecimalsTests
         var e = new Expression("1.8 * Abs([var1])", CultureInfo.InvariantCulture);
         e.Parameters["var1"] = 9.2;
 
-        Assert.Equal(16.56M, e.Evaluate());
+        Assert.Equal(16.56, e.Evaluate());
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class DecimalsTests
         var e = new Expression("1.8 / Abs([var1])", CultureInfo.InvariantCulture);
         e.Parameters["var1"] = 0.5;
 
-        Assert.Equal(3.6M, e.Evaluate());
+        Assert.Equal(3.6d, e.Evaluate());
     }
     
     [Fact]

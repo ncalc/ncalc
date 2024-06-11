@@ -1,4 +1,6 @@
-using System.Globalization;
+using System.Diagnostics;
+using NCalc.Exceptions;
+using NCalc.Tests.TestData;
 
 namespace NCalc.Tests;
 
@@ -7,33 +9,17 @@ public class EvaluationTests
 {
     
     [Theory]
-    [InlineData("2 + 3 + 5", 10)]
-    [InlineData("2 * 3 + 5", 11)]
-    [InlineData("2 * (3 + 5)", 16)]
-    [InlineData("2 * (2*(2*(2+1)))", 24)]
-    [InlineData("10 % 3", 1)]
-    [InlineData("true or false", true)]
-    [InlineData("not true", false)]
-    [InlineData("false || not (false and true)", true)]
-    [InlineData("3 > 2 and 1 <= (3-2)", true)]
-    [InlineData("3 % 2 != 10 % 3", false)]
+    [ClassData(typeof(EvaluationTestData))]
     public void Expression_Should_Evaluate(string expression, object expected)
     {
         Assert.Equal(expected, new Expression(expression).Evaluate());
     }
     
     [Theory]
-    [InlineData("123456", 123456)]
-    [InlineData(".2", 0.2d)]
-    [InlineData("123.456", 123.456d)]
-    [InlineData("123.", 123d)]
-    [InlineData("123.E2", 12300d)]
-    [InlineData("true", true)]
-    [InlineData("'true'", "true")]
-    [InlineData("'azerty'", "azerty")]
-    public void Should_Parse_Values(string input, object expectedValue, params object[] args)
+    [ClassData(typeof(ValuesTestData))]
+    public void ShouldParseValues(string input, object expectedValue)
     {
-        var expression = new Expression(input, CultureInfo.InvariantCulture);
+        var expression = new Expression(input);
         var result = expression.Evaluate();
         
         if (expectedValue is double expectedDouble)
@@ -46,17 +32,12 @@ public class EvaluationTests
         }
     }
     
-    [Fact]
-    public void Should_Parse_Date_Time()
-    {
-        Assert.Equal(new DateTime(2001,1,1), new Expression("#01/01/2001#").Evaluate());
-    }
-    
+
     [Fact]
     public void ShouldEvaluateInOperator()
     {
         // The last argument should not be evaluated
-        var ein = new Expression("in((2 + 2), [1], [2], 1 + 2, 4, 1 / 0)", CultureInfo.InvariantCulture);
+        var ein = new Expression("in((2 + 2), [1], [2], 1 + 2, 4, 1 / 0)");
         ein.Parameters["1"] = 2;
         ein.Parameters["2"] = 5;
 
@@ -102,14 +83,14 @@ public class EvaluationTests
     public void Should_Evaluate_Ifs()
     {
         // Test first case true, return next value
-        var eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)", CultureInfo.InvariantCulture);
+        var eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)");
         eifs.Parameters["divider"] = 5;
         eifs.Parameters["divided"] = 5;
 
         Assert.Equal(1d, eifs.Evaluate());
 
         // Test first case false, no next case, return default value
-        eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)", CultureInfo.InvariantCulture);
+        eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)");
         eifs.Parameters["divider"] = 0;
         eifs.Parameters["divided"] = 5;
 
@@ -117,13 +98,13 @@ public class EvaluationTests
 
         // Test first case false, next case true, return next value (eg 4th expr)
 
-        eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)", CultureInfo.InvariantCulture);
+        eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)");
         eifs.Parameters["number"] = 5;
         Assert.Equal(3, eifs.Evaluate());
 
         // Test first case false, next case false, return default value (eg 5th expr)
 
-        eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)", CultureInfo.InvariantCulture);
+        eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)");
         eifs.Parameters["number"] = 1337;
 
         Assert.Equal(8, eifs.Evaluate());
@@ -132,13 +113,13 @@ public class EvaluationTests
     [Fact]
     public void ShouldEvaluateConditional()
     {
-        var eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)", CultureInfo.InvariantCulture);
+        var eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)");
         eif.Parameters["divider"] = 5;
         eif.Parameters["divided"] = 5;
 
         Assert.Equal(1d, eif.Evaluate());
 
-        eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)", CultureInfo.InvariantCulture);
+        eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)");
         eif.Parameters["divider"] = 0;
         eif.Parameters["divided"] = 5;
         Assert.Equal(0, eif.Evaluate());
@@ -147,10 +128,10 @@ public class EvaluationTests
     [Fact]
     public void ShouldHandleCaseSensitiveness()
     {
-        Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.IgnoreCase).Evaluate());
-        Assert.Equal(1M, new Expression("Abs(-1)").Evaluate());
+        Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.DecimalAsDefault | ExpressionOptions.IgnoreCase).Evaluate());
+        Assert.Equal(1M, new Expression("Abs(-1)", ExpressionOptions.DecimalAsDefault).Evaluate());
 
-        Assert.Throws<ArgumentException>(() => new Expression("aBs(-1)").Evaluate());
+        Assert.Throws<NCalcFunctionNotFoundException>(() => new Expression("aBs(-1)").Evaluate());
     }
 
     [Fact]
@@ -163,8 +144,8 @@ public class EvaluationTests
     [Fact]
     public void ShouldRoundAwayFromZero()
     {
-        Assert.Equal(22d, new Expression("Round(22.5, 0)", CultureInfo.InvariantCulture).Evaluate());
-        Assert.Equal(23d, new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero, CultureInfo.InvariantCulture).Evaluate());
+        Assert.Equal(22d, new Expression("Round(22.5, 0)").Evaluate());
+        Assert.Equal(23d, new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero).Evaluate());
     }
 
     [Fact]
@@ -178,5 +159,57 @@ public class EvaluationTests
         surface.Parameters["L"] = 2;
 
         Assert.Equal(6, volume.Evaluate());
+    }
+
+    [Theory]
+    [InlineData("Round(1.412; 2)", 1.41)]
+    [InlineData("Max(5.1; 10.2)", 10.2)]
+    [InlineData("Min(1.3; 2)", 1.3)]
+    [InlineData("Pow(5;2)", 25d)]
+    public void ShouldAllowSemicolonAsArgumentSeparator(string expression, object expected)
+    {
+        Assert.Equal(expected, new Expression(expression).Evaluate());
+    }
+
+    [Fact]
+    public void ShouldAllowToUseCurlyBraces()
+    {
+        var volume = new Expression("{surface} * h");
+        var surface = new Expression("{l} * {L}");
+        volume.Parameters["surface"] = surface;
+        volume.Parameters["h"] = 3;
+        surface.Parameters["l"] = 1;
+        surface.Parameters["L"] = 2;
+
+        Assert.Equal(6, volume.Evaluate());
+    }
+
+    [Theory]
+    [ClassData(typeof(NullCheckTestData))]
+    public void ShouldAllowOperatorsWithNulls(string expression, object expected)
+    {
+        var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
+        Assert.Equal(expected, e.Evaluate());
+    }
+    
+    [Fact]
+    public void ShouldEvaluateArrayParameters()
+    {
+        var e = new Expression("x * x", ExpressionOptions.IterateParameters)
+        {
+            Parameters =
+            {
+                ["x"] = new [] { 0, 1, 2, 3, 4 }
+            }
+        };
+
+        var result = (IList<object>)e.Evaluate();
+
+        Assert.NotNull(result);
+        Assert.Equal(0, result[0]);
+        Assert.Equal(1, result[1]);
+        Assert.Equal(4, result[2]);
+        Assert.Equal(9, result[3]);
+        Assert.Equal(16, result[4]);
     }
 }

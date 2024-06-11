@@ -15,10 +15,10 @@ public class CustomCultureTests
         cultureComma.NumberFormat.NumberGroupSeparator = " ";
 
         //use 1*[A] to avoid evaluating expression parameters as string - force numeric conversion
-        ExecuteTest("1*[A]-[B]", 1.5m);
-        ExecuteTest("1*[A]+[B]", 2.5m);
-        ExecuteTest("1*[A]/[B]", 4m);
-        ExecuteTest("1*[A]*[B]", 1m);
+        ExecuteTest("1*[A]-[B]", 1.5);
+        ExecuteTest("1*[A]+[B]", 2.5);
+        ExecuteTest("1*[A]/[B]", 4d);
+        ExecuteTest("1*[A]*[B]", 1d);
         ExecuteTest("1*[A]>[B]", true);
         ExecuteTest("1*[A]<[B]", false);
 

@@ -9,10 +9,16 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <Configurations>Debug;Release;SignedRelease</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
-
     <ItemGroup>
-      <ProjectReference Include="..\..\src\NCalc\NCalc.csproj" />
+        <None Include="../../NCalc.png">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\NCalc.Sync\NCalc.Sync.csproj" />
     </ItemGroup>
 
 </Project>

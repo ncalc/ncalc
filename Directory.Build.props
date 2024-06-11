@@ -1,10 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project>
+  <PropertyGroup>
+    <PackageIcon>NCalc.png</PackageIcon>
+    <Authors>Sebastien Ros and contributors</Authors>
+    <Copyright>Sebastien Ros and contributors</Copyright>
+    <Company>https://github.com/ncalc</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
   <ItemGroup>
-
     <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">
       <Version>3.4.244</Version>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="PolySharp" Version="1.14.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.Text" />
+    <Using Include="System.Threading.Tasks" />
+    <Using Include="System.Collections" />
+    <Using Include="System.Collections.Concurrent" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Globalization" />
+    <Using Include="System.Linq" />
   </ItemGroup>
 </Project>

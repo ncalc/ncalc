@@ -2,10 +2,10 @@
 # Welcome to NCalc docs!
 
 
-NCalc is Mathematical Expressions Evaluator for .NET
+NCalc is a mathematical expression evaluator for .NET
 <br>
 
-To getting started, click on this [link](articles/Index.md).
+To getting started, click on this [link](articles/index.md).
 
 <br>
 

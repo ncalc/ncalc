@@ -1,4 +1,5 @@
 using System.Globalization;
+using NCalc.Tests.TestData;
 using Assert = Xunit.Assert;
 
 namespace NCalc.Tests;
@@ -6,42 +7,9 @@ namespace NCalc.Tests;
 [Trait("Category","Math")]
 public class MathsTests
 {
-    public static TheoryData<string, object, double?> GetBuiltInFunctionTestData()
-    {
-        var data = new TheoryData<string, object, double?>
-        {
-            { "Abs(-1)", 1M, null },
-            { "Acos(1)", 0d, null },
-            { "Asin(0)", 0d, null },
-            { "Atan(0)", 0d, null },
-            { "Ceiling(1.5)", 2d, null },
-            { "Cos(0)", 1d, null },
-            { "Exp(0)", 1d, null },
-            { "Floor(1.5)", 1d, null },
-            { "IEEERemainder(3,2)", -1d, null },
-            { "Log(1,10)", 0d, null },
-            { "Ln(1)", 0d, null },
-            { "Log10(1)", 0d, null },
-            { "Pow(3,2)", 9d, null },
-            { "Round(3.222,2)", 3.22d, null },
-            { "Sign(-10)", -1, null },
-            { "Sin(0)", 0d, null },
-            { "Sqrt(4)", 2d, null },
-            { "Tan(0)", 0d, null },
-            { "Truncate(1.7)", 1d, null },
-            { "Atan2(-1,0)", -Math.PI/2, 1e-16 },
-            { "Atan2(1,0)", Math.PI/2, 1e-16 },
-            { "Atan2(0,-1)", Math.PI, 1e-16 },
-            { "Atan2(0,1)", 0d, 1e-16 },
-            { "Max(1,10)", 10, null },
-            { "Min(1,10)", 1, null }
-        };
-
-        return data;
-    }
 
     [Theory]
-    [MemberData(nameof(GetBuiltInFunctionTestData))]
+    [ClassData(typeof(BuiltInFunctionsTestData))]
     public void BuiltInFunctions_Test(string expression, object expected, double? tolerance)
     {
         var result = new Expression(expression, CultureInfo.InvariantCulture).Evaluate();
@@ -341,5 +309,70 @@ public class MathsTests
         e.Parameters["a"] = 20M;
         e.Parameters["b"] = 20M;
         Assert.Equal(100M, e.Evaluate());
+    }
+    
+    [Fact]
+    public void Overflow_Issue_190()
+    {
+        const decimal minValue = decimal.MinValue;
+        var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        Assert.Equal(minValue,expr.Evaluate());
+    }
+    
+    [Theory]
+    [InlineData("(X1 = 1)/2", 0.5)]
+    [InlineData("(X1 = 1)*2", 2)]
+    [InlineData("(X1 = 1)+1", 2)]
+    [InlineData("(X1 = 1)-1", 0)]
+    [InlineData("2*(X1 = 1)", 2)]
+    [InlineData("2/(X1 = 1)", 2.0)]
+    [InlineData("1+(X1 = 1)", 2)]
+    [InlineData("true-(X1 = 1)", 0)]
+    [InlineData("true-(X1 = true - false)", 0)]
+    public void ShouldOptionallyCalculateWithBoolean(string formula, object expectedValue)
+    {
+        var expression = new Expression(formula, ExpressionOptions.AllowBooleanCalculation);
+        expression.Parameters["X1"] = 1;
+
+        Assert.Equal(expectedValue, expression.Evaluate());
+
+
+        var lambda = expression.ToLambda<double>();
+        
+        Assert.Equal(Convert.ToDouble(expectedValue), lambda());
+    }
+    
+    [Fact]
+    public void Should_Evaluate_Floor_Of_Double_Max_Value()
+    {
+        var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
+        var res = expr.Evaluate();
+
+#if NET8_0
+        Assert.Equal(Math.Floor(double.MaxValue), res);
+#else
+        Assert.Equal(double.PositiveInfinity, res);
+#endif
+    }
+
+    [Fact]
+    public void Should_Not_Change_Double_Precision()
+    {
+        var expr = new Expression("Floor(12e+100)");
+        var res = expr.Evaluate();
+
+        Assert.Equal(Math.Floor(12e+100), res);
+    }
+
+    [Theory]
+    [InlineData(".05", 0.05)]
+    [InlineData("0.05", 0.05)]
+    [InlineData("0.005", 0.005)]
+    public void Should_Correctly_Parse_Floating_Point_Numbers(string formula, object expectedValue)
+    {
+        var expr = new Expression(formula, CultureInfo.InvariantCulture);
+        var res = expr.Evaluate();
+
+        Assert.Equal(expectedValue, res);
     }
 }

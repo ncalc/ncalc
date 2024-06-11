@@ -1,6 +1,7 @@
 name: Publish to NuGet
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
@@ -32,5 +33,11 @@ jobs:
       run: dotnet pack -c SignedRelease -p:PublicRelease=true
     - name: Publish packages
       run: |
-          dotnet nuget push src/NCalc/bin/Release/NCalcSync*.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
-          dotnet nuget push src/NCalc/bin/SignedRelease/NCalcSync*.nupkg -k "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" -s https://api.nuget.org/v3/index.json
+          dotnet nuget push src/NCalc.Core/bin/Release/NCalc.Core*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.Sync/bin/Release/NCalcSync*.nupkg --api-key "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.Sync/bin/SignedRelease/NCalcSync*.nupkg --api-key "${{ secrets.NUGET_NCALC_SYNC_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.Async/bin/Release/NCalcAsync*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.DependencyInjection/bin/Release/NCalc.DependencyInjection*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/Plugins/NCalc.MemoryCache/bin/Release/NCalc.MemoryCache*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/Plugins/NCalc.Antlr/bin/Release/NCalc.Antlr*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+

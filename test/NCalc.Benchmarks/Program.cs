@@ -1,5 +1,4 @@
-﻿using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Running;
 
 namespace NCalc.Benchmarks;
 
@@ -7,6 +6,7 @@ public static class Program
 {
     public static void Main()
     {
-        BenchmarkRunner.Run<NCalcBenchmark>();
+        BenchmarkRunner.Run<LogicalExpressionFactoryBenchmark>();
+        BenchmarkRunner.Run<EvaluateVsLambdaBenchmark>();
     }
 }

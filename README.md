@@ -10,10 +10,11 @@
 [![Discord](https://img.shields.io/discord/1237181265426387005?logo=discord&logoColor=white&label=%20&labelColor=%23697EC4&color=%237289DA
 )](https://discord.gg/TeJkmXbqFk)
 
-NCalc is a mathematical expressions evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
+NCalc is a mathematical expression evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
 ## Docs
 Need help or want to learn more? [Check our docs.](https://ncalc.github.io/ncalc)
+
 
 ## Project Description
 
@@ -22,23 +23,31 @@ It is supported by any target framework that accommodates .NET Standard 2.0.
 
 For additional information on the technique we used to create this framework please read this article: https://www.codeproject.com/Articles/18880/State-of-the-Art-Expression-Evaluation.
 
-For documentation here is the table of content:
-* [description](https://github.com/ncalc/ncalc/wiki/Description): overall concepts, usage and extensibility points
-* [operators](https://github.com/ncalc/ncalc/wiki/Operators): available standard operators and structures
-* [values](https://github.com/ncalc/ncalc/wiki/Values): authorized values like types, functions, ...
-* [functions](https://github.com/ncalc/ncalc/wiki/Functions): list of already implemented functions
-* [parameters](https://github.com/ncalc/ncalc/wiki/Parameters): on how to use parameters expressions
-
 > [!IMPORTANT]
 > If you need help, please open an issue and include the expression to help us better understand the problem. 
 > Providing this information will aid in resolving the issue effectively.
 
+## Getting Started
+If you want to evaluate simple expressions:
+```
+dotnet add package NCalcSync 
+```
+Want async support at event handlers?
+```
+dotnet add package NCalcAsync 
+```
+Dependency Injection? We got you covered:
+```
+dotnet add package NCalc.DependencyInjection
+```
+
 ## Functionalities
-**Simple Expressions**
+
+### Simple Expressions
 
 ```c#
-Expression e = new Expression("2 + 3 * 5");
-Debug.Assert(17 == e.Evaluate());
+var expression = new Expression("2 + 3 * 5");
+Debug.Assert(17 == expression.Evaluate());
 ```
 
 **Evaluates .NET data types**
@@ -62,14 +71,14 @@ Debug.Assert(0 == new Expression("Tan(0)").Evaluate());
 **Evaluates custom functions**
 
 ```c#
-Expression e = new Expression("SecretOperation(3, 6)");
-e.EvaluateFunction += delegate(string name, FunctionArgs args)
+var expression = new Expression("SecretOperation(3, 6)");
+expression.EvaluateFunction += delegate(string name, FunctionArgs args)
     {
         if (name == "SecretOperation")
             args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
     };
 
-Debug.Assert(9 == e.Evaluate());
+Debug.Assert(9 == expression.Evaluate());
 ```
 
 **Handles unicode characters**
@@ -84,28 +93,28 @@ Debug.Assert("\u0100" == new Expression(@"'\u0100'").Evaluate());
 **Define parameters, even dynamic or expressions**
 
 ```c#
-Expression e = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
+var expression = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
 
-e.Parameters["Pi2"] = new Expression("Pi * [Pi]");
-e.Parameters["X"] = 10;
+expression.Parameters["Pi2"] = new Expression("Pi * [Pi]");
+expression.Parameters["X"] = 10;
 
-e.EvaluateParameter += delegate(string name, ParameterArgs args)
+expression.EvaluateParameter += delegate(string name, ParameterArgs args)
   {
     if (name == "Pi")
     args.Result = 3.14;
   };
 
-Debug.Assert(117.07 == e.Evaluate());
+Debug.Assert(117.07 == expression.Evaluate());
 ```
 
-**Caching in a distributed cache**
+**Caching and Serializing**
 
 This example uses [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/).
 
 Serializing
 ```c#
-var compiled = Expression.Compile(expression, true);
-var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
+var parsedExpression = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
+var serialized = JsonConvert.SerializeObject(parsedExpression, new JsonSerializerSettings
 {
     TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
 });
@@ -119,19 +128,25 @@ var deserialized = JsonConvert.DeserializeObject<LogicalExpression>(serialized, 
 });
 
 Expression.CacheEnabled = false; // We cannot use NCalc's built in cache at the same time.
-var exp = new Expression(deserialized);
-exp.Parameters = new Dictionary<string, object> {
+
+var expression = new Expression(deserialized);
+expression.Parameters = new Dictionary<string, object> {
     {"waterlevel", inputValue}
 };
 
-var evaluated = exp.Evaluate();
+var result = expression.Evaluate();
+```
+You can also use our [Memory Cache plugin.](https://ncalc.github.io/ncalc/articles/plugins/memory_cache.html)
+
+**Lambda Expressions**
+```cs
+var expression = new Expression("1 + 2");
+Func<int> function = expression.ToLambda<int>();
+Debug.Assert(function()); //3
 ```
 
+
 ## Related projects
-
-### [NCalc-Async](https://github.com/ncalc/ncalc-async/)
-
-Pure asynchronous implementation of NCalc by [Peter Liljenberg](https://github.com/petli).
 
 ### [Parlot](https://github.com/sebastienros/parlot)
 
@@ -145,12 +160,12 @@ Developed by David, Dan and all at [Panoramic Data](https://github.com/panoramic
 
 ### [Jint](https://github.com/sebastienros/jint)
 
-Javascript Interpreter for .NET by [Sébastien Ros](https://github.com/sebastienros), the author of NCalc library.  
+JavaScript Interpreter for .NET by [Sébastien Ros](https://github.com/sebastienros), the author of NCalc library.  
 Runs on any modern .NET platform as it supports .NET Standard 2.0 and .NET 4.6.1 targets (and up).
 
 ### [NCalcJS](https://github.com/thomashambach/ncalcjs)
 
-A Typescript/Javascript port of NCalc.
+A TypeScript/JavaScript port of NCalc.
 
 ### [NCalc101](https://ncalc101.magicsuite.net)
 
@@ -158,7 +173,7 @@ NCalc 101 is a simple web application that allows you to try out the NCalc expre
 
 ### [JJMasterData.NCalc](https://md.jjconsulting.tech/articles/plugins/ncalc.html)
 
-Plugin of NCalc to [JJMasterData](https://github.com/jjconsulting/jjmasterdata), a runtime form generator from database metadata.
+Plugin of NCalc used to evaluate [JJMasterData](https://github.com/jjconsulting/jjmasterdata) expressions. JJMasterData is a runtime form generator from database metadata.
 
 # NCalc versioning
 

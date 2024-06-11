@@ -1,3 +1,5 @@
+using NCalc.Exceptions;
+
 namespace NCalc.Tests;
 
 [Trait("Category","Comparer")]
@@ -6,7 +8,7 @@ public class ComparerTests
     [Fact]
     public void Should_Use_Case_Insensitive_Comparer_Issue_85()
     {
-        var eif = new Expression("PageState == 'LIST'", ExpressionOptions.CaseInsensitiveComparer);
+        var eif = new Expression("PageState == 'LIST'", ExpressionOptions.CaseInsensitiveStringComparer);
         eif.Parameters["PageState"] = "List";
 
         Assert.True((bool)eif.Evaluate());
@@ -95,7 +97,7 @@ public class ComparerTests
     {
         var e = new Expression("'a string' == null");
 
-        var ex = Assert.Throws<ArgumentException>(() => e.Evaluate());
-        Assert.Contains("Parameter was not defined", ex.Message);
+        var ex = Assert.Throws<NCalcParameterNotDefinedException>(() => e.Evaluate());
+        Assert.Contains("not defined", ex.Message);
     }
 }
