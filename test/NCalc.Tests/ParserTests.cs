@@ -27,4 +27,17 @@ public class ParserTests
 
         Assert.Equal(expectedValue, result);
     }
+
+    [Fact]
+    public void ShouldHandleNewLines()
+    {
+        string formula = @"2+3
+            
+            ";
+
+        var expression = new Expression(formula, CultureInfo.InvariantCulture);
+        var result = expression.Evaluate();
+
+        Assert.Equal(5, result);
+    }
 }
