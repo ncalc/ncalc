@@ -108,28 +108,29 @@ public class EvaluationVisitor : ExpressionEvaluator, IEvaluationVisitor
                 break;
 
             case BinaryExpressionType.BitwiseAnd:
-                Result = Convert.ToUInt64(Left(), CultureInfo) &
-						 Convert.ToUInt64(Right(), CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) &
+						 Convert.ToUInt64(rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseOr:
-                Result = Convert.ToUInt64(Left(), CultureInfo) |
-						 Convert.ToUInt64(Right(), CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) |
+						 Convert.ToUInt64(rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseXOr:
-                Result = Convert.ToUInt64(Left(), CultureInfo) ^
-						 Convert.ToUInt64(Right(), CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) ^
+						 Convert.ToUInt64(rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.LeftShift:
-                Result = Convert.ToUInt64(Left(), CultureInfo) <<
-						 Convert.ToInt32(Right(), CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) <<
+						 Convert.ToInt32(rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.RightShift:
-                Result = Convert.ToUInt64(Left(), CultureInfo) >>
-						 Convert.ToInt32(Right(), CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) >>
+						 Convert.ToInt32(rightValue.Value, CultureInfo);
+                break;
 
             case BinaryExpressionType.Exponentiation:
                 Result = Math.Pow(Convert.ToDouble(leftValue.Value, CultureInfo),
