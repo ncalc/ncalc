@@ -39,5 +39,5 @@ Debug.Assert(function(context)); //true
 ```
 
 ## Performance
-You should cache the result of <xref:NCalc.Expression.ToLambda>. The evaluation is indeed faster, but the compilation of the lambda is very slow.
+You should cache the result of <xref:NCalc.Expression.ToLambda`1>. The evaluation is indeed faster, but the compilation of the lambda is very slow.
 See [benchmarks](benchmarks.md) for more info.
