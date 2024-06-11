@@ -1,4 +1,5 @@
 using System.Globalization;
+using NCalc.Tests.TestData;
 using Assert = Xunit.Assert;
 
 namespace NCalc.Tests;
@@ -6,42 +7,9 @@ namespace NCalc.Tests;
 [Trait("Category","Math")]
 public class MathsTests
 {
-    public static TheoryData<string, object, double?> GetBuiltInFunctionTestData()
-    {
-        var data = new TheoryData<string, object, double?>
-        {
-            { "Abs(-1)", 1d, null },
-            { "Acos(1)", 0d, null },
-            { "Asin(0)", 0d, null },
-            { "Atan(0)", 0d, null },
-            { "Ceiling(1.5)", 2d, null },
-            { "Cos(0)", 1d, null },
-            { "Exp(0)", 1d, null },
-            { "Floor(1.5)", 1d, null },
-            { "IEEERemainder(3,2)", -1d, null },
-            { "Log(1,10)", 0d, null },
-            { "Ln(1)", 0d, null },
-            { "Log10(1)", 0d, null },
-            { "Pow(3,2)", 9d, null },
-            { "Round(3.222,2)", 3.22d, null },
-            { "Sign(-10)", -1, null },
-            { "Sin(0)", 0d, null },
-            { "Sqrt(4)", 2d, null },
-            { "Tan(0)", 0d, null },
-            { "Truncate(1.7)", 1d, null },
-            { "Atan2(-1,0)", -Math.PI/2, 1e-16 },
-            { "Atan2(1,0)", Math.PI/2, 1e-16 },
-            { "Atan2(0,-1)", Math.PI, 1e-16 },
-            { "Atan2(0,1)", 0d, 1e-16 },
-            { "Max(1,10)", 10, null },
-            { "Min(1,10)", 1, null }
-        };
-
-        return data;
-    }
 
     [Theory]
-    [MemberData(nameof(GetBuiltInFunctionTestData))]
+    [ClassData(typeof(BuiltInFunctionsTestData))]
     public void BuiltInFunctions_Test(string expression, object expected, double? tolerance)
     {
         var result = new Expression(expression).Evaluate();
@@ -389,13 +357,24 @@ public class MathsTests
     [Fact]
     public void Should_Not_Change_Double_Precision()
     {
-        var expr = new Expression($"Floor(12e+100)");
+        var expr = new Expression("Floor(12e+100)");
         var res = expr.Evaluate();
 
         Assert.Equal(Math.Floor(12e+100), res);
     }
 
-    [Theory]
+    [InlineData(".05", 0.05)]
+    [InlineData("0.05", 0.05)]
+    [InlineData("0.005", 0.005)]
+    public void Should_Correctly_Parse_Floating_Point_Numbers(string formula, object expectedValue)
+    {
+        var expr = new Expression(formula, CultureInfo.InvariantCulture);
+        var res = expr.Evaluate();
+
+        Assert.Equal(expectedValue, res);
+    }
+	
+	[Theory]
     [InlineData("131055 ^ 8", 131047ul)]
     [InlineData("524288 | 128", 524416ul)]
     [InlineData("262143 & 131055", 131055ul)]
@@ -405,7 +384,5 @@ public class MathsTests
     {
         var e = new Expression(formula, CultureInfo.InvariantCulture);
         var res = e.Evaluate();
-
-        Assert.Equal(expectedValue, res);
-    }
+	}
 }

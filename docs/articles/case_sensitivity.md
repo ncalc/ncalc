@@ -14,9 +14,9 @@ You can also change the comparison behavior of expressions.
 ```c#
  var expression = new Expression("{PageState} == 'list'");
  expression.Parameters["PageState"] = "List";
- Debug.Assert(false, e.Evaluate());
+ Debug.Assert(false, expression.Evaluate());
  
  expression = new Expression("{PageState} == 'list'");
  expression.Parameters["PageState"] = "List";
- Debug.Assert(true, e.Evaluate());
+ Debug.Assert(true, expression.Evaluate());
 ```

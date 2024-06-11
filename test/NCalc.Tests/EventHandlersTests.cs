@@ -102,26 +102,6 @@ public class EventHandlersTests
     }
     
     [Fact]
-    public void ShouldEvaluateArrayParameters()
-    {
-        var e = new Expression("x * x", ExpressionOptions.IterateParameters)
-        {
-            Parameters =
-            {
-                ["x"] = new [] { 0, 1, 2, 3, 4 }
-            }
-        };
-
-        var result = (IList)e.Evaluate();
-
-        Assert.Equal(0, result[0]);
-        Assert.Equal(1, result[1]);
-        Assert.Equal(4, result[2]);
-        Assert.Equal(9, result[3]);
-        Assert.Equal(16, result[4]);
-    }
-    
-    [Fact]
     public void ShouldHandleCustomParametersWhenNoSpecificParameterIsDefined()
     {
         var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");
@@ -205,5 +185,21 @@ public class EventHandlersTests
         };
 
         Assert.Null(e.Evaluate());
+    }
+
+
+    [Theory]
+    [InlineData("notExistingfunction")]
+    [InlineData("andDoThis")]
+    public void ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName)
+    {
+        var expression = new Expression($"{functionName}(3.14)");
+        expression.EvaluateFunction += (name, args) =>
+        {
+            if (name.Equals(functionName, StringComparison.OrdinalIgnoreCase))
+                args.Result = 1;
+        };
+
+        Assert.Equal(1, expression.Evaluate());
     }
 }

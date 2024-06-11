@@ -1,59 +1,33 @@
-﻿using System.Collections;
+﻿namespace NCalc.Tests.TestData;
 
-namespace NCalc.Tests.TestData;
-
-public class EvaluationTestData : IEnumerable<object[]>
+public class EvaluationTestData : TheoryData<string, object>
 {
-    public static readonly Dictionary<string, object> Data = new()
-    {
-        { "2 + 3 + 5", 10 },
-        { "2 * 3 + 5", 11 },
-        { "2 * (3 + 5)", 16 },
-        { "2 * (2*(2*(2+1)))", 24 },
-        { "10 % 3", 1 },
-        { "true or false", true },
-        { "not true", false },
-        { "false || not (false and true)", true },
-        { "3 > 2 and 1 <= (3-2)", true },
-        { "3 % 2 != 10 % 3", false }
-    };
-
     public EvaluationTestData()
     {
+        Add("2 + 3 + 5", 10);
+        Add("2 * 3 + 5", 11);
+        Add("2 * (3 + 5)", 16);
+        Add("2 * (2*(2*(2+1)))", 24);
+        Add("10 % 3", 1);
+        Add("true or false", true);
+        Add("not true", false);
+        Add("false || not (false and true)", true);
+        Add("3 > 2 and 1 <= (3-2)", true);
+        Add("3 % 2 != 10 % 3", false);
     }
-
-    public IEnumerator<object[]> GetEnumerator()
-    {
-        foreach (var kvp in Data)
-        {
-            yield return [kvp.Key, kvp.Value];
-        }
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-public class ValuesEvaluationTestData : IEnumerable<object[]>
+public class ValuesEvaluationTestData : TheoryData<string, object>
 {
-    public static readonly Dictionary<string, object> Data = new()
+    public ValuesEvaluationTestData()
     {
-        { "123456", 123456 },
-        { ".2", 0.2d },
-        { "123.456", 123.456d },
-        { "123.", 123d },
-        { "123.E2", 12300d },
-        { "true", true },
-        { "'true'", "true" },
-        { "'azerty'", "azerty" }
-    };
-
-    public IEnumerator<object[]> GetEnumerator()
-    {
-        foreach (var kvp in Data)
-        {
-            yield return new object[] { kvp.Key, kvp.Value };
-        }
+        Add("123456", 123456);
+        Add(".2", 0.2d);
+        Add("123.456", 123.456d);
+        Add("123.", 123d);
+        Add("123.E2", 12300d);
+        Add("true", true);
+        Add("'true'", "true");
+        Add("'azerty'", "azerty");
     }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

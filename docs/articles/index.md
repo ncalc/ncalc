@@ -15,13 +15,15 @@ For additional information on the technique we used to create this framework ple
 - [Parameters](parameters.md):  How to use parameters expressions.
 - [Handling Errors](handling_errors.md):  How to handle errors.
 - [Case Sensitivity](case_sensitivity.md): Options in how to handle case sensitivity.
+- [Async Support](async.md): How and when to use `async`.
 - [Caching](caching.md): How caching works.
 - [Improve performance](lambda_compilation.md): How to use compilation of expressions to CLR lambdas.
 - [Dependency Injection](dependency_injection.md): Bring expressions to the next level with dependency injection.
+- [Benchmarks](benchmarks.md): Check some numbers about the speed of some NCalc components.
 
-## <xref:NCalc.Expression> class
+## <xref:NCalc.Expression>
 This is the main class of NCalc.
-This class has a method <xref:NCalc.Expression.Evaluate> returning the actual value of its <xref:System.String> representation.
+The method <xref:NCalc.Expression.Evaluate> returns the actual value of its <xref:System.String> representation.
 
 Example:
 
@@ -38,14 +40,15 @@ Then the method <xref:NCalc.Expression.Evaluate> is called to parse the <xref:Sy
 To create expressions you can combine several [Operators](operators.md) and [Values](values.md).
 
 ## Functionalities
-**Simple Expressions**
+
+### Simple Expressions
 
 ```c#
 var expression = new Expression("2 + 3 * 5");
 Debug.Assert(17 == expression.Evaluate());
 ```
 
-**Evaluates .NET data types**
+### .NET Data Types
 
 ```c#
 Debug.Assert(123456 == new Expression("123456").Evaluate()); // integers
@@ -55,7 +58,7 @@ Debug.Assert(true == new Expression("true").Evaluate()); // booleans
 Debug.Assert("azerty" == new Expression("'azerty'").Evaluate()); // strings
 ```
 
-**Handles mathematical functional from System.Math**
+### Mathematical functional from [System.Math](https://learn.microsoft.com/en-us/dotnet/api/system.math?view=net-8.0)**
 
 ```c#
 Debug.Assert(0 == new Expression("Sin(0)").Evaluate());
@@ -63,7 +66,7 @@ Debug.Assert(2 == new Expression("Sqrt(4)").Evaluate());
 Debug.Assert(0 == new Expression("Tan(0)").Evaluate());
 ```
 
-**Evaluates custom functions**
+### Custom Functions
 
 ```c#
 var expression = new Expression("SecretOperation(3, 6)");
@@ -76,7 +79,7 @@ expression.EvaluateFunction += delegate(string name, FunctionArgs args)
 Debug.Assert(9 == expression.Evaluate());
 ```
 
-**Handles unicode characters**
+### Unicode Characters
 
 ```c#
 Debug.Assert("経済協力開発機構" == new Expression("'経済協力開発機構'").Evaluate());
@@ -85,7 +88,7 @@ Debug.Assert("だ" == new Expression(@"'\u3060'").Evaluate());
 Debug.Assert("\u0100" == new Expression(@"'\u0100'").Evaluate());
 ```
 
-**Define parameters, even dynamic or expressions**
+### Parameters - Static and Dynamic
 
 ```c#
 var expression = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
@@ -100,4 +103,12 @@ expression.EvaluateParameter += delegate(string name, ParameterArgs args)
   };
 
 Debug.Assert(117.07 == expression.Evaluate());
+```
+
+
+### Lambda Expressions
+```cs
+var expression = new Expression("1 + 2");
+Func<int> function = expression.ToLambda<int>();
+Debug.Assert(function()); //3
 ```

@@ -1,0 +1,47 @@
+﻿using NCalc.Domain;
+
+namespace NCalc.Visitors;
+
+/// <summary>
+/// Default implementation of IParameterExtractionVisitor.
+/// </summary>
+public sealed class ParameterExtractionVisitor : IParameterExtractionVisitor
+{
+    public List<string> Parameters { get; } = [];
+
+    public void Visit(Identifier identifier)
+    {
+        if (!Parameters.Contains(identifier.Name))
+        {
+            Parameters.Add(identifier.Name);
+        }
+    }
+
+    public void Visit(UnaryExpression expression)
+    {
+        expression.Expression.Accept(this);
+    }
+
+    public void Visit(BinaryExpression expression)
+    {
+        expression.LeftExpression.Accept(this);
+        expression.RightExpression.Accept(this);
+    }
+
+    public void Visit(TernaryExpression expression)
+    {
+        expression.LeftExpression.Accept(this);
+        expression.RightExpression.Accept(this);
+        expression.MiddleExpression.Accept(this);
+    }
+
+    public void Visit(Function function)
+    {
+        foreach (var expression in function.Expressions)
+            expression.Accept(this);
+    }
+
+    public void Visit(ValueExpression expression)
+    {
+    }
+}

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using NCalc.Exceptions;
 using NCalc.Tests.TestData;
 
@@ -16,7 +17,7 @@ public class EvaluationTests
     
     [Theory]
     [ClassData(typeof(ValuesTestData))]
-    public void Should_Parse_Values(string input, object expectedValue)
+    public void ShouldParseValues(string input, object expectedValue)
     {
         var expression = new Expression(input);
         var result = expression.Evaluate();
@@ -184,14 +185,31 @@ public class EvaluationTests
     }
 
     [Theory]
-    [InlineData("if((5 + null > 0), 1, 2)", 2)]
-    [InlineData("if((5 - null > 0), 1, 2)", 2)]
-    [InlineData("if((5 / null > 0), 1, 2)", 2)]
-    [InlineData("if((5 * null > 0), 1, 2)", 2)]
-    [InlineData("if((5 % null > 0), 1, 2)", 2)]
+    [ClassData(typeof(NullCheckTestData))]
     public void ShouldAllowOperatorsWithNulls(string expression, object expected)
     {
         var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
         Assert.Equal(expected, e.Evaluate());
+    }
+    
+    [Fact]
+    public void ShouldEvaluateArrayParameters()
+    {
+        var e = new Expression("x * x", ExpressionOptions.IterateParameters)
+        {
+            Parameters =
+            {
+                ["x"] = new [] { 0, 1, 2, 3, 4 }
+            }
+        };
+
+        var result = (IList<object>)e.Evaluate();
+
+        Assert.NotNull(result);
+        Assert.Equal(0, result[0]);
+        Assert.Equal(1, result[1]);
+        Assert.Equal(4, result[2]);
+        Assert.Equal(9, result[3]);
+        Assert.Equal(16, result[4]);
     }
 }

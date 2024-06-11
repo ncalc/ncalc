@@ -1,3 +1,23 @@
+# 4.3.0
+* Added `async` support by @gumbarros in https://github.com/ncalc/ncalc/pull/207
+* Remove unused Parlot rule by @Bykiev in https://github.com/ncalc/ncalc/pull/221
+* Inline `TypeHelper.IsReal` by @gumbarros in https://github.com/ncalc/ncalc/pull/225
+* Allow whitespace at end of expression by @gumbarros and @Bykiev in https://github.com/ncalc/ncalc/pull/224
+* Re-added Benchmark project by @gumbarros in https://github.com/ncalc/ncalc/pull/220
+* Run Benchmark at CI by @gumbarros in https://github.com/ncalc/ncalc/pull/228
+* Fixed not operator behavior by @gumbarros and @Bykiev in https://github.com/ncalc/ncalc/pull/227
+
+## Breaking Changes
+* `Expression` is now `AsyncExpression` at `NCalcAsync`, related classes are also prefixed with Async to prevent naming collisions
+* Removed obsolete `HasOption` extension method from `ExpressionOptions`, please use `HasFlag`
+* Removed obsolete `CaseInsensitiveComparer` enum member, please use `CaseInsensitiveStringComparer`
+
+# 4.2.1
+* [Fix treating NOT as unary in function name](https://github.com/ncalc/ncalc/pull/211) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Fix GetParametersNames() method inifinte loop with unary operators](https://github.com/ncalc/ncalc/pull/212) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Fix parsing floating-point numbers](https://github.com/ncalc/ncalc/pull/215) by [Andrey Bykiev](https://github.com/Bykiev)
+* [Fix handling invalid expression with comma](https://github.com/ncalc/ncalc/pull/217) by [Sébastien Ros](https://github.com/sebastienros), [Andrey Bykiev](https://github.com/Bykiev)
+
 # 4.2
 * [Improve Parlot error handling](https://github.com/ncalc/ncalc/pull/181) by [Andrey Bykiev](https://github.com/Bykiev)
 * [Fix OverflowException with double values](https://github.com/ncalc/ncalc/pull/188) by [Andrey Bykiev](https://github.com/Bykiev), [Gustavo Mauricio de Barros](https://github.com/gumbarros)

@@ -10,6 +10,7 @@
     <Configurations>Debug;Release;SignedRelease</Configurations>
     <Platforms>AnyCPU</Platforms>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,8 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\NCalc.Async\NCalc.Async.csproj" />
     <ProjectReference Include="..\..\src\NCalc.DependencyInjection\NCalc.DependencyInjection.csproj" />
-    <ProjectReference Include="..\..\src\NCalc\NCalc.csproj" />
+    <ProjectReference Include="..\..\src\NCalc.Sync\NCalc.Sync.csproj" />
     <ProjectReference Include="..\..\src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj" />
     <ProjectReference Include="..\..\src\Plugins\NCalc.MemoryCache\NCalc.MemoryCache.csproj" />
   </ItemGroup>
