@@ -41,12 +41,12 @@ public class OperatorsTests
     [InlineData("1 == 1", true)]
     [InlineData("1 != 1", false)]
     [InlineData("1 <> 1", false)]
-    [InlineData("1 & 1", 1)]
-    [InlineData("1 | 1", 1)]
-    [InlineData("1 ^ 1", 0)]
+    [InlineData("1 & 1", 1UL)]
+    [InlineData("1 | 1", 1UL)]
+    [InlineData("1 ^ 1", 0UL)]
     [InlineData("~1", ~1)]
-    [InlineData("2 >> 1", 1)]
-    [InlineData("2 << 1", 4)]
+    [InlineData("2 >> 1", 1UL)]
+    [InlineData("2 << 1", 4UL)]
     [InlineData("true && false", false)]
     [InlineData("True and False", false)]
     [InlineData("tRue aNd faLse", false)]
@@ -99,7 +99,7 @@ public class OperatorsTests
         var serializedString = logicalExpression.ToString();
 
         Assert.Equal("1 ^ 2", serializedString);
-        Assert.Equal(3, new Expression(logicalExpression).Evaluate());
+        Assert.Equal(3UL, new Expression(logicalExpression).Evaluate());
     }
     
     [Fact]
