@@ -142,7 +142,11 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
 
-        var not = OneOf(Terms.Text("NOT", true).AndSkip(Literals.WhiteSpace()), Terms.Text("!"));
+        var identifier = Terms.Identifier();
+
+        var not = OneOf(
+            Terms.Text("NOT", true).AndSkip(OneOf(Literals.WhiteSpace().Or(Not(AnyCharBefore(openParen))))),
+            Terms.Text("!"));
         var and = OneOf(Terms.Text("AND", true), Terms.Text("&&"));
         var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
 
@@ -157,13 +161,12 @@ public static class LogicalExpressionParser
         // ("[" | "{") identifier ("]" | "}")
         var identifierExpression = openBrace.Or(openCurlyBrace)
             .SkipAnd(AnyCharBefore(closeBrace.Or(closeCurlyBrace), consumeDelimiter: true))
-            .Or(Terms.Identifier())
+            .Or(identifier)
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
         var arguments = Separated(comma.Or(semicolon), expression);
 
-        var functionWithArguments = Terms
-            .Identifier()
+        var functionWithArguments = identifier
             .And(openParen.SkipAnd(arguments).AndSkip(closeParen))
             .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), x.Item2.ToArray()));
 
@@ -380,7 +383,8 @@ public static class LogicalExpressionParser
                 static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
-        var expressionParser = expression.Eof().ElseError(InvalidTokenMessage);
+        var expressionParser = OneOf(expression.AndSkip(Literals.WhiteSpace()), expression.Eof())
+            .ElseError(InvalidTokenMessage);
 
 #if NET6_0_OR_GREATER
         if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)

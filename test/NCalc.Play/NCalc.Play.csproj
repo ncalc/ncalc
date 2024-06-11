@@ -9,6 +9,7 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <Configurations>Debug;Release;SignedRelease</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
         <None Include="../../NCalc.png">

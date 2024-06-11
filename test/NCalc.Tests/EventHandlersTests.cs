@@ -188,13 +188,15 @@ public class EventHandlersTests
     }
 
 
-    [Fact]
-    public void Should_Treat_NOT_Without_Whitespace_As_Function_Name()
+    [Theory]
+    [InlineData("notExistingfunction")]
+    [InlineData("andDoThis")]
+    public void ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName)
     {
-        Expression expression = new Expression("notexistingfunction(3.14)");
-        expression.EvaluateFunction += (string name, Handlers.FunctionArgs args) =>
+        var expression = new Expression($"{functionName}(3.14)");
+        expression.EvaluateFunction += (name, args) =>
         {
-            if (name.Equals("notexistingfunction", StringComparison.OrdinalIgnoreCase))
+            if (name.Equals(functionName, StringComparison.OrdinalIgnoreCase))
                 args.Result = 1;
         };
 
