@@ -44,7 +44,7 @@ public class OperatorsTests
     [InlineData("1 & 1", 1UL)]
     [InlineData("1 | 1", 1UL)]
     [InlineData("1 ^ 1", 0UL)]
-    [InlineData("~1", ~1)]
+    [InlineData("~1", ~1UL)]
     [InlineData("2 >> 1", 1UL)]
     [InlineData("2 << 1", 4UL)]
     [InlineData("true && false", false)]
