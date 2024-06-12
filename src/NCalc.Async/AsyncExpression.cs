@@ -175,6 +175,27 @@ public class AsyncExpression
     }
     
     /// <summary>
+    /// Create the LogicalExpression in order to check syntax errors.
+    /// If errors are detected, the Error property contains the exception.
+    /// </summary>
+    /// <returns>True if the expression syntax is correct, otherwiser False.</returns>
+    public bool HasErrors()
+    {
+        try
+        {
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
+
+            // In case HasErrors() is called multiple times for the same expression
+            return LogicalExpression != null && Error != null;
+        }
+        catch (Exception exception)
+        {
+            Error = exception;
+            return true;
+        }
+    }
+    
+    /// <summary>
     /// Asynchronous evaluate the expression and return the Task.
     /// </summary>
     /// <returns>The result of the evaluation.</returns>
