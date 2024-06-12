@@ -108,28 +108,28 @@ public class EvaluationVisitor : ExpressionEvaluator, IEvaluationVisitor
                 break;
 
             case BinaryExpressionType.BitwiseAnd:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) &
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) &
+						 Convert.ToUInt64(rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseOr:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) |
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) |
+						 Convert.ToUInt64(rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.BitwiseXOr:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) ^
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) ^
+						 Convert.ToUInt64(rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.LeftShift:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) <<
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) <<
+						 Convert.ToInt32(rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.RightShift:
-                Result = Convert.ToUInt16(leftValue.Value, CultureInfo) >>
-                         Convert.ToUInt16(rightValue.Value, CultureInfo);
+                Result = Convert.ToUInt64(leftValue.Value, CultureInfo) >>
+						 Convert.ToInt32(rightValue.Value, CultureInfo);
                 break;
 
             case BinaryExpressionType.Exponentiation:

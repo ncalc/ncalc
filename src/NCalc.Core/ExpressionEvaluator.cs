@@ -56,7 +56,7 @@ public abstract class ExpressionEvaluator
                 break;
 
             case UnaryExpressionType.BitwiseNot:
-                Result = ~Convert.ToUInt16(Result, CultureInfo);
+                Result = ~Convert.ToUInt64(Result, CultureInfo);
                 break;
 
             case UnaryExpressionType.Positive:
