@@ -383,7 +383,7 @@ public static class LogicalExpressionParser
                 static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
-        var expressionParser = OneOf(expression.AndSkip(Literals.WhiteSpace(true)), expression.Eof())
+        var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
             .ElseError(InvalidTokenMessage);
 
 #if NET6_0_OR_GREATER
