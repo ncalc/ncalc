@@ -1,4 +1,7 @@
-﻿namespace NCalc.Tests;
+﻿using NCalc.Domain;
+using NCalc.Factories;
+
+namespace NCalc.Tests;
 
 [Trait("Category", "Parser")]
 public class ParserTests
@@ -31,13 +34,27 @@ public class ParserTests
     [Fact]
     public void ShouldHandleNewLines()
     {
-        string formula = @"2+3
-            
-            ";
+        const string formula = """
+                               2+3
+                                           
+                                           
+                               """;
 
         var expression = new Expression(formula, CultureInfo.InvariantCulture);
         var result = expression.Evaluate();
 
         Assert.Equal(5, result);
+    }
+    
+    [Fact]
+    public void RequireClosingAtIdentifiersIssue244()
+    {
+        const string formula = "[{Diagnostic}.Data]";
+
+        var logicalExpression = LogicalExpressionFactory.Create(formula);
+
+        Assert.IsType<Identifier>(logicalExpression);
+        
+        Assert.Equal("{Diagnostic}.Data",((Identifier)logicalExpression).Name);
     }
 }
