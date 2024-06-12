@@ -1,3 +1,11 @@
+# 4.3.2
+* Fix handling new lines in expression by @Bykiev in https://github.com/ncalc/ncalc/pull/234
+* Add support UInt64 for binary operators by @Bykiev in https://github.com/ncalc/ncalc/pull/237
+* Fix parsing expression by @Bykiev in https://github.com/ncalc/ncalc/pull/241
+* Re-added `HasErrors` method to `NCalc.Async` by @gumbarros in https://github.com/ncalc/ncalc/pull/245
+* Require braces to be closed by a brace of the same type by @gumbarros in https://github.com/ncalc/ncalc/pull/246
+* Make unclosed brace cause a parsing exception by @gmcchessney in https://github.com/ncalc/ncalc/pull/243
+
 # 4.3.1
 * Fix handling new lines in expression by @Bykiev in https://github.com/ncalc/ncalc/pull/234
 
