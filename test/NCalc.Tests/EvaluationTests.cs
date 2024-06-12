@@ -19,7 +19,7 @@ public class EvaluationTests
     [ClassData(typeof(ValuesTestData))]
     public void ShouldParseValues(string input, object expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, CultureInfo.InvariantCulture);
         var result = expression.Evaluate();
         
         if (expectedValue is double expectedDouble)
@@ -144,8 +144,8 @@ public class EvaluationTests
     [Fact]
     public void ShouldRoundAwayFromZero()
     {
-        Assert.Equal(22d, new Expression("Round(22.5, 0)").Evaluate());
-        Assert.Equal(23d, new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero).Evaluate());
+        Assert.Equal(22d, new Expression("Round(22.5, 0)", CultureInfo.InvariantCulture).Evaluate());
+        Assert.Equal(23d, new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero, CultureInfo.InvariantCulture).Evaluate());
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public class EvaluationTests
     [InlineData("Pow(5;2)", 25d)]
     public void ShouldAllowSemicolonAsArgumentSeparator(string expression, object expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        Assert.Equal(expected, new Expression(expression, CultureInfo.InvariantCulture).Evaluate());
     }
 
     [Fact]

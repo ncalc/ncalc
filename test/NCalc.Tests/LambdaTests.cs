@@ -330,7 +330,7 @@ public class LambdaTests
     [InlineData("[FieldD] > 0", false)]
     public void ShouldHandleDataConversions(string input, bool expected)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, CultureInfo.InvariantCulture);
         var sut = expression.ToLambda<Context, bool>();
         var context = new Context { FieldA = 7, FieldB = "test", FieldC = 2.4m, FieldE = 2 };
 

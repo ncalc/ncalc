@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace NCalc.Tests;
 
-[Trait("Category","Custom Culture")]
+[Trait("Category", "Custom Culture")]
 public class CustomCultureTests
 {
     [Fact]
@@ -65,36 +65,44 @@ public class CustomCultureTests
             }.Evaluate());
         }
     }
-    
+
     [Fact]
     public void ShouldParseInvariantCulture()
     {
-        var originalCulture = (CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
-        try
-        {
-            var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
-            culture.NumberFormat.NumberDecimalSeparator = ",";
-            Thread.CurrentThread.CurrentCulture = culture;
-            var exceptionThrown = false;
-            try
-            {
-                var expr = new Expression("[a]<2.0") { Parameters = { ["a"] = "1.7" } };
-                expr.Evaluate();
-            }
-            catch (FormatException)
-            {
-                exceptionThrown = true;
-            }
+        var e = new Expression("[a]<2.0", CultureInfo.InvariantCulture);
+        e.Parameters["a"] = "1.7";
+        Assert.Equal(true, e.Evaluate());
+    }
 
-            Assert.True(exceptionThrown);
+    [Fact]
+    public void ShouldParseCultureWithCommaSeparator()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NumberDecimalSeparator = ",";
 
-            var e = new Expression("[a]<2.0", CultureInfo.InvariantCulture);
-            e.Parameters["a"] = "1.7";
-            Assert.Equal(true, e.Evaluate());
-        }
-        finally
-        {
-            Thread.CurrentThread.CurrentCulture = originalCulture;
-        }
+        var e = new Expression("[a]<2,0", culture);
+        e.Parameters["a"] = "1,7";
+        Assert.Equal(true, e.Evaluate());
+    }
+
+    [Fact]
+    public void ShouldParseFunctionParameters()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NumberDecimalSeparator = ",";
+
+        var e = new Expression("Round(3,123,0)", culture);
+        Assert.Equal(3d, e.Evaluate());
+    }
+
+    [Fact]
+    public void PiTest()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NumberDecimalSeparator = ",";
+
+        var e = new Expression("if([Pi] > 3,14, 3,14, 3,13)", culture);
+        e.Parameters["Pi"] = Math.PI;
+        Assert.Equal(3.14d, e.Evaluate());
     }
 }

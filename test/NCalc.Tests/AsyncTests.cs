@@ -94,7 +94,7 @@ public class AsyncTests
     [ClassData(typeof(ValuesTestData))]
     public async Task ShouldParseValues(string input, object expectedValue)
     {
-        var expression = new AsyncExpression(input);
+        var expression = new AsyncExpression(input, CultureInfo.InvariantCulture);
         var result = await expression.EvaluateAsync();
         
         if (expectedValue is double expectedDouble)
@@ -119,7 +119,7 @@ public class AsyncTests
     [ClassData(typeof(WaterLevelCheckTestData))]
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
-        var compiled = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
+        var compiled = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache, CultureInfo.InvariantCulture);
         var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes

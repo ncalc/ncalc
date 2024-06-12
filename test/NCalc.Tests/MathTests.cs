@@ -12,7 +12,7 @@ public class MathsTests
     [ClassData(typeof(BuiltInFunctionsTestData))]
     public void BuiltInFunctions_Test(string expression, object expected, double? tolerance)
     {
-        var result = new Expression(expression).Evaluate();
+        var result = new Expression(expression, CultureInfo.InvariantCulture).Evaluate();
 
         if (tolerance.HasValue)
         {
@@ -274,7 +274,8 @@ public class MathsTests
     [InlineData("1e10", 10000000000d)]
     public void ShouldParseScientificNotation(string expression, double expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        var e = new Expression(expression, CultureInfo.InvariantCulture);
+        Assert.Equal(expected, e.Evaluate());
     }
 
     [Fact]
@@ -344,7 +345,7 @@ public class MathsTests
     [Fact]
     public void Should_Evaluate_Floor_Of_Double_Max_Value()
     {
-        var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
+        var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})", CultureInfo.InvariantCulture);
         var res = expr.Evaluate();
 
 #if NET8_0
