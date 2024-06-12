@@ -158,10 +158,17 @@ public static class LogicalExpressionParser
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
 
+        var braceIdentifier = openBrace
+            .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true));
+
+        var curlyBraceIdentifier =
+            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true));
+
         // ("[" | "{") identifier ("]" | "}")
-        var identifierExpression = openBrace.Or(openCurlyBrace)
-            .SkipAnd(AnyCharBefore(closeBrace.Or(closeCurlyBrace), consumeDelimiter: true))
-            .Or(identifier)
+        var identifierExpression = OneOf(
+                braceIdentifier, 
+                curlyBraceIdentifier, 
+                identifier)
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
         var arguments = Separated(comma.Or(semicolon), expression);
