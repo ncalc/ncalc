@@ -159,10 +159,10 @@ public static class LogicalExpressionParser
         var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
 
         var braceIdentifier = openBrace
-            .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true));
+            .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
 
         var curlyBraceIdentifier =
-            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true));
+            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
 
         // ("[" | "{") identifier ("]" | "}")
         var identifierExpression = OneOf(
