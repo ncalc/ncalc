@@ -165,7 +165,10 @@ public static class LogicalExpressionParser
             openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true));
 
         // ("[" | "{") identifier ("]" | "}")
-        var identifierExpression = OneOf(braceIdentifier, curlyBraceIdentifier)
+        var identifierExpression = OneOf(
+                braceIdentifier, 
+                curlyBraceIdentifier, 
+                identifier)
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
         var arguments = Separated(comma.Or(semicolon), expression);
