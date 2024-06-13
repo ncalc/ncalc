@@ -23,15 +23,18 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+      <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
         <PackageReference Include="System.ValueTuple" Version="4.5.0" />
         <PackageReference Include="NETStandard.Library" Version="2.0.0" />
     </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
+  </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="ExtendedNumerics.BigDecimal" Version="2025.1001.2.129" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
         <PackageReference Include="Parlot" Version="0.0.28" />
     </ItemGroup>
-    
 </Project>
