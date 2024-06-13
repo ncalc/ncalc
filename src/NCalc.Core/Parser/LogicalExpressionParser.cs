@@ -50,22 +50,29 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var exponentNumberPart =
-            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).Then(x => x);
+            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).ThenElse<long?>(x => x, null);
 
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
                     Literals.Char('.')
-                        .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
-                        .And(Terms.Integer().Then<long?>(x => x))
-                        .And(exponentNumberPart.ThenElse<long?>(x => x, null))
-                        .Then(x => (0L, x.Item1, x.Item2, x.Item3)),
+                        .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0)
+                            .And(ZeroOrOne(Terms.Integer().ThenElse<long?>(x => x, 0)))
+                            .Then(x =>
+                            {
+                                if (x.Item1 == 0 && x.Item2 == 0)
+                                    throw new NCalcParserException(InvalidTokenMessage);
+
+                                return (x.Item1, x.Item2);
+                            }))
+                        .And(exponentNumberPart)
+                        .Then(x => (0L, x.Item1.Item1, x.Item1.Item2, x.Item2)),
                     Literals.Integer(NumberOptions.AllowSign)
                         .And(Literals.Char('.')
                             .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
                             .And(ZeroOrOne(Terms.Integer()))
                             .ThenElse<(int, long?)>(x => (x.Item1, x.Item2), (0, null)))
-                        .And(exponentNumberPart.ThenElse<long?>(x => x, null))
+                        .And(exponentNumberPart)
                         .Then(x => (x.Item1, x.Item2.Item1, x.Item2.Item2, x.Item3))
                 ))
                 .Then<LogicalExpression>((ctx, x) =>

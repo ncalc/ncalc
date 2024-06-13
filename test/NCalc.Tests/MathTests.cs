@@ -367,6 +367,7 @@ public class MathsTests
     [InlineData(".05", 0.05)]
     [InlineData("0.05", 0.05)]
     [InlineData("0.005", 0.005)]
+    [InlineData(".0", 0d)]
     public void Should_Correctly_Parse_Floating_Point_Numbers(string formula, object expectedValue)
     {
         var expr = new Expression(formula, CultureInfo.InvariantCulture);
