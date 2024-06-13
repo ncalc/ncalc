@@ -4,6 +4,7 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Visitors;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NCalc;
 
@@ -154,7 +155,8 @@ public partial class Expression
     /// Create the LogicalExpression in order to check syntax errors.
     /// If errors are detected, the Error property contains the exception.
     /// </summary>
-    /// <returns>True if the expression syntax is correct, otherwiser False.</returns>
+    /// <returns>True if the expression syntax is correct, otherwise False.</returns>
+    [MemberNotNullWhen(true, nameof(Error))]
     public bool HasErrors()
     {
         try
