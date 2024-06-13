@@ -153,4 +153,14 @@ public class AsyncTests
         // Assert
         Assert.Equal(expected, evaluated);
     }
+    
+    [Theory]
+    [InlineData("1a + ]",true)]
+    [InlineData("sergio +",true)]
+    [InlineData("42 == 42",false)]
+    public void HasErrorsIssue239(string expressionString, bool hasError)
+    {
+        var expression = new AsyncExpression(expressionString);
+        Assert.Equal(hasError, expression.HasErrors());
+    }
 }

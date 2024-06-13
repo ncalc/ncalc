@@ -22,6 +22,8 @@
   href: dependency_injection.md
 - name: Benchmarks
   href: benchmarks.md
+- name: Changelog
+  href: changelog.md
 - name: Plugins
   items:
     - name: ANTLR

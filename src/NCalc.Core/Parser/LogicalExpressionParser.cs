@@ -158,10 +158,17 @@ public static class LogicalExpressionParser
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
 
+        var braceIdentifier = openBrace
+            .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
+
+        var curlyBraceIdentifier =
+            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
+
         // ("[" | "{") identifier ("]" | "}")
-        var identifierExpression = openBrace.Or(openCurlyBrace)
-            .SkipAnd(AnyCharBefore(closeBrace.Or(closeCurlyBrace), consumeDelimiter: true))
-            .Or(identifier)
+        var identifierExpression = OneOf(
+                braceIdentifier, 
+                curlyBraceIdentifier, 
+                identifier)
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
         var arguments = Separated(comma.Or(semicolon), expression);
@@ -383,7 +390,7 @@ public static class LogicalExpressionParser
                 static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
-        var expressionParser = OneOf(expression.AndSkip(Literals.WhiteSpace(true)), expression.Eof())
+        var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
             .ElseError(InvalidTokenMessage);
 
 #if NET6_0_OR_GREATER
