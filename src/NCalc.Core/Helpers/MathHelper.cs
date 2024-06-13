@@ -13,6 +13,11 @@ public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool En
 /// </summary>
 public static class MathHelper
 {
+    static readonly Func<dynamic?, dynamic?, object?> AddFunc = (a, b) => a + b;
+    static readonly Func<dynamic?, dynamic?, object?> SubtractFunc = (a, b) => a - b;
+    static readonly Func<dynamic?, dynamic?, object?> MultiplyFunc = (a, b) => a * b;
+    static readonly Func<dynamic?, dynamic?, object?> DivideFunc = (a, b) => a / b;
+    static readonly Func<dynamic?, dynamic?, object?> ModuloFunc = (a, b) => a / b;
 
     public static object? Add(object? a, object? b)
     {
@@ -27,262 +32,38 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
+        char operatorName = '+';
+
         switch (a)
         {
             case bool:
                 throw new InvalidOperationException(
-                    $"Operator '+' can't be applied to operands of types 'bool' and {b?.GetType()}");
+                    $"Operator '+' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}");
             case byte b1:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'byte' and 'bool'");
-                    case byte b2: return b1 + b2;
-                    case sbyte @sbyte: return b1 + @sbyte;
-                    case short s: return b1 + s;
-                    case ushort @ushort: return b1 + @ushort;
-                    case int i: return b1 + i;
-                    case uint u: return b1 + u;
-                    case long l: return b1 + l;
-                    case ulong @ulong: return b1 + @ulong;
-                    case float f: return b1 + f;
-                    case double d: return b1 + d;
-                    case decimal @decimal: return b1 + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for 'byte' and {b?.GetType()}");
-                }
+                return ExecuteByteOperation(b1, b, operatorName, AddFunc);
             case sbyte @sbyte:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'sbyte' and 'bool'");
-                    case byte b1: return @sbyte + b1;
-                    case sbyte b1: return @sbyte + b1;
-                    case short s: return @sbyte + s;
-                    case ushort @ushort: return @sbyte + @ushort;
-                    case int i: return @sbyte + i;
-                    case uint u: return @sbyte + u;
-                    case long l: return @sbyte + l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'sbyte' and 'ulong'");
-                    case float f: return @sbyte + f;
-                    case double d: return @sbyte + d;
-                    case decimal @decimal: return @sbyte + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for 'sbyte' and {b?.GetType()}");
-                }
+                return ExecuteSByteOperation(@sbyte, b, operatorName, AddFunc);
             case short s:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'short' and 'bool'");
-                    case byte b1: return s + b1;
-                    case sbyte @sbyte: return s + @sbyte;
-                    case short s1: return s + s1;
-                    case ushort @ushort: return s + @ushort;
-                    case int i: return s + i;
-                    case uint u: return s + u;
-                    case long l: return s + l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'short' and 'ulong'");
-                    case float f: return s + f;
-                    case double d: return s + d;
-                    case decimal @decimal: return s + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for types 'short' and {b?.GetType()}");
-                }
+                return ExecuteShortOperation(s, b, operatorName, AddFunc);
             case ushort @ushort:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'ushort' and 'bool'");
-                    case byte b1: return @ushort + b1;
-                    case sbyte @sbyte: return @ushort + @sbyte;
-                    case short s: return @ushort + s;
-                    case ushort b1: return @ushort + b1;
-                    case int i: return @ushort + i;
-                    case uint u: return @ushort + u;
-                    case long l: return @ushort + l;
-                    case ulong @ulong: return @ushort + @ulong;
-                    case float f: return @ushort + f;
-                    case double d: return @ushort + d;
-                    case decimal @decimal: return @ushort + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for types 'ushort' and {b?.GetType()}");
-                }
+                return ExecuteUShortOperation(@ushort, b, operatorName, AddFunc);
             case int i:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'int' and 'bool'");
-                    case byte b1: return i + b1;
-                    case sbyte @sbyte: return i + @sbyte;
-                    case short s: return i + s;
-                    case ushort @ushort: return i + @ushort;
-                    case int i1: return i + i1;
-                    case uint u: return i + u;
-                    case long l: return i + l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'int' and 'ulong'");
-                    case float f: return i + f;
-                    case double d: return i + d;
-                    case decimal @decimal: return i + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for types 'int' and {b?.GetType()}");
-                }
+                return ExecuteIntOperation(i, b, operatorName, AddFunc);
             case uint u:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'uint' and 'bool'");
-                    case byte b1: return u + b1;
-                    case sbyte @sbyte: return u + @sbyte;
-                    case short s: return u + s;
-                    case ushort @ushort: return u + @ushort;
-                    case int i: return u + i;
-                    case uint u1: return u + u1;
-                    case long l: return u + l;
-                    case ulong @ulong: return u + @ulong;
-                    case float f: return u + f;
-                    case double d: return u + d;
-                    case decimal @decimal: return u + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for types 'uint' and {b?.GetType()}");
-                }
+                return ExecuteUIntOperation(u, b, operatorName, AddFunc);
             case long l:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'long' and 'bool'");
-                    case byte b1: return l + b1;
-                    case sbyte @sbyte: return l + @sbyte;
-                    case short s: return l + s;
-                    case ushort @ushort: return l + @ushort;
-                    case int i: return l + i;
-                    case uint u: return l + u;
-                    case long l1: return l + l1;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'long' and 'ulong'");
-                    case float f: return l + f;
-                    case double d: return l + d;
-                    case decimal @decimal: return l + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for types 'long' and {b?.GetType()}");
-                }
+                return ExecuteLongOperation(l, b, operatorName, AddFunc);
             case ulong @ulong:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'ulong' and 'bool'");
-                    case byte b1: return @ulong + b1;
-                    case sbyte:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'ulong' and 'sbyte'");
-                    case short:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'ulong' and 'short'");
-                    case ushort @ushort: return @ulong + @ushort;
-                    case int:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'ulong' and 'int'");
-                    case uint u: return @ulong + u;
-                    case long:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'ulong' and 'ulong'");
-                    case ulong b1: return @ulong + b1;
-                    case float f: return @ulong + f;
-                    case double d: return @ulong + d;
-                    case decimal @decimal: return @ulong + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for types 'ulong' and {b?.GetType()}");
-                }
+                return ExecuteULongOperation(@ulong, b, operatorName, AddFunc);
             case float f:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'float' and 'bool'");
-                    case byte b1: return f + b1;
-                    case sbyte @sbyte: return f + @sbyte;
-                    case short s: return f + s;
-                    case ushort @ushort: return f + @ushort;
-                    case int i: return f + i;
-                    case uint u: return f + u;
-                    case long l: return f + l;
-                    case ulong @ulong: return f + @ulong;
-                    case float f1: return f + f1;
-                    case double d: return f + d;
-                    case decimal @decimal: return Convert.ToDecimal(a) + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for types 'float' and {b?.GetType()}");
-                }
+                return ExecuteFloatOperation(f, b, operatorName, AddFunc);
             case double d:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'double' and 'bool'");
-                    case byte b1: return d + b1;
-                    case sbyte @sbyte: return d + @sbyte;
-                    case short s: return d + s;
-                    case ushort @ushort: return d + @ushort;
-                    case int i: return d + i;
-                    case uint u: return d + u;
-                    case long l: return d + l;
-                    case ulong @ulong: return d + @ulong;
-                    case float f: return d + f;
-                    case double d1: return d + d1;
-                    case decimal @decimal: return Convert.ToDecimal(a) + @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for types 'double' and {b?.GetType()}");
-                }
-
+                return ExecuteDoubleOperation(d, b, operatorName, AddFunc);
             case decimal @decimal:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '+' can't be applied to operands of types 'decimal' and 'bool'");
-                    case byte b1: return @decimal + b1;
-                    case sbyte @sbyte: return @decimal + @sbyte;
-                    case short s: return @decimal + s;
-                    case ushort @ushort: return @decimal + @ushort;
-                    case int i: return @decimal + i;
-                    case uint u: return @decimal + u;
-                    case long l: return @decimal + l;
-                    case ulong @ulong: return @decimal + @ulong;
-                    case float: return @decimal + Convert.ToDecimal(b);
-                    case double: return @decimal + Convert.ToDecimal(b);
-                    case decimal b1: return @decimal + b1;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '+' not implemented for types 'decimal' and {b?.GetType()}");
-                }
+                return ExecuteDecimalOperation(@decimal, b, operatorName, AddFunc);
             default:
                 throw new InvalidOperationException(
-                    $"Operator '+' not implemented for operands of types {a} and {b?.GetType()}");
+                    $"Operator '+' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
         }
     }
 
@@ -299,264 +80,38 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
+        char operatorName = '-';
+
         switch (a)
         {
             case bool:
                 throw new InvalidOperationException(
                     $"Operator '-' can't be applied to operands of types 'bool' and {b?.GetType()}");
             case byte b1:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'byte' and 'bool'");
-                    case byte b2: return b1 - b2;
-                    case sbyte @sbyte: return b1 - @sbyte;
-                    case short s: return b1 - s;
-                    case ushort @ushort: return b1 - @ushort;
-                    case int i: return b1 - i;
-                    case uint u: return b1 - u;
-                    case long l: return b1 - l;
-                    case ulong @ulong: return b1 - @ulong;
-                    case float f: return b1 - f;
-                    case double d: return b1 - d;
-                    case decimal @decimal: return b1 - @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'byte' and {b?.GetType()}");
-                }
+                return ExecuteByteOperation(b1, b, operatorName, SubtractFunc);
             case sbyte @sbyte:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'sbyte' and 'bool'");
-                    case byte b1: return @sbyte - b1;
-                    case sbyte b1: return @sbyte - b1;
-                    case short s: return @sbyte - s;
-                    case ushort @ushort: return @sbyte - @ushort;
-                    case int i: return @sbyte - i;
-                    case uint u: return @sbyte - u;
-                    case long l: return @sbyte - l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'sbyte' and 'ulong'");
-                    case float f: return @sbyte - f;
-                    case double d: return @sbyte - d;
-                    case decimal @decimal: return @sbyte - @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'byte' and {b?.GetType()}");
-                }
+                return ExecuteSByteOperation(@sbyte, b, operatorName, SubtractFunc);
             case short s:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'short' and 'bool'");
-                    case byte b1: return s - b1;
-                    case sbyte @sbyte: return s - @sbyte;
-                    case short s1: return s - s1;
-                    case ushort @ushort: return s - @ushort;
-                    case int i: return s - i;
-                    case uint u: return s - u;
-                    case long l: return s - l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'short' and 'ulong'");
-                    case float f: return s - f;
-                    case double d: return s - d;
-                    case decimal @decimal: return s - @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'short' and {b?.GetType()}");
-                }
+                return ExecuteShortOperation(s, b, operatorName, SubtractFunc);
             case ushort @ushort:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'ushort' and 'bool'");
-                    case byte b1: return @ushort - b1;
-                    case sbyte @sbyte: return @ushort - @sbyte;
-                    case short s: return @ushort - s;
-                    case ushort b1: return @ushort - b1;
-                    case int i: return @ushort - i;
-                    case uint u: return @ushort - u;
-                    case long l: return @ushort - l;
-                    case ulong @ulong: return @ushort - @ulong;
-                    case float f: return @ushort - f;
-                    case double d: return @ushort - d;
-                    case decimal @decimal: return @ushort - @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'ushort' and {b?.GetType()}");
-                }
+                return ExecuteUShortOperation(@ushort, b, operatorName, SubtractFunc);
             case int i:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'int' and 'bool'");
-                    case byte b1: return i - b1;
-                    case sbyte @sbyte: return i - @sbyte;
-                    case short s: return i - s;
-                    case ushort @ushort: return i - @ushort;
-                    case int i1: return i - i1;
-                    case uint u: return i - u;
-                    case long l: return i - l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'int' and 'ulong'");
-                    case float f: return i - f;
-                    case double d: return i - d;
-                    case decimal @decimal: return i - @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'int' and {b?.GetType()}");
-                }
+                return ExecuteIntOperation(i, b, operatorName, SubtractFunc);
             case uint u:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'uint' and 'bool'");
-                    case byte b1: return u - b1;
-                    case sbyte @sbyte: return u - @sbyte;
-                    case short s: return u - s;
-                    case ushort @ushort: return u - @ushort;
-                    case int i: return u - i;
-                    case uint u1: return u - u1;
-                    case long l: return u - l;
-                    case ulong @ulong: return u - @ulong;
-                    case float f: return u - f;
-                    case double d: return u - d;
-                    case decimal @decimal: return u - @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'uint' and {b?.GetType()}");
-                }
+                return ExecuteUIntOperation(u, b, operatorName, SubtractFunc);
             case long l:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'long' and 'bool'");
-                    case byte b1: return l - b1;
-                    case sbyte @sbyte: return l - @sbyte;
-                    case short s: return l - s;
-                    case ushort @ushort: return l - @ushort;
-                    case int i: return l - i;
-                    case uint u: return l - u;
-                    case long l1: return l - l1;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'long' and 'ulong'");
-                    case float f: return l - f;
-                    case double d: return l - d;
-                    case decimal @decimal: return l - @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'long' and {b?.GetType()}");
-                }
+                return ExecuteLongOperation(l, b, operatorName, SubtractFunc);
             case ulong @ulong:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'ulong' and 'bool'");
-                    case byte b1: return @ulong - b1;
-                    case sbyte:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'ulong' and 'sbyte'");
-                    case short:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'ulong' and 'short'");
-                    case ushort @ushort: return @ulong - @ushort;
-                    case int:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'ulong' and 'int'");
-                    case uint u: return @ulong - u;
-                    case long:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'ulong' and 'long'");
-                    case ulong b1: return @ulong - b1;
-                    case float f: return @ulong - f;
-                    case double d: return @ulong - d;
-                    case decimal @decimal: return @ulong - @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'ulong' and {b?.GetType()}");
-                }
-
+                return ExecuteULongOperation(@ulong, b, operatorName, SubtractFunc);
             case float f:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'float' and 'bool'");
-                    case byte b1: return f - b1;
-                    case sbyte @sbyte: return f - @sbyte;
-                    case short s: return f - s;
-                    case ushort @ushort: return f - @ushort;
-                    case int i: return f - i;
-                    case uint u: return f - u;
-                    case long l: return f - l;
-                    case ulong @ulong: return f - @ulong;
-                    case float f1: return f - f1;
-                    case double d: return f - d;
-                    case decimal:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'float' and 'decimal'");
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'float' and {b?.GetType()}");
-                }
+                return ExecuteFloatOperation(f, b, operatorName, SubtractFunc);
             case double d:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'double' and 'bool'");
-                    case byte b1: return d - b1;
-                    case sbyte @sbyte: return d - @sbyte;
-                    case short s: return d - s;
-                    case ushort @ushort: return d - @ushort;
-                    case int i: return d - i;
-                    case uint u: return d - u;
-                    case long l: return d - l;
-                    case ulong @ulong: return d - @ulong;
-                    case float f: return d - f;
-                    case double d1: return d - d1;
-                    case decimal @decimal: return Convert.ToDecimal(a) - @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'double' and {b?.GetType()}");
-                }
+                return ExecuteDoubleOperation(d, b, operatorName, SubtractFunc);
             case decimal @decimal:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'decimal' and 'bool'");
-                    case byte b1: return @decimal - b1;
-                    case sbyte @sbyte: return @decimal - @sbyte;
-                    case short s: return @decimal - s;
-                    case ushort @ushort: return @decimal - @ushort;
-                    case int i: return @decimal - i;
-                    case uint u: return @decimal - u;
-                    case long l: return @decimal - l;
-                    case ulong @ulong: return @decimal - @ulong;
-                    case float: return @decimal - Convert.ToDecimal(b);
-                    case double: return @decimal - Convert.ToDecimal(b);
-                    case decimal b1: return @decimal - b1;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '-' not implemented for operands of types 'decimal' and {b?.GetType()}");
-                }
+                return ExecuteDecimalOperation(@decimal, b, operatorName, SubtractFunc);
             default:
                 throw new InvalidOperationException(
-                    $"Operator '-' not implemented for operands of types {a} and {b?.GetType()}");
+                    $"Operator '-' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
         }
     }
 
@@ -573,263 +128,38 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
+        char operatorName = '*';
+
         switch (a)
         {
             case bool:
                 throw new InvalidOperationException(
-                    $"Operator '*' can't be applied to operands of types 'bool' and {b?.GetType()}");
+                    $"Operator '*' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}");
             case byte b1:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'byte' and 'bool'");
-                    case byte b2: return b1 * b2;
-                    case sbyte @sbyte: return b1 * @sbyte;
-                    case short s: return b1 * s;
-                    case ushort @ushort: return b1 * @ushort;
-                    case int i: return b1 * i;
-                    case uint u: return b1 * u;
-                    case long l: return b1 * l;
-                    case ulong @ulong: return b1 * @ulong;
-                    case float f: return b1 * f;
-                    case double d: return b1 * d;
-                    case decimal @decimal: return b1 * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'byte' and {b?.GetType()}");
-                }
+                return ExecuteByteOperation(b1, b, operatorName, MultiplyFunc);
             case sbyte @sbyte:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'sbyte' and 'bool'");
-                    case byte b1: return @sbyte * b1;
-                    case sbyte b1: return @sbyte * b1;
-                    case short s: return @sbyte * s;
-                    case ushort @ushort: return @sbyte * @ushort;
-                    case int i: return @sbyte * i;
-                    case uint u: return @sbyte * u;
-                    case long l: return @sbyte * l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'sbyte' and 'ulong'");
-                    case float f: return @sbyte * f;
-                    case double d: return @sbyte * d;
-                    case decimal @decimal: return @sbyte * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'sbyte' and {b?.GetType()}");
-                }
+                return ExecuteSByteOperation(@sbyte, b, operatorName, MultiplyFunc);
             case short s:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'short' and 'bool'");
-                    case byte b1: return s * b1;
-                    case sbyte @sbyte: return s * @sbyte;
-                    case short s1: return s * s1;
-                    case ushort @ushort: return s * @ushort;
-                    case int i: return s * i;
-                    case uint u: return s * u;
-                    case long l: return s * l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'short' and 'ulong'");
-                    case float f: return s * f;
-                    case double d: return s * d;
-                    case decimal @decimal: return s * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'short' and {b?.GetType()}");
-                }
+                return ExecuteShortOperation(s, b, operatorName, MultiplyFunc);
             case ushort @ushort:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'ushort' and 'bool'");
-                    case byte b1: return @ushort * b1;
-                    case sbyte @sbyte: return @ushort * @sbyte;
-                    case short s: return @ushort * s;
-                    case ushort b1: return @ushort * b1;
-                    case int i: return @ushort * i;
-                    case uint u: return @ushort * u;
-                    case long l: return @ushort * l;
-                    case ulong @ulong: return @ushort * @ulong;
-                    case float f: return @ushort * f;
-                    case double d: return @ushort * d;
-                    case decimal @decimal: return @ushort * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'ushort' and {b?.GetType()}");
-                }
+                return ExecuteUShortOperation(@ushort, b, operatorName, MultiplyFunc);
             case int i:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'int' and 'bool'");
-                    case byte b1: return i * b1;
-                    case sbyte @sbyte: return i * @sbyte;
-                    case short s: return i * s;
-                    case ushort @ushort: return i * @ushort;
-                    case int i1: return i * i1;
-                    case uint u: return i * u;
-                    case long l: return i * l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'int' and 'ulong'");
-                    case float f: return i * f;
-                    case double d: return i * d;
-                    case decimal @decimal: return i * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'int' and {b?.GetType()}");
-                }
+                return ExecuteIntOperation(i, b, operatorName, MultiplyFunc);
             case uint u:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'uint' and 'bool'");
-                    case byte b1: return u * b1;
-                    case sbyte @sbyte: return u * @sbyte;
-                    case short s: return u * s;
-                    case ushort @ushort: return u * @ushort;
-                    case int i: return u * i;
-                    case uint u1: return u * u1;
-                    case long l: return u * l;
-                    case ulong @ulong: return u * @ulong;
-                    case float f: return u * f;
-                    case double d: return u * d;
-                    case decimal @decimal: return u * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'int' and {b?.GetType()}");
-                }
+                return ExecuteUIntOperation(u, b, operatorName, MultiplyFunc);
             case long l:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'long' and 'bool'");
-                    case byte b1: return l * b1;
-                    case sbyte @sbyte: return l * @sbyte;
-                    case short s: return l * s;
-                    case ushort @ushort: return l * @ushort;
-                    case int i: return l * i;
-                    case uint u: return l * u;
-                    case long l1: return l * l1;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'long' and 'ulong'");
-                    case float f: return l * f;
-                    case double d: return l * d;
-                    case decimal @decimal: return l * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'int' and {b?.GetType()}");
-                }
+                return ExecuteLongOperation(l, b, operatorName, MultiplyFunc);
             case ulong @ulong:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'ulong' and 'bool'");
-                    case byte b1: return @ulong * b1;
-                    case sbyte:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'ulong' and 'sbyte'");
-                    case short:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'ulong' and 'short'");
-                    case ushort @ushort: return @ulong * @ushort;
-                    case int:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'ulong' and 'int'");
-                    case uint u: return @ulong * u;
-                    case long:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'ulong' and 'long'");
-                    case ulong b1: return @ulong * b1;
-                    case float f: return @ulong * f;
-                    case double d: return @ulong * d;
-                    case decimal @decimal: return @ulong * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'ulong' and {b?.GetType()}");
-                }
-
+                return ExecuteULongOperation(@ulong, b, operatorName, MultiplyFunc);
             case float f:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'float' and 'bool'");
-                    case byte b1: return f * b1;
-                    case sbyte @sbyte: return f * @sbyte;
-                    case short s: return f * s;
-                    case ushort @ushort: return f * @ushort;
-                    case int i: return f * i;
-                    case uint u: return f * u;
-                    case long l: return f * l;
-                    case ulong @ulong: return f * @ulong;
-                    case float f1: return f * f1;
-                    case double d: return f * d;
-                    case decimal @decimal: return Convert.ToDecimal(a) * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'float' and {b?.GetType()}");
-                }
-
+                return ExecuteFloatOperation(f, b, operatorName, MultiplyFunc);
             case double d:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'double' and 'bool'");
-                    case byte b1: return d * b1;
-                    case sbyte @sbyte: return d * @sbyte;
-                    case short s: return d * s;
-                    case ushort @ushort: return d * @ushort;
-                    case int i: return d * i;
-                    case uint u: return d * u;
-                    case long l: return d * l;
-                    case ulong @ulong: return d * @ulong;
-                    case float f: return d * f;
-                    case double d1: return d * d1;
-                    case decimal @decimal: return Convert.ToDecimal(a) * @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'double' and {b?.GetType()}");
-                }
+                return ExecuteDoubleOperation(d, b, operatorName, MultiplyFunc);
             case decimal @decimal:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '*' can't be applied to operands of types 'decimal' and 'bool'");
-                    case byte b1: return @decimal * b1;
-                    case sbyte @sbyte: return @decimal * @sbyte;
-                    case short s: return @decimal * s;
-                    case ushort @ushort: return @decimal * @ushort;
-                    case int i: return @decimal * i;
-                    case uint u: return @decimal * u;
-                    case long l: return @decimal * l;
-                    case ulong @ulong: return @decimal * @ulong;
-                    case float: return @decimal * Convert.ToDecimal(b);
-                    case double: return @decimal * Convert.ToDecimal(b);
-                    case decimal b1: return @decimal * b1;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '*' not implemented for operands of types 'decimal' and {b?.GetType()}");
-                }
+                return ExecuteDecimalOperation(@decimal, b, operatorName, MultiplyFunc);
             default:
                 throw new InvalidOperationException(
-                    $"Operator '*' not implemented for operands of types {a} and {b?.GetType()}");
+                    $"Operator '*' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
         }
     }
 
@@ -846,267 +176,38 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
+        char operatorName = '/';
 
         switch (a)
         {
             case bool:
                 throw new InvalidOperationException(
-                    $"Operator '/' can't be applied to operands of types 'bool' and {b?.GetType()}");
+                    $"Operator '/' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}");
             case byte b1:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'byte' and 'bool'");
-                    case byte b2: return b1 / b2;
-                    case sbyte @sbyte: return b1 / @sbyte;
-                    case short s: return b1 / s;
-                    case ushort @ushort: return b1 / @ushort;
-                    case int i: return b1 / i;
-                    case uint u: return b1 / u;
-                    case long l: return b1 / l;
-                    case ulong @ulong: return b1 / @ulong;
-                    case float f: return b1 / f;
-                    case double d: return b1 / d;
-                    case decimal @decimal: return b1 / @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'decimal' and {b?.GetType()}");
-                }
+                return ExecuteByteOperation(b1, b, operatorName, DivideFunc);
             case sbyte @sbyte:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'sbyte' and 'bool'");
-                    case byte b1: return @sbyte / b1;
-                    case sbyte b1: return @sbyte / b1;
-                    case short s: return @sbyte / s;
-                    case ushort @ushort: return @sbyte / @ushort;
-                    case int i: return @sbyte / i;
-                    case uint u: return @sbyte / u;
-                    case long l: return @sbyte / l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'sbyte' and 'ulong'");
-                    case float f: return @sbyte / f;
-                    case double d: return @sbyte / d;
-                    case decimal @decimal: return @sbyte / @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'decimal' and {b?.GetType()}");
-                }
-
+                return ExecuteSByteOperation(@sbyte, b, operatorName, DivideFunc);
             case short s:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'short' and 'bool'");
-                    case byte b1: return s / b1;
-                    case sbyte @sbyte: return s / @sbyte;
-                    case short s1: return s / s1;
-                    case ushort @ushort: return s / @ushort;
-                    case int i: return s / i;
-                    case uint u: return s / u;
-                    case long l: return s / l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'short' and 'ulong'");
-                    case float f: return s / f;
-                    case double d: return s / d;
-                    case decimal @decimal: return s / @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'decimal' and {b?.GetType()}");
-                }
+                return ExecuteShortOperation(s, b, operatorName, DivideFunc);
             case ushort @ushort:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'ushort' and 'bool'");
-                    case byte b1: return @ushort / b1;
-                    case sbyte @sbyte: return @ushort / @sbyte;
-                    case short s: return @ushort / s;
-                    case ushort b1: return @ushort / b1;
-                    case int i: return @ushort / i;
-                    case uint u: return @ushort / u;
-                    case long l: return @ushort / l;
-                    case ulong @ulong: return @ushort / @ulong;
-                    case float f: return @ushort / f;
-                    case double d: return @ushort / d;
-                    case decimal @decimal: return @ushort / @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'ushort' and {b?.GetType()}");
-                }
+                return ExecuteUShortOperation(@ushort, b, operatorName, DivideFunc);
             case int i:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'int' and 'bool'");
-                    case byte b1: return i / b1;
-                    case sbyte @sbyte: return i / @sbyte;
-                    case short s: return i / s;
-                    case ushort @ushort: return i / @ushort;
-                    case int i1: return i / i1;
-                    case uint u: return i / u;
-                    case long l: return i / l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'int' and 'ulong'");
-                    case float f: return i / f;
-                    case double d: return i / d;
-                    case decimal @decimal: return i / @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'int' and {b?.GetType()}");
-                }
+                return ExecuteIntOperation(i, b, operatorName, DivideFunc);
             case uint u:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'uint' and 'bool'");
-                    case byte b1: return u / b1;
-                    case sbyte @sbyte: return u / @sbyte;
-                    case short s: return u / s;
-                    case ushort @ushort: return u / @ushort;
-                    case int i: return u / i;
-                    case uint u1: return u / u1;
-                    case long l: return u / l;
-                    case ulong @ulong: return u / @ulong;
-                    case float f: return u / f;
-                    case double d: return u / d;
-                    case decimal @decimal: return u / @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'uint' and {b?.GetType()}");
-                }
+                return ExecuteUIntOperation(u, b, operatorName, DivideFunc);
             case long l:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'long' and 'bool'");
-                    case byte b1: return l / b1;
-                    case sbyte @sbyte: return l / @sbyte;
-                    case short s: return l / s;
-                    case ushort @ushort: return l / @ushort;
-                    case int i: return l / i;
-                    case uint u: return l / u;
-                    case long l1: return l / l1;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'long' and 'ulong'");
-                    case float f: return l / f;
-                    case double d: return l / d;
-                    case decimal @decimal: return l / @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'long' and {b?.GetType()}");
-                }
+                return ExecuteLongOperation(l, b, operatorName, DivideFunc);
             case ulong @ulong:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '-' can't be applied to operands of types 'ulong' and 'bool'");
-                    case byte:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'ulong' and 'byte'");
-                    case sbyte:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'ulong' and 'sbyte'");
-                    case short:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'ulong' and 'short'");
-                    case ushort @ushort: return @ulong / @ushort;
-                    case int:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'ulong' and 'int'");
-                    case uint u: return @ulong / u;
-                    case long:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'ulong' and 'long'");
-                    case ulong b1: return @ulong / b1;
-                    case float f: return @ulong / f;
-                    case double d: return @ulong / d;
-                    case decimal @decimal: return @ulong / @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'ulong' and {b?.GetType()}");
-                }
+                return ExecuteULongOperation(@ulong, b, operatorName, DivideFunc);
             case float f:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'float' and 'bool'");
-                    case byte b1: return f / b1;
-                    case sbyte @sbyte: return f / @sbyte;
-                    case short s: return f / s;
-                    case ushort @ushort: return f / @ushort;
-                    case int i: return f / i;
-                    case uint u: return f / u;
-                    case long l: return f / l;
-                    case ulong @ulong: return f / @ulong;
-                    case float f1: return f / f1;
-                    case double d: return f / d;
-                    case decimal:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'float' and 'decimal'");
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'ulong' and {b?.GetType()}");
-                }
+                return ExecuteFloatOperation(f, b, operatorName, DivideFunc);
             case double d:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'double' and 'bool'");
-                    case byte b1: return d / b1;
-                    case sbyte @sbyte: return d / @sbyte;
-                    case short s: return d / s;
-                    case ushort @ushort: return d / @ushort;
-                    case int i: return d / i;
-                    case uint u: return d / u;
-                    case long l: return d / l;
-                    case ulong @ulong: return d / @ulong;
-                    case float f: return d / f;
-                    case double d1: return d / d1;
-                    case decimal @decimal: return Convert.ToDecimal(a) / @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'double' and {b?.GetType()}");
-                }
+                return ExecuteDoubleOperation(d, b, operatorName, DivideFunc);
             case decimal @decimal:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '/' can't be applied to operands of types 'decimal' and 'bool'");
-                    case byte: return @decimal / (sbyte)b;
-                    case sbyte @sbyte: return @decimal / @sbyte;
-                    case short s: return @decimal / s;
-                    case ushort @ushort: return @decimal / @ushort;
-                    case int i: return @decimal / i;
-                    case uint u: return @decimal / u;
-                    case long l: return @decimal / l;
-                    case ulong @ulong: return @decimal / @ulong;
-                    case float: return @decimal / Convert.ToDecimal(b);
-                    case double: return @decimal / Convert.ToDecimal(b);
-                    case decimal b1: return @decimal / b1;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'decimal' and {b?.GetType()}");
-                }
+                return ExecuteDecimalOperation(@decimal, b, operatorName, DivideFunc);
             default:
                 throw new InvalidOperationException(
-                    $"Operator '/' not implemented for operands of types {a} and {b?.GetType()}");
+                    $"Operator '/' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
         }
     }
 
@@ -1123,269 +224,38 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
+        char operatorName = '%';
+
         switch (a)
         {
             case bool:
                 throw new InvalidOperationException(
-                    $"Operator '%' can't be applied to operands of types 'bool' and {b?.GetType()}");
+                    $"Operator '%' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}");
             case byte b1:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'byte' and 'bool'");
-                    case byte b2: return b1 % b2;
-                    case sbyte @sbyte: return b1 % @sbyte;
-                    case short s: return b1 % s;
-                    case ushort @ushort: return b1 % @ushort;
-                    case int i: return b1 % i;
-                    case uint u: return b1 % u;
-                    case long l: return b1 % l;
-                    case ulong @ulong: return b1 % @ulong;
-                    case float f: return b1 % f;
-                    case double d: return b1 % d;
-                    case decimal @decimal: return b1 % @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'byte' and {b?.GetType()}");
-                }
+                return ExecuteByteOperation(b1, b, operatorName, ModuloFunc);
             case sbyte @sbyte:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'sbyte' and 'bool'");
-                    case byte b1: return @sbyte % b1;
-                    case sbyte b1: return @sbyte % b1;
-                    case short s: return @sbyte % s;
-                    case ushort @ushort: return @sbyte % @ushort;
-                    case int i: return @sbyte % i;
-                    case uint u: return @sbyte % u;
-                    case long l: return @sbyte % l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'sbyte' and 'ulong'");
-                    case float f: return @sbyte % f;
-                    case double d: return @sbyte % d;
-                    case decimal @decimal: return @sbyte % @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '/' not implemented for operands of types 'sbyte' and {b?.GetType()}");
-                }
+                return ExecuteSByteOperation(@sbyte, b, operatorName, ModuloFunc);
             case short s:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'short' and 'bool'");
-                    case byte b1: return s % b1;
-                    case sbyte @sbyte: return s % @sbyte;
-                    case short s1: return s % s1;
-                    case ushort @ushort: return s % @ushort;
-                    case int i: return s % i;
-                    case uint u: return s % u;
-                    case long l: return s % l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'short' and 'ulong'");
-                    case float f: return s % f;
-                    case double d: return s % d;
-                    case decimal @decimal: return s % @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '%' not implemented for operands of types 'short' and {b?.GetType()}");
-                }
+                return ExecuteShortOperation(s, b, operatorName, ModuloFunc);
             case ushort @ushort:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'ushort' and 'bool'");
-                    case byte b1: return @ushort % b1;
-                    case sbyte @sbyte: return @ushort % @sbyte;
-                    case short s: return @ushort % s;
-                    case ushort b1: return @ushort % b1;
-                    case int i: return @ushort % i;
-                    case uint u: return @ushort % u;
-                    case long l: return @ushort % l;
-                    case ulong @ulong: return @ushort % @ulong;
-                    case float f: return @ushort % f;
-                    case double d: return @ushort % d;
-                    case decimal @decimal: return @ushort % @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '%' not implemented for operands of types 'ushort' and {b?.GetType()}");
-                }
+                return ExecuteUShortOperation(@ushort, b, operatorName, ModuloFunc);
             case int i:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'int' and 'bool'");
-                    case byte b1: return i % b1;
-                    case sbyte @sbyte: return i % @sbyte;
-                    case short s: return i % s;
-                    case ushort @ushort: return i % @ushort;
-                    case int i1: return i % i1;
-                    case uint u: return i % u;
-                    case long l: return i % l;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'int' and 'ulong'");
-                    case float f: return i % f;
-                    case double d: return i % d;
-                    case decimal @decimal: return i % @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '%' not implemented for operands of types 'int' and {b?.GetType()}");
-                }
+                return ExecuteIntOperation(i, b, operatorName, ModuloFunc);
             case uint u:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'uint' and 'bool'");
-                    case byte b1: return u % b1;
-                    case sbyte @sbyte: return u % @sbyte;
-                    case short s: return u % s;
-                    case ushort @ushort: return u % @ushort;
-                    case int i: return u % i;
-                    case uint u1: return u % u1;
-                    case long l: return u % l;
-                    case ulong @ulong: return u % @ulong;
-                    case float f: return u % f;
-                    case double d: return u % d;
-                    case decimal @decimal: return u % @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '%' not implemented for operands of types 'uint' and {b?.GetType()}");
-                }
+                return ExecuteUIntOperation(u, b, operatorName, ModuloFunc);
             case long l:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'long' and 'bool'");
-                    case byte b1: return l % b1;
-                    case sbyte @sbyte: return l % @sbyte;
-                    case short s: return l % s;
-                    case ushort @ushort: return l % @ushort;
-                    case int i: return l % i;
-                    case uint u: return l % u;
-                    case long l1: return l % l1;
-                    case ulong:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'long' and 'ulong'");
-                    case float f: return l % f;
-                    case double d: return l % d;
-                    case decimal @decimal: return l % @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '%' not implemented for operands of types 'long' and {b?.GetType()}");
-                }
+                return ExecuteLongOperation(l, b, operatorName, ModuloFunc);
             case ulong @ulong:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'ulong' and 'bool'");
-                    case byte b1: return @ulong % b1;
-                    case sbyte:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'ulong' and 'sbyte'");
-                    case short:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'ulong' and 'short'");
-                    case ushort @ushort: return @ulong % @ushort;
-                    case int:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'ulong' and 'int'");
-                    case uint u: return @ulong % u;
-                    case long:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'ulong' and 'long'");
-                    case ulong b1: return @ulong % b1;
-                    case float f: return @ulong % f;
-                    case double d: return @ulong % d;
-                    case decimal @decimal: return @ulong % @decimal;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '%' not implemented for operands of types 'ulong' and {b?.GetType()}");
-                }
+                return ExecuteULongOperation(@ulong, b, operatorName, ModuloFunc);
             case float f:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'float' and 'bool'");
-                    case byte b1: return f % b1;
-                    case sbyte @sbyte: return f % @sbyte;
-                    case short s: return f % s;
-                    case ushort @ushort: return f % @ushort;
-                    case int i: return f % i;
-                    case uint u: return f % u;
-                    case long l: return f % l;
-                    case ulong @ulong: return f % @ulong;
-                    case float f1: return f % f1;
-                    case double d: return f % d;
-                    case decimal:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'float' and 'decimal'");
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '%' not implemented for operands of types 'long' and {b?.GetType()}");
-                }
+                return ExecuteFloatOperation(f, b, operatorName, ModuloFunc);
             case double d:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'double' and 'bool'");
-                    case byte b1: return d % b1;
-                    case sbyte @sbyte: return d % @sbyte;
-                    case short s: return d % s;
-                    case ushort @ushort: return d % @ushort;
-                    case int i: return d % i;
-                    case uint u: return d % u;
-                    case long l: return d % l;
-                    case ulong @ulong: return d % @ulong;
-                    case float f: return d % f;
-                    case double d1: return d % d1;
-                    case decimal:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'double' and 'decimal'");
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '%' not implemented for operands of types 'double' and {b?.GetType()}");
-                }
+                return ExecuteDoubleOperation(d, b, operatorName, ModuloFunc);
             case decimal @decimal:
-                switch (b)
-                {
-                    case bool:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'decimal' and 'bool'");
-                    case byte b1: return @decimal % b1;
-                    case sbyte @sbyte: return @decimal % @sbyte;
-                    case short s: return @decimal % s;
-                    case ushort @ushort: return @decimal % @ushort;
-                    case int i: return @decimal % i;
-                    case uint u: return @decimal % u;
-                    case long l: return @decimal % l;
-                    case ulong @ulong: return @decimal % @ulong;
-                    case float:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'decimal' and 'float'");
-                    case double:
-                        throw new InvalidOperationException(
-                            "Operator '%' can't be applied to operands of types 'decimal' and 'decimal'");
-                    case decimal b1: return @decimal % b1;
-                    default:
-                        throw new InvalidOperationException(
-                            $"Operator '%' not implemented for operands of types 'decimal' and {b?.GetType()}");
-                }
+                return ExecuteDecimalOperation(@decimal, b, operatorName, ModuloFunc);
             default:
                 throw new InvalidOperationException(
-                    $"Operator '+' not implemented for operands of types {a} and {b?.GetType()}");
+                    $"Operator '%' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
         }
     }
 
@@ -1536,19 +406,15 @@ public static class MathHelper
         switch (typeCode)
         {
             case TypeCode.SByte:
-                return 8;
             case TypeCode.Byte:
                 return 8;
             case TypeCode.Int16:
-                return 16;
             case TypeCode.UInt16:
                 return 16;
             case TypeCode.Int32:
-                return 32;
             case TypeCode.UInt32:
                 return 32;
             case TypeCode.Int64:
-                return 64;
             case TypeCode.UInt64:
                 return 64;
             case TypeCode.Single:
@@ -1744,6 +610,157 @@ public static class MathHelper
             string or char => double.Parse(value.ToString()!, options.CultureInfo),
             bool boolean when options.EnableBooleanCalculation => boolean ? 1 : 0,
             _ => value
+        };
+    }
+
+    private static object? ExecuteByteOperation(byte left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'byte' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
+            _ => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' not implemented for 'byte' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteSByteOperation(sbyte left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'sbyte' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
+            ulong => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'sbyte' and 'ulong'"),
+            _ => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' not implemented for 'sbyte' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteShortOperation(short left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'short' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
+            ulong => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'short' and 'ulong'"),
+            _ => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' not implemented for types 'short' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteUShortOperation(ushort left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'ushort' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
+            _ => throw new InvalidOperationException(
+                                $"Operator '+' not implemented for types 'ushort' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteIntOperation(int left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
+            ulong => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'ulong'"),
+            _ => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' not implemented for types 'int' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteUIntOperation(uint left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'uint' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
+            _ => throw new InvalidOperationException(
+                                $"Operator '+' not implemented for types 'uint' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteLongOperation(long left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'long' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
+            ulong => throw new InvalidOperationException(
+                                "Operator '+' can't be applied to operands of types 'long' and 'ulong'"),
+            _ => throw new InvalidOperationException(
+                                $"Operator '+' not implemented for types 'long' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteULongOperation(ulong left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'bool'"),
+            sbyte => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'sbyte'"),
+            short => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'short'"),
+            int => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'int'"),
+            long => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'ulong'"),
+            byte or ushort or uint or ulong or float or double or decimal => func(left, right),
+            _ => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' not implemented for types 'ulong' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteFloatOperation(float left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'float' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
+            decimal => func(Convert.ToDecimal(left), right),
+            _ => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' not implemented for types 'float' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteDoubleOperation(double left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'double' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
+            decimal @decimal => func(Convert.ToDecimal(left), @decimal),
+            _ => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' not implemented for types 'double' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+
+    private static object? ExecuteDecimalOperation(decimal left, object? right, char operatorName, Func<object?, object?, object?> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'decimal' and 'bool'"),
+            byte or sbyte or short or ushort or int or uint or long or ulong or decimal => func(left, right),
+            float or double => left + Convert.ToDecimal(right),
+            _ => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' not implemented for types 'decimal' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 }
