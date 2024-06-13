@@ -363,6 +363,7 @@ public class MathsTests
         Assert.Equal(Math.Floor(12e+100), res);
     }
 
+    [Theory]
     [InlineData(".05", 0.05)]
     [InlineData("0.05", 0.05)]
     [InlineData("0.005", 0.005)]
@@ -384,5 +385,7 @@ public class MathsTests
     {
         var e = new Expression(formula, CultureInfo.InvariantCulture);
         var res = e.Evaluate();
+
+        Assert.Equal(expectedValue, res);
     }
 }
