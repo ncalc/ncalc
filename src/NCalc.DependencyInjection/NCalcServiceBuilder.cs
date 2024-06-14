@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NCalc.Cache;
 using NCalc.Factories;
+using NCalc.Services;
 using NCalc.Visitors;
 
 namespace NCalc.DependencyInjection;
@@ -33,21 +34,15 @@ public class NCalcServiceBuilder(IServiceCollection services)
         return this;
     }
     
-    public NCalcServiceBuilder WithEvaluationVisitor<TEvaluationVisitor>() where TEvaluationVisitor : class, IEvaluationVisitor
+    public NCalcServiceBuilder WithEvaluationService<TEvaluationService>() where TEvaluationService : class, IEvaluationService
     {
-        Services.ReplaceTransient<IEvaluationVisitor,TEvaluationVisitor>();
+        Services.ReplaceTransient<IEvaluationService, TEvaluationService>();
         return this;
     }
     
-    public NCalcServiceBuilder WithAsyncEvaluationVisitor<TAsyncEvaluationVisitor>() where TAsyncEvaluationVisitor : class, IAsyncEvaluationVisitor
+    public NCalcServiceBuilder WithAsyncEvaluationService<TAsyncEvaluationService>() where TAsyncEvaluationService : class, IAsyncEvaluationService
     {
-        Services.ReplaceTransient<IAsyncEvaluationVisitor,TAsyncEvaluationVisitor>();
-        return this;
-    }
-    
-    public NCalcServiceBuilder WithParameterExtractionVisitor<TParameterExtractionVisitor>() where TParameterExtractionVisitor : class, IParameterExtractionVisitor
-    {
-        Services.ReplaceTransient<IParameterExtractionVisitor,TParameterExtractionVisitor>();
+        Services.ReplaceTransient<IAsyncEvaluationService, TAsyncEvaluationService>();
         return this;
     }
 }

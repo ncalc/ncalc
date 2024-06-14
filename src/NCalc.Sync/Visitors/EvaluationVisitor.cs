@@ -4,9 +4,9 @@ using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 
-public class EvaluationVisitor : IEvaluationVisitor
+public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor
 {
-    public required ExpressionContext Context { get; set; }
+    public ExpressionContext Context { get; } = context;
 
     public object? Result { get; protected set; }
     

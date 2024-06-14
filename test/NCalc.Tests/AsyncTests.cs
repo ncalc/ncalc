@@ -155,4 +155,17 @@ public class AsyncTests
         var expression = new AsyncExpression(expressionString);
         Assert.Equal(hasError, expression.HasErrors());
     }
+    
+    [Fact]
+    public void ShouldEvaluateSubExpressionsAsync()
+    {
+        var volume = new Expression("[surface] * h");
+        var surface = new Expression("[l] * [L]");
+        volume.Parameters["surface"] = surface;
+        volume.Parameters["h"] = 3;
+        surface.Parameters["l"] = 1;
+        surface.Parameters["L"] = 2;
+
+        Assert.Equal(6, volume.Evaluate());
+    }
 }

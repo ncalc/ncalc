@@ -79,28 +79,15 @@ services.AddNCalc()
         .WithLogicalExpressionFactory<MyCustomLogicalExpressionFactory>();
 ```
 
-### `WithEvaluationVisitor`
-Use this method to specify a custom implementation of <xref:NCalc.Visitors.IEvaluationVisitor>.
-The evaluation visitor is used to traverse and evaluate expressions after an <xref:NCalc.Domain.LogicalExpression> is
-retrieved.
+### `WithEvaluationService`
+Use this method to specify a custom implementation of <xref:NCalc.Services.IEvaluationService>.
+The evaluation service is used to calculate the result of your expression after parsing.
 
 **Example:**
 
 ```csharp
 services.AddNCalc()
-        .WithEvaluationVisitor<MyCustomEvaluationVisitor>();
-```
-
-### `WithParameterExtractionVisitor`
-Use this method to specify a custom implementation of <xref:NCalc.Visitors.IParameterExtractionVisitor>. This visitor is
-responsible for
-extracting parameters from expressions.
-
-**Example:**
-
-```csharp
-services.AddNCalc()
-        .WithParameterExtractionVisitor<MyCustomParameterExtractionVisitor>();
+        .WithEvaluationService<MyCustomEvaluationService>();
 ```
 
 By configuring these services, you can customize the behavior of NCalc to suit your application's needs.

@@ -4,6 +4,7 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Visitors;
 using System.Diagnostics.CodeAnalysis;
+using NCalc.Services;
 
 namespace NCalc;
 
@@ -38,7 +39,7 @@ public partial class Expression
         set => Context.CultureInfo = value;
     }
 
-    protected ExpressionContext Context { get; init; } = null!;
+    protected ExpressionContext Context { get; init; }
 
     /// <summary>
     /// Parameters for the expression evaluation.
@@ -61,7 +62,6 @@ public partial class Expression
         set => Context.Functions = value;
     }
 
-
     /// <summary>
     /// Textual representation of the expression.
     /// </summary>
@@ -71,44 +71,51 @@ public partial class Expression
 
     public Exception? Error { get; private set; }
 
-    protected ILogicalExpressionCache LogicalExpressionCache { get; init; }
-
-    protected ILogicalExpressionFactory LogicalExpressionFactory { get; init; }
-
-    protected IEvaluationVisitor EvaluationVisitor { get; init; }
+    protected ILogicalExpressionCache LogicalExpressionCache { get; }
+    protected ILogicalExpressionFactory LogicalExpressionFactory { get; }
+    protected IEvaluationService EvaluationService { get; }
     
-    protected IParameterExtractionVisitor ParameterExtractionVisitor { get; init; }
-
     private Expression(ExpressionContext? context = null)
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
         LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
-        ParameterExtractionVisitor = new ParameterExtractionVisitor();
+        EvaluationService = new EvaluationService();
         Context = context ?? new();
-        EvaluationVisitor = new EvaluationVisitor
-        {
-            Context = Context
-        };
     }
 
-    protected Expression(
-        ILogicalExpressionFactory logicalExpressionFactory,
-        ILogicalExpressionCache logicalExpressionCache,
-        IEvaluationVisitor evaluationVisitor,
-        IParameterExtractionVisitor parameterExtractionVisitor)
+    public Expression(
+        string expression,
+        ExpressionContext context,
+        ILogicalExpressionFactory factory,
+        ILogicalExpressionCache cache,
+        IEvaluationService evaluationService)
     {
-        LogicalExpressionCache = logicalExpressionCache;
-        LogicalExpressionFactory = logicalExpressionFactory;
-        EvaluationVisitor = evaluationVisitor;
-        ParameterExtractionVisitor = parameterExtractionVisitor;
+        ExpressionString = expression;
+        Context = context;
+        LogicalExpressionCache = cache;
+        EvaluationService = evaluationService;
+        LogicalExpressionFactory = factory;
+    }
+    
+    public Expression(
+        LogicalExpression logicalExpression,
+        ExpressionContext context,
+        ILogicalExpressionFactory factory,
+        ILogicalExpressionCache cache,
+        IEvaluationService evaluationService)
+    {
+        LogicalExpression = logicalExpression;
+        Context = context;
+        LogicalExpressionCache = cache;
+        EvaluationService = evaluationService;
+        LogicalExpressionFactory = factory;
     }
 
     public Expression(string expression, ExpressionContext? context = null) : this(context)
     {
         ExpressionString = expression;
     }
-
-
+    
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, ExpressionContext have implicit conversions.
     public Expression(string expression) : this(expression, ExpressionOptions.None)
@@ -177,8 +184,7 @@ public partial class Expression
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
             return IterateParameters();
 
-        LogicalExpression!.Accept(EvaluationVisitor);
-        return EvaluationVisitor.Result;
+        return EvaluationService.Evaluate(LogicalExpression!, Context);
     }
 
     private LogicalExpression? GetLogicalExpression()
@@ -212,17 +218,17 @@ public partial class Expression
         var parameterEnumerators = new Dictionary<string, IEnumerator>();
         int? size = null;
         var results = new List<object?>();
-
+        
         foreach (var parameter in Parameters.Values)
         {
             if (parameter is not IEnumerable enumerable)
                 continue;
 
-            var localsize = enumerable.Cast<object>().Count();
+            var localSize = enumerable.Cast<object>().Count();
 
             if (size == null)
-                size = localsize;
-            else if (localsize != size)
+                size = localSize;
+            else if (localSize != size)
                 throw new NCalcException(
                     "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
         }
@@ -245,8 +251,7 @@ public partial class Expression
                     Parameters[kvp.Key] = kvp.Value.Current;
                 }
 
-                LogicalExpression!.Accept(EvaluationVisitor);
-                results.Add(EvaluationVisitor.Result);
+                results.Add(EvaluationService.Evaluate(LogicalExpression!, Context));
             }
 
             return results;
@@ -268,8 +273,9 @@ public partial class Expression
     /// </summary>
     public List<string> GetParametersNames()
     {
+        var parameterExtractionVisitor = new ParameterExtractionVisitor();
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
-        LogicalExpression.Accept(ParameterExtractionVisitor);
-        return ParameterExtractionVisitor.Parameters.ToList();
+        LogicalExpression.Accept(parameterExtractionVisitor);
+        return parameterExtractionVisitor.Parameters.ToList();
     }
 }

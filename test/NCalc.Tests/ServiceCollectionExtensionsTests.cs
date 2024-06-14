@@ -5,6 +5,7 @@ using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Handlers;
+using NCalc.Services;
 using NCalc.Visitors;
 
 namespace NCalc.Tests;
@@ -24,8 +25,8 @@ public class ServiceCollectionExtensionsTests
         Assert.NotNull(serviceProvider.GetService<IExpressionFactory>());
         Assert.NotNull(serviceProvider.GetService<ILogicalExpressionCache>());
         Assert.NotNull(serviceProvider.GetService<ILogicalExpressionFactory>());
-        Assert.NotNull(serviceProvider.GetService<IEvaluationVisitor>());
-        Assert.NotNull(serviceProvider.GetService<IParameterExtractionVisitor>());
+        Assert.NotNull(serviceProvider.GetService<IEvaluationService>());
+        Assert.NotNull(serviceProvider.GetService<IAsyncEvaluationService>());
     }
 
     [Fact]
@@ -72,53 +73,39 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void WithEvaluationVisitor_ShouldReplaceEvaluationVisitor()
+    public void WithEvaluationService_ShouldReplaceEvaluationService()
     {
         var services = new ServiceCollection();
 
         services.AddNCalc()
-            .WithEvaluationVisitor<CustomEvaluationVisitor>();
+            .WithEvaluationService<CustomEvaluationService>();
 
         var serviceProvider = services.BuildServiceProvider();
 
-        var visitor = serviceProvider.GetService<IEvaluationVisitor>();
+        var visitor = serviceProvider.GetService<IEvaluationService>();
         var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
 
         var exp = expFactory.Create("1+1");
         Assert.Equal(42, exp.Evaluate());
-        Assert.IsType<CustomEvaluationVisitor>(visitor);
+        Assert.IsType<CustomEvaluationService>(visitor);
     }
 
     [Fact]
-    public async Task WithAsyncEvaluationVisitor_ShouldReplaceEvaluationVisitor()
+    public async Task WithAsyncEvaluationService_ShouldReplaceEvaluationService()
     {
         var services = new ServiceCollection();
 
         services.AddNCalc()
-            .WithAsyncEvaluationVisitor<CustomAsyncEvaluationVisitor>();
+            .WithAsyncEvaluationService<CustomAsyncEvaluationService>();
 
         var serviceProvider = services.BuildServiceProvider();
 
-        var visitor = serviceProvider.GetService<IAsyncEvaluationVisitor>();
+        var visitor = serviceProvider.GetService<IAsyncEvaluationService>();
         var expFactory = serviceProvider.GetRequiredService<IAsyncExpressionFactory>();
 
         var exp = expFactory.Create("1+1");
         Assert.Equal(42, await exp.EvaluateAsync());
-        Assert.IsType<CustomAsyncEvaluationVisitor>(visitor);
-    }
-
-    [Fact]
-    public void WithParameterExtractionVisitor_ShouldReplaceParameterExtractionVisitor()
-    {
-        var services = new ServiceCollection();
-
-        services.AddNCalc()
-            .WithParameterExtractionVisitor<CustomParameterExtractionVisitor>();
-
-        var serviceProvider = services.BuildServiceProvider();
-
-        var visitor = serviceProvider.GetService<IParameterExtractionVisitor>();
-        Assert.IsType<CustomParameterExtractionVisitor>(visitor);
+        Assert.IsType<CustomAsyncEvaluationService>(visitor);
     }
 
     #region Custom Implementations Stubs
@@ -145,107 +132,20 @@ public class ServiceCollectionExtensionsTests
         public LogicalExpression Create(string expression, ExpressionContextBase context) => throw new NCalcException("Stub method intented for testing.");
     }
 
-    private class CustomEvaluationVisitor : IEvaluationVisitor
+    private class CustomEvaluationService : IEvaluationService
     {
-        public void Visit(TernaryExpression expression)
+        public object Evaluate(LogicalExpression expression, ExpressionContext context)
         {
+            return 42;
         }
-
-        public void Visit(BinaryExpression expression)
-        {
-        }
-
-        public void Visit(UnaryExpression expression)
-        {
-        }
-
-        public void Visit(ValueExpression expression)
-        {
-        }
-
-        public void Visit(Function function)
-        {
-        }
-
-        public void Visit(Identifier identifier)
-        {
-        }
-        public ExpressionContext Context { get; set; }
-        public object Result => 42;
     }
 
-    private class CustomAsyncEvaluationVisitor : IAsyncEvaluationVisitor
+    private class CustomAsyncEvaluationService : IAsyncEvaluationService
     {
-        public Task VisitAsync(TernaryExpression expression)
+        public Task<object> EvaluateAsync(LogicalExpression expression, AsyncExpressionContext context)
         {
-            return Task.CompletedTask;
+            return Task.FromResult<object>(42);
         }
-
-        public Task VisitAsync(BinaryExpression expression)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task VisitAsync(UnaryExpression expression)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task VisitAsync(ValueExpression expression)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task VisitAsync(Function function)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task VisitAsync(Identifier identifier)
-        {
-            return Task.CompletedTask;
-        }
-
-        public AsyncExpressionContext Context { get; set; }
-
-        public event AsyncEvaluateFunctionHandler EvaluateFunctionAsync;
-        public event AsyncEvaluateParameterHandler EvaluateParameterAsync;
-        public object Result => 42;
     }
-
-
-    private class CustomParameterExtractionVisitor : IParameterExtractionVisitor
-    {
-        public void Visit(LogicalExpression expression)
-        {
-        }
-
-        public void Visit(TernaryExpression expression)
-        {
-        }
-
-        public void Visit(BinaryExpression expression)
-        {
-        }
-
-        public void Visit(UnaryExpression expression)
-        {
-        }
-
-        public void Visit(ValueExpression expression)
-        {
-        }
-
-        public void Visit(Function function)
-        {
-        }
-
-        public void Visit(Identifier identifier)
-        {
-        }
-
-        public List<string> Parameters { get; }
-    }
-
     #endregion
 }
