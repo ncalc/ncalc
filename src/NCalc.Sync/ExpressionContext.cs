@@ -16,7 +16,13 @@ public class ExpressionContext : ExpressionContextBase
         CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
     }
     
-    public static implicit operator ExpressionContext(ExpressionOptions options) => new() { Options = options };
+    public static implicit operator ExpressionContext(ExpressionOptions options) => new()
+    {
+        Options = options
+    };
 
-    public static implicit operator ExpressionContext(CultureInfo cultureInfo) => new() { CultureInfo = cultureInfo };
+    public static implicit operator ExpressionContext(CultureInfo cultureInfo) => new()
+    {
+        CultureInfo = cultureInfo
+    };
 }

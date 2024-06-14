@@ -1,4 +1,5 @@
-﻿using NCalc.Helpers;
+﻿using NCalc.Factories;
+using NCalc.Helpers;
 
 namespace NCalc;
 
@@ -13,5 +14,13 @@ public abstract class ExpressionContextBase
         return new(context.CultureInfo,
             context.Options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
             context.Options.HasFlag(ExpressionOptions.DecimalAsDefault));
+    }
+    
+    public static implicit operator LogicalExpressionOptions(ExpressionContextBase context)
+    {
+        return new()
+        {
+            NumbersAsDecimal = context.Options.HasFlag(ExpressionOptions.DecimalAsDefault)
+        };
     }
 }
