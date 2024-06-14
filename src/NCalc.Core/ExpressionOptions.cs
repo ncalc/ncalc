@@ -55,4 +55,9 @@ public enum ExpressionOptions
     /// Allow calculation with boolean values
     /// </summary>
     AllowBooleanCalculation = 1 << 9,
+
+    /// <summary>
+    /// Check for arithmetic operation overflow
+    /// </summary>
+    OverflowProtection = 1 << 10
 }

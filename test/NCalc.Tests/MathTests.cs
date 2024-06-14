@@ -388,4 +388,37 @@ public class MathsTests
 
         Assert.Equal(expectedValue, res);
     }
+
+    [Theory]
+    [InlineData(int.MaxValue, '+', 1000)]
+    [InlineData(int.MinValue, '-', 1000)]
+    [InlineData(int.MaxValue, '*', 1000)]
+    [InlineData(int.MinValue, '/', 1000)]
+    public void Should_Handle_Overflow_Int(int a, char op, int b)
+    {
+        var e = new Expression($"{a.ToString(CultureInfo.InvariantCulture)} {op} {b}", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        Assert.Throws<OverflowException>(() => e.Evaluate());
+    }
+
+    [Theory]
+    [InlineData(double.MaxValue, '+', 1000)]
+    [InlineData(double.MinValue, '-', 1000)]
+    [InlineData(double.MaxValue, '*', 1000)]
+    [InlineData(double.MinValue, '/', 1000)]
+    public void Should_Handle_Overflow_Double(double a, char op, int b)
+    {
+        var e = new Expression($"{a.ToString(CultureInfo.InvariantCulture)} {op} {b}", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        Assert.Throws<OverflowException>(() => e.Evaluate());
+    }
+
+    [Theory]
+    [InlineData(float.MaxValue, '+', 1000)]
+    [InlineData(float.MinValue, '-', 1000)]
+    [InlineData(float.MaxValue, '*', 1000)]
+    [InlineData(float.MinValue, '/', 1000)]
+    public void Should_Handle_Overflow_Float(float a, char op, int b)
+    {
+        var e = new Expression($"{a.ToString(CultureInfo.InvariantCulture)} {op} {b}", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        Assert.Throws<OverflowException>(() => e.Evaluate());
+    }
 }
