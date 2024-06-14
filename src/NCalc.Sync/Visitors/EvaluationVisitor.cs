@@ -50,9 +50,9 @@ public class EvaluationVisitor : IEvaluationVisitor
 
     public void Visit(BinaryExpression expression)
     {
-        var leftValue = new Lazy<object?>(() => new Expression(expression.LeftExpression, Context).Evaluate());
-        var rightValue = new Lazy<object?>(() => new Expression(expression.RightExpression, Context).Evaluate());
-
+        var leftValue = new Lazy<object?>(() => Evaluate(expression.LeftExpression));
+        var rightValue = new Lazy<object?>(() => Evaluate(expression.RightExpression));
+        
         switch (expression.Type)
         {
             case BinaryExpressionType.And:
@@ -202,6 +202,9 @@ public class EvaluationVisitor : IEvaluationVisitor
                 foreach (var p in Parameters)
                     expression.Parameters[p.Key] = p.Value;
                 
+                foreach (var p in Context.DynamicParameters)
+                    expression.DynamicParameters[p.Key] = p.Value;
+                
                 Result = expression.Evaluate();
             }
             else
@@ -225,5 +228,11 @@ public class EvaluationVisitor : IEvaluationVisitor
             b, new(CultureInfo,
                 Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer),
                 Options.HasFlag(ExpressionOptions.OrdinalStringComparer)));
+    }
+    
+    private object? Evaluate(LogicalExpression expression)
+    {
+        expression.Accept(this);
+        return Result;
     }
 }
