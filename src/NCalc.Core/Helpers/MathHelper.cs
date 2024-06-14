@@ -17,7 +17,7 @@ public static class MathHelper
     static readonly Func<dynamic?, dynamic?, object?> SubtractFunc = (a, b) => a - b;
     static readonly Func<dynamic?, dynamic?, object?> MultiplyFunc = (a, b) => a * b;
     static readonly Func<dynamic?, dynamic?, object?> DivideFunc = (a, b) => a / b;
-    static readonly Func<dynamic?, dynamic?, object?> ModuloFunc = (a, b) => a / b;
+    static readonly Func<dynamic?, dynamic?, object?> ModuloFunc = (a, b) => a % b;
 
     public static object? Add(object? a, object? b)
     {
@@ -453,7 +453,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteOperation(object? a, object?b, char operatorName, Func<object?, object?, object?> func)
+    private static object? ExecuteOperation(object? a, object? b, char operatorName, Func<object?, object?, object?> func)
     {
         return a switch
         {
@@ -471,7 +471,7 @@ public static class MathHelper
             double d => ExecuteDoubleOperation(d, b, operatorName, func),
             decimal @decimal => ExecuteDecimalOperation(@decimal, b, operatorName, func),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}"),
+                                $"Operator '{operatorName}' not implemented for operands of types {a?.GetType().ToString() ?? "null"} and {b?.GetType().ToString() ?? "null"}"),
         };
     }
 
