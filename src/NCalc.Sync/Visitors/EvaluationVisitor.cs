@@ -183,7 +183,7 @@ public class EvaluationVisitor : IEvaluationVisitor
         for (var i = 0; i < argsCount; i++)
         {
             args[i] = new Expression(function.Expressions[i], Context);
-            args[i].Parameters = Parameters;
+            args[i].Parameters = new(Parameters);
         }
 
         if (!Context.Functions.TryGetValue(function.Identifier.Name, out var expressionFunction))
@@ -200,9 +200,8 @@ public class EvaluationVisitor : IEvaluationVisitor
             {
                 //Share the parameters with child expression.
                 foreach (var p in Parameters)
-                {
                     expression.Parameters[p.Key] = p.Value;
-                }
+                
                 Result = expression.Evaluate();
             }
             else
