@@ -390,35 +390,44 @@ public class MathsTests
     }
 
     [Theory]
-    [InlineData(int.MaxValue, '+', 1000)]
-    [InlineData(int.MinValue, '-', 1000)]
-    [InlineData(int.MaxValue, '*', 1000)]
-    [InlineData(int.MinValue, '/', 1000)]
+    [InlineData(int.MaxValue, '+', 1)]
+    [InlineData(int.MinValue, '-', 1)]
+    [InlineData(int.MaxValue, '*', 1)]
+    [InlineData(int.MinValue, '/', 1)]
     public void Should_Handle_Overflow_Int(int a, char op, int b)
     {
-        var e = new Expression($"{a.ToString(CultureInfo.InvariantCulture)} {op} {b}", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+
         Assert.Throws<OverflowException>(() => e.Evaluate());
     }
 
     [Theory]
-    [InlineData(double.MaxValue, '+', 1000)]
-    [InlineData(double.MinValue, '-', 1000)]
-    [InlineData(double.MaxValue, '*', 1000)]
-    [InlineData(double.MinValue, '/', 1000)]
-    public void Should_Handle_Overflow_Double(double a, char op, int b)
+    [InlineData(double.MaxValue, '+', double.MaxValue)]
+    [InlineData(double.MinValue, '-', double.MinValue)]
+    [InlineData(double.MaxValue, '*', double.MaxValue)]
+    [InlineData(double.MinValue, '/', double.MinValue)]
+    public void Should_Handle_Overflow_Double(double a, char op, double b)
     {
-        var e = new Expression($"{a.ToString(CultureInfo.InvariantCulture)} {op} {b}", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+        
         Assert.Throws<OverflowException>(() => e.Evaluate());
     }
 
     [Theory]
-    [InlineData(float.MaxValue, '+', 1000)]
-    [InlineData(float.MinValue, '-', 1000)]
-    [InlineData(float.MaxValue, '*', 1000)]
-    [InlineData(float.MinValue, '/', 1000)]
-    public void Should_Handle_Overflow_Float(float a, char op, int b)
+    [InlineData(float.MaxValue, '+', float.MaxValue)]
+    [InlineData(float.MinValue, '-', float.MinValue)]
+    [InlineData(float.MaxValue, '*', float.MaxValue)]
+    [InlineData(float.MinValue, '/', float.MinValue)]
+    public void Should_Handle_Overflow_Float(float a, char op, float b)
     {
-        var e = new Expression($"{a.ToString(CultureInfo.InvariantCulture)} {op} {b}", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+
         Assert.Throws<OverflowException>(() => e.Evaluate());
     }
 }
