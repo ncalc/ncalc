@@ -69,7 +69,7 @@ public class EvaluationTests
         var expression = new Expression(expressionStr)
         {
             Options = ExpressionOptions.RoundAwayFromZero,
-            Functions = new(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase),
+            Functions = new Dictionary<string, ExpressionFunction>(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase),
             Parameters =
             {
                 ["acp_associated_person_transactions"] = 'T'
@@ -131,7 +131,7 @@ public class EvaluationTests
     {
         Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.DecimalAsDefault)
         {
-          Functions = new(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase)
+          Functions = new Dictionary<string, ExpressionFunction>(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase)
         }.Evaluate());
         Assert.Equal(1M, new Expression("Abs(-1)", ExpressionOptions.DecimalAsDefault).Evaluate());
 

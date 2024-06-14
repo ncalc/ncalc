@@ -9,7 +9,7 @@ This behavior can be overriden for both using a custom `Dictionary` instance.
 ```c#
 var expression = new Expression("aBs(-1)")
 {
-    Functions = new(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase)
+    Functions = new Dictionary<string, ExpressionFunction>(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase)
 }
 ```
 ### Case-insensitive parameter

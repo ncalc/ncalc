@@ -126,7 +126,7 @@ public class AsyncTests
 
         var exp = new AsyncExpression(deserialized)
         {
-            Parameters = new Dictionary<string, object>
+            Parameters = 
             {
                 { "waterlevel", inputValue }
             }
