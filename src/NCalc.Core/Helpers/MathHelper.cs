@@ -32,39 +32,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        char operatorName = '+';
-
-        switch (a)
-        {
-            case bool:
-                throw new InvalidOperationException(
-                    $"Operator '+' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}");
-            case byte b1:
-                return ExecuteByteOperation(b1, b, operatorName, AddFunc);
-            case sbyte @sbyte:
-                return ExecuteSByteOperation(@sbyte, b, operatorName, AddFunc);
-            case short s:
-                return ExecuteShortOperation(s, b, operatorName, AddFunc);
-            case ushort @ushort:
-                return ExecuteUShortOperation(@ushort, b, operatorName, AddFunc);
-            case int i:
-                return ExecuteIntOperation(i, b, operatorName, AddFunc);
-            case uint u:
-                return ExecuteUIntOperation(u, b, operatorName, AddFunc);
-            case long l:
-                return ExecuteLongOperation(l, b, operatorName, AddFunc);
-            case ulong @ulong:
-                return ExecuteULongOperation(@ulong, b, operatorName, AddFunc);
-            case float f:
-                return ExecuteFloatOperation(f, b, operatorName, AddFunc);
-            case double d:
-                return ExecuteDoubleOperation(d, b, operatorName, AddFunc);
-            case decimal @decimal:
-                return ExecuteDecimalOperation(@decimal, b, operatorName, AddFunc);
-            default:
-                throw new InvalidOperationException(
-                    $"Operator '+' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
-        }
+        return ExecuteOperation(a, b, '+', AddFunc);
     }
 
     public static object? Subtract(object? a, object? b)
@@ -80,39 +48,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        char operatorName = '-';
-
-        switch (a)
-        {
-            case bool:
-                throw new InvalidOperationException(
-                    $"Operator '-' can't be applied to operands of types 'bool' and {b?.GetType()}");
-            case byte b1:
-                return ExecuteByteOperation(b1, b, operatorName, SubtractFunc);
-            case sbyte @sbyte:
-                return ExecuteSByteOperation(@sbyte, b, operatorName, SubtractFunc);
-            case short s:
-                return ExecuteShortOperation(s, b, operatorName, SubtractFunc);
-            case ushort @ushort:
-                return ExecuteUShortOperation(@ushort, b, operatorName, SubtractFunc);
-            case int i:
-                return ExecuteIntOperation(i, b, operatorName, SubtractFunc);
-            case uint u:
-                return ExecuteUIntOperation(u, b, operatorName, SubtractFunc);
-            case long l:
-                return ExecuteLongOperation(l, b, operatorName, SubtractFunc);
-            case ulong @ulong:
-                return ExecuteULongOperation(@ulong, b, operatorName, SubtractFunc);
-            case float f:
-                return ExecuteFloatOperation(f, b, operatorName, SubtractFunc);
-            case double d:
-                return ExecuteDoubleOperation(d, b, operatorName, SubtractFunc);
-            case decimal @decimal:
-                return ExecuteDecimalOperation(@decimal, b, operatorName, SubtractFunc);
-            default:
-                throw new InvalidOperationException(
-                    $"Operator '-' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
-        }
+        return ExecuteOperation(a, b, '-', SubtractFunc);
     }
 
     public static object? Multiply(object? a, object? b)
@@ -128,39 +64,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        char operatorName = '*';
-
-        switch (a)
-        {
-            case bool:
-                throw new InvalidOperationException(
-                    $"Operator '*' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}");
-            case byte b1:
-                return ExecuteByteOperation(b1, b, operatorName, MultiplyFunc);
-            case sbyte @sbyte:
-                return ExecuteSByteOperation(@sbyte, b, operatorName, MultiplyFunc);
-            case short s:
-                return ExecuteShortOperation(s, b, operatorName, MultiplyFunc);
-            case ushort @ushort:
-                return ExecuteUShortOperation(@ushort, b, operatorName, MultiplyFunc);
-            case int i:
-                return ExecuteIntOperation(i, b, operatorName, MultiplyFunc);
-            case uint u:
-                return ExecuteUIntOperation(u, b, operatorName, MultiplyFunc);
-            case long l:
-                return ExecuteLongOperation(l, b, operatorName, MultiplyFunc);
-            case ulong @ulong:
-                return ExecuteULongOperation(@ulong, b, operatorName, MultiplyFunc);
-            case float f:
-                return ExecuteFloatOperation(f, b, operatorName, MultiplyFunc);
-            case double d:
-                return ExecuteDoubleOperation(d, b, operatorName, MultiplyFunc);
-            case decimal @decimal:
-                return ExecuteDecimalOperation(@decimal, b, operatorName, MultiplyFunc);
-            default:
-                throw new InvalidOperationException(
-                    $"Operator '*' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
-        }
+        return ExecuteOperation(a, b, '*', MultiplyFunc);
     }
 
     public static object? Divide(object? a, object? b)
@@ -176,39 +80,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        char operatorName = '/';
-
-        switch (a)
-        {
-            case bool:
-                throw new InvalidOperationException(
-                    $"Operator '/' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}");
-            case byte b1:
-                return ExecuteByteOperation(b1, b, operatorName, DivideFunc);
-            case sbyte @sbyte:
-                return ExecuteSByteOperation(@sbyte, b, operatorName, DivideFunc);
-            case short s:
-                return ExecuteShortOperation(s, b, operatorName, DivideFunc);
-            case ushort @ushort:
-                return ExecuteUShortOperation(@ushort, b, operatorName, DivideFunc);
-            case int i:
-                return ExecuteIntOperation(i, b, operatorName, DivideFunc);
-            case uint u:
-                return ExecuteUIntOperation(u, b, operatorName, DivideFunc);
-            case long l:
-                return ExecuteLongOperation(l, b, operatorName, DivideFunc);
-            case ulong @ulong:
-                return ExecuteULongOperation(@ulong, b, operatorName, DivideFunc);
-            case float f:
-                return ExecuteFloatOperation(f, b, operatorName, DivideFunc);
-            case double d:
-                return ExecuteDoubleOperation(d, b, operatorName, DivideFunc);
-            case decimal @decimal:
-                return ExecuteDecimalOperation(@decimal, b, operatorName, DivideFunc);
-            default:
-                throw new InvalidOperationException(
-                    $"Operator '/' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
-        }
+        return ExecuteOperation(a, b, '/', DivideFunc);
     }
 
     public static object? Modulo(object? a, object? b)
@@ -224,39 +96,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        char operatorName = '%';
-
-        switch (a)
-        {
-            case bool:
-                throw new InvalidOperationException(
-                    $"Operator '%' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}");
-            case byte b1:
-                return ExecuteByteOperation(b1, b, operatorName, ModuloFunc);
-            case sbyte @sbyte:
-                return ExecuteSByteOperation(@sbyte, b, operatorName, ModuloFunc);
-            case short s:
-                return ExecuteShortOperation(s, b, operatorName, ModuloFunc);
-            case ushort @ushort:
-                return ExecuteUShortOperation(@ushort, b, operatorName, ModuloFunc);
-            case int i:
-                return ExecuteIntOperation(i, b, operatorName, ModuloFunc);
-            case uint u:
-                return ExecuteUIntOperation(u, b, operatorName, ModuloFunc);
-            case long l:
-                return ExecuteLongOperation(l, b, operatorName, ModuloFunc);
-            case ulong @ulong:
-                return ExecuteULongOperation(@ulong, b, operatorName, ModuloFunc);
-            case float f:
-                return ExecuteFloatOperation(f, b, operatorName, ModuloFunc);
-            case double d:
-                return ExecuteDoubleOperation(d, b, operatorName, ModuloFunc);
-            case decimal @decimal:
-                return ExecuteDecimalOperation(@decimal, b, operatorName, ModuloFunc);
-            default:
-                throw new InvalidOperationException(
-                    $"Operator '%' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}");
-        }
+        return ExecuteOperation(a, b, '%', ModuloFunc);
     }
 
     public static object? Max(object a, object b)
@@ -610,6 +450,28 @@ public static class MathHelper
             string or char => double.Parse(value.ToString()!, options.CultureInfo),
             bool boolean when options.EnableBooleanCalculation => boolean ? 1 : 0,
             _ => value
+        };
+    }
+
+    private static object? ExecuteOperation(object? a, object?b, char operatorName, Func<object?, object?, object?> func)
+    {
+        return a switch
+        {
+            bool => throw new InvalidOperationException(
+                                $"Operator '{operatorName}' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}"),
+            byte b1 => ExecuteByteOperation(b1, b, operatorName, func),
+            sbyte @sbyte => ExecuteSByteOperation(@sbyte, b, operatorName, func),
+            short s => ExecuteShortOperation(s, b, operatorName, func),
+            ushort @ushort => ExecuteUShortOperation(@ushort, b, operatorName, func),
+            int i => ExecuteIntOperation(i, b, operatorName, func),
+            uint u => ExecuteUIntOperation(u, b, operatorName, func),
+            long l => ExecuteLongOperation(l, b, operatorName, func),
+            ulong @ulong => ExecuteULongOperation(@ulong, b, operatorName, func),
+            float f => ExecuteFloatOperation(f, b, operatorName, func),
+            double d => ExecuteDoubleOperation(d, b, operatorName, func),
+            decimal @decimal => ExecuteDecimalOperation(@decimal, b, operatorName, func),
+            _ => throw new InvalidOperationException(
+                                $"Operator '+' not implemented for operands of types {a} and {b?.GetType().ToString() ?? "null"}"),
         };
     }
 
