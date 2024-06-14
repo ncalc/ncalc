@@ -187,7 +187,7 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
         var mi = FindMethod(function.Identifier.Name, args);
         if (mi != null)
         {
-            Result = LinqExpression.Call(_context, mi.BaseMethodInfo, mi.PreparedArguments);
+            Result = LinqExpression.Call(_context, mi.MethodInfo, mi.PreparedArguments);
             return;
         }
 
@@ -292,7 +292,7 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
 
                 var candidate = new ExtendedMethodInfo
                 {
-                    BaseMethodInfo = potentialMethod,
+                    MethodInfo = potentialMethod,
                     PreparedArguments = preparedArguments.Item2,
                     Score = preparedArguments.Item1
                 };
