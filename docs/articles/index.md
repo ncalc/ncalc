@@ -70,11 +70,9 @@ Debug.Assert(0 == new Expression("Tan(0)").Evaluate());
 
 ```c#
 var expression = new Expression("SecretOperation(3, 6)");
-expression.EvaluateFunction += delegate(string name, FunctionArgs args)
-    {
-        if (name == "SecretOperation")
-            args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
-    };
+expression.Functions["SecretOperation"] = (args, context) => {
+    return (int)args[0].Evaluate() + (int)args[1].Evaluate();
+};
 
 Debug.Assert(9 == expression.Evaluate());
 ```
@@ -96,11 +94,10 @@ var expression = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
 expression.Parameters["Pi2"] = new Expression("Pi * [Pi]");
 expression.Parameters["X"] = 10;
 
-expression.EvaluateParameter += delegate(string name, ParameterArgs args)
-  {
-    if (name == "Pi")
-        args.Result = 3.14;
-  };
+expression.DynamicParameters["Pi"] = (context) => {
+    Console.WriteLine("I'm evaluating π!");
+    return 3.14;
+};
 
 Debug.Assert(117.07 == expression.Evaluate());
 ```

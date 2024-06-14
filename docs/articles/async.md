@@ -12,15 +12,12 @@ dotnet add package NCalcAsync
 # Usage
 ```cs
 var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
-expression.EvaluateFunctionAsync += async (name, args) =>
-{
-    if (name == "database_operation")
-    {
-        //My heavy database work.
-        await Task.Delay(100);
 
-        args.Result = "FOO";
-    }
+expression.Functions["database_operation"] = async (args, context) => {
+    // My heavy database work.
+    await Task.Delay(100);
+
+    return "FOO";
 };
 
 var result = await expression.EvaluateAsync();

@@ -1,22 +1,39 @@
 ﻿# Case Sensitivity
 
+## Functions and Parameters"
 By default, the evaluation process is case-sensitive.
 This means every parameter and function evaluation will match using case. 
-This behavior can be overriden using a specific evaluation option.
+This behavior can be overriden for both using a custom `Dictionary` instance.
+
+### Case-insensitive function
+```c#
+var expression = new Expression("aBs(-1)")
+{
+    Functions = new(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase)
+}
+```
+### Case-insensitive parameter
 
 ```c#
- var expression = new Expression("aBs(-1)", ExpressionOptions.IgnoreCase);
- Debug.Assert(1M, e.Evaluate());
+var expression = new Expression("name == 'Beatriz'")
+{
+    Parameters = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase)
+    {
+        { "Name", "Beatriz" }
+    }
+};
 ```
 
-You can also change the comparison behavior of expressions.
+
+## String Comparison
+You can also change the comparison of string values using <xref:NCalc.Expression.ExpressionOptions.CaseInsensitiveStringComparer>.
 
 ```c#
  var expression = new Expression("{PageState} == 'list'");
  expression.Parameters["PageState"] = "List";
  Debug.Assert(false, expression.Evaluate());
  
- expression = new Expression("{PageState} == 'list'");
+ expression = new Expression("{PageState} == 'list'", ExpressionOptions.CaseInsensitiveStringComparer);
  expression.Parameters["PageState"] = "List";
  Debug.Assert(true, expression.Evaluate());
 ```

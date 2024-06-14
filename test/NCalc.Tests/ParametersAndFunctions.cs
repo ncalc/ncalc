@@ -1,7 +1,3 @@
-using System.Collections;
-
-using NCalc.Handlers;
-
 namespace NCalc.Tests;
 
 using Xunit;
@@ -95,7 +91,7 @@ public class ParametersAndFunctions
     public void ShouldHandleCustomFunctionsInFunctions()
     {
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
-
+        
         e.Functions["func1"] = (_, _) => 1;
         e.Functions["func2"] = (arg, _) => 2 * Convert.ToDouble(arg[0].Evaluate());
         e.Functions["func3"] = (arg, _) => 3 * Convert.ToDouble(arg[0].Evaluate());
@@ -138,5 +134,18 @@ public class ParametersAndFunctions
         expression.Functions[functionName] = (_,_)=>1;
 
         Assert.Equal(1, expression.Evaluate());
+    }
+
+    [Fact]
+    public void ShouldHandleCaseInsensitiveParameter()
+    {
+        var expression = new Expression("name == 'Beatriz'")
+        {
+            Parameters = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase)
+            {
+                { "Name", "Beatriz" }
+            }
+        };
+        Assert.Equal(true, expression.Evaluate());
     }
 }

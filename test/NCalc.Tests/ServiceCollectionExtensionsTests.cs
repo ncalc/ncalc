@@ -4,9 +4,7 @@ using NCalc.DependencyInjection;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Handlers;
 using NCalc.Services;
-using NCalc.Visitors;
 
 namespace NCalc.Tests;
 
