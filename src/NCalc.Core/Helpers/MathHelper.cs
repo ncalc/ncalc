@@ -607,7 +607,7 @@ public static class MathHelper
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'double' and 'bool'"),
             byte or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
-            decimal @decimal => func(Convert.ToDecimal(left), @decimal),
+            decimal => func(Convert.ToDecimal(left), right),
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for types 'double' and {right?.GetType().ToString() ?? "null"}"),
         };
