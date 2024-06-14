@@ -390,10 +390,10 @@ public class MathsTests
     }
 
     [Theory]
-    [InlineData(int.MaxValue, '+', 1)]
-    [InlineData(int.MinValue, '-', 1)]
-    [InlineData(int.MaxValue, '*', 1)]
-    [InlineData(int.MinValue, '/', 1)]
+    [InlineData(int.MaxValue, '+', int.MaxValue)]
+    [InlineData(int.MinValue, '-', int.MaxValue)]
+    [InlineData(int.MaxValue, '*', int.MaxValue)]
+    [InlineData(int.MinValue, '/', int.MaxValue)]
     public void Should_Handle_Overflow_Int(int a, char op, int b)
     {
         var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
@@ -405,9 +405,9 @@ public class MathsTests
 
     [Theory]
     [InlineData(double.MaxValue, '+', double.MaxValue)]
-    [InlineData(double.MinValue, '-', double.MinValue)]
+    [InlineData(double.MinValue, '-', double.MaxValue)]
     [InlineData(double.MaxValue, '*', double.MaxValue)]
-    [InlineData(double.MinValue, '/', double.MinValue)]
+    [InlineData(double.MinValue, '/', double.MaxValue)]
     public void Should_Handle_Overflow_Double(double a, char op, double b)
     {
         var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
@@ -419,9 +419,9 @@ public class MathsTests
 
     [Theory]
     [InlineData(float.MaxValue, '+', float.MaxValue)]
-    [InlineData(float.MinValue, '-', float.MinValue)]
+    [InlineData(float.MinValue, '-', float.MaxValue)]
     [InlineData(float.MaxValue, '*', float.MaxValue)]
-    [InlineData(float.MinValue, '/', float.MinValue)]
+    [InlineData(float.MinValue, '/', float.MaxValue)]
     public void Should_Handle_Overflow_Float(float a, char op, float b)
     {
         var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
