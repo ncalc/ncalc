@@ -57,7 +57,7 @@ public enum ExpressionOptions
     AllowBooleanCalculation = 1 << 9,
 
     /// <summary>
-    /// Check for arithmetic operation overflow
+    /// Check for arithmetic binary operation overflow
     /// </summary>
     OverflowProtection = 1 << 10
 }
