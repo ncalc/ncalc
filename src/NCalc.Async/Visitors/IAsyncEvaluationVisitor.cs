@@ -1,13 +1,7 @@
-﻿using NCalc.Handlers;
-
-namespace NCalc.Visitors;
+﻿namespace NCalc.Visitors;
 
 public interface IAsyncEvaluationVisitor : IAsyncLogicalExpressionVisitor
 {
-    ExpressionContext Context { get; set; }
-
-    public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync;
-    public event AsyncEvaluateParameterHandler? EvaluateParameterAsync;
-
+    AsyncExpressionContext Context { get; set; }
     public object? Result { get;  }
 }

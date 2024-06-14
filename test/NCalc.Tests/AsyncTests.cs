@@ -19,15 +19,11 @@ public class AsyncTests
     public async Task ShouldEvaluateAsyncFunction()
     {
         var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
-        expression.EvaluateFunctionAsync += async (name, args) =>
-        {
-            if (name == "database_operation")
-            {
-                //My heavy database work.
-                await Task.Delay(100);
+        expression.Functions["database_operation"] = async (_, _) => {
+            // My heavy database work.
+            await Task.Delay(1);
 
-                args.Result = "FOO";
-            }
+            return "FOO";
         };
         
         var result = await expression.EvaluateAsync();
@@ -39,14 +35,10 @@ public class AsyncTests
     {
         var expression = new AsyncExpression("(a + b) == 'Leo'");
         expression.Parameters["b"] = new AsyncExpression("'eo'");
-        expression.EvaluateParameterAsync += (name, args) =>
+        expression.DynamicParameters["a"] = async _ =>
         {
-            if (name == "a")
-            {
-                args.Result = "L";
-            }
-
-            return Task.CompletedTask;
+            await Task.Delay(1);
+            return "L";
         };
         
         var result = await expression.EvaluateAsync();
@@ -119,7 +111,7 @@ public class AsyncTests
     [ClassData(typeof(WaterLevelCheckTestData))]
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
-        var compiled = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
+        var compiled = LogicalExpressionFactory.Create(expression);
         var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes

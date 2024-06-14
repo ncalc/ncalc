@@ -16,12 +16,12 @@ public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
         return _instance ??= new LogicalExpressionFactory();
     }
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionContext? expressionContext)
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionContextBase? expressionContext)
     {
         return Create(expression, expressionContext);
     }
 
-    public static LogicalExpression Create(string expression, ExpressionContext? expressionContext = null)
+    public static LogicalExpression Create(string expression, ExpressionContextBase? expressionContext = null)
     {
         LogicalExpression? logicalExpression;
         try

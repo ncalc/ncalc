@@ -68,7 +68,8 @@ public class EvaluationTests
         const string expressionStr = "IN([acp_associated_person_transactions], 'T', 'Z', 'A')";
         var expression = new Expression(expressionStr)
         {
-            Options = ExpressionOptions.RoundAwayFromZero | ExpressionOptions.IgnoreCase,
+            Options = ExpressionOptions.RoundAwayFromZero,
+            Functions = new(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase),
             Parameters =
             {
                 ["acp_associated_person_transactions"] = 'T'
@@ -128,7 +129,10 @@ public class EvaluationTests
     [Fact]
     public void ShouldHandleCaseSensitiveness()
     {
-        Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.DecimalAsDefault | ExpressionOptions.IgnoreCase).Evaluate());
+        Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.DecimalAsDefault)
+        {
+          Functions = new(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase)
+        }.Evaluate());
         Assert.Equal(1M, new Expression("Abs(-1)", ExpressionOptions.DecimalAsDefault).Evaluate());
 
         Assert.Throws<NCalcFunctionNotFoundException>(() => new Expression("aBs(-1)").Evaluate());

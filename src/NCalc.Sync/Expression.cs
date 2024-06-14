@@ -20,25 +20,7 @@ public partial class Expression
     /// Default Value: True
     /// </summary>
     public static bool CacheEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Event triggered to handle parameter evaluation.
-    /// </summary>
-    public event EvaluateParameterHandler EvaluateParameter
-    {
-        add => EvaluationVisitor.EvaluateParameter += value;
-        remove => EvaluationVisitor.EvaluateParameter -= value;
-    }
-
-    /// <summary>
-    /// Event triggered to handle function evaluation.
-    /// </summary>
-    public event EvaluateFunctionHandler EvaluateFunction
-    {
-        add => EvaluationVisitor.EvaluateFunction += value;
-        remove => EvaluationVisitor.EvaluateFunction -= value;
-    }
-
+    
     /// <summary>
     /// Options for the expression evaluation.
     /// </summary>
@@ -59,7 +41,7 @@ public partial class Expression
 
     private ExpressionContext _context = null!;
 
-    protected ExpressionContext Context
+    public ExpressionContext Context
     {
         get => _context;
         set
@@ -74,9 +56,22 @@ public partial class Expression
     /// </summary>
     public Dictionary<string, object?> Parameters
     {
-        get => Context.Parameters;
-        set => Context.Parameters = value;
+        get => Context.StaticParameters;
+        set => Context.StaticParameters = value;
     }
+    
+    public Dictionary<string, ExpressionParameter> DynamicParameters
+    {
+        get => Context.DynamicParameters;
+        set => Context.DynamicParameters = value;
+    }
+    
+    public Dictionary<string, ExpressionFunction> Functions
+    {
+        get => Context.Functions;
+        set => Context.Functions = value;
+    }
+
 
     /// <summary>
     /// Textual representation of the expression.
@@ -161,7 +156,7 @@ public partial class Expression
     {
         try
         {
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -185,7 +180,7 @@ public partial class Expression
             throw Error;
 
         if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
-            EvaluationVisitor.Context.Parameters["null"] = null;
+            EvaluationVisitor.Context.StaticParameters["null"] = null;
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))

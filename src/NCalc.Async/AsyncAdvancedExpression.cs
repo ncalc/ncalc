@@ -16,7 +16,7 @@ public class AsyncAdvancedExpression : AsyncExpression
         IAsyncEvaluationVisitor asyncEvaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor,
         string expression,
-        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, asyncEvaluationVisitor, parameterExtractionVisitor)
+        AsyncExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, asyncEvaluationVisitor, parameterExtractionVisitor)
     {
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
@@ -32,7 +32,7 @@ public class AsyncAdvancedExpression : AsyncExpression
         IAsyncEvaluationVisitor asyncEvaluationVisitor,
         IParameterExtractionVisitor parameterExtractionVisitor,
         LogicalExpression logicalExpression,
-        ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, asyncEvaluationVisitor, parameterExtractionVisitor)
+        AsyncExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, asyncEvaluationVisitor, parameterExtractionVisitor)
     {
 
         LogicalExpressionCache = logicalExpressionCache;

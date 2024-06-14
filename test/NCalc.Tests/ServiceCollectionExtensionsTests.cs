@@ -142,7 +142,7 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomLogicalExpressionFactory : ILogicalExpressionFactory
     {
-        public LogicalExpression Create(string expression, ExpressionContext context) => throw new NCalcException("Stub method intented for testing.");
+        public LogicalExpression Create(string expression, ExpressionContextBase context) => throw new NCalcException("Stub method intented for testing.");
     }
 
     private class CustomEvaluationVisitor : IEvaluationVisitor
@@ -209,7 +209,7 @@ public class ServiceCollectionExtensionsTests
             return Task.CompletedTask;
         }
 
-        public ExpressionContext Context { get; set; }
+        public AsyncExpressionContext Context { get; set; }
 
         public event AsyncEvaluateFunctionHandler EvaluateFunctionAsync;
         public event AsyncEvaluateParameterHandler EvaluateParameterAsync;

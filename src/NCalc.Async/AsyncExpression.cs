@@ -18,25 +18,6 @@ public class AsyncExpression
     public static bool CacheEnabled { get; set; } = true;
     
     /// <summary>
-    /// Event triggered to handle async function evaluation.
-    /// </summary>
-    public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync
-    {
-        add => AsyncEvaluationVisitor.EvaluateFunctionAsync += value;
-        remove => AsyncEvaluationVisitor.EvaluateFunctionAsync -= value;
-    }
-
-    /// <summary>
-    /// Event triggered to handle async parameter evaluation.
-    /// </summary>
-    public event AsyncEvaluateParameterHandler? EvaluateParameterAsync
-    {
-        add => AsyncEvaluationVisitor.EvaluateParameterAsync += value;
-        remove => AsyncEvaluationVisitor.EvaluateParameterAsync -= value;
-    }
-    
-    
-    /// <summary>
     /// Options for the expression evaluation.
     /// </summary>
     public ExpressionOptions Options
@@ -54,9 +35,9 @@ public class AsyncExpression
         set => Context.CultureInfo = value;
     }
 
-    private ExpressionContext _context = null!;
+    private AsyncExpressionContext _context = null!;
 
-    protected ExpressionContext Context
+    protected AsyncExpressionContext Context
     {
         get => _context;
         set
@@ -71,10 +52,23 @@ public class AsyncExpression
     /// </summary>
     public Dictionary<string, object?> Parameters
     {
-        get => Context.Parameters;
-        set => Context.Parameters = value;
+        get => Context.StaticParameters;
+        set => Context.StaticParameters = value;
     }
 
+
+    public Dictionary<string, AsyncExpressionParameter> DynamicParameters
+    {
+        get => Context.DynamicParameters;
+        set => Context.DynamicParameters = value;
+    }
+    
+    public Dictionary<string, AsyncExpressionFunction> Functions
+    {
+        get => Context.Functions;
+        set => Context.Functions = value;
+    }
+    
     /// <summary>
     /// Textual representation of the expression.
     /// </summary>
@@ -113,7 +107,7 @@ public class AsyncExpression
         ParameterExtractionVisitor = parameterExtractionVisitor;
     }
 
-    public AsyncExpression(string expression, ExpressionContext? context = null) : this()
+    public AsyncExpression(string expression, AsyncExpressionContext? context = null) : this()
     {
         Context = context ?? new();
         ExpressionString = expression;
@@ -127,11 +121,11 @@ public class AsyncExpression
     }
 
     public AsyncExpression(string expression, ExpressionOptions options = ExpressionOptions.None,
-        CultureInfo? cultureInfo = null) : this(expression, new ExpressionContext(options, cultureInfo))
+        CultureInfo? cultureInfo = null) : this(expression, new AsyncExpressionContext(options, cultureInfo))
     {
     }
 
-    public AsyncExpression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this()
+    public AsyncExpression(LogicalExpression logicalExpression, AsyncExpressionContext? context = null) : this()
     {
         Context = context ?? new();
         LogicalExpression = logicalExpression ?? throw new
@@ -145,7 +139,7 @@ public class AsyncExpression
     }
 
     public AsyncExpression(LogicalExpression logicalExpression, ExpressionOptions options = ExpressionOptions.None,
-        CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
+        CultureInfo? cultureInfo = null) : this(logicalExpression, new AsyncExpressionContext(options, cultureInfo))
     {
     }
     
@@ -185,7 +179,7 @@ public class AsyncExpression
     {
         try
         {
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -209,7 +203,7 @@ public class AsyncExpression
             throw Error;
 
         if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
-            AsyncEvaluationVisitor.Context.Parameters["null"] = null;
+            AsyncEvaluationVisitor.Context.StaticParameters["null"] = null;
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))

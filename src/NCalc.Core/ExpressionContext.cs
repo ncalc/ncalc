@@ -1,32 +1,17 @@
-﻿namespace NCalc;
+﻿using NCalc.Helpers;
 
-/// <summary>
-/// Stores the context of an Expression, for both parsing and evaluation.
-/// </summary>
-public class ExpressionContext
+namespace NCalc;
+
+public abstract class ExpressionContextBase
 {
     public ExpressionOptions Options { get; set; } = ExpressionOptions.None;
     public CultureInfo CultureInfo { get; set; } = CultureInfo.CurrentCulture;
-    public Dictionary<string,object?> Parameters { get; set; } = new();
+    public Dictionary<string, object?> StaticParameters { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     
-    public ExpressionContext()
+    public static implicit operator MathHelperOptions(ExpressionContextBase context)
     {
-
-    }
-
-    public ExpressionContext(ExpressionOptions options, CultureInfo? cultureInfo)
-    {
-        Options = options;
-        CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
-    }
-
-    public static implicit operator ExpressionContext(ExpressionOptions options)
-    {
-        return new() { Options = options };
-    }
-
-    public static implicit operator ExpressionContext(CultureInfo cultureInfo)
-    {
-        return new() { CultureInfo = cultureInfo };
+        return new(context.CultureInfo,
+            context.Options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
+            context.Options.HasFlag(ExpressionOptions.DecimalAsDefault));
     }
 }

@@ -12,7 +12,7 @@ namespace NCalc.Antlr;
 /// </summary>
 public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
 {
-    public LogicalExpression Create(string expression, ExpressionContext expressionContext = null)
+    public LogicalExpression Create(string expression, ExpressionContextBase expressionContext = null)
     {
         LogicalExpression logicalExpression;
         var lexer = new NCalcLexer(new AntlrInputStream(expression));

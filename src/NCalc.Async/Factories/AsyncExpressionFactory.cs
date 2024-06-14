@@ -14,13 +14,13 @@ public sealed class AsyncExpressionFactory(
     IParameterExtractionVisitor parameterExtractionVisitor
 ) : IAsyncExpressionFactory
 {
-    public AsyncExpression Create(string expression, ExpressionContext? expressionContext = null)
+    public AsyncExpression Create(string expression, AsyncExpressionContext? expressionContext = null)
     {
         return new AsyncAdvancedExpression(logicalExpressionFactory, cache, asyncEvaluationVisitor,
             parameterExtractionVisitor, expression, expressionContext);
     }
 
-    public AsyncExpression Create(LogicalExpression logicalExpression, ExpressionContext? expressionContext = null)
+    public AsyncExpression Create(LogicalExpression logicalExpression, AsyncExpressionContext? expressionContext = null)
     {
         return new AsyncAdvancedExpression(logicalExpressionFactory, cache, asyncEvaluationVisitor,
             parameterExtractionVisitor, logicalExpression, expressionContext);
