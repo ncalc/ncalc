@@ -18,12 +18,9 @@ public class AdvancedExpression : Expression
         string expression,
         ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
     {
-        LogicalExpressionCache = logicalExpressionCache;
-        LogicalExpressionFactory = logicalExpressionFactory;
-        EvaluationVisitor = evaluationVisitor;
-        ParameterExtractionVisitor = parameterExtractionVisitor;
-        ExpressionString = expression;
         Context = context ?? new();
+        EvaluationVisitor.Context = Context;
+        ExpressionString = expression;
     }
 
     public AdvancedExpression(
@@ -34,12 +31,8 @@ public class AdvancedExpression : Expression
         LogicalExpression logicalExpression,
         ExpressionContext? context = null) : base(logicalExpressionFactory, logicalExpressionCache, evaluationVisitor, parameterExtractionVisitor)
     {
-
-        LogicalExpressionCache = logicalExpressionCache;
-        LogicalExpressionFactory = logicalExpressionFactory;
-        EvaluationVisitor = evaluationVisitor;
-        ParameterExtractionVisitor = parameterExtractionVisitor;
-        LogicalExpression = logicalExpression;
         Context = context ?? new();
+        EvaluationVisitor.Context = Context;
+        LogicalExpression = logicalExpression;
     }
 }

@@ -2,7 +2,6 @@
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Handlers;
 using NCalc.Visitors;
 using System.Diagnostics.CodeAnalysis;
 
@@ -39,17 +38,7 @@ public partial class Expression
         set => Context.CultureInfo = value;
     }
 
-    private ExpressionContext _context = null!;
-
-    public ExpressionContext Context
-    {
-        get => _context;
-        set
-        {
-            _context = value;
-            EvaluationVisitor.Context = value;
-        }
-    }
+    protected ExpressionContext Context { get; init; } = null!;
 
     /// <summary>
     /// Parameters for the expression evaluation.
@@ -90,12 +79,16 @@ public partial class Expression
     
     protected IParameterExtractionVisitor ParameterExtractionVisitor { get; init; }
 
-    private Expression()
+    private Expression(ExpressionContext? context = null)
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
         LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
         ParameterExtractionVisitor = new ParameterExtractionVisitor();
-        EvaluationVisitor = new EvaluationVisitor();
+        Context = context ?? new();
+        EvaluationVisitor = new EvaluationVisitor
+        {
+            Context = Context
+        };
     }
 
     protected Expression(
@@ -110,9 +103,8 @@ public partial class Expression
         ParameterExtractionVisitor = parameterExtractionVisitor;
     }
 
-    public Expression(string expression, ExpressionContext? context = null) : this()
+    public Expression(string expression, ExpressionContext? context = null) : this(context)
     {
-        Context = context ?? new();
         ExpressionString = expression;
     }
 
@@ -128,9 +120,8 @@ public partial class Expression
     {
     }
 
-    public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this()
+    public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this(context)
     {
-        Context = context ?? new();
         LogicalExpression = logicalExpression ?? throw new
             ArgumentException("Expression can't be null", nameof(logicalExpression));
     }
@@ -180,7 +171,7 @@ public partial class Expression
             throw Error;
 
         if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
-            EvaluationVisitor.Context.StaticParameters["null"] = null;
+            Parameters["null"] = null;
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))

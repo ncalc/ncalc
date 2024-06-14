@@ -1,6 +1,4 @@
-﻿using NCalc.Handlers;
-
-namespace NCalc.Visitors;
+﻿namespace NCalc.Visitors;
 
 public interface IEvaluationVisitor : ILogicalExpressionVisitor
 {

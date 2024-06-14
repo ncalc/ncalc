@@ -170,9 +170,6 @@ public class ServiceCollectionExtensionsTests
         public void Visit(Identifier identifier)
         {
         }
-
-        public event EvaluateFunctionHandler EvaluateFunction;
-        public event EvaluateParameterHandler EvaluateParameter;
         public ExpressionContext Context { get; set; }
         public object Result => 42;
     }
