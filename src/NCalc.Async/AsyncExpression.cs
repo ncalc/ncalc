@@ -39,20 +39,20 @@ public class AsyncExpression
     /// <summary>
     /// Parameters for the expression evaluation.
     /// </summary>
-    public Dictionary<string, object?> Parameters
+    public IDictionary<string, object?> Parameters
     {
         get => Context.StaticParameters;
         set => Context.StaticParameters = value;
     }
 
 
-    public Dictionary<string, AsyncExpressionParameter> DynamicParameters
+    public IDictionary<string, AsyncExpressionParameter> DynamicParameters
     {
         get => Context.DynamicParameters;
         set => Context.DynamicParameters = value;
     }
     
-    public Dictionary<string, AsyncExpressionFunction> Functions
+    public IDictionary<string, AsyncExpressionFunction> Functions
     {
         get => Context.Functions;
         set => Context.Functions = value;

@@ -2,9 +2,9 @@ namespace NCalc;
 
 public class AsyncExpressionContext : ExpressionContextBase
 {
-    public Dictionary<string, AsyncExpressionParameter> DynamicParameters { get; set; } = new();
+    public IDictionary<string, AsyncExpressionParameter> DynamicParameters { get; set; } = new Dictionary<string, AsyncExpressionParameter>();
 
-    public Dictionary<string, AsyncExpressionFunction> Functions { get; set; } = new(AsyncExpressionBuiltInFunctions.Values);
+    public IDictionary<string, AsyncExpressionFunction> Functions { get; set; } = new Dictionary<string, AsyncExpressionFunction>(AsyncExpressionBuiltInFunctions.Values);
 
     public AsyncExpressionContext()
     {

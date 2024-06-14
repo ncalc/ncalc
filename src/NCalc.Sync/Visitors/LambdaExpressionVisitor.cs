@@ -10,9 +10,9 @@ using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
 namespace NCalc.Visitors;
 
-public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
+public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
 {
-    private readonly Dictionary<string, object> _parameters;
+    private readonly IDictionary<string, object> _parameters;
     private readonly LinqExpression _context;
     private readonly ExpressionOptions _options;
 
@@ -24,14 +24,14 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
         false; //{ get //{ return (_options & ExpressionOptions.OverflowProtection) == ExpressionOptions.OverflowProtection; } }
 
     // ReSharper disable once ConvertToPrimaryConstructor
-    public LambdaExpressionVistor(Dictionary<string, object> parameters, ExpressionOptions options)
+    public LambdaExpressionVisitor(IDictionary<string, object> parameters, ExpressionOptions options)
     {
         _parameters = parameters;
         _options = options;
     }
 
     // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-    public LambdaExpressionVistor(LinqParameterExpression context, ExpressionOptions options)
+    public LambdaExpressionVisitor(LinqParameterExpression context, ExpressionOptions options)
     {
         _context = context;
         _options = options;

@@ -44,19 +44,19 @@ public partial class Expression
     /// <summary>
     /// Parameters for the expression evaluation.
     /// </summary>
-    public Dictionary<string, object?> Parameters
+    public IDictionary<string, object?> Parameters
     {
         get => Context.StaticParameters;
         set => Context.StaticParameters = value;
     }
     
-    public Dictionary<string, ExpressionParameter> DynamicParameters
+    public IDictionary<string, ExpressionParameter> DynamicParameters
     {
         get => Context.DynamicParameters;
         set => Context.DynamicParameters = value;
     }
     
-    public Dictionary<string, ExpressionFunction> Functions
+    public IDictionary<string, ExpressionFunction> Functions
     {
         get => Context.Functions;
         set => Context.Functions = value;

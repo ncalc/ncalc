@@ -2,9 +2,9 @@ namespace NCalc;
 
 public class ExpressionContext : ExpressionContextBase
 {
-    public Dictionary<string, ExpressionParameter> DynamicParameters { get; set; } = new();
+    public IDictionary<string, ExpressionParameter> DynamicParameters { get; set; } = new Dictionary<string, ExpressionParameter>();
 
-    public Dictionary<string, ExpressionFunction> Functions { get; set; } = new(ExpressionBuiltInFunctions.Values);
+    public IDictionary<string, ExpressionFunction> Functions { get; set; } = new Dictionary<string, ExpressionFunction>(ExpressionBuiltInFunctions.Values);
 
     public ExpressionContext()
     {

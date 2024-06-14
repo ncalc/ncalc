@@ -165,7 +165,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         for (var i = 0; i < argsCount; i++)
         {
             args[i] = new Expression(function.Expressions[i], Context);
-            args[i].Parameters = new(Context.StaticParameters);
+            args[i].Parameters = new Dictionary<string, object?>(Context.StaticParameters);
         }
 
         if (!Context.Functions.TryGetValue(function.Identifier.Name, out var expressionFunction))
