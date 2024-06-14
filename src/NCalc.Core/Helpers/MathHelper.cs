@@ -13,11 +13,11 @@ public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool En
 /// </summary>
 public static class MathHelper
 {
-    static readonly Func<dynamic?, dynamic?, object?> AddFunc = (a, b) => a + b;
-    static readonly Func<dynamic?, dynamic?, object?> SubtractFunc = (a, b) => a - b;
-    static readonly Func<dynamic?, dynamic?, object?> MultiplyFunc = (a, b) => a * b;
-    static readonly Func<dynamic?, dynamic?, object?> DivideFunc = (a, b) => a / b;
-    static readonly Func<dynamic?, dynamic?, object?> ModuloFunc = (a, b) => a % b;
+    static readonly Func<dynamic, dynamic, object> AddFunc = (a, b) => a + b;
+    static readonly Func<dynamic, dynamic, object> SubtractFunc = (a, b) => a - b;
+    static readonly Func<dynamic, dynamic, object> MultiplyFunc = (a, b) => a * b;
+    static readonly Func<dynamic, dynamic, object> DivideFunc = (a, b) => a / b;
+    static readonly Func<dynamic, dynamic, object> ModuloFunc = (a, b) => a % b;
 
     public static object? Add(object? a, object? b)
     {
@@ -453,7 +453,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteOperation(object? a, object? b, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteOperation(object? a, object? b, char operatorName, Func<object, object, object> func)
     {
         return a switch
         {
@@ -475,7 +475,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteByteOperation(byte left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteByteOperation(byte left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -487,7 +487,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteSByteOperation(sbyte left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteSByteOperation(sbyte left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -501,7 +501,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteShortOperation(short left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteShortOperation(short left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -515,7 +515,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteUShortOperation(ushort left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteUShortOperation(ushort left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -527,7 +527,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteIntOperation(int left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteIntOperation(int left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -541,7 +541,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteUIntOperation(uint left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteUIntOperation(uint left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -553,7 +553,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteLongOperation(long left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteLongOperation(long left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -567,7 +567,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteULongOperation(ulong left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteULongOperation(ulong left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -587,7 +587,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteFloatOperation(float left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteFloatOperation(float left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -600,7 +600,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteDoubleOperation(double left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteDoubleOperation(double left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
@@ -613,7 +613,7 @@ public static class MathHelper
         };
     }
 
-    private static object? ExecuteDecimalOperation(decimal left, object? right, char operatorName, Func<object?, object?, object?> func)
+    private static object ExecuteDecimalOperation(decimal left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
