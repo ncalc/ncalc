@@ -13,10 +13,6 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
 
     public object? Result { get; protected set; }
     
-    protected MathHelperOptions MathHelperOptions => new(Context.CultureInfo,
-        Context.Options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
-        Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault));
-    
     public async Task VisitAsync(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
@@ -52,9 +48,9 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
 
             case BinaryExpressionType.Div:
                 Result = TypeHelper.IsReal(await leftValue.Value) || TypeHelper.IsReal(await rightValue.Value)
-                    ? MathHelper.Divide(await leftValue.Value, await rightValue.Value, MathHelperOptions)
+                    ? MathHelper.Divide(await leftValue.Value, await rightValue.Value, Context)
                     : MathHelper.Divide(Convert.ToDouble(await leftValue.Value, Context.CultureInfo), await rightValue.Value,
-                        MathHelperOptions);
+                        Context);
                 break;
 
             case BinaryExpressionType.Equal:
@@ -78,11 +74,11 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
                 break;
 
             case BinaryExpressionType.Minus:
-                Result = MathHelper.Subtract(await leftValue.Value, await rightValue.Value, MathHelperOptions);
+                Result = MathHelper.Subtract(await leftValue.Value, await rightValue.Value, Context);
                 break;
 
             case BinaryExpressionType.Modulo:
-                Result = MathHelper.Modulo(await leftValue.Value, await rightValue.Value, MathHelperOptions);
+                Result = MathHelper.Modulo(await leftValue.Value, await rightValue.Value, Context);
                 break;
 
             case BinaryExpressionType.NotEqual:
@@ -96,13 +92,13 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
                 }
                 else
                 {
-                    Result = MathHelper.Add(await leftValue.Value, await rightValue.Value, MathHelperOptions);
+                    Result = MathHelper.Add(await leftValue.Value, await rightValue.Value, Context);
                 }
 
                 break;
 
             case BinaryExpressionType.Times:
-                Result = MathHelper.Multiply(await leftValue.Value, await rightValue.Value, MathHelperOptions);
+                Result = MathHelper.Multiply(await leftValue.Value, await rightValue.Value, Context);
                 break;
 
             case BinaryExpressionType.BitwiseAnd:
@@ -145,7 +141,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
         Result = expression.Type switch
         {
             UnaryExpressionType.Not => !Convert.ToBoolean(Result, Context.CultureInfo),
-            UnaryExpressionType.Negate => MathHelper.Subtract(0, Result, MathHelperOptions),
+            UnaryExpressionType.Negate => MathHelper.Subtract(0, Result, Context),
             UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(Result, Context.CultureInfo),
             UnaryExpressionType.Positive => Result,
             _ => throw new InvalidOperationException("Unknown UnaryExpressionType")

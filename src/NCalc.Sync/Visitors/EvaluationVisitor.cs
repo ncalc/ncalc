@@ -10,10 +10,6 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     public object? Result { get; protected set; }
     
-    protected MathHelperOptions MathHelperOptions => new(Context.CultureInfo,
-        Context.Options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
-        Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault));
-
     public void Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
@@ -49,9 +45,9 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
             case BinaryExpressionType.Div:
                 Result = TypeHelper.IsReal(leftValue.Value) || TypeHelper.IsReal(rightValue.Value)
-                    ? MathHelper.Divide(leftValue.Value, rightValue.Value, MathHelperOptions)
+                    ? MathHelper.Divide(leftValue.Value, rightValue.Value, Context)
                     : MathHelper.Divide(Convert.ToDouble(leftValue.Value, Context.CultureInfo), rightValue.Value,
-                        MathHelperOptions);
+                        Context);
                 break;
 
             case BinaryExpressionType.Equal:
@@ -75,11 +71,11 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 break;
 
             case BinaryExpressionType.Minus:
-                Result = MathHelper.Subtract(leftValue.Value, rightValue.Value, MathHelperOptions);
+                Result = MathHelper.Subtract(leftValue.Value, rightValue.Value, Context);
                 break;
 
             case BinaryExpressionType.Modulo:
-                Result = MathHelper.Modulo(leftValue.Value, rightValue.Value, MathHelperOptions);
+                Result = MathHelper.Modulo(leftValue.Value, rightValue.Value, Context);
                 break;
 
             case BinaryExpressionType.NotEqual:
@@ -93,13 +89,13 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 }
                 else
                 {
-                    Result = MathHelper.Add(leftValue.Value, rightValue.Value, MathHelperOptions);
+                    Result = MathHelper.Add(leftValue.Value, rightValue.Value, Context);
                 }
 
                 break;
 
             case BinaryExpressionType.Times:
-                Result = MathHelper.Multiply(leftValue.Value, rightValue.Value, MathHelperOptions);
+                Result = MathHelper.Multiply(leftValue.Value, rightValue.Value, Context);
                 break;
 
             case BinaryExpressionType.BitwiseAnd:
@@ -142,7 +138,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         Result = expression.Type switch
         {
             UnaryExpressionType.Not => !Convert.ToBoolean(Result, Context.CultureInfo),
-            UnaryExpressionType.Negate => MathHelper.Subtract(0, Result, MathHelperOptions),
+            UnaryExpressionType.Negate => MathHelper.Subtract(0, Result, Context),
             UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(Result, Context.CultureInfo),
             UnaryExpressionType.Positive => Result,
             _ => throw new InvalidOperationException("Unknown UnaryExpressionType")
