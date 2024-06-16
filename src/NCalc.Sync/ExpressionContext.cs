@@ -1,7 +1,12 @@
+using NCalc.Handlers;
+
 namespace NCalc;
 
 public class ExpressionContext : ExpressionContextBase
 {
+    public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
+    public EvaluateParameterHandler? EvaluateParameterHandler { get; set; }
+    
     public IDictionary<string, ExpressionParameter> DynamicParameters { get; set; } = new Dictionary<string, ExpressionParameter>();
 
     public IDictionary<string, ExpressionFunction> Functions { get; set; } = new Dictionary<string, ExpressionFunction>(ExpressionBuiltInFunctions.Values);

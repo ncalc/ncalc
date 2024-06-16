@@ -1,15 +1,26 @@
 ﻿using NCalc.Domain;
 using NCalc.Exceptions;
+using NCalc.Handlers;
 using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 
-public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor
+public class EvaluationVisitor : ILogicalExpressionVisitor
 {
-    public ExpressionContext Context { get; } = context;
+    public event EvaluateFunctionHandler? EvaluateFunction;
+    public event EvaluateParameterHandler? EvaluateParameter;
+    
+    public ExpressionContext Context { get; }
+    
+    public EvaluationVisitor(ExpressionContext context)
+    {
+        Context = context;
+        EvaluateFunction += context.EvaluateFunctionHandler;
+        EvaluateParameter += context.EvaluateParameterHandler;
+    }
 
     public object? Result { get; protected set; }
-    
+
     public void Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
@@ -163,15 +174,37 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             args[i] = new Expression(function.Expressions[i], Context);
         }
 
-        if (!Context.Functions.TryGetValue(function.Identifier.Name, out var expressionFunction))
-            throw new NCalcFunctionNotFoundException(function.Identifier.Name);
+        var functionName = function.Identifier.Name;
+        var functionArgs = new FunctionArgs(args);
+        
+        OnEvaluateFunction(functionName, functionArgs);
 
-        Result = expressionFunction(args, Context);
+        if (functionArgs.HasResult)
+        {
+            Result = functionArgs.Result;
+        }
+        else
+        {
+            if (!Context.Functions.TryGetValue(functionName, out var expressionFunction))
+                throw new NCalcFunctionNotFoundException(function.Identifier.Name);
+
+            Result = expressionFunction(args, Context);
+        }
     }
     
     public void Visit(Identifier identifier)
     {
-        if (Context.StaticParameters.TryGetValue(identifier.Name, out var parameter))
+        var identifierName = identifier.Name;
+
+        var parameterArgs = new ParameterArgs();
+        
+        OnEvaluateParameter(identifierName, parameterArgs);
+        
+        if (parameterArgs.HasResult)
+        {
+            Result = parameterArgs.Result;
+        }
+        else if (Context.StaticParameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
@@ -181,6 +214,9 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 
                 foreach (var p in Context.DynamicParameters)
                     expression.DynamicParameters[p.Key] = p.Value;
+
+                expression.EvaluateFunction += EvaluateFunction;
+                expression.EvaluateParameter += EvaluateParameter;
                 
                 Result = expression.Evaluate();
             }
@@ -189,13 +225,13 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 Result = parameter;
             }
         }
-        else if (Context.DynamicParameters.TryGetValue(identifier.Name, out var dynamicParameter))
+        else if (Context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
             Result = dynamicParameter(Context);
         }
         else
         {
-            throw new NCalcParameterNotDefinedException(identifier.Name);
+            throw new NCalcParameterNotDefinedException(identifierName);
         }
     }
     
@@ -205,6 +241,15 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             b, new(Context.CultureInfo,
                 Context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer),
                 Context.Options.HasFlag(ExpressionOptions.OrdinalStringComparer)));
+    }
+    protected void OnEvaluateFunction(string name, FunctionArgs args)
+    {
+        EvaluateFunction?.Invoke(name, args);
+    }
+
+    protected void OnEvaluateParameter(string name, ParameterArgs args)
+    {
+        EvaluateParameter?.Invoke(name, args);
     }
     
     private object? Evaluate(LogicalExpression expression)

@@ -4,6 +4,7 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Visitors;
 using System.Diagnostics.CodeAnalysis;
+using NCalc.Handlers;
 using NCalc.Services;
 
 namespace NCalc;
@@ -56,6 +57,25 @@ public class AsyncExpression
     {
         get => Context.Functions;
         set => Context.Functions = value;
+    }
+    
+    
+    /// <summary>
+    /// Event triggered to handle function evaluation.
+    /// </summary>
+    public event AsyncEvaluateFunctionHandler EvaluateFunctionAsync
+    {
+        add => Context.AsyncEvaluateFunctionHandler += value;
+        remove => Context.AsyncEvaluateFunctionHandler -= value;
+    }
+    
+    /// <summary>
+    /// Event triggered to handle parameter evaluation.
+    /// </summary>
+    public event AsyncEvaluateParameterHandler EvaluateParameterAsync
+    {
+        add => Context.AsyncEvaluateParameterHandler += value;
+        remove => Context.AsyncEvaluateParameterHandler -= value;
     }
     
     /// <summary>

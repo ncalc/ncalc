@@ -86,6 +86,16 @@ used, the result is a `List<object?>` made of the evaluation of each value in th
  //  0
 ```
 
+## Using Event Handlers
+You can also use event handlers to handle parameters.
+```csharp
+expression.EvaluateParameter += delegate(string name, ParameterArgs args)
+  {
+    if (name == "Pi")
+        args.Result = 3.14;
+  };
+```
+
 ## Compare with null parameters
 
 When parameter is null and <xref:NCalc.ExpressionOptions.AllowNullParameter> is used, comparison of values to null is

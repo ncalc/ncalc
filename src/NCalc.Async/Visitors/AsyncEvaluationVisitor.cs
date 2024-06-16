@@ -1,17 +1,29 @@
-﻿using NCalc.Domain;
+﻿using System.Linq.Expressions;
+using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Extensions;
+using NCalc.Handlers;
 using NCalc.Helpers;
 using BinaryExpression = NCalc.Domain.BinaryExpression;
 using UnaryExpression = NCalc.Domain.UnaryExpression;
 
 namespace NCalc.Visitors;
 
-public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogicalExpressionVisitor
+public class AsyncEvaluationVisitor : IAsyncLogicalExpressionVisitor
 {
-    public AsyncExpressionContext Context { get; } = context;
-
+    public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync;
+    public event AsyncEvaluateParameterHandler? EvaluateParameterAsync;
+    public AsyncExpressionContext Context { get; }
+    
     public object? Result { get; protected set; }
+    
+    public AsyncEvaluationVisitor(AsyncExpressionContext context)
+    {
+        Context = context;
+        EvaluateFunctionAsync += context.AsyncEvaluateFunctionHandler;
+        EvaluateParameterAsync += context.AsyncEvaluateParameterHandler;
+    }
+
     
     public async Task VisitAsync(TernaryExpression expression)
     {
@@ -161,15 +173,37 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
             args[i] = new AsyncExpression(function.Expressions[i], Context);
         }
 
-        if (!Context.Functions.TryGetValue(function.Identifier.Name, out var expressionFunction))
-            throw new NCalcFunctionNotFoundException(function.Identifier.Name);
+        var functionName = function.Identifier.Name;
+        var functionArgs = new AsyncFunctionArgs(args);
+        
+        await OnEvaluateFunctionAsync(functionName, functionArgs);
 
-        Result = await expressionFunction(args, Context);
+        if (functionArgs.HasResult)
+        {
+            Result = functionArgs.Result;
+        }
+        else
+        {
+            if (!Context.Functions.TryGetValue(functionName, out var expressionFunction))
+                throw new NCalcFunctionNotFoundException(function.Identifier.Name);
+
+            Result = await expressionFunction(args, Context);
+        }
     }
     
     public async Task VisitAsync(Identifier identifier)
     {
-        if (Context.StaticParameters.TryGetValue(identifier.Name, out var parameter))
+        var identifierName = identifier.Name;
+
+        var parameterArgs = new AsyncParameterArgs();
+        
+        await OnEvaluateParameterAsync(identifierName, parameterArgs);
+        
+        if (parameterArgs.HasResult)
+        {
+            Result = parameterArgs.Result;
+        }
+        else if (Context.StaticParameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is AsyncExpression expression)
             {
@@ -179,6 +213,9 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
                 
                 foreach (var p in Context.DynamicParameters)
                     expression.DynamicParameters[p.Key] = p.Value;
+
+                expression.EvaluateFunctionAsync += EvaluateFunctionAsync;
+                expression.EvaluateParameterAsync += EvaluateParameterAsync;
                 
                 Result = await expression.EvaluateAsync();
             }
@@ -187,16 +224,14 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
                 Result = parameter;
             }
         }
-        else if (Context.DynamicParameters.TryGetValue(identifier.Name, out var dynamicParameter))
+        else if (Context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
             Result = await dynamicParameter(Context);
         }
         else
         {
-            throw new NCalcParameterNotDefinedException(identifier.Name);
+            throw new NCalcParameterNotDefinedException(identifierName);
         }
-
-        
     }
 
     public Task VisitAsync(ValueExpression expression)
@@ -213,6 +248,26 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
                 Context.Options.HasFlag(ExpressionOptions.OrdinalStringComparer)));
     }
 
+    protected Task OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)
+    {
+        if (EvaluateFunctionAsync is not null)
+        {
+            return EvaluateFunctionAsync(name, args);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    protected Task OnEvaluateParameterAsync(string name, AsyncParameterArgs args)
+    {
+        if (EvaluateParameterAsync is not null)
+        {
+            return EvaluateParameterAsync(name, args);
+        }
+
+        return Task.CompletedTask;
+    }
+    
     private async Task<object?> EvaluateAsync(LogicalExpression expression)
     {
         await expression.AcceptAsync(this);

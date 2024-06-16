@@ -45,6 +45,46 @@ public class AsyncTests
         Assert.Equal(true,result);
     }
     
+    
+    [Fact]
+    public async Task ShouldEvaluateAsyncFunctionHandler()
+    {
+        var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
+        expression.EvaluateFunctionAsync += async (name, args) =>
+        {
+            if (name == "database_operation")
+            {
+                //My heavy database work.
+                await Task.Delay(100);
+
+                args.Result = "FOO";
+            }
+        };
+        
+        var result = await expression.EvaluateAsync();
+        Assert.Equal(true,result);
+    }
+    
+    [Fact]
+    public async Task ShouldEvaluateAsyncParameterHandler()
+    {
+        var expression = new AsyncExpression("(a + b) == 'Leo'");
+        expression.Parameters["b"] = new AsyncExpression("'eo'");
+        expression.EvaluateParameterAsync += (name, args) =>
+        {
+            if (name == "a")
+            {
+                args.Result = "L";
+            }
+
+            return Task.CompletedTask;
+        };
+        
+        var result = await expression.EvaluateAsync();
+        Assert.Equal(true,result);
+    }
+
+    
     [Fact]
     public async Task ShouldEvaluateArrayParameters()
     {

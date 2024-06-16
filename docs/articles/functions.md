@@ -50,5 +50,16 @@ expression.Functions["SecretOperation"] = (args, context) => {
 };
 
 ```
+
+## Using Event Handlers
+You can also use event handlers to handle functions.
+```csharp
+expression.EvaluateFunction += delegate(string name, FunctionArgs args)
+    {
+        if (name == "SecretOperation")
+            args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+    };
+```
+
 ## Case Sensitivity
 See [case_sensitivity](case_sensitivity.md) for more info.

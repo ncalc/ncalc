@@ -1,7 +1,12 @@
+using NCalc.Handlers;
+
 namespace NCalc;
 
 public class AsyncExpressionContext : ExpressionContextBase
 {
+    public AsyncEvaluateFunctionHandler? AsyncEvaluateFunctionHandler { get; set; }
+    public AsyncEvaluateParameterHandler? AsyncEvaluateParameterHandler { get; set; }
+    
     public IDictionary<string, AsyncExpressionParameter> DynamicParameters { get; set; } = new Dictionary<string, AsyncExpressionParameter>();
 
     public IDictionary<string, AsyncExpressionFunction> Functions { get; set; } = new Dictionary<string, AsyncExpressionFunction>(AsyncExpressionBuiltInFunctions.Values);

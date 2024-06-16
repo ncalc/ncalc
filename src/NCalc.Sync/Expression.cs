@@ -4,6 +4,7 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Visitors;
 using System.Diagnostics.CodeAnalysis;
+using NCalc.Handlers;
 using NCalc.Services;
 
 namespace NCalc;
@@ -20,6 +21,24 @@ public partial class Expression
     /// Default Value: True
     /// </summary>
     public static bool CacheEnabled { get; set; } = true;
+    
+    /// <summary>
+    /// Event triggered to handle function evaluation.
+    /// </summary>
+    public event EvaluateFunctionHandler EvaluateFunction
+    {
+        add => Context.EvaluateFunctionHandler += value;
+        remove => Context.EvaluateFunctionHandler -= value;
+    }
+    
+    /// <summary>
+    /// Event triggered to handle parameter evaluation.
+    /// </summary>
+    public event EvaluateParameterHandler EvaluateParameter
+    {
+        add => Context.EvaluateParameterHandler += value;
+        remove => Context.EvaluateParameterHandler -= value;
+    }
     
     /// <summary>
     /// Options for the expression evaluation.
@@ -278,4 +297,5 @@ public partial class Expression
         LogicalExpression.Accept(parameterExtractionVisitor);
         return parameterExtractionVisitor.Parameters.ToList();
     }
+    
 }
