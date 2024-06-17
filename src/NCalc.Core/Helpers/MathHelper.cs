@@ -1,10 +1,10 @@
 ﻿namespace NCalc.Helpers;
 
-public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool EnableBooleanCalculation, bool UseDecimals)
+public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool EnableBooleanCalculation, bool UseDecimals, bool OverflowProtection)
 {
     public static implicit operator MathHelperOptions(CultureInfo cultureInfo)
     {
-        return new(cultureInfo, false, false);
+        return new(cultureInfo, false, false, false);
     }
 };
 
@@ -13,11 +13,45 @@ public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool En
 /// </summary>
 public static class MathHelper
 {
+    // unchecked
     static readonly Func<dynamic, dynamic, object> AddFunc = (a, b) => a + b;
     static readonly Func<dynamic, dynamic, object> SubtractFunc = (a, b) => a - b;
     static readonly Func<dynamic, dynamic, object> MultiplyFunc = (a, b) => a * b;
     static readonly Func<dynamic, dynamic, object> DivideFunc = (a, b) => a / b;
     static readonly Func<dynamic, dynamic, object> ModuloFunc = (a, b) => a % b;
+
+    // checked
+    static readonly Func<dynamic, dynamic, object> AddFuncChecked = (a, b) =>
+    {
+        var res = checked(a + b);
+        CheckOverflow(res);
+
+        return res;
+    };
+
+    static readonly Func<dynamic, dynamic, object> SubtractFuncChecked = (a, b) =>
+    {
+        var res = checked(a - b);
+        CheckOverflow(res);
+
+        return res;
+    };
+
+    static readonly Func<dynamic, dynamic, object> MultiplyFuncChecked = (a, b) =>
+    {
+        var res = checked(a * b);
+        CheckOverflow(res);
+
+        return res;
+    };
+
+    static readonly Func<dynamic, dynamic, object> DivideFuncChecked = (a, b) =>
+    {
+        var res = checked(a / b);
+        CheckOverflow(res);
+
+        return res;
+    };
 
     public static object? Add(object? a, object? b)
     {
@@ -32,7 +66,8 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        return ExecuteOperation(a, b, '+', AddFunc);
+        var func = options.OverflowProtection ? AddFuncChecked : AddFunc;
+        return ExecuteOperation(a, b, '+', func);
     }
 
     public static object? Subtract(object? a, object? b)
@@ -48,7 +83,8 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        return ExecuteOperation(a, b, '-', SubtractFunc);
+        var func = options.OverflowProtection ? SubtractFuncChecked : SubtractFunc;
+        return ExecuteOperation(a, b, '-', func);
     }
 
     public static object? Multiply(object? a, object? b)
@@ -64,7 +100,8 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        return ExecuteOperation(a, b, '*', MultiplyFunc);
+        var func = options.OverflowProtection ? MultiplyFuncChecked : MultiplyFunc;
+        return ExecuteOperation(a, b, '*', func);
     }
 
     public static object? Divide(object? a, object? b)
@@ -80,7 +117,8 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        return ExecuteOperation(a, b, '/', DivideFunc);
+        var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
+        return ExecuteOperation(a, b, '/', func);
     }
 
     public static object? Modulo(object? a, object? b)
@@ -126,33 +164,21 @@ public static class MathHelper
 
         TypeCode typeCode = ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
 
-        switch (typeCode)
+        return typeCode switch
         {
-            case TypeCode.Byte:
-                return Math.Max((byte)a!, (byte)b!);
-            case TypeCode.SByte:
-                return Math.Max((sbyte)a!, (sbyte)b!);
-            case TypeCode.Int16:
-                return Math.Max((short)a!, (short)b!);
-            case TypeCode.UInt16:
-                return Math.Max((ushort)a!, (ushort)b!);
-            case TypeCode.Int32:
-                return Math.Max((int)a!, (int)b!);
-            case TypeCode.UInt32:
-                return Math.Max((uint)a!, (uint)b!);
-            case TypeCode.Int64:
-                return Math.Max((long)a!, (long)b!);
-            case TypeCode.UInt64:
-                return Math.Max((ulong)a!, (ulong)b!);
-            case TypeCode.Single:
-                return Math.Max((float)a!, (float)b!);
-            case TypeCode.Double:
-                return Math.Max((double)a!, (double)b!);
-            case TypeCode.Decimal:
-                return Math.Max((decimal)a!, (decimal)b!);
-        }
-
-        return null;
+            TypeCode.Byte => Math.Max((byte)a!, (byte)b!),
+            TypeCode.SByte => Math.Max((sbyte)a!, (sbyte)b!),
+            TypeCode.Int16 => Math.Max((short)a!, (short)b!),
+            TypeCode.UInt16 => Math.Max((ushort)a!, (ushort)b!),
+            TypeCode.Int32 => Math.Max((int)a!, (int)b!),
+            TypeCode.UInt32 => Math.Max((uint)a!, (uint)b!),
+            TypeCode.Int64 => Math.Max((long)a!, (long)b!),
+            TypeCode.UInt64 => Math.Max((ulong)a!, (ulong)b!),
+            TypeCode.Single => Math.Max((float)a!, (float)b!),
+            TypeCode.Double => Math.Max((double)a!, (double)b!),
+            TypeCode.Decimal => Math.Max((decimal)a!, (decimal)b!),
+            _ => null,
+        };
     }
 
     public static object? Min(object? a, object? b)
@@ -624,5 +650,19 @@ public static class MathHelper
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for types 'decimal' and {right?.GetType().ToString() ?? "null"}"),
         };
+    }
+
+    private static void CheckOverflow(dynamic value)
+    {
+        if (value is double doubleVal)
+        {
+            if (double.IsInfinity(doubleVal))
+                throw new OverflowException("Arithmetic operation resulted in an overflow");
+        }
+        else if (value is float floatValue)
+        {
+            if (float.IsInfinity(floatValue))
+                throw new OverflowException("Arithmetic operation resulted in an overflow");
+        }
     }
 }

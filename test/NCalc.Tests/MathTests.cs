@@ -388,4 +388,45 @@ public class MathsTests
 
         Assert.Equal(expectedValue, res);
     }
+
+    [Theory]
+    [InlineData(int.MaxValue, '+', int.MaxValue)]
+    [InlineData(int.MinValue, '-', int.MaxValue)]
+    [InlineData(int.MaxValue, '*', int.MaxValue)]
+    public void Should_Handle_Overflow_Int(int a, char op, int b)
+    {
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+
+        Assert.Throws<OverflowException>(() => e.Evaluate());
+    }
+
+    [Theory]
+    [InlineData(double.MaxValue, '+', double.MaxValue)]
+    [InlineData(double.MinValue, '-', double.MaxValue)]
+    [InlineData(double.MaxValue, '*', double.MaxValue)]
+    [InlineData(double.MinValue, '/', 0.001d)]
+    public void Should_Handle_Overflow_Double(double a, char op, double b)
+    {
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+        
+        Assert.Throws<OverflowException>(() => e.Evaluate());
+    }
+
+    [Theory]
+    [InlineData(float.MaxValue, '+', float.MaxValue)]
+    [InlineData(float.MinValue, '-', float.MaxValue)]
+    [InlineData(float.MaxValue, '*', float.MaxValue)]
+    [InlineData(float.MinValue, '/', 0.001f)]
+    public void Should_Handle_Overflow_Float(float a, char op, float b)
+    {
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+
+        Assert.Throws<OverflowException>(() => e.Evaluate());
+    }
 }

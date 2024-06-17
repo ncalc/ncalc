@@ -41,7 +41,8 @@ public abstract class ExpressionEvaluator
     
     protected MathHelperOptions MathHelperOptions => new(Context.CultureInfo,
         Context.Options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
-        Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault));
+        Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault),
+        Context.Options.HasFlag(ExpressionOptions.OverflowProtection));
 
     protected void ExecuteUnaryExpression(UnaryExpression expression)
     {
