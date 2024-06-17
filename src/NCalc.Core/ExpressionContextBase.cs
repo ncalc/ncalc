@@ -13,7 +13,8 @@ public abstract class ExpressionContextBase
     {
         return new(context.CultureInfo,
             context.Options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
-            context.Options.HasFlag(ExpressionOptions.DecimalAsDefault));
+            context.Options.HasFlag(ExpressionOptions.DecimalAsDefault),
+            context.Options.HasFlag(ExpressionOptions.OverflowProtection));
     }
     
     public static implicit operator LogicalExpressionOptions(ExpressionContextBase context)
