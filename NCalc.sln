@@ -28,7 +28,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.DependencyInjection",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Plugins", "2. Plugins", "{EA9E75C0-E2D9-40FC-8642-407A327561D1}"
 	ProjectSection(SolutionItems) = preProject
-		src\Plugins\Directory.Build.props = src\Plugins\Directory.Build.props
+		src\Plugins\Directory.build.props = src\Plugins\Directory.build.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.MemoryCache", "src\Plugins\NCalc.MemoryCache\NCalc.MemoryCache.csproj", "{8C8E6031-247B-4B56-B2DF-6DB9023CDCF2}"
