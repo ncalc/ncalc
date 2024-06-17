@@ -1,3 +1,9 @@
+# 4.3.3
+* Add `MemberNotNullWhen` attribute to `HasErrors` by @gmcchessney in https://github.com/ncalc/ncalc/pull/250
+* Fix tests by @Bykiev in https://github.com/ncalc/ncalc/pull/251
+* Fix parsing fractional zero by @Bykiev in https://github.com/ncalc/ncalc/pull/253
+* Refactor MathHelper by @Bykiev in https://github.com/ncalc/ncalc/pull/255
+
 # 4.3.2
 * Fix handling new lines in expression by @Bykiev in https://github.com/ncalc/ncalc/pull/234
 * Add support UInt64 for binary operators by @Bykiev in https://github.com/ncalc/ncalc/pull/237

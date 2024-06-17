@@ -51,9 +51,9 @@ public class MathsTests
             [TypeCode.UInt32] = [TypeCode.Boolean],
             [TypeCode.Int64] = [TypeCode.Boolean, TypeCode.UInt64],
             [TypeCode.UInt64] = [TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64],
-            [TypeCode.Single] = [TypeCode.Boolean, TypeCode.Decimal],
-            [TypeCode.Double] = [TypeCode.Boolean, TypeCode.Decimal],
-            [TypeCode.Decimal] = [TypeCode.Boolean, TypeCode.Single, TypeCode.Double]
+            [TypeCode.Single] = [TypeCode.Boolean],
+            [TypeCode.Double] = [TypeCode.Boolean],
+            [TypeCode.Decimal] = [TypeCode.Boolean]
         };
 
         // These should all work and return a value
@@ -205,7 +205,7 @@ public class MathsTests
             [TypeCode.UInt32] = [TypeCode.Boolean],
             [TypeCode.Int64] = [TypeCode.Boolean, TypeCode.UInt64],
             [TypeCode.UInt64] = [TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64],
-            [TypeCode.Single] = [TypeCode.Boolean, TypeCode.Decimal],
+            [TypeCode.Single] = [TypeCode.Boolean],
             [TypeCode.Double] = [TypeCode.Boolean],
             [TypeCode.Decimal] = [TypeCode.Boolean]
         };
@@ -245,12 +245,11 @@ public class MathsTests
                 Assert.Throws<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
                 {
                     Parameters =
-                            {
+                        {
                                 ["x"] = Convert.ChangeType(lhsValue, typecodeA),
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
-                            }
-                }
-                        .Evaluate());
+                        }
+                }.Evaluate());
             }
         }
     }
@@ -388,5 +387,46 @@ public class MathsTests
         var res = e.Evaluate();
 
         Assert.Equal(expectedValue, res);
+    }
+
+    [Theory]
+    [InlineData(int.MaxValue, '+', int.MaxValue)]
+    [InlineData(int.MinValue, '-', int.MaxValue)]
+    [InlineData(int.MaxValue, '*', int.MaxValue)]
+    public void Should_Handle_Overflow_Int(int a, char op, int b)
+    {
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+
+        Assert.Throws<OverflowException>(() => e.Evaluate());
+    }
+
+    [Theory]
+    [InlineData(double.MaxValue, '+', double.MaxValue)]
+    [InlineData(double.MinValue, '-', double.MaxValue)]
+    [InlineData(double.MaxValue, '*', double.MaxValue)]
+    [InlineData(double.MinValue, '/', 0.001d)]
+    public void Should_Handle_Overflow_Double(double a, char op, double b)
+    {
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+        
+        Assert.Throws<OverflowException>(() => e.Evaluate());
+    }
+
+    [Theory]
+    [InlineData(float.MaxValue, '+', float.MaxValue)]
+    [InlineData(float.MinValue, '-', float.MaxValue)]
+    [InlineData(float.MaxValue, '*', float.MaxValue)]
+    [InlineData(float.MinValue, '/', 0.001f)]
+    public void Should_Handle_Overflow_Float(float a, char op, float b)
+    {
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+
+        Assert.Throws<OverflowException>(() => e.Evaluate());
     }
 }
