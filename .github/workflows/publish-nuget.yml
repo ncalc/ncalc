@@ -7,7 +7,9 @@ on:
 
 jobs:
   build:
-
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
     runs-on: ubuntu-latest
 
     steps:
