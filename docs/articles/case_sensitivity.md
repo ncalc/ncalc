@@ -7,10 +7,13 @@ This behavior can be overriden for both using a custom `Dictionary` instance.
 
 ### Case-insensitive function
 ```c#
-var expression = new Expression("aBs(-1)")
+var expression = new Expression("secretOperation()")
 {
-    Functions = new Dictionary<string, ExpressionFunction>(ExpressionBuiltInFunctions.Values, StringComparer.InvariantCultureIgnoreCase)
-}
+    Functions = new Dictionary<string, ExpressionFunction>(StringComparer.InvariantCultureIgnoreCase)
+    {
+        { "SecretOperation", (arguments, context) => 42 }
+    }
+};
 ```
 ### Case-insensitive parameter
 
@@ -22,6 +25,11 @@ var expression = new Expression("name == 'Beatriz'")
         { "Name", "Beatriz" }
     }
 };
+```
+
+## Case-insensitive built-in function
+```c#
+var expression = new Expression("aBs(-1)", ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
 ```
 
 

@@ -183,12 +183,13 @@ public class EvaluationVisitor : ILogicalExpressionVisitor
         {
             Result = functionArgs.Result;
         }
+        else if (Context.Functions.TryGetValue(functionName, out var expressionFunction))
+        {
+            Result = expressionFunction(args, Context);
+        }
         else
         {
-            if (!Context.Functions.TryGetValue(functionName, out var expressionFunction))
-                throw new NCalcFunctionNotFoundException(function.Identifier.Name);
-
-            Result = expressionFunction(args, Context);
+            Result = BuiltInFunctionHelper.Evaluate(functionName, args, Context);
         }
     }
     

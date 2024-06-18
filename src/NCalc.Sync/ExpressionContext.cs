@@ -9,7 +9,7 @@ public class ExpressionContext : ExpressionContextBase
     
     public IDictionary<string, ExpressionParameter> DynamicParameters { get; set; } = new Dictionary<string, ExpressionParameter>();
 
-    public IDictionary<string, ExpressionFunction> Functions { get; set; } = new Dictionary<string, ExpressionFunction>(ExpressionBuiltInFunctions.Values);
+    public IDictionary<string, ExpressionFunction> Functions { get; set; } = new Dictionary<string, ExpressionFunction>();
 
     public ExpressionContext()
     {

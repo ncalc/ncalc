@@ -10,11 +10,14 @@ public enum ExpressionOptions
     /// Specifies that no options are set.
     /// </summary>
     None = 1 << 0,
-
-    /// <summary>
-    /// Specifies case-insensitive matching.
-    /// </summary>
+    
+    [Obsolete("Please use IgnoreCaseAtBuiltInFunctions")]
     IgnoreCase = 1 << 1,
+    
+    /// <summary>
+    /// Specifies case-insensitive matching for built-in functions
+    /// </summary>
+    IgnoreCaseAtBuiltInFunctions = 1 << 1,
 
     /// <summary>
     /// No-cache mode. Ignores any pre-compiled expression in the cache.

@@ -9,7 +9,7 @@ public class AsyncExpressionContext : ExpressionContextBase
     
     public IDictionary<string, AsyncExpressionParameter> DynamicParameters { get; set; } = new Dictionary<string, AsyncExpressionParameter>();
 
-    public IDictionary<string, AsyncExpressionFunction> Functions { get; set; } = new Dictionary<string, AsyncExpressionFunction>(AsyncExpressionBuiltInFunctions.Values);
+    public IDictionary<string, AsyncExpressionFunction> Functions { get; set; } = new Dictionary<string, AsyncExpressionFunction>();
 
     public AsyncExpressionContext()
     {
