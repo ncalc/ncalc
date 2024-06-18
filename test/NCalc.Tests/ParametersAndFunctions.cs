@@ -15,6 +15,18 @@ public class ParametersAndFunctions
     }
     
     [Fact]
+    public void ExpressionShouldEvaluateCustomFunctionsWithParameters()
+    {
+        var e = new Expression("SecretOperation([e], 6) + f");
+        e.Parameters["e"] = 3;
+        e.Parameters["f"] = 1;
+
+        e.Functions["SecretOperation"] = (args, _) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
+
+        Assert.Equal(10, e.Evaluate());
+    }
+    
+    [Fact]
     public void ExpressionShouldEvaluateCustomFunctionsWithEffects()
     {
         var e = new Expression("Repeat([value] > 10, 3)");
