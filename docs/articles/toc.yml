@@ -12,6 +12,8 @@
   href: handling_errors.md
 - name: Case Sensitivity
   href: case_sensitivity.md
+- name: Overflow Protection
+  href: overflow_protection.md
 - name: Async Support
   href: async.md
 - name: Caching
