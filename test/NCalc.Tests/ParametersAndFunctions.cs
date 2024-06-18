@@ -13,17 +13,44 @@ public class ParametersAndFunctions
         e.Functions["SecretOperation"] = (args, _) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
         Assert.Equal(9, e.Evaluate());
     }
-
+    
     [Fact]
-    public void ExpressionShouldEvaluateCustomFunctionsWithParameters()
+    public void ExpressionShouldEvaluateCustomFunctionsWithEffects()
     {
-        var e = new Expression("SecretOperation([e], 6) + f");
-        e.Parameters["e"] = 3;
-        e.Parameters["f"] = 1;
+        var e = new Expression("Repeat([value] > 10, 3)");
 
-        e.Functions["SecretOperation"] = (args, _) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
+        const string id = "Repeat";
+        
+        var times = new Dictionary<string, int>();
+        e.Functions[id] = (args, context) =>
+        {
 
-        Assert.Equal(10, e.Evaluate());
+            var t = (int)args[1].Evaluate() - 1;
+            var r = (bool)args[0].Evaluate();
+            if (r)
+            {
+                if (!times.ContainsKey(id))
+                {
+                    times[id] = t;
+                }
+                else
+                {
+                    times[id]--;
+                }
+            }
+            return r && times[id] == 0;
+        };
+        e.Parameters["value"] = 9;
+
+        Assert.Equal(false, e.Evaluate());
+
+        e.Parameters["value"] = 11;
+        Assert.Equal(false, e.Evaluate());
+        e.Parameters["value"] = 12;
+        Assert.Equal(false, e.Evaluate()); 
+        e.Parameters["value"] = 13;
+        Assert.Equal(true, e.Evaluate()); 
+        Assert.Single(times);
     }
 
     [Fact]
