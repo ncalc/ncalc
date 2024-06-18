@@ -92,7 +92,7 @@ public class EvaluationVisitor : ExpressionEvaluator, IEvaluationVisitor
                 break;
 
             case BinaryExpressionType.Plus:
-                if (leftValue.Value is string)
+                if (leftValue.Value is string || rightValue.Value is string)
                 {
                     Result = string.Concat(leftValue.Value, rightValue.Value);
                 }
