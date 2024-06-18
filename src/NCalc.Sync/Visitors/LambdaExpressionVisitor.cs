@@ -19,9 +19,7 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
     private bool OrdinalStringComparer => _options.HasFlag(ExpressionOptions.OrdinalStringComparer);
     private bool CaseInsensitiveStringComparer => _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
 
-    //TODO:
-    private static bool Checked =>
-        false; //{ get //{ return (_options & ExpressionOptions.OverflowProtection) == ExpressionOptions.OverflowProtection; } }
+    private bool Checked => _options.HasFlag(ExpressionOptions.OverflowProtection);
 
     // ReSharper disable once ConvertToPrimaryConstructor
     public LambdaExpressionVistor(Dictionary<string, object> parameters, ExpressionOptions options)
