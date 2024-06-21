@@ -86,7 +86,7 @@ public class AsyncEvaluationVisitor : ExpressionEvaluator, IAsyncEvaluationVisit
                 break;
 
             case BinaryExpressionType.Plus:
-                if (await leftValue.Value is string)
+                if (await leftValue.Value is string || await rightValue.Value is string)
                 {
                     Result = string.Concat(await leftValue.Value, await rightValue.Value);
                 }
