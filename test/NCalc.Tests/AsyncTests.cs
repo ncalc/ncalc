@@ -77,7 +77,7 @@ public class AsyncTests
                 args.Result = "L";
             }
 
-            return Task.CompletedTask;
+            return default;
         };
         
         var result = await expression.EvaluateAsync();

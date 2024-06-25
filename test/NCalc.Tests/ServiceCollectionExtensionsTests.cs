@@ -4,6 +4,7 @@ using NCalc.DependencyInjection;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
+using NCalc.Handlers;
 using NCalc.Services;
 
 namespace NCalc.Tests;
@@ -132,6 +133,9 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomEvaluationService : IEvaluationService
     {
+        public event EvaluateFunctionHandler EvaluateFunction;
+        public event EvaluateParameterHandler EvaluateParameter;
+
         public object Evaluate(LogicalExpression expression, ExpressionContext context)
         {
             return 42;
@@ -140,6 +144,9 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomAsyncEvaluationService : IAsyncEvaluationService
     {
+        public event AsyncEvaluateFunctionHandler EvaluateFunctionAsync;
+        public event AsyncEvaluateParameterHandler EvaluateParameterAsync;
+
         public Task<object> EvaluateAsync(LogicalExpression expression, AsyncExpressionContext context)
         {
             return Task.FromResult<object>(42);

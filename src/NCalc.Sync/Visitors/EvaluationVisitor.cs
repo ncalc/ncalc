@@ -5,19 +5,12 @@ using NCalc.Helpers;
 
 namespace NCalc.Visitors;
 
-public class EvaluationVisitor : ILogicalExpressionVisitor
+public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor
 {
     public event EvaluateFunctionHandler? EvaluateFunction;
     public event EvaluateParameterHandler? EvaluateParameter;
     
-    public ExpressionContext Context { get; }
-    
-    public EvaluationVisitor(ExpressionContext context)
-    {
-        Context = context;
-        EvaluateFunction += context.EvaluateFunctionHandler;
-        EvaluateParameter += context.EvaluateParameterHandler;
-    }
+    public ExpressionContext Context { get; } = context;
 
     public object? Result { get; protected set; }
 
@@ -172,6 +165,8 @@ public class EvaluationVisitor : ILogicalExpressionVisitor
         for (var i = 0; i < argsCount; i++)
         {
             args[i] = new Expression(function.Expressions[i], Context);
+            args[i].EvaluateParameter += EvaluateParameter;
+            args[i].EvaluateFunction += EvaluateFunction;
         }
 
         var functionName = function.Identifier.Name;
@@ -239,7 +234,7 @@ public class EvaluationVisitor : ILogicalExpressionVisitor
     protected int CompareUsingMostPreciseType(object? a, object? b)
     {
         return TypeHelper.CompareUsingMostPreciseType(a,
-            b, new(Context.CultureInfo,
+            b, new TypeHelper.ComparasionOptions(Context.CultureInfo,
                 Context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer),
                 Context.Options.HasFlag(ExpressionOptions.OrdinalStringComparer)));
     }

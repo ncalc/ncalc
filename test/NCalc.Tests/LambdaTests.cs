@@ -286,9 +286,9 @@ public class LambdaTests
     {
         var expr = new Expression("2 + 2 - a - b - x");
 
-        var x = 5m;
-        var a = 6m;
-        var b = 7m;
+        const decimal x = 5m;
+        const decimal a = 6m;
+        const decimal b = 7m;
 
         expr.Parameters["x"] = x;
         expr.Parameters["a"] = a;

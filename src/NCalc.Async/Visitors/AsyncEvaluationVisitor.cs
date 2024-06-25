@@ -9,21 +9,13 @@ using UnaryExpression = NCalc.Domain.UnaryExpression;
 
 namespace NCalc.Visitors;
 
-public class AsyncEvaluationVisitor : IAsyncLogicalExpressionVisitor
+public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogicalExpressionVisitor
 {
     public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync;
     public event AsyncEvaluateParameterHandler? EvaluateParameterAsync;
-    public AsyncExpressionContext Context { get; }
-    
-    public object? Result { get; protected set; }
-    
-    public AsyncEvaluationVisitor(AsyncExpressionContext context)
-    {
-        Context = context;
-        EvaluateFunctionAsync += context.AsyncEvaluateFunctionHandler;
-        EvaluateParameterAsync += context.AsyncEvaluateParameterHandler;
-    }
+    public AsyncExpressionContext Context { get; } = context;
 
+    public object? Result { get; protected set; }
     
     public async Task VisitAsync(TernaryExpression expression)
     {
@@ -43,8 +35,8 @@ public class AsyncEvaluationVisitor : IAsyncLogicalExpressionVisitor
 
     public async Task VisitAsync(BinaryExpression expression)
     {
-        var leftValue = new Lazy<Task<object?>>(() => EvaluateAsync(expression.LeftExpression));
-        var rightValue = new Lazy<Task<object?>>(() => EvaluateAsync(expression.RightExpression));
+        var leftValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression));
+        var rightValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression));
 
         switch (expression.Type)
         {
@@ -171,6 +163,8 @@ public class AsyncEvaluationVisitor : IAsyncLogicalExpressionVisitor
         for (var i = 0; i < argsCount; i++)
         {
             args[i] = new AsyncExpression(function.Expressions[i], Context);
+            args[i].EvaluateParameterAsync += EvaluateParameterAsync;
+            args[i].EvaluateFunctionAsync += EvaluateFunctionAsync;
         }
 
         var functionName = function.Identifier.Name;
@@ -249,27 +243,27 @@ public class AsyncEvaluationVisitor : IAsyncLogicalExpressionVisitor
                 Context.Options.HasFlag(ExpressionOptions.OrdinalStringComparer)));
     }
 
-    protected Task OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)
+    protected ValueTask OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)
     {
         if (EvaluateFunctionAsync is not null)
         {
-            return EvaluateFunctionAsync(name, args);
+            return EvaluateFunctionAsync.Invoke(name, args);
         }
 
-        return Task.CompletedTask;
+        return default;
     }
 
-    protected Task OnEvaluateParameterAsync(string name, AsyncParameterArgs args)
+    protected ValueTask OnEvaluateParameterAsync(string name, AsyncParameterArgs args)
     {
         if (EvaluateParameterAsync is not null)
         {
-            return EvaluateParameterAsync(name, args);
+            return EvaluateParameterAsync.Invoke(name, args);
         }
 
-        return Task.CompletedTask;
+        return default;
     }
     
-    private async Task<object?> EvaluateAsync(LogicalExpression expression)
+    private async ValueTask<object?> EvaluateAsync(LogicalExpression expression)
     {
         await expression.AcceptAsync(this);
         return Result;

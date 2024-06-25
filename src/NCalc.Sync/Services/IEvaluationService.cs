@@ -8,5 +8,7 @@ namespace NCalc.Services;
 /// </summary>
 public interface IEvaluationService
 {
+    public event EvaluateFunctionHandler? EvaluateFunction;
+    public event EvaluateParameterHandler? EvaluateParameter;
     object? Evaluate(LogicalExpression expression, ExpressionContext context);
 }

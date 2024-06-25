@@ -1,3 +1,3 @@
 namespace NCalc.Handlers;
 
-public delegate Task AsyncEvaluateParameterHandler(string name, AsyncParameterArgs args);
+public delegate ValueTask AsyncEvaluateParameterHandler(string name, AsyncParameterArgs args);
