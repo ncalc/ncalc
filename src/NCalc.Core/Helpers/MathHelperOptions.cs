@@ -1,6 +1,6 @@
 namespace NCalc.Helpers;
 
-public readonly record struct MathHelperOptions
+public readonly struct MathHelperOptions
 {
     public required CultureInfo CultureInfo { get; init; }
     public required bool EnableBooleanCalculation { get; init; }
