@@ -20,8 +20,8 @@ var expression = new Expression("ABS(42)", context);
 
 //Cloning
 ExpressionContext context = ExpressionOptions.IgnoreCaseAtBuiltInFunctions;
-var newContext = context with { CultureInfo = CultureInfo.CurrentUICulture }
-var expression = new Expression("ABS(42)", context);
+var newContext = context with { CultureInfo = CultureInfo.CurrentUICulture };
+var expression = new Expression("ABS(42)", newContext);
 ```
 
 ## Using a single context for all expressions
