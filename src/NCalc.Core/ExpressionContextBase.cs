@@ -11,7 +11,7 @@ public abstract class ExpressionContextBase
 
     public static implicit operator MathHelperOptions(ExpressionContextBase context)
     {
-        return new MathHelperOptions()
+        return new MathHelperOptions
         {
             CultureInfo = context.CultureInfo,
             EnableBooleanCalculation = context.Options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
@@ -32,7 +32,7 @@ public abstract class ExpressionContextBase
     
     public static implicit operator LogicalExpressionOptions(ExpressionContextBase context)
     {
-        return new()
+        return new LogicalExpressionOptions
         {
             NumbersAsDecimal = context.Options.HasFlag(ExpressionOptions.DecimalAsDefault)
         };

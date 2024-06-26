@@ -1,12 +1,12 @@
-using NCalc.Handlers;
-
 namespace NCalc;
 
 public class AsyncExpressionContext : ExpressionContextBase
 {
-    public IDictionary<string, AsyncExpressionParameter> DynamicParameters { get; set; } = new Dictionary<string, AsyncExpressionParameter>();
+    public IDictionary<string, AsyncExpressionParameter> DynamicParameters { get; set; } =
+        new Dictionary<string, AsyncExpressionParameter>();
 
-    public IDictionary<string, AsyncExpressionFunction> Functions { get; set; } = new Dictionary<string, AsyncExpressionFunction>();
+    public IDictionary<string, AsyncExpressionFunction> Functions { get; set; } =
+        new Dictionary<string, AsyncExpressionFunction>();
 
     public AsyncExpressionContext()
     {
@@ -17,8 +17,14 @@ public class AsyncExpressionContext : ExpressionContextBase
         Options = options;
         CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
     }
-    
-    public static implicit operator AsyncExpressionContext(ExpressionOptions options) => new() { Options = options };
 
-    public static implicit operator AsyncExpressionContext(CultureInfo cultureInfo) => new() { CultureInfo = cultureInfo };
+    public static implicit operator AsyncExpressionContext(ExpressionOptions options) => new()
+    {
+        Options = options
+    };
+
+    public static implicit operator AsyncExpressionContext(CultureInfo cultureInfo) => new()
+    {
+        CultureInfo = cultureInfo
+    };
 }
