@@ -242,22 +242,12 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
 
     protected ValueTask OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)
     {
-        if (EvaluateFunctionAsync is not null)
-        {
-            return EvaluateFunctionAsync.Invoke(name, args);
-        }
-
-        return default;
+        return EvaluateFunctionAsync?.Invoke(name, args) ?? default;
     }
 
     protected ValueTask OnEvaluateParameterAsync(string name, AsyncParameterArgs args)
     {
-        if (EvaluateParameterAsync is not null)
-        {
-            return EvaluateParameterAsync.Invoke(name, args);
-        }
-
-        return default;
+        return EvaluateParameterAsync?.Invoke(name, args) ?? default;
     }
     
     private async ValueTask<object?> EvaluateAsync(LogicalExpression expression)

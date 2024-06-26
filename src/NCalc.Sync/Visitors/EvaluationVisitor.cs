@@ -239,7 +239,6 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     {
         EvaluateFunction?.Invoke(name, args);
     }
-
     protected void OnEvaluateParameter(string name, ParameterArgs args)
     {
         EvaluateParameter?.Invoke(name, args);
