@@ -23,9 +23,12 @@ ExpressionContext context = ExpressionOptions.IgnoreCaseAtBuiltInFunctions;
 var newContext = context with { CultureInfo = CultureInfo.CurrentUICulture };
 var expression = new Expression("ABS(42)", newContext);
 ```
+> [!WARNING]
+> The [with](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/with-expression) keyword will create a shallow copy of the object, any unchanged reference type like `IDictionary` inside
+> the context will remain the same.
+
 
 ## Using a single context for all expressions
-
 You can optimize your system to use a single context instance for all expressions.
 The example below use [DI](dependency_injection.md) for creating a singleton instance.
 
@@ -55,6 +58,21 @@ public class MyService(IExpressionFactory expressionFactory, ExpressionContext c
 }
 ```
 
-> [!WARNING]
-> The [with]() keyword will create a shallow copy of the object, any unchanged reference type like `IDictionary` inside
-> the context will remain the same.
+If you are not using DI, you can also use a static property to store a single context:
+```csharp
+///At MyContext.cs:
+public class MyContext
+{
+    public static readonly ExpressionContext Value = new();
+}
+
+///At MyService.cs
+public class MyService
+{
+    public object? Evaluate(string expressionString)
+    {
+        var expression = new Expression(expressionString, MyContext.Value with { Options = ExpressionOptions.IgnoreCaseAtBuiltInFunctions });
+        return expression.Evaluate();
+    }
+}
+```
