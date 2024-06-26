@@ -20,9 +20,9 @@ public abstract class ExpressionContextBase
         };
     }
 
-    public static implicit operator ComparasionOptions(ExpressionContextBase context)
+    public static implicit operator ComparisonOptions(ExpressionContextBase context)
     {
-        return new ComparasionOptions
+        return new ComparisonOptions
         {
             CultureInfo = context.CultureInfo,
             IsCaseInsensitive = context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer),

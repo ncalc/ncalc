@@ -1,6 +1,6 @@
 namespace NCalc.Helpers;
 
-public readonly struct ComparasionOptions
+public readonly struct ComparisonOptions
 {
     public required CultureInfo CultureInfo { get; init; }
     public required bool IsCaseInsensitive { get; init; }
