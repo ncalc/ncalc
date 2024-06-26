@@ -2,7 +2,6 @@
 using NCalc.Cache;
 using NCalc.Factories;
 using NCalc.Services;
-using NCalc.Visitors;
 
 namespace NCalc.DependencyInjection;
 

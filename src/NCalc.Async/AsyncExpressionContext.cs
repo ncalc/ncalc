@@ -1,6 +1,6 @@
 namespace NCalc;
 
-public class AsyncExpressionContext : ExpressionContextBase
+public record AsyncExpressionContext : ExpressionContextBase
 {
     public IDictionary<string, AsyncExpressionParameter> DynamicParameters { get; set; } =
         new Dictionary<string, AsyncExpressionParameter>();

@@ -3,7 +3,7 @@ using NCalc.Helpers;
 
 namespace NCalc;
 
-public abstract class ExpressionContextBase
+public abstract record ExpressionContextBase
 {
     public ExpressionOptions Options { get; set; } = ExpressionOptions.None;
     public CultureInfo CultureInfo { get; set; } = CultureInfo.CurrentCulture;

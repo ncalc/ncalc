@@ -1,8 +1,6 @@
-using NCalc.Handlers;
-
 namespace NCalc;
 
-public class ExpressionContext : ExpressionContextBase
+public record ExpressionContext : ExpressionContextBase
 {
     public IDictionary<string, ExpressionParameter> DynamicParameters { get; set; } = new Dictionary<string, ExpressionParameter>();
 
