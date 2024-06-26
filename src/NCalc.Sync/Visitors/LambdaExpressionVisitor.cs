@@ -27,13 +27,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
         _caseInsensitiveStringComparer = _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
     }
     
-    // ReSharper disable once ConvertToPrimaryConstructor
     public LambdaExpressionVisitor(IDictionary<string, object> parameters, ExpressionOptions options) : this(options)
     {
         _parameters = parameters;
     }
-
-    // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+    
     public LambdaExpressionVisitor(LinqParameterExpression context, ExpressionOptions options) : this(options)
     {
         _context = context;
