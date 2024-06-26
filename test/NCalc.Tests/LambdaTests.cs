@@ -632,5 +632,20 @@ public class LambdaTests
         Assert.Equal(expectedLog1, actualLog1);
         Assert.Equal(expectedLog2, actualLog2);
     }
+    
+    [Theory]
+    [InlineData(int.MaxValue, '+', int.MaxValue)]
+    [InlineData(int.MinValue, '-', int.MaxValue)]
+    [InlineData(int.MaxValue, '*', int.MaxValue)]
+    public void ShouldHandleOverflowInt(int a, char op, int b)
+    {
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+
+        var lambda = e.ToLambda<int>();
+        
+        Assert.Throws<OverflowException>(() => lambda());
+    }
 }
 #endif

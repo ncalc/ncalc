@@ -56,8 +56,8 @@ public static class LogicalExpressionParser
         var number =
             SkipWhiteSpace(OneOf(
                     Literals.Char('.')
-                        .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0)
-                            .And(ZeroOrOne(Terms.Integer().ThenElse<long?>(x => x, 0)))
+                        .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0)
+                            .And(ZeroOrOne(Literals.Integer().ThenElse<long?>(x => x, 0)))
                             .Then(x =>
                             {
                                 if (x.Item1 == 0 && x.Item2 == 0)
@@ -69,8 +69,8 @@ public static class LogicalExpressionParser
                         .Then(x => (0L, x.Item1.Item1, x.Item1.Item2, x.Item2)),
                     Literals.Integer(NumberOptions.AllowSign)
                         .And(Literals.Char('.')
-                            .SkipAnd(ZeroOrMany(Terms.Char('0')).ThenElse(x => x.Count, 0))
-                            .And(ZeroOrOne(Terms.Integer()))
+                            .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0))
+                            .And(ZeroOrOne(Literals.Integer()))
                             .ThenElse<(int, long?)>(x => (x.Item1, x.Item2), (0, null)))
                         .And(exponentNumberPart)
                         .Then(x => (x.Item1, x.Item2.Item1, x.Item2.Item2, x.Item3))
