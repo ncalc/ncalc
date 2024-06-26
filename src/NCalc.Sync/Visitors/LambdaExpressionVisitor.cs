@@ -15,24 +15,28 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
     private readonly IDictionary<string, object> _parameters;
     private readonly LinqExpression _context;
     private readonly ExpressionOptions _options;
+    private readonly bool _ordinalStringComparer;
+    private readonly bool _caseInsensitiveStringComparer;
+    private readonly bool _checked;
 
-    private bool OrdinalStringComparer => _options.HasFlag(ExpressionOptions.OrdinalStringComparer);
-    private bool CaseInsensitiveStringComparer => _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
-
-    private bool Checked => _options.HasFlag(ExpressionOptions.OverflowProtection);
-
+    private LambdaExpressionVisitor(ExpressionOptions options)
+    {
+        _options = options;
+        _ordinalStringComparer = _options.HasFlag(ExpressionOptions.OrdinalStringComparer);
+        _checked = _options.HasFlag(ExpressionOptions.OverflowProtection);
+        _caseInsensitiveStringComparer = _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
+    }
+    
     // ReSharper disable once ConvertToPrimaryConstructor
-    public LambdaExpressionVisitor(IDictionary<string, object> parameters, ExpressionOptions options)
+    public LambdaExpressionVisitor(IDictionary<string, object> parameters, ExpressionOptions options) : this(options)
     {
         _parameters = parameters;
-        _options = options;
     }
 
     // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-    public LambdaExpressionVisitor(LinqParameterExpression context, ExpressionOptions options)
+    public LambdaExpressionVisitor(LinqParameterExpression context, ExpressionOptions options) : this(options)
     {
         _context = context;
-        _options = options;
     }
 
     public LinqExpression Result { get; private set; }
@@ -86,11 +90,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
                 Result = WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type);
                 break;
             case BinaryExpressionType.Minus:
-                if (Checked) Result = WithCommonNumericType(left, right, LinqExpression.SubtractChecked);
+                if (_checked) Result = WithCommonNumericType(left, right, LinqExpression.SubtractChecked);
                 else Result = WithCommonNumericType(left, right, LinqExpression.Subtract);
                 break;
             case BinaryExpressionType.Plus:
-                if (Checked) Result = WithCommonNumericType(left, right, LinqExpression.AddChecked);
+                if (_checked) Result = WithCommonNumericType(left, right, LinqExpression.AddChecked);
                 else Result = WithCommonNumericType(left, right, LinqExpression.Add);
                 break;
             case BinaryExpressionType.Modulo:
@@ -100,7 +104,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
                 Result = WithCommonNumericType(left, right, LinqExpression.Divide);
                 break;
             case BinaryExpressionType.Times:
-                if (Checked) Result = WithCommonNumericType(left, right, LinqExpression.MultiplyChecked);
+                if (_checked) Result = WithCommonNumericType(left, right, LinqExpression.MultiplyChecked);
                 else Result = WithCommonNumericType(left, right, LinqExpression.Multiply);
                 break;
             case BinaryExpressionType.BitwiseOr:
@@ -343,10 +347,10 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
         }
 
         LinqExpression comparer;
-        if (CaseInsensitiveStringComparer)
+        if (_caseInsensitiveStringComparer)
         {
             comparer = LinqExpression.Property(null, typeof(StringComparer),
-                OrdinalStringComparer ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase");
+                _ordinalStringComparer ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase");
         }
         else
             comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
