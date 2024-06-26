@@ -233,10 +233,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     
     protected int CompareUsingMostPreciseType(object? a, object? b)
     {
-        return TypeHelper.CompareUsingMostPreciseType(a,
-            b, new TypeHelper.ComparasionOptions(Context.CultureInfo,
-                Context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer),
-                Context.Options.HasFlag(ExpressionOptions.OrdinalStringComparer)));
+        return TypeHelper.CompareUsingMostPreciseType(a, b, Context);
     }
     protected void OnEvaluateFunction(string name, FunctionArgs args)
     {

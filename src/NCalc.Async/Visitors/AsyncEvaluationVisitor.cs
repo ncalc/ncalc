@@ -237,10 +237,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
     
     protected int CompareUsingMostPreciseType(object? a, object? b)
     {
-        return TypeHelper.CompareUsingMostPreciseType(a,
-            b, new(Context.CultureInfo,
-                Context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer),
-                Context.Options.HasFlag(ExpressionOptions.OrdinalStringComparer)));
+        return TypeHelper.CompareUsingMostPreciseType(a, b, Context);
     }
 
     protected ValueTask OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)

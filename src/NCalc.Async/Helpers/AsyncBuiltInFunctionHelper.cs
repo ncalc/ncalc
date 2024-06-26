@@ -176,10 +176,7 @@ public static class AsyncBuiltInFunctionHelper
             var evaluation = false;
             for (var i = 1; i < arguments.Length; i++)
             {
-                if (TypeHelper.CompareUsingMostPreciseType(parameter, await arguments[i].EvaluateAsync(), new(
-                        context.CultureInfo,
-                        context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer),
-                        context.Options.HasFlag(ExpressionOptions.OrdinalStringComparer))) != 0) continue;
+                if (TypeHelper.CompareUsingMostPreciseType(parameter, await arguments[i].EvaluateAsync(), context) != 0) continue;
                 evaluation = true;
                 break;
             }
