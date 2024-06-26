@@ -1,18 +1,11 @@
 ﻿#nullable disable
 
 using System.Collections.Frozen;
-using System.Reflection;
 
 namespace NCalc.Helpers;
 
 public static class MathFunctionHelper
 {
-    public struct MathMethodInfo
-    {
-        public MethodInfo MethodInfo;
-        public int ArgumentCount;
-    }
-
     private static MathMethodInfo GetMathMethodInfo(string method, int argCount) => new()
     {
         MethodInfo = typeof(Math).GetMethod(method, Enumerable.Repeat(typeof(double), argCount).ToArray()),

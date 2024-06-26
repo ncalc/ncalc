@@ -249,7 +249,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
                 throw new ArgumentException($"{funcStr} takes exactly {argsNeed} argument");
         }
 
-        void MakeMathCallExpression(MathFunctionHelper.MathMethodInfo mathMethod, int argsNumActual)
+        void MakeMathCallExpression(MathMethodInfo mathMethod, int argsNumActual)
         {
             CheckArgumentsLengthForFunction(mathMethod.MethodInfo.Name, argsNumActual, mathMethod.ArgumentCount);
 
