@@ -1,6 +1,6 @@
-﻿namespace NCalc.Handlers;
+namespace NCalc.Handlers;
 
-public class FunctionArgs : EventArgs
+public class FunctionArgs(Expression[] parameters) : EventArgs
 {
     private object? _result;
 
@@ -14,9 +14,9 @@ public class FunctionArgs : EventArgs
         }
     }
 
-    public bool HasResult { get; set; }
-
-    public Expression[] Parameters { get; init; } = [];
+    public Expression[] Parameters { get; } = parameters;
+    
+    public bool HasResult { get;  private set; }
 
     public object?[] EvaluateParameters()
     {

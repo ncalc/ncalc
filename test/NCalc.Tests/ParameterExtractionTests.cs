@@ -13,17 +13,8 @@ public class ParameterExtractionTests
                 ["a"] = 1
             }
         };
-        expression.EvaluateParameter += (name, args) =>
-        {
-            if (name == "PageState")
-                args.Result = "List";
-        };
-        
-        expression.EvaluateFunction += (name, args) =>
-        {
-            if (name == "customfunction")
-                args.Result = "true";
-        };
+        expression.DynamicParameters["PageState"] = _ => "List";
+        expression.Functions["customfunction"] = (_, _) => true;
 
         var parameters = expression.GetParametersNames();
         Assert.Contains("a", parameters);

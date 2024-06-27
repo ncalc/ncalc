@@ -1,13 +1,5 @@
 ﻿namespace NCalc.Helpers;
 
-public readonly record struct MathHelperOptions(CultureInfo CultureInfo, bool EnableBooleanCalculation, bool UseDecimals, bool OverflowProtection)
-{
-    public static implicit operator MathHelperOptions(CultureInfo cultureInfo)
-    {
-        return new(cultureInfo, false, false, false);
-    }
-};
-
 /// <summary>
 /// Utilities for doing mathematical operations between different object types.
 /// </summary>

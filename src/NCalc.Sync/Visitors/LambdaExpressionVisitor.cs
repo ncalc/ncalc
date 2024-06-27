@@ -10,31 +10,31 @@ using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
 namespace NCalc.Visitors;
 
-public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
+public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
 {
-    private readonly Dictionary<string, object> _parameters;
+    private readonly IDictionary<string, object> _parameters;
     private readonly LinqExpression _context;
     private readonly ExpressionOptions _options;
+    private readonly bool _ordinalStringComparer;
+    private readonly bool _caseInsensitiveStringComparer;
+    private readonly bool _checked;
 
-    private bool OrdinalStringComparer => _options.HasFlag(ExpressionOptions.OrdinalStringComparer);
-    private bool CaseInsensitiveStringComparer => _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
-
-    //TODO:
-    private static bool Checked =>
-        false; //{ get //{ return (_options & ExpressionOptions.OverflowProtection) == ExpressionOptions.OverflowProtection; } }
-
-    // ReSharper disable once ConvertToPrimaryConstructor
-    public LambdaExpressionVistor(Dictionary<string, object> parameters, ExpressionOptions options)
+    private LambdaExpressionVisitor(ExpressionOptions options)
+    {
+        _options = options;
+        _ordinalStringComparer = _options.HasFlag(ExpressionOptions.OrdinalStringComparer);
+        _checked = _options.HasFlag(ExpressionOptions.OverflowProtection);
+        _caseInsensitiveStringComparer = _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
+    }
+    
+    public LambdaExpressionVisitor(IDictionary<string, object> parameters, ExpressionOptions options) : this(options)
     {
         _parameters = parameters;
-        _options = options;
     }
-
-    // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-    public LambdaExpressionVistor(LinqParameterExpression context, ExpressionOptions options)
+    
+    public LambdaExpressionVisitor(LinqParameterExpression context, ExpressionOptions options) : this(options)
     {
         _context = context;
-        _options = options;
     }
 
     public LinqExpression Result { get; private set; }
@@ -88,11 +88,11 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
                 Result = WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type);
                 break;
             case BinaryExpressionType.Minus:
-                if (Checked) Result = WithCommonNumericType(left, right, LinqExpression.SubtractChecked);
+                if (_checked) Result = WithCommonNumericType(left, right, LinqExpression.SubtractChecked);
                 else Result = WithCommonNumericType(left, right, LinqExpression.Subtract);
                 break;
             case BinaryExpressionType.Plus:
-                if (Checked) Result = WithCommonNumericType(left, right, LinqExpression.AddChecked);
+                if (_checked) Result = WithCommonNumericType(left, right, LinqExpression.AddChecked);
                 else Result = WithCommonNumericType(left, right, LinqExpression.Add);
                 break;
             case BinaryExpressionType.Modulo:
@@ -102,7 +102,7 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
                 Result = WithCommonNumericType(left, right, LinqExpression.Divide);
                 break;
             case BinaryExpressionType.Times:
-                if (Checked) Result = WithCommonNumericType(left, right, LinqExpression.MultiplyChecked);
+                if (_checked) Result = WithCommonNumericType(left, right, LinqExpression.MultiplyChecked);
                 else Result = WithCommonNumericType(left, right, LinqExpression.Multiply);
                 break;
             case BinaryExpressionType.BitwiseOr:
@@ -187,7 +187,7 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
         var mi = FindMethod(function.Identifier.Name, args);
         if (mi != null)
         {
-            Result = LinqExpression.Call(_context, mi.BaseMethodInfo, mi.PreparedArguments);
+            Result = LinqExpression.Call(_context, mi.MethodInfo, mi.PreparedArguments);
             return;
         }
 
@@ -249,7 +249,7 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
                 throw new ArgumentException($"{funcStr} takes exactly {argsNeed} argument");
         }
 
-        void MakeMathCallExpression(MathFunctionHelper.MathMethodInfo mathMethod, int argsNumActual)
+        void MakeMathCallExpression(MathMethodInfo mathMethod, int argsNumActual)
         {
             CheckArgumentsLengthForFunction(mathMethod.MethodInfo.Name, argsNumActual, mathMethod.ArgumentCount);
 
@@ -292,7 +292,7 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
 
                 var candidate = new ExtendedMethodInfo
                 {
-                    BaseMethodInfo = potentialMethod,
+                    MethodInfo = potentialMethod,
                     PreparedArguments = preparedArguments.Item2,
                     Score = preparedArguments.Item1
                 };
@@ -345,10 +345,10 @@ public sealed class LambdaExpressionVistor : ILogicalExpressionVisitor
         }
 
         LinqExpression comparer;
-        if (CaseInsensitiveStringComparer)
+        if (_caseInsensitiveStringComparer)
         {
             comparer = LinqExpression.Property(null, typeof(StringComparer),
-                OrdinalStringComparer ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase");
+                _ordinalStringComparer ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase");
         }
         else
             comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");

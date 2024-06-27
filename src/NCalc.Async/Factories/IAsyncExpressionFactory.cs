@@ -6,9 +6,9 @@ public interface IAsyncExpressionFactory
 {
     public AsyncExpression Create(
         string expression,
-        ExpressionContext? expressionContext = null);
+        AsyncExpressionContext? expressionContext = null);
 
     public AsyncExpression Create(
         LogicalExpression logicalExpression,
-        ExpressionContext? expressionContext = null);
+        AsyncExpressionContext? expressionContext = null);
 }

@@ -16,20 +16,19 @@ public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
         return _instance ??= new LogicalExpressionFactory();
     }
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionContext? expressionContext)
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, LogicalExpressionOptions? options)
     {
-        return Create(expression, expressionContext);
+        return Create(expression, options);
     }
 
-    public static LogicalExpression Create(string expression, ExpressionContext? expressionContext = null)
+    public static LogicalExpression Create(string expression, LogicalExpressionOptions? options = null)
     {
         LogicalExpression? logicalExpression;
         try
         {
-            var options = expressionContext?.Options ?? ExpressionOptions.None;
             var parserContext = new LogicalExpressionParserContext(expression)
             {
-                UseDecimalsAsDefault = options.HasFlag(ExpressionOptions.DecimalAsDefault)
+                ParseNumbersAsDecimal = options?.NumbersAsDecimal ?? false
             };
             logicalExpression = LogicalExpressionParser.Parse(parserContext);
 

@@ -286,9 +286,9 @@ public class LambdaTests
     {
         var expr = new Expression("2 + 2 - a - b - x");
 
-        var x = 5m;
-        var a = 6m;
-        var b = 7m;
+        const decimal x = 5m;
+        const decimal a = 6m;
+        const decimal b = 7m;
 
         expr.Parameters["x"] = x;
         expr.Parameters["a"] = a;
@@ -463,7 +463,7 @@ public class LambdaTests
 
                 currentContext.Func = expressionString;
 
-                var expression = new Expression(expressionString, ExpressionOptions.IgnoreCase, CultureInfo.InvariantCulture);
+                var expression = new Expression(expressionString, CultureInfo.InvariantCulture);
                 var lambda = expression.ToLambda<ContextAndResult, double>();
 
                 for (var i = 0; i < testValues.Length; ++i)
@@ -530,7 +530,7 @@ public class LambdaTests
                         }
                         currentContext.Func = expressionString;
 
-                        var expression = new Expression(expressionString, ExpressionOptions.IgnoreCase);
+                        var expression = new Expression(expressionString);
                         var lambda = expression.ToLambda<double>();
 
                         currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate());
@@ -631,6 +631,21 @@ public class LambdaTests
         Assert.Equal(expectedCos, actualCos);
         Assert.Equal(expectedLog1, actualLog1);
         Assert.Equal(expectedLog2, actualLog2);
+    }
+    
+    [Theory]
+    [InlineData(int.MaxValue, '+', int.MaxValue)]
+    [InlineData(int.MinValue, '-', int.MaxValue)]
+    [InlineData(int.MaxValue, '*', int.MaxValue)]
+    public void ShouldHandleOverflowInt(int a, char op, int b)
+    {
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        e.Parameters["a"] = a;
+        e.Parameters["b"] = b;
+
+        var lambda = e.ToLambda<int>();
+        
+        Assert.Throws<OverflowException>(() => lambda());
     }
 }
 #endif

@@ -28,10 +28,10 @@ public class MathsTests
     public void Should_Modulo_All_Numeric_Types_Issue_58()
     {
         // https://github.com/ncalc/ncalc/issues/58
-        var expectedResult = 0;
-        var operand = "%";
-        var lhsValue = 50;
-        var rhsValue = 50;
+        const int expectedResult = 0;
+        const string operand = "%";
+        const int lhsValue = 50;
+        const int rhsValue = 50;
 
         var allTypes = new List<TypeCode>()
         {
@@ -62,7 +62,7 @@ public class MathsTests
             var toTest = allTypes.Except(shouldNotWork[typecodeA]);
             foreach (var typecodeB in toTest)
             {
-                var expr = $"x {operand} y";
+                const string expr = $"x {operand} y";
                 try
                 {
                     var result = new Expression(expr, CultureInfo.InvariantCulture)
@@ -86,7 +86,7 @@ public class MathsTests
             // These should throw exceptions
             foreach (var typecodeB in shouldNotWork[typecodeA])
             {
-                var expr = $"x {operand} y";
+                const string expr = $"x {operand} y";
                 Assert.Throws<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
                 {
                     Parameters =
@@ -139,7 +139,7 @@ public class MathsTests
             var toTest = allTypes.Except(shouldNotWork[typecodeA]);
             foreach (var typecodeB in toTest)
             {
-                var expr = $"x {operand} y";
+                const string expr = $"x {operand} y";
                 try
                 {
                     var result = new Expression(expr, CultureInfo.InvariantCulture)
@@ -216,7 +216,7 @@ public class MathsTests
             var toTest = allTypes.Except(shouldNotWork[typecodeA]);
             foreach (var typecodeB in toTest)
             {
-                var expr = $"x {operand} y";
+                const string expr = $"x {operand} y";
                 try
                 {
                     var result = new Expression(expr, CultureInfo.InvariantCulture)
@@ -241,7 +241,7 @@ public class MathsTests
 
             foreach (var typecodeB in shouldNotWork[typecodeA])
             {
-                var expr = $"x {operand} y";
+                const string expr = $"x {operand} y";
                 Assert.Throws<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
                 {
                     Parameters =

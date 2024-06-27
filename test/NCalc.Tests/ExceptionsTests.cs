@@ -28,6 +28,9 @@ public class ExceptionsTests
     [InlineData("42 a")]
     [InlineData("42 '")]
     [InlineData("Abs(-1) ]")]
+    [InlineData("42. 3")]
+    [InlineData("42 .3")]
+    [InlineData("42 . 3")]
     public void Should_Throw_Parse_Exception(string expression)
     {
         Assert.Throws<NCalcParserException>(() => new Expression(expression).Evaluate());
@@ -69,9 +72,9 @@ public class ExceptionsTests
     [Fact]
     public void Should_Throw_Exception_On_Lexer_Errors_Issue_6()
     {
-        Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#t -chers", ExpressionOptions.NoCache));
+        Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#t -chers"));
 
-        var invalidDateException = Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#13/13/2222#", ExpressionOptions.NoCache));
+        var invalidDateException = Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#13/13/2222#"));
         Assert.IsType<FormatException>(invalidDateException.InnerException);
 
         //At v4, DateTime is better handled, and this should no longer cause errors.

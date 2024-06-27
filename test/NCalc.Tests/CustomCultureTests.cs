@@ -27,7 +27,7 @@ public class CustomCultureTests
             //Correctly evaluate with decimal dot culture and parameter with dot
             Assert.Equal(expectedValue, new Expression(formula, cultureDot)
             {
-                Parameters = new Dictionary<string, object>
+                Parameters = 
                 {
                     {"A","2.0"},
                     {"B","0.5"}
@@ -37,7 +37,7 @@ public class CustomCultureTests
             //Correctly evaluate with decimal comma and parameter with comma
             Assert.Equal(expectedValue, new Expression(formula, cultureComma)
             {
-                Parameters = new Dictionary<string, object>
+                Parameters = 
                 {
                     {"A","2.0"},
                     {"B","0.5"}
@@ -47,7 +47,7 @@ public class CustomCultureTests
             //combining decimal dot and comma fails
             Assert.Throws<FormatException>(() => new Expression(formula, cultureComma)
             {
-                Parameters = new Dictionary<string, object>
+                Parameters = 
                 {
                     {"A","2,0"},
                     {"B","0.5"}
@@ -57,7 +57,7 @@ public class CustomCultureTests
             //combining decimal dot and comma fails
             Assert.Throws<FormatException>(() => new Expression(formula, cultureDot)
             {
-                Parameters = new Dictionary<string, object>
+                Parameters = 
                 {
                     {"A","2,0"},
                     {"B","0.5"}

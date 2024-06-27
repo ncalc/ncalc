@@ -7,7 +7,7 @@ namespace NCalc.Reflection;
 
 public sealed class ExtendedMethodInfo
 {
-    public MethodInfo BaseMethodInfo { get; init; }
+    public MethodInfo MethodInfo { get; init; }
     public LinqExpression[] PreparedArguments { get; init; }
     public int Score { get; init; }
 }

@@ -2,10 +2,11 @@
 
 namespace NCalc.Visitors;
 
+
 /// <summary>
-/// Default implementation of IParameterExtractionVisitor.
+/// ILogicalExpressionVisitor dedicated to extract parameters from an expression.
 /// </summary>
-public sealed class ParameterExtractionVisitor : IParameterExtractionVisitor
+public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor
 {
     public List<string> Parameters { get; } = [];
 
