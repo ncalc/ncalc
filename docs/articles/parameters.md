@@ -41,7 +41,7 @@ using the <xref:NCalc.ExpressionParameter> delegate.
   expression.Parameters["Pi2"] = new Expression("Pi * [Pi]");
   expression.Parameters["X"] = 10;
 
-expression.DynamicParameters["Pi"] = (context) => {
+expression.DynamicParameters["Pi"] = _ => {
     Console.WriteLine("I'm evaluating π!");
     return 3.14;
 };

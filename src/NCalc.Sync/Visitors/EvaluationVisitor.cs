@@ -170,7 +170,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         }
 
         var functionName = function.Identifier.Name;
-        var functionArgs = new FunctionArgs(args);
+        var functionArgs = new FunctionArgs(function.Identifier.Id, args);
         
         OnEvaluateFunction(functionName, functionArgs);
 
@@ -180,7 +180,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         }
         else if (Context.Functions.TryGetValue(functionName, out var expressionFunction))
         {
-            Result = expressionFunction(args, Context);
+            Result = expressionFunction(new(function.Identifier.Id, args, Context));
         }
         else
         {
@@ -192,7 +192,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     {
         var identifierName = identifier.Name;
 
-        var parameterArgs = new ParameterArgs();
+        var parameterArgs = new ParameterArgs(identifier.Id);
         
         OnEvaluateParameter(identifierName, parameterArgs);
         
@@ -223,7 +223,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         }
         else if (Context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
-            Result = dynamicParameter(Context);
+            Result = dynamicParameter(new(identifier.Id, Context));
         }
         else
         {

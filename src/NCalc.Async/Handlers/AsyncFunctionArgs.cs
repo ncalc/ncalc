@@ -1,7 +1,9 @@
 namespace NCalc.Handlers;
 
-public class AsyncFunctionArgs(AsyncExpression[] parameters) : EventArgs
+public class AsyncFunctionArgs(Guid id,AsyncExpression[] parameters) : EventArgs
 {
+    public Guid Id { get; } = id;
+    
     private object? _result;
 
     public object? Result
@@ -13,7 +15,7 @@ public class AsyncFunctionArgs(AsyncExpression[] parameters) : EventArgs
             HasResult = true;
         }
     }
-
+    
     public AsyncExpression[] Parameters { get; } = parameters;
     
     public bool HasResult { get;  private set; }

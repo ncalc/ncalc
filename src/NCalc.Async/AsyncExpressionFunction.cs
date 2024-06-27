@@ -1,3 +1,3 @@
 namespace NCalc;
 
-public delegate ValueTask<object?> AsyncExpressionFunction(AsyncExpression[] arguments, AsyncExpressionContext context);
+public delegate ValueTask<object?> AsyncExpressionFunction(AsyncExpressionFunctionData data);

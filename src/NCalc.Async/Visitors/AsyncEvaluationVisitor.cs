@@ -168,7 +168,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
         }
 
         var functionName = function.Identifier.Name;
-        var functionArgs = new AsyncFunctionArgs(args);
+        var functionArgs = new AsyncFunctionArgs(function.Identifier.Id, args);
         
         await OnEvaluateFunctionAsync(functionName, functionArgs);
 
@@ -178,7 +178,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
         }
         else if (Context.Functions.TryGetValue(functionName, out var expressionFunction))
         {
-            Result = await expressionFunction(args, Context);
+            Result = await expressionFunction(new(function.Identifier.Id,args, Context));
         }
         else
         {
@@ -190,7 +190,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
     {
         var identifierName = identifier.Name;
 
-        var parameterArgs = new AsyncParameterArgs();
+        var parameterArgs = new AsyncParameterArgs(identifier.Id);
         
         await OnEvaluateParameterAsync(identifierName, parameterArgs);
         
@@ -221,7 +221,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
         }
         else if (Context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
-            Result = await dynamicParameter(Context);
+            Result = await dynamicParameter(new(identifier.Id, Context));
         }
         else
         {

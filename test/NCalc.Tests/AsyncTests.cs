@@ -19,7 +19,7 @@ public class AsyncTests
     public async Task ShouldEvaluateAsyncFunction()
     {
         var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
-        expression.Functions["database_operation"] = async (_, _) => {
+        expression.Functions["database_operation"] = async (_) => {
             // My heavy database work.
             await Task.Delay(1);
 

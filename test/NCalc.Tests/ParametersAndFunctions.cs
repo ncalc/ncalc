@@ -10,7 +10,7 @@ public class ParametersAndFunctions
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.Functions["SecretOperation"] = (args, _) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
+        e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
         Assert.Equal(9, e.Evaluate());
     }
     
@@ -21,10 +21,44 @@ public class ParametersAndFunctions
         e.Parameters["e"] = 3;
         e.Parameters["f"] = 1;
 
-        e.Functions["SecretOperation"] = (args, _) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
+        e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
 
         Assert.Equal(10, e.Evaluate());
     }
+    
+    
+    [Fact]
+    public void ExpressionShouldEvaluateCustomFunctionsWithSameName()
+    {
+        var e = new Expression("SecretOperation(3, 6) + SecretOperation(1, 2)");
+
+        var d = new Dictionary<string, int>();
+
+        e.Functions["SecretOperation"] = ( args) =>
+        {
+            var id = args.Id.ToString();
+        
+                if (id != null)
+                {
+                    if (!d.ContainsKey(id))
+                    {
+                        d[id] = 3;
+                    }
+                    else
+                    {
+                        d[id]--;
+                    }
+                }
+
+            return (int)args[0].Evaluate() + (int)args[1].Evaluate();
+        };
+
+        Assert.Equal(12, e.Evaluate());
+        Assert.Equal(12, e.Evaluate());
+        
+        Assert.Equal(2, d.FirstOrDefault().Value);
+    }
+    
     
     [Fact]
     public void ExpressionShouldEvaluateCustomFunctionsWithEffects()
@@ -34,7 +68,7 @@ public class ParametersAndFunctions
         const string id = "Repeat";
         
         var times = new Dictionary<string, int>();
-        e.Functions[id] = (args, context) =>
+        e.Functions[id] = (args) =>
         {
 
             var t = (int)args[1].Evaluate() - 1;
@@ -95,7 +129,7 @@ public class ParametersAndFunctions
         }
 
 
-        object Expression_EvaluateFunction(Expression[] args, ExpressionContext context)
+        object Expression_EvaluateFunction(ExpressionFunctionData args)
         {
             counter++;
             totalCounter++;
@@ -112,7 +146,7 @@ public class ParametersAndFunctions
 
         Assert.Equal(1.99d, e.Evaluate());
 
-        e.Functions["Round"] = (_, _) => 3;
+        e.Functions["Round"] = (_) => 3;
 
         Assert.Equal(3, e.Evaluate());
     }
@@ -131,9 +165,9 @@ public class ParametersAndFunctions
     {
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
         
-        e.Functions["func1"] = (_, _) => 1;
-        e.Functions["func2"] = (arg, _) => 2 * Convert.ToDouble(arg[0].Evaluate());
-        e.Functions["func3"] = (arg, _) => 3 * Convert.ToDouble(arg[0].Evaluate());
+        e.Functions["func1"] = (_) => 1;
+        e.Functions["func2"] = (arg) => 2 * Convert.ToDouble(arg[0].Evaluate());
+        e.Functions["func3"] = (arg) => 3 * Convert.ToDouble(arg[0].Evaluate());
 
         e.DynamicParameters["x"] = _ => 1;
         e.DynamicParameters["y"] = _ => 2;
@@ -147,7 +181,7 @@ public class ParametersAndFunctions
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.Functions["SecretOperation"] = (_, _) => null;
+        e.Functions["SecretOperation"] = (_) => null;
 
         Assert.Null(e.Evaluate());
     }
@@ -170,7 +204,7 @@ public class ParametersAndFunctions
     public void ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName)
     {
         var expression = new Expression($"{functionName}(3.14)");
-        expression.Functions[functionName] = (_,_)=>1;
+        expression.Functions[functionName] = (_)=>1;
 
         Assert.Equal(1, expression.Evaluate());
     }
