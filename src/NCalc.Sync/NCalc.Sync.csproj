@@ -9,7 +9,6 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>true</ImplicitUsings>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-		<DefineConstants>$(DefineConstants.Replace("TRACE", "NOTRACE"))</DefineConstants>
 		<PackageProjectUrl>https://github.com/ncalc/ncalc</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
 		<PackageTags>ncalc; sync; expressions; math; evaluation;</PackageTags>
@@ -54,14 +53,6 @@ This package contains the unsigned assembly 'NCalc'. For the stronly signed asse
 	<ItemGroup>
 	  <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj" />
 	</ItemGroup>
-
-	<!-- Common Additional Configuration for Release Builds -->
-	<PropertyGroup Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='SignedRelease'">
-		<Deterministic>true</Deterministic>
-		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-		<Optimize>true</Optimize>
-	</PropertyGroup>
 	
 	<PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
 	  <AssemblyName>NCalc.Sync.signed</AssemblyName>
