@@ -12,7 +12,7 @@ public class SerializationTests
     [ClassData(typeof(WaterLevelCheckTestData))]
     public void SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
-        var compiled = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
+        var compiled = LogicalExpressionFactory.Create(expression);
         var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
@@ -27,7 +27,7 @@ public class SerializationTests
 
         var exp = new Expression(deserialized)
         {
-            Parameters = new Dictionary<string, object>
+            Parameters = 
             {
                 { "waterlevel", inputValue }
             }

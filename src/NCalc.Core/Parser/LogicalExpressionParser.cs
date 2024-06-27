@@ -107,7 +107,7 @@ public static class LogicalExpressionParser
                             result = (double)res;
                     }
 
-                    if (ctx is LogicalExpressionParserContext { UseDecimalsAsDefault: true })
+                    if (ctx is LogicalExpressionParserContext { ParseNumbersAsDecimal: true })
                     {
                         return new ValueExpression((decimal)result);
                     }

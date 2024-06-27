@@ -8,6 +8,8 @@
   href: values.md
 - name: Parameters
   href: parameters.md
+- name: Expression Context
+  href: expression_context.md
 - name: Handling Errors
   href: handling_errors.md
 - name: Case Sensitivity

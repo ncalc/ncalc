@@ -113,9 +113,7 @@ public static class TypeHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsReal(object? value) => value is decimal or double or float;
 
-    public record struct ComparasionOptions(CultureInfo CultureInfo, bool IsCaseInsensitive, bool IsOrdinal);
-
-    public static int CompareUsingMostPreciseType(object? a, object? b, ComparasionOptions options)
+    public static int CompareUsingMostPreciseType(object? a, object? b, ComparisonOptions options)
     {
         var (cultureInfo, isCaseInsensitiveComparer, isOrdinal) = options;
 

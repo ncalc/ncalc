@@ -27,7 +27,6 @@
 			<PackagePath>/</PackagePath>
 		</None>
 	</ItemGroup>
-	
 
 	<!-- Unsigned Assembly Configuration -->
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' ">

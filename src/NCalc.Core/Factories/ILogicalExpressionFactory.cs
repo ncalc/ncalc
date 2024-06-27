@@ -4,5 +4,5 @@ namespace NCalc.Factories;
 
 public interface ILogicalExpressionFactory
 {
-    public LogicalExpression Create(string expression, ExpressionContext? expressionContext = null);
+    public LogicalExpression Create(string expression, LogicalExpressionOptions? options = null);
 }

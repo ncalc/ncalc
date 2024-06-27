@@ -19,6 +19,37 @@ public class AsyncTests
     public async Task ShouldEvaluateAsyncFunction()
     {
         var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
+        expression.Functions["database_operation"] = async (_, _) => {
+            // My heavy database work.
+            await Task.Delay(1);
+
+            return "FOO";
+        };
+        
+        var result = await expression.EvaluateAsync();
+        Assert.Equal(true,result);
+    }
+    
+    [Fact]
+    public async Task ShouldEvaluateAsyncParameter()
+    {
+        var expression = new AsyncExpression("(a + b) == 'Leo'");
+        expression.Parameters["b"] = new AsyncExpression("'eo'");
+        expression.DynamicParameters["a"] = async _ =>
+        {
+            await Task.Delay(1);
+            return "L";
+        };
+        
+        var result = await expression.EvaluateAsync();
+        Assert.Equal(true,result);
+    }
+    
+    
+    [Fact]
+    public async Task ShouldEvaluateAsyncFunctionHandler()
+    {
+        var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
         expression.EvaluateFunctionAsync += async (name, args) =>
         {
             if (name == "database_operation")
@@ -35,7 +66,7 @@ public class AsyncTests
     }
     
     [Fact]
-    public async Task ShouldEvaluateAsyncParameter()
+    public async Task ShouldEvaluateAsyncParameterHandler()
     {
         var expression = new AsyncExpression("(a + b) == 'Leo'");
         expression.Parameters["b"] = new AsyncExpression("'eo'");
@@ -46,12 +77,13 @@ public class AsyncTests
                 args.Result = "L";
             }
 
-            return Task.CompletedTask;
+            return default;
         };
         
         var result = await expression.EvaluateAsync();
         Assert.Equal(true,result);
     }
+
     
     [Fact]
     public async Task ShouldEvaluateArrayParameters()
@@ -119,7 +151,7 @@ public class AsyncTests
     [ClassData(typeof(WaterLevelCheckTestData))]
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
-        var compiled = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
+        var compiled = LogicalExpressionFactory.Create(expression);
         var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
@@ -134,7 +166,7 @@ public class AsyncTests
 
         var exp = new AsyncExpression(deserialized)
         {
-            Parameters = new Dictionary<string, object>
+            Parameters = 
             {
                 { "waterlevel", inputValue }
             }
@@ -162,5 +194,18 @@ public class AsyncTests
     {
         var expression = new AsyncExpression(expressionString);
         Assert.Equal(hasError, expression.HasErrors());
+    }
+    
+    [Fact]
+    public void ShouldEvaluateSubExpressionsAsync()
+    {
+        var volume = new Expression("[surface] * h");
+        var surface = new Expression("[l] * [L]");
+        volume.Parameters["surface"] = surface;
+        volume.Parameters["h"] = 3;
+        surface.Parameters["l"] = 1;
+        surface.Parameters["L"] = 2;
+
+        Assert.Equal(6, volume.Evaluate());
     }
 }

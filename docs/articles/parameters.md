@@ -33,9 +33,7 @@ Expressions can be split into several ones by defining expression parameters. Th
 ## Dynamic parameters
 
 Sometimes parameters can be even more complex to evaluate and need a dedicated method to be evaluated. This can be done
-by intercepting there evaluation using the <xref:NCalc.Expression.EvaluateParameter> event published
-on <xref:NCalc.Expression> instances. Thus, each time a parameter is not defined in the dictionary, this event is called
-to try to resolve the value.
+using the <xref:NCalc.ExpressionParameter> delegate.
 
 ```c#
   var expression = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + [X], 2)");
@@ -43,11 +41,10 @@ to try to resolve the value.
   expression.Parameters["Pi2"] = new Expression("Pi * [Pi]");
   expression.Parameters["X"] = 10;
 
-  expression.EvaluateParameter += delegate(string name, ParameterArgs args)
-    {
-      if (name == "Pi")
-        args.Result = 3.14;
-    };
+expression.DynamicParameters["Pi"] = (context) => {
+    Console.WriteLine("I'm evaluating π!");
+    return 3.14;
+};
 ```
 
 ## Square brackets parameters
@@ -89,6 +86,16 @@ used, the result is a `List<object?>` made of the evaluation of each value in th
  //  0
 ```
 
+## Using Event Handlers
+You can also use event handlers to handle parameters.
+```csharp
+expression.EvaluateParameter += delegate(string name, ParameterArgs args)
+  {
+    if (name == "Pi")
+        args.Result = 3.14;
+  };
+```
+
 ## Compare with null parameters
 
 When parameter is null and <xref:NCalc.ExpressionOptions.AllowNullParameter> is used, comparison of values to null is
@@ -111,3 +118,6 @@ var expression = new Expression("'a string' == null", ExpressionOptions.AllowNul
  //  x
  //  y
 ```
+
+## Case Sensitivity
+See [case_sensitivity](case_sensitivity.md) for more info.

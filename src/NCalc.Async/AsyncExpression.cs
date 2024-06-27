@@ -1,11 +1,11 @@
 ﻿using NCalc.Cache;
 using NCalc.Domain;
 using NCalc.Exceptions;
-using NCalc.Extensions;
 using NCalc.Factories;
-using NCalc.Handlers;
 using NCalc.Visitors;
 using System.Diagnostics.CodeAnalysis;
+using NCalc.Handlers;
+using NCalc.Services;
 
 namespace NCalc;
 
@@ -16,25 +16,6 @@ public class AsyncExpression
     /// Default Value: True
     /// </summary>
     public static bool CacheEnabled { get; set; } = true;
-    
-    /// <summary>
-    /// Event triggered to handle async function evaluation.
-    /// </summary>
-    public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync
-    {
-        add => AsyncEvaluationVisitor.EvaluateFunctionAsync += value;
-        remove => AsyncEvaluationVisitor.EvaluateFunctionAsync -= value;
-    }
-
-    /// <summary>
-    /// Event triggered to handle async parameter evaluation.
-    /// </summary>
-    public event AsyncEvaluateParameterHandler? EvaluateParameterAsync
-    {
-        add => AsyncEvaluationVisitor.EvaluateParameterAsync += value;
-        remove => AsyncEvaluationVisitor.EvaluateParameterAsync -= value;
-    }
-    
     
     /// <summary>
     /// Options for the expression evaluation.
@@ -53,28 +34,50 @@ public class AsyncExpression
         get => Context.CultureInfo;
         set => Context.CultureInfo = value;
     }
-
-    private ExpressionContext _context = null!;
-
-    protected ExpressionContext Context
-    {
-        get => _context;
-        set
-        {
-            _context = value;
-            AsyncEvaluationVisitor.Context = value;
-        }
-    }
+    
+    protected AsyncExpressionContext Context { get; init; }
 
     /// <summary>
     /// Parameters for the expression evaluation.
     /// </summary>
-    public Dictionary<string, object?> Parameters
+    public IDictionary<string, object?> Parameters
     {
-        get => Context.Parameters;
-        set => Context.Parameters = value;
+        get => Context.StaticParameters;
+        set => Context.StaticParameters = value;
     }
 
+
+    public IDictionary<string, AsyncExpressionParameter> DynamicParameters
+    {
+        get => Context.DynamicParameters;
+        set => Context.DynamicParameters = value;
+    }
+    
+    public IDictionary<string, AsyncExpressionFunction> Functions
+    {
+        get => Context.Functions;
+        set => Context.Functions = value;
+    }
+    
+    
+    /// <summary>
+    /// Event triggered to handle function evaluation.
+    /// </summary>
+    public event AsyncEvaluateFunctionHandler EvaluateFunctionAsync
+    {
+        add => EvaluationService.EvaluateFunctionAsync += value;
+        remove => EvaluationService.EvaluateFunctionAsync -= value;
+    }
+    
+    /// <summary>
+    /// Event triggered to handle parameter evaluation.
+    /// </summary>
+    public event AsyncEvaluateParameterHandler EvaluateParameterAsync
+    {
+        add => EvaluationService.EvaluateParameterAsync += value;
+        remove => EvaluationService.EvaluateParameterAsync -= value;
+    }
+    
     /// <summary>
     /// Textual representation of the expression.
     /// </summary>
@@ -84,38 +87,51 @@ public class AsyncExpression
 
     public Exception? Error { get; private set; }
 
-    protected ILogicalExpressionCache LogicalExpressionCache { get; init; }
+    protected ILogicalExpressionCache LogicalExpressionCache { get;}
 
-    protected ILogicalExpressionFactory LogicalExpressionFactory { get; init; }
+    protected ILogicalExpressionFactory LogicalExpressionFactory { get; }
 
-    protected IAsyncEvaluationVisitor AsyncEvaluationVisitor { get; init; }
-    
-    protected IParameterExtractionVisitor ParameterExtractionVisitor { get; init; }
+    protected IAsyncEvaluationService EvaluationService { get; }
     
     
-    private AsyncExpression()
+    private AsyncExpression(AsyncExpressionContext? context = null)
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
         LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
-        ParameterExtractionVisitor = new ParameterExtractionVisitor();
-        AsyncEvaluationVisitor = new AsyncEvaluationVisitor();
-    }
-
-    protected AsyncExpression(
-        ILogicalExpressionFactory logicalExpressionFactory,
-        ILogicalExpressionCache logicalExpressionCache,
-        IAsyncEvaluationVisitor evaluationVisitor,
-        IParameterExtractionVisitor parameterExtractionVisitor)
-    {
-        LogicalExpressionCache = logicalExpressionCache;
-        LogicalExpressionFactory = logicalExpressionFactory;
-        AsyncEvaluationVisitor = evaluationVisitor;
-        ParameterExtractionVisitor = parameterExtractionVisitor;
-    }
-
-    public AsyncExpression(string expression, ExpressionContext? context = null) : this()
-    {
+        EvaluationService = new AsyncEvaluationService();
         Context = context ?? new();
+    }
+
+    public AsyncExpression(
+        string expression,
+        AsyncExpressionContext context,
+        ILogicalExpressionFactory factory,
+        ILogicalExpressionCache cache,
+        IAsyncEvaluationService evaluationService)
+    {
+        ExpressionString = expression;
+        Context = context;
+        LogicalExpressionCache = cache;
+        EvaluationService = evaluationService;
+        LogicalExpressionFactory = factory;
+    }
+    
+    public AsyncExpression(
+        LogicalExpression logicalExpression,
+        AsyncExpressionContext context,
+        ILogicalExpressionFactory factory,
+        ILogicalExpressionCache cache,
+        IAsyncEvaluationService evaluationService)
+    {
+        LogicalExpression = logicalExpression;
+        Context = context;
+        LogicalExpressionCache = cache;
+        EvaluationService = evaluationService;
+        LogicalExpressionFactory = factory;
+    }
+    
+    public AsyncExpression(string expression, AsyncExpressionContext? context = null) : this(context)
+    {
         ExpressionString = expression;
     }
 
@@ -127,13 +143,12 @@ public class AsyncExpression
     }
 
     public AsyncExpression(string expression, ExpressionOptions options = ExpressionOptions.None,
-        CultureInfo? cultureInfo = null) : this(expression, new ExpressionContext(options, cultureInfo))
+        CultureInfo? cultureInfo = null) : this(expression, new AsyncExpressionContext(options, cultureInfo))
     {
     }
 
-    public AsyncExpression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this()
+    public AsyncExpression(LogicalExpression logicalExpression, AsyncExpressionContext? context = null) : this(context)
     {
-        Context = context ?? new();
         LogicalExpression = logicalExpression ?? throw new
             ArgumentException("Expression can't be null", nameof(logicalExpression));
     }
@@ -145,7 +160,7 @@ public class AsyncExpression
     }
 
     public AsyncExpression(LogicalExpression logicalExpression, ExpressionOptions options = ExpressionOptions.None,
-        CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
+        CultureInfo? cultureInfo = null) : this(logicalExpression, new AsyncExpressionContext(options, cultureInfo))
     {
     }
     
@@ -185,7 +200,7 @@ public class AsyncExpression
     {
         try
         {
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Options);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -209,14 +224,13 @@ public class AsyncExpression
             throw Error;
 
         if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
-            AsyncEvaluationVisitor.Context.Parameters["null"] = null;
+            Context.StaticParameters["null"] = null;
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
             return await IterateParametersAsync();
 
-        await LogicalExpression!.AcceptAsync(AsyncEvaluationVisitor);
-        return AsyncEvaluationVisitor.Result;
+        return await EvaluationService.EvaluateAsync(LogicalExpression!, Context);
     }
     
     private async Task<List<object?>> IterateParametersAsync()
@@ -256,9 +270,8 @@ public class AsyncExpression
                     kvp.Value.MoveNext();
                     Parameters[kvp.Key] = kvp.Value.Current;
                 }
-
-                await LogicalExpression!.AcceptAsync(AsyncEvaluationVisitor);
-                results.Add(AsyncEvaluationVisitor.Result);
+                
+                results.Add(await EvaluationService.EvaluateAsync(LogicalExpression!, Context));
             }
 
             return results;
@@ -280,8 +293,9 @@ public class AsyncExpression
     /// </summary>
     public List<string> GetParametersNames()
     {
+        var parameterExtractionVisitor = new ParameterExtractionVisitor();
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
-        LogicalExpression.Accept(ParameterExtractionVisitor);
-        return ParameterExtractionVisitor.Parameters.ToList();
+        LogicalExpression.Accept(parameterExtractionVisitor);
+        return parameterExtractionVisitor.Parameters.ToList();
     }
 }

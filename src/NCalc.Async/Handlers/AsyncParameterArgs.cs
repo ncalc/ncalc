@@ -1,4 +1,4 @@
-﻿namespace NCalc.Handlers;
+namespace NCalc.Handlers;
 
 public class AsyncParameterArgs : EventArgs
 {

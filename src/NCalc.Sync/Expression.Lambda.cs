@@ -17,7 +17,7 @@ public partial class Expression
         if (LogicalExpression is null)
             throw Error!;
 
-        LambdaExpressionVistor visitor;
+        LambdaExpressionVisitor visitor;
         LinqParameterExpression? parameter = null;
         if (typeof(TContext) != typeof(Void))
         {
