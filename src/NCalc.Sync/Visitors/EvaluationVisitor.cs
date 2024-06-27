@@ -1,7 +1,9 @@
-﻿using NCalc.Domain;
+﻿using ExtendedNumerics;
+using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
+using System.Numerics;
 
 namespace NCalc.Visitors;
 
@@ -128,9 +130,22 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 break;
 
             case BinaryExpressionType.Exponentiation:
-                Result = Math.Pow(Convert.ToDouble(leftValue.Value, Context.CultureInfo),
-                    Convert.ToDouble(rightValue.Value, Context.CultureInfo));
-                break;
+                {
+                    if (Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+                    {
+                        BigDecimal @base = new BigDecimal(Convert.ToDecimal(leftValue.Value));
+                        BigInteger exponent = new BigInteger(Convert.ToDecimal(rightValue.Value));
+
+                        Result = (decimal)BigDecimal.Pow(@base, exponent);
+                    }
+                    else
+                    {
+                        Result = Math.Pow(Convert.ToDouble(leftValue.Value, Context.CultureInfo),
+                            Convert.ToDouble(rightValue.Value, Context.CultureInfo));
+                    }
+
+                    break;
+                }
         }
     }
     

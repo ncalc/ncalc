@@ -1,4 +1,6 @@
 ﻿using System.Linq.Expressions;
+using ExtendedNumerics;
+using System.Numerics;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Extensions;
@@ -131,9 +133,22 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : IAsyncLogi
                 break;
 
             case BinaryExpressionType.Exponentiation:
-                Result = Math.Pow(Convert.ToDouble(await leftValue.Value, Context.CultureInfo),
-                    Convert.ToDouble(await rightValue.Value, Context.CultureInfo));
-                break;
+                {
+                    if (Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+                    {
+                        BigDecimal @base = new BigDecimal(Convert.ToDecimal(leftValue.Value));
+                        BigInteger exponent = new BigInteger(Convert.ToDecimal(rightValue.Value));
+
+                        Result = (decimal)BigDecimal.Pow(@base, exponent);
+                    }
+                    else
+                    {
+                        Result = Math.Pow(Convert.ToDouble(await leftValue.Value, Context.CultureInfo),
+                        Convert.ToDouble(await rightValue.Value, Context.CultureInfo));
+                    }
+
+                    break;
+                }
         }
     }
 

@@ -99,4 +99,13 @@ public class DecimalsTests
         Assert.Equal(false, new Expression("0 <= -0.6").Evaluate());
     }
 
+    [Fact]
+    public void ShouldAllowPowWithDecimals()
+    {
+        var e = new Expression("3.1 ** 2", ExpressionOptions.DecimalAsDefault);
+        Assert.Equal(9.61m, e.Evaluate());
+
+        var e2 = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault);
+        Assert.Equal(9.61m, e2.Evaluate());
+    }
 }
