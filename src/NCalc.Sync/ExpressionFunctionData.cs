@@ -1,6 +1,6 @@
 namespace NCalc;
 
-public class ExpressionFunctionData(Guid id, Expression[] arguments, ExpressionContext context)
+public class ExpressionFunctionData(Guid id, Expression[] arguments, ExpressionContext context) : IEnumerable<Expression>
 {
     public Guid Id { get; } = id;
     private Expression[] Arguments { get; } = arguments;
@@ -10,5 +10,15 @@ public class ExpressionFunctionData(Guid id, Expression[] arguments, ExpressionC
     {
         get => Arguments[index];
         set => Arguments[index] = value;
+    }
+    
+    public IEnumerator<Expression> GetEnumerator()
+    {
+        return ((IEnumerable<Expression>)Arguments).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return Arguments.GetEnumerator();
     }
 }
