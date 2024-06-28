@@ -27,4 +27,11 @@
     <Using Include="System.Globalization" />
     <Using Include="System.Linq" />
   </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='SignedRelease'">
+    <Deterministic>true</Deterministic>
+    <DefineConstants>$(DefineConstants.Replace("TRACE", "NOTRACE"))</DefineConstants>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
 </Project>

@@ -1,4 +1,7 @@
-﻿namespace NCalc.Helpers;
+﻿using ExtendedNumerics;
+using System.Numerics;
+
+namespace NCalc.Helpers;
 
 /// <summary>
 /// Utilities for doing mathematical operations between different object types.
@@ -407,6 +410,15 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
+
+        if (options.UseDecimals)
+        {
+            BigDecimal @base = new BigDecimal(Convert.ToDecimal(a));
+            BigInteger exponent = new BigInteger(Convert.ToDecimal(b));
+
+            return (decimal)BigDecimal.Pow(@base, exponent);
+        }
+
         return Math.Pow(Convert.ToDouble(a), Convert.ToDouble(b));
     }
 
