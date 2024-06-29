@@ -18,12 +18,12 @@ public class AsyncFunctionArgs(AsyncExpression[] parameters) : EventArgs
     
     public bool HasResult { get;  private set; }
 
-    public object?[] EvaluateParameters()
+    public async Task<object?[]> EvaluateParametersAsync()
     {
         var values = new object?[Parameters.Length];
         for (var i = 0; i < values.Length; i++)
         {
-            values[i] = Parameters[i].EvaluateAsync();
+            values[i] = await Parameters[i].EvaluateAsync();
         }
 
         return values;
