@@ -7,32 +7,33 @@ using System.Numerics;
 
 namespace NCalc.Visitors;
 
-public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor
+public interface IEvaluationVisitor : ILogicalExpressionVisitor<object?>
+{
+    public event EvaluateFunctionHandler? EvaluateFunction;
+    public event EvaluateParameterHandler? EvaluateParameter;
+}
+
+public class EvaluationVisitor(ExpressionContext context) : IEvaluationVisitor
 {
     public event EvaluateFunctionHandler? EvaluateFunction;
     public event EvaluateParameterHandler? EvaluateParameter;
     
     public ExpressionContext Context { get; } = context;
 
-    public object? Result { get; protected set; }
-
-    public void Visit(TernaryExpression expression)
+    public object? Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
-        expression.LeftExpression.Accept(this);
-        var left = Convert.ToBoolean(Result, Context.CultureInfo);
+        var left = Convert.ToBoolean(expression.LeftExpression.Accept(this), Context.CultureInfo);
 
         if (left)
         {
-            expression.MiddleExpression.Accept(this);
+            return expression.MiddleExpression.Accept(this);
         }
-        else
-        {
-            expression.RightExpression.Accept(this);
-        }
+
+        return expression.RightExpression.Accept(this);
     }
 
-    public void Visit(BinaryExpression expression)
+    public object? Visit(BinaryExpression expression)
     {
         var leftValue = new Lazy<object?>(() => Evaluate(expression.LeftExpression));
         var rightValue = new Lazy<object?>(() => Evaluate(expression.RightExpression));
@@ -40,136 +41,117 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         switch (expression.Type)
         {
             case BinaryExpressionType.And:
-                Result = Convert.ToBoolean(leftValue.Value, Context.CultureInfo) &&
+                return Convert.ToBoolean(leftValue.Value, Context.CultureInfo) &&
                          Convert.ToBoolean(rightValue.Value, Context.CultureInfo);
-                break;
+                
 
             case BinaryExpressionType.Or:
-                Result = Convert.ToBoolean(leftValue.Value, Context.CultureInfo) ||
+                return Convert.ToBoolean(leftValue.Value, Context.CultureInfo) ||
                          Convert.ToBoolean(rightValue.Value, Context.CultureInfo);
-                break;
+                
 
             case BinaryExpressionType.Div:
-                Result = TypeHelper.IsReal(leftValue.Value) || TypeHelper.IsReal(rightValue.Value)
+                return TypeHelper.IsReal(leftValue.Value) || TypeHelper.IsReal(rightValue.Value)
                     ? MathHelper.Divide(leftValue.Value, rightValue.Value, Context)
                     : MathHelper.Divide(Convert.ToDouble(leftValue.Value, Context.CultureInfo), rightValue.Value,
                         Context);
-                break;
+                
 
             case BinaryExpressionType.Equal:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) == 0;
-                break;
+                return CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) == 0;
+                
 
             case BinaryExpressionType.Greater:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) > 0;
-                break;
+                return CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) > 0;
+                
 
             case BinaryExpressionType.GreaterOrEqual:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) >= 0;
-                break;
+                return CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) >= 0;
+                
 
             case BinaryExpressionType.Lesser:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) < 0;
-                break;
+                return CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) < 0;
+                
 
             case BinaryExpressionType.LesserOrEqual:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) <= 0;
-                break;
+                return CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) <= 0;
+                
 
             case BinaryExpressionType.Minus:
-                Result = MathHelper.Subtract(leftValue.Value, rightValue.Value, Context);
-                break;
+                return MathHelper.Subtract(leftValue.Value, rightValue.Value, Context);
+                
 
             case BinaryExpressionType.Modulo:
-                Result = MathHelper.Modulo(leftValue.Value, rightValue.Value, Context);
-                break;
+                return MathHelper.Modulo(leftValue.Value, rightValue.Value, Context);
+                
 
             case BinaryExpressionType.NotEqual:
-                Result = CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) != 0;
-                break;
+                return CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) != 0;
+                
 
             case BinaryExpressionType.Plus:
-                if (leftValue.Value is string)
-                {
-                    Result = string.Concat(leftValue.Value, rightValue.Value);
-                }
-                else
-                {
-                    Result = MathHelper.Add(leftValue.Value, rightValue.Value, Context);
-                }
-
-                break;
-
+                return leftValue.Value is string ? string.Concat(leftValue.Value, rightValue.Value) : MathHelper.Add(leftValue.Value, rightValue.Value, Context);
             case BinaryExpressionType.Times:
-                Result = MathHelper.Multiply(leftValue.Value, rightValue.Value, Context);
-                break;
+                return MathHelper.Multiply(leftValue.Value, rightValue.Value, Context);
+                
 
             case BinaryExpressionType.BitwiseAnd:
-                Result = Convert.ToUInt64(leftValue.Value, Context.CultureInfo) &
+                return Convert.ToUInt64(leftValue.Value, Context.CultureInfo) &
 						 Convert.ToUInt64(rightValue.Value, Context.CultureInfo);
-                break;
+                
 
             case BinaryExpressionType.BitwiseOr:
-                Result = Convert.ToUInt64(leftValue.Value, Context.CultureInfo) |
+                return Convert.ToUInt64(leftValue.Value, Context.CultureInfo) |
 						 Convert.ToUInt64(rightValue.Value, Context.CultureInfo);
-                break;
+                
 
             case BinaryExpressionType.BitwiseXOr:
-                Result = Convert.ToUInt64(leftValue.Value, Context.CultureInfo) ^
+                return Convert.ToUInt64(leftValue.Value, Context.CultureInfo) ^
 						 Convert.ToUInt64(rightValue.Value, Context.CultureInfo);
-                break;
+                
 
             case BinaryExpressionType.LeftShift:
-                Result = Convert.ToUInt64(leftValue.Value, Context.CultureInfo) <<
+                return Convert.ToUInt64(leftValue.Value, Context.CultureInfo) <<
 						 Convert.ToInt32(rightValue.Value, Context.CultureInfo);
-                break;
+                
 
             case BinaryExpressionType.RightShift:
-                Result = Convert.ToUInt64(leftValue.Value, Context.CultureInfo) >>
+                return Convert.ToUInt64(leftValue.Value, Context.CultureInfo) >>
 						 Convert.ToInt32(rightValue.Value, Context.CultureInfo);
-                break;
-
+            
             case BinaryExpressionType.Exponentiation:
-                {
-                    if (Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
-                    {
-                        BigDecimal @base = new BigDecimal(Convert.ToDecimal(leftValue.Value));
-                        BigInteger exponent = new BigInteger(Convert.ToDecimal(rightValue.Value));
+            {
+                if (!Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+                    return Math.Pow(Convert.ToDouble(leftValue.Value, Context.CultureInfo),
+                        Convert.ToDouble(rightValue.Value, Context.CultureInfo));
+                BigDecimal @base = new BigDecimal(Convert.ToDecimal(leftValue.Value));
+                BigInteger exponent = new BigInteger(Convert.ToDecimal(rightValue.Value));
 
-                        Result = (decimal)BigDecimal.Pow(@base, exponent);
-                    }
-                    else
-                    {
-                        Result = Math.Pow(Convert.ToDouble(leftValue.Value, Context.CultureInfo),
-                            Convert.ToDouble(rightValue.Value, Context.CultureInfo));
-                    }
-
-                    break;
-                }
+                return (decimal)BigDecimal.Pow(@base, exponent);
+            }
         }
+
+        return null;
     }
     
-    public void Visit(UnaryExpression expression)
+    public object? Visit(UnaryExpression expression)
     {
         // Recursively evaluates the underlying expression
-        expression.Expression.Accept(this);
+        var result = expression.Expression.Accept(this);
 
-        Result = expression.Type switch
+        return expression.Type switch
         {
-            UnaryExpressionType.Not => !Convert.ToBoolean(Result, Context.CultureInfo),
-            UnaryExpressionType.Negate => MathHelper.Subtract(0, Result, Context),
-            UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(Result, Context.CultureInfo),
-            UnaryExpressionType.Positive => Result,
+            UnaryExpressionType.Not => !Convert.ToBoolean(result, Context.CultureInfo),
+            UnaryExpressionType.Negate => MathHelper.Subtract(0, result, Context),
+            UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, Context.CultureInfo),
+            UnaryExpressionType.Positive => result,
             _ => throw new InvalidOperationException("Unknown UnaryExpressionType")
         };
     }
 
-    public void Visit(ValueExpression expression)
-    {
-        Result = expression.Value;
-    }
+    public object? Visit(ValueExpression expression) => expression.Value;
 
-    public void Visit(Function function)
+    public object? Visit(Function function)
     {
         var argsCount = function.Expressions.Length;
         var args = new Expression[argsCount];
@@ -191,19 +173,18 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
         if (functionArgs.HasResult)
         {
-            Result = functionArgs.Result;
+            return functionArgs.Result;
         }
-        else if (Context.Functions.TryGetValue(functionName, out var expressionFunction))
+
+        if (Context.Functions.TryGetValue(functionName, out var expressionFunction))
         {
-            Result = expressionFunction(new(function.Identifier.Id, args, Context));
+            return expressionFunction(new(function.Identifier.Id, args, Context));
         }
-        else
-        {
-            Result = BuiltInFunctionHelper.Evaluate(functionName, args, Context);
-        }
+
+        return BuiltInFunctionHelper.Evaluate(functionName, args, Context);
     }
     
-    public void Visit(Identifier identifier)
+    public object? Visit(Identifier identifier)
     {
         var identifierName = identifier.Name;
 
@@ -213,9 +194,10 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         
         if (parameterArgs.HasResult)
         {
-            Result = parameterArgs.Result;
+            return parameterArgs.Result;
         }
-        else if (Context.StaticParameters.TryGetValue(identifierName, out var parameter))
+
+        if (Context.StaticParameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
@@ -229,21 +211,18 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 expression.EvaluateFunction += EvaluateFunction;
                 expression.EvaluateParameter += EvaluateParameter;
                 
-                Result = expression.Evaluate();
+                return expression.Evaluate();
             }
-            else
-            {
-                Result = parameter;
-            }
+
+            return parameter;
         }
-        else if (Context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+
+        if (Context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
-            Result = dynamicParameter(new(identifier.Id, Context));
+            return dynamicParameter(new(identifier.Id, Context));
         }
-        else
-        {
-            throw new NCalcParameterNotDefinedException(identifierName);
-        }
+
+        throw new NCalcParameterNotDefinedException(identifierName);
     }
     
     protected int CompareUsingMostPreciseType(object? a, object? b)
@@ -261,7 +240,6 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     
     private object? Evaluate(LogicalExpression expression)
     {
-        expression.Accept(this);
-        return Result;
+        return expression.Accept(this);
     }
 }

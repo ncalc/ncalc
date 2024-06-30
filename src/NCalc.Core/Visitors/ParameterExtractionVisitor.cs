@@ -2,47 +2,53 @@
 
 namespace NCalc.Visitors;
 
-
 /// <summary>
 /// ILogicalExpressionVisitor dedicated to extract parameters from an expression.
 /// </summary>
-public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor
+public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<string>>
 {
-    public List<string> Parameters { get; } = [];
-
-    public void Visit(Identifier identifier)
+    public List<string> Visit(Identifier identifier)
     {
-        if (!Parameters.Contains(identifier.Name))
+        var parameters = new List<string>();
+        if (!parameters.Contains(identifier.Name))
         {
-            Parameters.Add(identifier.Name);
+            parameters.Add(identifier.Name);
         }
+        return parameters;
     }
 
-    public void Visit(UnaryExpression expression)
+    public List<string> Visit(UnaryExpression expression) => expression.Expression.Accept(this);
+
+    public List<string> Visit(BinaryExpression expression)
     {
-        expression.Expression.Accept(this);
+        var leftParameters = expression.LeftExpression.Accept(this);
+        var rightParameters = expression.RightExpression.Accept(this);
+
+        leftParameters.AddRange(rightParameters);
+        return leftParameters.Distinct().ToList();
     }
 
-    public void Visit(BinaryExpression expression)
+    public List<string> Visit(TernaryExpression expression)
     {
-        expression.LeftExpression.Accept(this);
-        expression.RightExpression.Accept(this);
+        var leftParameters = expression.LeftExpression.Accept(this);
+        var middleParameters = expression.MiddleExpression.Accept(this);
+        var rightParameters = expression.RightExpression.Accept(this);
+
+        leftParameters.AddRange(middleParameters);
+        leftParameters.AddRange(rightParameters);
+        return leftParameters.Distinct().ToList();
     }
 
-    public void Visit(TernaryExpression expression)
+    public List<string> Visit(Function function)
     {
-        expression.LeftExpression.Accept(this);
-        expression.RightExpression.Accept(this);
-        expression.MiddleExpression.Accept(this);
-    }
-
-    public void Visit(Function function)
-    {
+        var parameters = new List<string>();
         foreach (var expression in function.Expressions)
-            expression.Accept(this);
+        {
+            var exprParameters = expression.Accept(this);
+            parameters.AddRange(exprParameters);
+        }
+        return parameters.Distinct().ToList();
     }
 
-    public void Visit(ValueExpression expression)
-    {
-    }
+    public List<string> Visit(ValueExpression expression) => [];
 }

@@ -1,14 +1,13 @@
-
 using NCalc.Domain;
 
 namespace NCalc.Visitors;
 
-public interface ILogicalExpressionVisitor
+public interface ILogicalExpressionVisitor<out T>
 {
-    public void Visit(TernaryExpression expression);
-    public void Visit(BinaryExpression expression);
-    public void Visit(UnaryExpression expression);
-    public void Visit(ValueExpression expression);
-    public void Visit(Function function);
-    public void Visit(Identifier identifier);
+    T Visit(TernaryExpression expression);
+    T Visit(BinaryExpression expression);
+    T Visit(UnaryExpression expression);
+    T Visit(ValueExpression expression);
+    T Visit(Function function);
+    T Visit(Identifier identifier);
 }

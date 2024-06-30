@@ -3,200 +3,175 @@ using ValueType = NCalc.Domain.ValueType;
 
 namespace NCalc.Visitors;
 
-public class SerializationVisitor : ILogicalExpressionVisitor
+public class SerializationVisitor : ILogicalExpressionVisitor<string>
 {
     private readonly NumberFormatInfo _numberFormatInfo = new()
     {
         NumberDecimalSeparator = "."
     };
 
-    public StringBuilder Result { get; } = new();
-
-    public void Visit(TernaryExpression expression)
+    public string Visit(TernaryExpression expression)
     {
-        EncapsulateNoValue(expression.LeftExpression);
-
-        Result.Append("? ");
-
-        EncapsulateNoValue(expression.MiddleExpression);
-
-        Result.Append(": ");
-
-        EncapsulateNoValue(expression.RightExpression);
+        var result = new StringBuilder();
+        result.Append(EncapsulateNoValue(expression.LeftExpression));
+        result.Append("? ");
+        result.Append(EncapsulateNoValue(expression.MiddleExpression));
+        result.Append(": ");
+        result.Append(EncapsulateNoValue(expression.RightExpression));
+        return result.ToString().Trim();
     }
 
-    public void Visit(BinaryExpression expression)
+    public string Visit(BinaryExpression expression)
     {
-        EncapsulateNoValue(expression.LeftExpression);
+        var result = new StringBuilder();
+        result.Append(EncapsulateNoValue(expression.LeftExpression));
 
         switch (expression.Type)
         {
             case BinaryExpressionType.And:
-                Result.Append("and ");
+                result.Append("and ");
                 break;
-
             case BinaryExpressionType.Or:
-                Result.Append("or ");
+                result.Append("or ");
                 break;
-
             case BinaryExpressionType.Div:
-                Result.Append("/ ");
+                result.Append("/ ");
                 break;
-
             case BinaryExpressionType.Equal:
-                Result.Append("= ");
+                result.Append("= ");
                 break;
-
             case BinaryExpressionType.Greater:
-                Result.Append("> ");
+                result.Append("> ");
                 break;
-
             case BinaryExpressionType.GreaterOrEqual:
-                Result.Append(">= ");
+                result.Append(">= ");
                 break;
-
             case BinaryExpressionType.Lesser:
-                Result.Append("< ");
+                result.Append("< ");
                 break;
-
             case BinaryExpressionType.LesserOrEqual:
-                Result.Append("<= ");
+                result.Append("<= ");
                 break;
-
             case BinaryExpressionType.Minus:
-                Result.Append("- ");
+                result.Append("- ");
                 break;
-
             case BinaryExpressionType.Modulo:
-                Result.Append("% ");
+                result.Append("% ");
                 break;
-
             case BinaryExpressionType.NotEqual:
-                Result.Append("!= ");
+                result.Append("!= ");
                 break;
-
             case BinaryExpressionType.Plus:
-                Result.Append("+ ");
+                result.Append("+ ");
                 break;
-
             case BinaryExpressionType.Times:
-                Result.Append("* ");
+                result.Append("* ");
                 break;
-
             case BinaryExpressionType.BitwiseAnd:
-                Result.Append("& ");
+                result.Append("& ");
                 break;
-
             case BinaryExpressionType.BitwiseOr:
-                Result.Append("| ");
+                result.Append("| ");
                 break;
-
             case BinaryExpressionType.BitwiseXOr:
-                Result.Append("^ ");
+                result.Append("^ ");
                 break;
-
             case BinaryExpressionType.LeftShift:
-                Result.Append("<< ");
+                result.Append("<< ");
                 break;
-
             case BinaryExpressionType.RightShift:
-                Result.Append(">> ");
+                result.Append(">> ");
                 break;
         }
 
-        EncapsulateNoValue(expression.RightExpression);
+        result.Append(EncapsulateNoValue(expression.RightExpression));
+        return result.ToString().Trim();
     }
 
-    public void Visit(UnaryExpression expression)
+    public string Visit(UnaryExpression expression)
     {
+        var result = new StringBuilder();
+
         switch (expression.Type)
         {
             case UnaryExpressionType.Not:
-                Result.Append('!');
+                result.Append('!');
                 break;
-
             case UnaryExpressionType.Negate:
-                Result.Append('-');
+                result.Append('-');
                 break;
-
             case UnaryExpressionType.BitwiseNot:
-                Result.Append('~');
+                result.Append('~');
                 break;
         }
 
-        EncapsulateNoValue(expression.Expression);
+        result.Append(EncapsulateNoValue(expression.Expression));
+        return result.ToString().Trim();
     }
 
-    public void Visit(ValueExpression expression)
+    public string Visit(ValueExpression expression)
     {
+        var result = new StringBuilder();
+
         switch (expression.Type)
         {
             case ValueType.Boolean:
-                Result.Append(expression.Value).Append(' ');
+                result.Append(expression.Value).Append(' ');
                 break;
-
             case ValueType.DateTime or ValueType.TimeSpan:
-                Result.Append('#').Append(expression.Value).Append('#').Append(' ');
+                result.Append('#').Append(expression.Value).Append('#').Append(' ');
                 break;
             case ValueType.Float:
-                Result.Append(decimal.Parse(expression.Value?.ToString() ?? string.Empty).ToString(_numberFormatInfo))
+                result.Append(decimal.Parse(expression.Value?.ToString() ?? string.Empty).ToString(_numberFormatInfo))
                     .Append(' ');
                 break;
-
             case ValueType.Integer:
-                Result.Append(expression.Value).Append(' ');
+                result.Append(expression.Value).Append(' ');
                 break;
-
             case ValueType.String:
-                Result.Append('\'').Append(expression.Value).Append('\'').Append(' ');
+                result.Append('\'').Append(expression.Value).Append('\'').Append(' ');
                 break;
         }
+
+        return result.ToString().Trim();
     }
 
-    public void Visit(Function function)
+    public string Visit(Function function)
     {
-        Result.Append(function.Identifier.Name);
-
-        Result.Append('(');
+        var result = new StringBuilder();
+        result.Append(function.Identifier.Name).Append('(');
 
         for (int i = 0; i < function.Expressions.Length; i++)
         {
-            function.Expressions[i].Accept(this);
+            result.Append(function.Expressions[i].Accept(this));
             if (i < function.Expressions.Length - 1)
             {
-                Result.Remove(Result.Length - 1, 1);
-                Result.Append(", ");
+                result.Append(", ");
             }
         }
 
-        // trim spaces before adding a closing paren
-        while (Result[^1] == ' ')
-            Result.Remove(Result.Length - 1, 1);
-
-        Result.Append(") ");
+        result.Append(") ");
+        return result.ToString().Trim();
     }
 
-    public void Visit(Identifier identifier)
+    public string Visit(Identifier identifier)
     {
-        Result.Append('[').Append(identifier.Name).Append("] ");
+        var result = new StringBuilder();
+        result.Append('[').Append(identifier.Name).Append("] ");
+        return result.ToString().Trim();
     }
 
-    protected virtual void EncapsulateNoValue(LogicalExpression expression)
+    protected virtual string EncapsulateNoValue(LogicalExpression expression)
     {
-        if (expression is ValueExpression)
+        if (expression is ValueExpression valueExpression)
         {
-            expression.Accept(this);
+            return valueExpression.Accept(this);
         }
-        else
-        {
-            Result.Append('(');
-            expression.Accept(this);
 
-            // trim spaces before adding a closing paren
-            while (Result[^1] == ' ')
-                Result.Remove(Result.Length - 1, 1);
-
-            Result.Append(") ");
-        }
+        var result = new StringBuilder();
+        result.Append('(');
+        result.Append(expression.Accept(this));
+        result.Append(") ");
+        return result.ToString().Trim();
     }
 }

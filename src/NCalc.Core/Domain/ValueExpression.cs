@@ -86,8 +86,8 @@ public sealed class ValueExpression : LogicalExpression
         Type = ValueType.Boolean;
     }
 
-    public override void Accept(ILogicalExpressionVisitor visitor)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
     {
-        visitor.Visit(this);
+        return visitor.Visit(this);
     }
 }

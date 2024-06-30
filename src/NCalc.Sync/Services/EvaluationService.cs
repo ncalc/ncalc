@@ -16,7 +16,6 @@ public class EvaluationService : IEvaluationService
         visitor.EvaluateFunction += EvaluateFunction;
         visitor.EvaluateParameter += EvaluateParameter;
         
-        expression.Accept(visitor);
-        return visitor.Result;
+        return expression.Accept(visitor);
     }
 }

@@ -8,8 +8,8 @@ public sealed class Function(Identifier identifier, LogicalExpression[] expressi
 
     public LogicalExpression[] Expressions { get; set; } = expressions;
 
-    public override void Accept(ILogicalExpressionVisitor visitor)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
     {
-        visitor.Visit(this);
+        return visitor.Visit(this);
     }
 }

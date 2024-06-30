@@ -8,8 +8,8 @@ public sealed class UnaryExpression(UnaryExpressionType type, LogicalExpression 
 
     public UnaryExpressionType Type { get; set; } = type;
 
-    public override void Accept(ILogicalExpressionVisitor visitor)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
     {
-        visitor.Visit(this);
+        return visitor.Visit(this);
     }
 }

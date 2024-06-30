@@ -294,8 +294,8 @@ public partial class Expression
     {
         var parameterExtractionVisitor = new ParameterExtractionVisitor();
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
-        LogicalExpression.Accept(parameterExtractionVisitor);
-        return parameterExtractionVisitor.Parameters.ToList();
+        return LogicalExpression.Accept(parameterExtractionVisitor);
+
     }
     
 }
