@@ -6,8 +6,6 @@ NCalc is a mathematical expression evaluator in .NET. NCalc can parse any expres
 
 NCalc is a mathematical expression evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
-For additional information on the technique we used to create this framework please read this article: http://www.codeproject.com/KB/recipes/sota_expression_evaluator.aspx.
-
 ## Table of Contents
 - [Operators](operators.md): Available standard operators and structures.
 - [Values](values.md): Authorized values like types and functions.
@@ -20,25 +18,8 @@ For additional information on the technique we used to create this framework ple
 - [Caching](caching.md): How caching works.
 - [Improve performance](lambda_compilation.md): How to use compilation of expressions to CLR lambdas.
 - [Dependency Injection](dependency_injection.md): Bring expressions to the next level with dependency injection.
+- [Architecture](architecture.md): Check this article to learn how NCalc works.
 - [Benchmarks](benchmarks.md): Check some numbers about the speed of some NCalc components.
-
-## <xref:NCalc.Expression>
-This is the main class of NCalc.
-The method <xref:NCalc.Expression.Evaluate> returns the actual value of its <xref:System.String> representation.
-
-Example:
-
-```c#
-  var expression = new Expression("2 * 3");
-  object result = expression.Evaluate();
-  
-  Console.WriteLine(result);
-```
-
-This example above first creates an instance of <xref:NCalc.Expression> using a valued constructor. This constructor takes a <xref:System.String> as parameter.
-Then the method <xref:NCalc.Expression.Evaluate> is called to parse the <xref:System.String>, and returns the actual value represented by the <xref:System.String>.
-
-To create expressions you can combine several [Operators](operators.md) and [Values](values.md).
 
 ## Functionalities
 
@@ -102,7 +83,6 @@ expression.DynamicParameters["Pi"] = _ => {
 
 Debug.Assert(117.07 == expression.Evaluate());
 ```
-
 
 ### Lambda Expressions
 ```cs

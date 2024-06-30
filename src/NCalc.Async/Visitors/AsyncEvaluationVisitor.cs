@@ -9,16 +9,19 @@ using UnaryExpression = NCalc.Domain.UnaryExpression;
 
 namespace NCalc.Visitors;
 
+/// <summary>
+/// Class responsible to asynchronous evaluating <see cref="LogicalExpression"/> objects into CLR objects.
+/// </summary>
+/// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
 public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalExpressionVisitor<Task<object?>>
 {
     public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync;
     public event AsyncEvaluateParameterHandler? EvaluateParameterAsync;
-    public AsyncExpressionContext Context { get; } = context;
 
     public async Task<object?> Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
-        var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this), Context.CultureInfo);
+        var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this), context.CultureInfo);
 
         if (left)
         {
@@ -36,18 +39,18 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         switch (expression.Type)
         {
             case BinaryExpressionType.And:
-                return Convert.ToBoolean(await leftValue.Value, Context.CultureInfo) &&
-                       Convert.ToBoolean(await rightValue.Value, Context.CultureInfo);
+                return Convert.ToBoolean(await leftValue.Value, context.CultureInfo) &&
+                       Convert.ToBoolean(await rightValue.Value, context.CultureInfo);
 
             case BinaryExpressionType.Or:
-                return Convert.ToBoolean(await leftValue.Value, Context.CultureInfo) ||
-                       Convert.ToBoolean(await rightValue.Value, Context.CultureInfo);
+                return Convert.ToBoolean(await leftValue.Value, context.CultureInfo) ||
+                       Convert.ToBoolean(await rightValue.Value, context.CultureInfo);
             case BinaryExpressionType.Div:
                 return TypeHelper.IsReal(await leftValue.Value) || TypeHelper.IsReal(await rightValue.Value)
-                    ? MathHelper.Divide(await leftValue.Value, await rightValue.Value, Context)
-                    : MathHelper.Divide(Convert.ToDouble(await leftValue.Value, Context.CultureInfo),
+                    ? MathHelper.Divide(await leftValue.Value, await rightValue.Value, context)
+                    : MathHelper.Divide(Convert.ToDouble(await leftValue.Value, context.CultureInfo),
                         await rightValue.Value,
-                        Context);
+                        context);
 
             case BinaryExpressionType.Equal:
                 return CompareUsingMostPreciseType(await leftValue.Value, await rightValue.Value) == 0;
@@ -70,11 +73,11 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
 
             case BinaryExpressionType.Minus:
-                return MathHelper.Subtract(await leftValue.Value, await rightValue.Value, Context);
+                return MathHelper.Subtract(await leftValue.Value, await rightValue.Value, context);
 
 
             case BinaryExpressionType.Modulo:
-                return MathHelper.Modulo(await leftValue.Value, await rightValue.Value, Context);
+                return MathHelper.Modulo(await leftValue.Value, await rightValue.Value, context);
 
 
             case BinaryExpressionType.NotEqual:
@@ -87,41 +90,41 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                     return string.Concat(await leftValue.Value, await rightValue.Value);
                 }
 
-                return MathHelper.Add(await leftValue.Value, await rightValue.Value, Context);
+                return MathHelper.Add(await leftValue.Value, await rightValue.Value, context);
 
 
             case BinaryExpressionType.Times:
-                return MathHelper.Multiply(await leftValue.Value, await rightValue.Value, Context);
+                return MathHelper.Multiply(await leftValue.Value, await rightValue.Value, context);
 
 
             case BinaryExpressionType.BitwiseAnd:
-                return Convert.ToUInt64(await leftValue.Value, Context.CultureInfo) &
-                       Convert.ToUInt64(await rightValue.Value, Context.CultureInfo);
+                return Convert.ToUInt64(await leftValue.Value, context.CultureInfo) &
+                       Convert.ToUInt64(await rightValue.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.BitwiseOr:
-                return Convert.ToUInt64(await leftValue.Value, Context.CultureInfo) |
-                       Convert.ToUInt64(await rightValue.Value, Context.CultureInfo);
+                return Convert.ToUInt64(await leftValue.Value, context.CultureInfo) |
+                       Convert.ToUInt64(await rightValue.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.BitwiseXOr:
-                return Convert.ToUInt64(await leftValue.Value, Context.CultureInfo) ^
-                       Convert.ToUInt64(await rightValue.Value, Context.CultureInfo);
+                return Convert.ToUInt64(await leftValue.Value, context.CultureInfo) ^
+                       Convert.ToUInt64(await rightValue.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.LeftShift:
-                return Convert.ToUInt64(await leftValue.Value, Context.CultureInfo) <<
-                       Convert.ToInt32(await rightValue.Value, Context.CultureInfo);
+                return Convert.ToUInt64(await leftValue.Value, context.CultureInfo) <<
+                       Convert.ToInt32(await rightValue.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.RightShift:
-                return Convert.ToUInt64(await leftValue.Value, Context.CultureInfo) >>
-                       Convert.ToInt32(await rightValue.Value, Context.CultureInfo);
+                return Convert.ToUInt64(await leftValue.Value, context.CultureInfo) >>
+                       Convert.ToInt32(await rightValue.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.Exponentiation:
             {
-                if (Context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+                if (context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
                 {
                     BigDecimal @base = new BigDecimal(Convert.ToDecimal(leftValue.Value));
                     BigInteger exponent = new BigInteger(Convert.ToDecimal(rightValue.Value));
@@ -129,8 +132,8 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                     return (decimal)BigDecimal.Pow(@base, exponent);
                 }
 
-                return Math.Pow(Convert.ToDouble(await leftValue.Value, Context.CultureInfo),
-                    Convert.ToDouble(await rightValue.Value, Context.CultureInfo));
+                return Math.Pow(Convert.ToDouble(await leftValue.Value, context.CultureInfo),
+                    Convert.ToDouble(await rightValue.Value, context.CultureInfo));
             }
         }
 
@@ -144,9 +147,9 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
         return expression.Type switch
         {
-            UnaryExpressionType.Not => !Convert.ToBoolean(result, Context.CultureInfo),
-            UnaryExpressionType.Negate => MathHelper.Subtract(0, result, Context),
-            UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, Context.CultureInfo),
+            UnaryExpressionType.Not => !Convert.ToBoolean(result, context.CultureInfo),
+            UnaryExpressionType.Negate => MathHelper.Subtract(0, result, context),
+            UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, context.CultureInfo),
             UnaryExpressionType.Positive => result,
             _ => throw new InvalidOperationException("Unknown UnaryExpressionType")
         };
@@ -162,7 +165,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         // Evaluating every value could produce unexpected behaviour
         for (var i = 0; i < argsCount; i++)
         {
-            args[i] = new AsyncExpression(function.Expressions[i], Context);
+            args[i] = new AsyncExpression(function.Expressions[i], context);
             args[i].EvaluateParameterAsync += EvaluateParameterAsync;
             args[i].EvaluateFunctionAsync += EvaluateFunctionAsync;
         }
@@ -177,12 +180,12 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             return functionArgs.Result;
         }
 
-        if (Context.Functions.TryGetValue(functionName, out var expressionFunction))
+        if (context.Functions.TryGetValue(functionName, out var expressionFunction))
         {
-            return await expressionFunction(new(function.Identifier.Id, args, Context));
+            return await expressionFunction(new(function.Identifier.Id, args, context));
         }
 
-        return await AsyncBuiltInFunctionHelper.EvaluateAsync(functionName, args, Context);
+        return await AsyncBuiltInFunctionHelper.EvaluateAsync(functionName, args, context);
     }
 
     public async Task<object?> Visit(Identifier identifier)
@@ -198,15 +201,15 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             return parameterArgs.Result;
         }
 
-        if (Context.StaticParameters.TryGetValue(identifierName, out var parameter))
+        if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is AsyncExpression expression)
             {
                 //Share the parameters with child expression.
-                foreach (var p in Context.StaticParameters)
+                foreach (var p in context.StaticParameters)
                     expression.Parameters[p.Key] = p.Value;
 
-                foreach (var p in Context.DynamicParameters)
+                foreach (var p in context.DynamicParameters)
                     expression.DynamicParameters[p.Key] = p.Value;
 
                 expression.EvaluateFunctionAsync += EvaluateFunctionAsync;
@@ -218,9 +221,9 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             return parameter;
         }
 
-        if (Context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
-            return await dynamicParameter(new(identifier.Id, Context));
+            return await dynamicParameter(new(identifier.Id, context));
         }
 
         throw new NCalcParameterNotDefinedException(identifierName);
@@ -230,7 +233,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     protected int CompareUsingMostPreciseType(object? a, object? b)
     {
-        return TypeHelper.CompareUsingMostPreciseType(a, b, Context);
+        return TypeHelper.CompareUsingMostPreciseType(a, b, context);
     }
 
     protected ValueTask OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)

@@ -3,6 +3,9 @@ using ValueType = NCalc.Domain.ValueType;
 
 namespace NCalc.Visitors;
 
+/// <summary>
+/// Class responsible to converting an <see cref="LogicalExpression"/> into a <see cref="string"/> representation.
+/// </summary>
 public class SerializationVisitor : ILogicalExpressionVisitor<string>
 {
     private readonly NumberFormatInfo _numberFormatInfo = new()
