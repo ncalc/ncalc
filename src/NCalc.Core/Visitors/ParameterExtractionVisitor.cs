@@ -3,7 +3,7 @@
 namespace NCalc.Visitors;
 
 /// <summary>
-/// Visitor dedicated to extract parameters from an <see cref="LogicalExpression"/>.
+/// Visitor dedicated to extract parameters from a <see cref="LogicalExpression"/>.
 /// </summary>
 public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<string>>
 {
