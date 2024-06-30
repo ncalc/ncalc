@@ -11,7 +11,7 @@ var expression = new Expression("secretOperation()")
 {
     Functions = new Dictionary<string, ExpressionFunction>(StringComparer.InvariantCultureIgnoreCase)
     {
-        { "SecretOperation", (arguments, context) => 42 }
+        { "SecretOperation", (arguments) => 42 }
     }
 };
 ```

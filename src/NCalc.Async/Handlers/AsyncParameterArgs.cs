@@ -1,7 +1,9 @@
 namespace NCalc.Handlers;
 
-public class AsyncParameterArgs : EventArgs
+public class AsyncParameterArgs(Guid id) : EventArgs
 {
+    public Guid Id { get; } = id;
+    
     private object? _result;
     public object? Result
     {

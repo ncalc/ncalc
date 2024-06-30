@@ -1,7 +1,9 @@
 namespace NCalc.Handlers;
 
-public class ParameterArgs : EventArgs
+public class ParameterArgs(Guid id) : EventArgs
 {
+    public Guid Id { get; } = id;
+    
     private object? _result;
     public object? Result
     {

@@ -14,7 +14,7 @@ public class ParameterExtractionTests
             }
         };
         expression.DynamicParameters["PageState"] = _ => "List";
-        expression.Functions["customfunction"] = (_, _) => true;
+        expression.Functions["customfunction"] = _ => true;
 
         var parameters = expression.GetParametersNames();
         Assert.Contains("a", parameters);
