@@ -17,16 +17,20 @@ want if you implement the interface <xref:NCalc.Factories.ILogicalExpressionFact
 For our example, "1+1", the parsing step converts the string into an abstract syntax tree (AST).
 This tree is made up of different types of expressions, such as binary expressions, value expressions our even
 functions.
-Our AST is represented by <xref:NCalc.Domain.LogicalExpression>.
+Our AST is represented by <xref:NCalc.Domain.LogicalExpression> class.
 
 ## Evaluation
 
 Evaluation refers to the process of determining the value of an expression. We use the visitor pattern at evaluation.
 This pattern allows you to add new operations to existing object structures without modifying those structures.
-With the method <xref:NCalc.Domain.LogicalExpression.Accept`1> is possible to accept any kind of visitor that
+With the method <xref:NCalc.Domain.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVisitor{``0})> is possible to accept any kind of visitor that
 implements <xref:NCalc.Visitors.ILogicalExpressionVisitor`1>. Example implementations
 include <xref:NCalc.Visitors.EvaluationVisitor> that returns a <xref:System.Object>
 and <xref:NCalc.Visitors.SerializationVisitor> that converts the AST into a <xref:System.String>.
+
+If you are creating your custom implementation, beware it should be stateless to be easier to debug and read. This is
+enforced by the [PureAttribute](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.contracts.pureattribute0) and generic return at
+the <xref:NCalc.Domain.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVisitor{``0})> method.
 
 ## <xref:NCalc.Expression> Class
 
@@ -44,12 +48,11 @@ Example:
 
 This example above first creates an instance of <xref:NCalc.Expression> using a valued constructor. This constructor
 takes a <xref:System.String> as parameter.
-Then the method <xref:NCalc.Expression.Evaluate> is called to parse the <xref:System.String>, and returns the actual
+Then the method <xref:NCalc.Expression.Evaluate> is called to parse the <xref:System.String> and returns the actual
 value represented by the <xref:System.String>.
 
 To create expressions you can combine several [Operators](operators.md) and [Values](values.md).
 
-## Learn more
-
-For additional information on the technique we used to create this library please read this
-article: http://www.codeproject.com/KB/recipes/sota_expression_evaluator.aspx.
+## Learn More
+For additional information on the technique we used to create this library please read [this
+article](http://www.codeproject.com/KB/recipes/sota_expression_evaluator.aspx).
