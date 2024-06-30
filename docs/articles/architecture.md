@@ -28,7 +28,7 @@ implements <xref:NCalc.Visitors.ILogicalExpressionVisitor`1>. Example implementa
 include <xref:NCalc.Visitors.EvaluationVisitor> that returns a <xref:System.Object>
 and <xref:NCalc.Visitors.SerializationVisitor> that converts the AST into a <xref:System.String>.
 
-## <xref:NCalc.Expression> class
+## <xref:NCalc.Expression> Class
 
 This is the main class of NCalc. It abstracts the process of parsing and evaluating the string.
 The method <xref:NCalc.Expression.Evaluate> returns the actual value of its <xref:System.String> representation.
@@ -49,7 +49,7 @@ value represented by the <xref:System.String>.
 
 To create expressions you can combine several [Operators](operators.md) and [Values](values.md).
 
-## Learn More
+## Learn more
 
 For additional information on the technique we used to create this library please read this
 article: http://www.codeproject.com/KB/recipes/sota_expression_evaluator.aspx.
