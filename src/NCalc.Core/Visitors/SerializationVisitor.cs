@@ -18,7 +18,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         result.Append(EncapsulateNoValue(expression.MiddleExpression));
         result.Append(": ");
         result.Append(EncapsulateNoValue(expression.RightExpression));
-        return result.ToString().Trim();
+        return result.ToString();
     }
 
     public string Visit(BinaryExpression expression)
@@ -85,7 +85,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         }
 
         result.Append(EncapsulateNoValue(expression.RightExpression));
-        return result.ToString().Trim();
+        return result.ToString();
     }
 
     public string Visit(UnaryExpression expression)
@@ -106,7 +106,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         }
 
         result.Append(EncapsulateNoValue(expression.Expression));
-        return result.ToString().Trim();
+        return result.ToString();
     }
 
     public string Visit(ValueExpression expression)
@@ -133,7 +133,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
                 break;
         }
 
-        return result.ToString().Trim();
+        return result.ToString();
     }
 
     public string Visit(Function function)
@@ -146,19 +146,23 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             result.Append(function.Expressions[i].Accept(this));
             if (i < function.Expressions.Length - 1)
             {
+                result.Remove(result.Length - 1, 1);
                 result.Append(", ");
             }
         }
 
+        while (result[^1] == ' ')
+            result.Remove(result.Length - 1, 1);
+
         result.Append(") ");
-        return result.ToString().Trim();
+        return result.ToString();
     }
 
     public string Visit(Identifier identifier)
     {
         var result = new StringBuilder();
         result.Append('[').Append(identifier.Name).Append("] ");
-        return result.ToString().Trim();
+        return result.ToString();
     }
 
     protected virtual string EncapsulateNoValue(LogicalExpression expression)
@@ -171,7 +175,12 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         var result = new StringBuilder();
         result.Append('(');
         result.Append(expression.Accept(this));
+
+        // trim spaces before adding a closing paren
+        while (result[^1] == ' ')
+            result.Remove(result.Length - 1, 1);
+
         result.Append(") ");
-        return result.ToString().Trim();
+        return result.ToString();
     }
 }
