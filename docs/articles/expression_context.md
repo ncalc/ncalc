@@ -41,7 +41,7 @@ builder.Services.AddSingleton<ExpressionContext>(_ =>
         Options = ExpressionOptions.OverflowProtection,
         Functions = new Dictionary<string, ExpressionFunction>()
         {
-            {"SecretOperation", (arguments, context) => 42}
+            {"SecretOperation", (arguments) => 42}
         }.ToFrozenDictionary()
     };
 });

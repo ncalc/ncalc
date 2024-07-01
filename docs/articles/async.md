@@ -13,7 +13,7 @@ dotnet add package NCalcAsync
 ```cs
 var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
 
-expression.Functions["database_operation"] = async (args, context) => {
+expression.Functions["database_operation"] = async (args) => {
     // My heavy database work.
     await Task.Delay(100);
 

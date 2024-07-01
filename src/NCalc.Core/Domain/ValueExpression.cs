@@ -3,6 +3,7 @@ using NCalc.Visitors;
 
 namespace NCalc.Domain;
 
+
 public sealed class ValueExpression : LogicalExpression
 {
     public object? Value { get; set; }
@@ -23,7 +24,7 @@ public sealed class ValueExpression : LogicalExpression
             decimal or double or float => ValueType.Float,
             byte or sbyte or short or int or long or ushort or uint or ulong => ValueType.Integer,
             string => ValueType.String,
-            _ => throw new NCalcEvaluationException("This value could not be handled: " + value)
+            _ => throw new NCalcException("This value could not be handled: " + value)
         };
 
         Value = value;
@@ -86,8 +87,8 @@ public sealed class ValueExpression : LogicalExpression
         Type = ValueType.Boolean;
     }
 
-    public override void Accept(ILogicalExpressionVisitor visitor)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
     {
-        visitor.Visit(this);
+        return visitor.Visit(this);
     }
 }

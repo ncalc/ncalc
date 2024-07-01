@@ -1,7 +1,9 @@
 namespace NCalc.Handlers;
 
-public class AsyncFunctionArgs(AsyncExpression[] parameters) : EventArgs
+public class AsyncFunctionArgs(Guid id,AsyncExpression[] parameters) : EventArgs
 {
+    public Guid Id { get; } = id;
+    
     private object? _result;
 
     public object? Result
@@ -13,17 +15,17 @@ public class AsyncFunctionArgs(AsyncExpression[] parameters) : EventArgs
             HasResult = true;
         }
     }
-
+    
     public AsyncExpression[] Parameters { get; } = parameters;
     
     public bool HasResult { get;  private set; }
 
-    public object?[] EvaluateParameters()
+    public async Task<object?[]> EvaluateParametersAsync()
     {
         var values = new object?[Parameters.Length];
         for (var i = 0; i < values.Length; i++)
         {
-            values[i] = Parameters[i].EvaluateAsync();
+            values[i] = await Parameters[i].EvaluateAsync();
         }
 
         return values;

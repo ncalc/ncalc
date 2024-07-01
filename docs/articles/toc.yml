@@ -24,15 +24,17 @@
   href: lambda_compilation.md
 - name: Dependency Injection
   href: dependency_injection.md
-- name: Benchmarks
-  href: benchmarks.md
-- name: Changelog
-  href: changelog.md
 - name: Plugins
   items:
     - name: ANTLR
       href: plugins/antlr.md
     - name: Memory Cache
       href: plugins/memory_cache.md
+- name: Architecture
+  href: architecture.md
+- name: Benchmarks
+  href: benchmarks.md
+- name: Changelog
+  href: changelog.md
 - name: Publishing a New Release
   href: new_release.md

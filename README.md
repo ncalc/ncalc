@@ -32,7 +32,7 @@ If you want to evaluate simple expressions:
 ```
 dotnet add package NCalcSync 
 ```
-Want async support at event handlers?
+Want `async` support at your functions and parameters?
 ```
 dotnet add package NCalcAsync 
 ```
@@ -72,7 +72,7 @@ Debug.Assert(0 == new Expression("Tan(0)").Evaluate());
 
 ```c#
 var expression = new Expression("SecretOperation(3, 6)");
-expression.Functions["SecretOperation"] = (args, context) => {
+expression.Functions["SecretOperation"] = (args) => {
     return (int)args[0].Evaluate() + (int)args[1].Evaluate();
 };
 
@@ -96,7 +96,7 @@ var expression = new Expression("Round(Pow([Pi], 2) + Pow([Pi2], 2) + [X], 2)");
 expression.Parameters["Pi2"] = new Expression("Pi * [Pi]");
 expression.Parameters["X"] = 10;
 
-expression.DynamicParameters["Pi"] = (context) => {
+expression.DynamicParameters["Pi"] = _ => {
     Console.WriteLine("I'm evaluating π!");
     return 3.14;
 };

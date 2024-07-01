@@ -45,7 +45,7 @@ You can get the functions from the <xref:NCalc.ExpressionBuiltInFuctions> class.
 ## Custom Functions
 Custom functions are created using the <xref:NCalc.ExpressionFunction> delegate. The parameters are <xref:NCalc.Expression> instances that can be lazy evaluated.
 ```csharp
-expression.Functions["SecretOperation"] = (args, context) => {
+expression.Functions["SecretOperation"] = (args) => {
     return (int)args[0].Evaluate() + (int)args[1].Evaluate();
 };
 

@@ -10,7 +10,7 @@ using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
 namespace NCalc.Visitors;
 
-public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
+public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpression>
 {
     private readonly IDictionary<string, object> _parameters;
     private readonly LinqExpression _context;
@@ -36,124 +36,74 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
     {
         _context = context;
     }
+    
 
-    public LinqExpression Result { get; private set; }
-
-    public void Visit(TernaryExpression expression)
+    public LinqExpression Visit(TernaryExpression expression)
     {
-        expression.LeftExpression.Accept(this);
-        var conditional = Result;
+        var conditional = expression.LeftExpression.Accept(this);
+        var ifTrue = expression.MiddleExpression.Accept(this);
+        var ifFalse = expression.RightExpression.Accept(this);
 
-        expression.MiddleExpression.Accept(this);
-        var ifTrue = Result;
-
-        expression.RightExpression.Accept(this);
-        var ifFalse = Result;
-
-        Result = LinqExpression.Condition(conditional, ifTrue, ifFalse);
+        return LinqExpression.Condition(conditional, ifTrue, ifFalse);
     }
 
-    public void Visit(BinaryExpression expression)
+    public LinqExpression Visit(BinaryExpression expression)
     {
-        expression.LeftExpression.Accept(this);
-        var left = Result;
+        var left = expression.LeftExpression.Accept(this);
+        var right = expression.RightExpression.Accept(this);
 
-        expression.RightExpression.Accept(this);
-        var right = Result;
-
-        switch (expression.Type)
+        return expression.Type switch
         {
-            case BinaryExpressionType.And:
-                Result = LinqExpression.AndAlso(left, right);
-                break;
-            case BinaryExpressionType.Or:
-                Result = LinqExpression.OrElse(left, right);
-                break;
-            case BinaryExpressionType.NotEqual:
-                Result = WithCommonNumericType(left, right, LinqExpression.NotEqual, expression.Type);
-                break;
-            case BinaryExpressionType.LesserOrEqual:
-                Result = WithCommonNumericType(left, right, LinqExpression.LessThanOrEqual, expression.Type);
-                break;
-            case BinaryExpressionType.GreaterOrEqual:
-                Result = WithCommonNumericType(left, right, LinqExpression.GreaterThanOrEqual, expression.Type);
-                break;
-            case BinaryExpressionType.Lesser:
-                Result = WithCommonNumericType(left, right, LinqExpression.LessThan, expression.Type);
-                break;
-            case BinaryExpressionType.Greater:
-                Result = WithCommonNumericType(left, right, LinqExpression.GreaterThan, expression.Type);
-                break;
-            case BinaryExpressionType.Equal:
-                Result = WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type);
-                break;
-            case BinaryExpressionType.Minus:
-                if (_checked) Result = WithCommonNumericType(left, right, LinqExpression.SubtractChecked);
-                else Result = WithCommonNumericType(left, right, LinqExpression.Subtract);
-                break;
-            case BinaryExpressionType.Plus:
-                if (_checked) Result = WithCommonNumericType(left, right, LinqExpression.AddChecked);
-                else Result = WithCommonNumericType(left, right, LinqExpression.Add);
-                break;
-            case BinaryExpressionType.Modulo:
-                Result = WithCommonNumericType(left, right, LinqExpression.Modulo);
-                break;
-            case BinaryExpressionType.Div:
-                Result = WithCommonNumericType(left, right, LinqExpression.Divide);
-                break;
-            case BinaryExpressionType.Times:
-                if (_checked) Result = WithCommonNumericType(left, right, LinqExpression.MultiplyChecked);
-                else Result = WithCommonNumericType(left, right, LinqExpression.Multiply);
-                break;
-            case BinaryExpressionType.BitwiseOr:
-                Result = LinqExpression.Or(left, right);
-                break;
-            case BinaryExpressionType.BitwiseAnd:
-                Result = LinqExpression.And(left, right);
-                break;
-            case BinaryExpressionType.BitwiseXOr:
-                Result = LinqExpression.ExclusiveOr(left, right);
-                break;
-            case BinaryExpressionType.LeftShift:
-                Result = LinqExpression.LeftShift(left, right);
-                break;
-            case BinaryExpressionType.RightShift:
-                Result = LinqExpression.RightShift(left, right);
-                break;
-            case BinaryExpressionType.Exponentiation:
-                Result = LinqExpression.Power(left, right);
-                break;
-            case BinaryExpressionType.Unknown:
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-    }
-
-    public void Visit(UnaryExpression expression)
-    {
-        expression.Expression.Accept(this);
-        Result = expression.Type switch
-        {
-            UnaryExpressionType.Not => LinqExpression.Not(Result),
-            UnaryExpressionType.Negate => LinqExpression.Negate(Result),
-            UnaryExpressionType.BitwiseNot => LinqExpression.Not(Result),
-            UnaryExpressionType.Positive => Result,
+            BinaryExpressionType.And => LinqExpression.AndAlso(left, right),
+            BinaryExpressionType.Or => LinqExpression.OrElse(left, right),
+            BinaryExpressionType.NotEqual => WithCommonNumericType(left, right, LinqExpression.NotEqual, expression.Type),
+            BinaryExpressionType.LesserOrEqual => WithCommonNumericType(left, right, LinqExpression.LessThanOrEqual, expression.Type),
+            BinaryExpressionType.GreaterOrEqual => WithCommonNumericType(left, right, LinqExpression.GreaterThanOrEqual, expression.Type),
+            BinaryExpressionType.Lesser => WithCommonNumericType(left, right, LinqExpression.LessThan, expression.Type),
+            BinaryExpressionType.Greater => WithCommonNumericType(left, right, LinqExpression.GreaterThan, expression.Type),
+            BinaryExpressionType.Equal => WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type),
+            BinaryExpressionType.Minus => _checked ? WithCommonNumericType(left, right, LinqExpression.SubtractChecked) : WithCommonNumericType(left, right, LinqExpression.Subtract),
+            BinaryExpressionType.Plus => _checked ? WithCommonNumericType(left, right, LinqExpression.AddChecked) : WithCommonNumericType(left, right, LinqExpression.Add),
+            BinaryExpressionType.Modulo => WithCommonNumericType(left, right, LinqExpression.Modulo),
+            BinaryExpressionType.Div => WithCommonNumericType(left, right, LinqExpression.Divide),
+            BinaryExpressionType.Times => _checked ? WithCommonNumericType(left, right, LinqExpression.MultiplyChecked) : WithCommonNumericType(left, right, LinqExpression.Multiply),
+            BinaryExpressionType.BitwiseOr => LinqExpression.Or(left, right),
+            BinaryExpressionType.BitwiseAnd => LinqExpression.And(left, right),
+            BinaryExpressionType.BitwiseXOr => LinqExpression.ExclusiveOr(left, right),
+            BinaryExpressionType.LeftShift => LinqExpression.LeftShift(left, right),
+            BinaryExpressionType.RightShift => LinqExpression.RightShift(left, right),
+            BinaryExpressionType.Exponentiation => LinqExpression.Power(left, right),
+            BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
 
-    public void Visit(ValueExpression expression)
+    public LinqExpression Visit(UnaryExpression expression)
     {
-        Result = LinqExpression.Constant(expression.Value);
+        var operand = expression.Expression.Accept(this);
+
+        return expression.Type switch
+        {
+            UnaryExpressionType.Not => LinqExpression.Not(operand),
+            UnaryExpressionType.Negate => LinqExpression.Negate(operand),
+            UnaryExpressionType.BitwiseNot => LinqExpression.Not(operand),
+            UnaryExpressionType.Positive => operand,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
-    public void Visit(Function function)
+
+    public LinqExpression Visit(ValueExpression expression)
+    {
+        return LinqExpression.Constant(expression.Value);
+    }
+
+    public LinqExpression Visit(Function function)
     {
         var args = new LinqExpression[function.Expressions.Length];
         for (var i = 0; i < function.Expressions.Length; i++)
         {
-            function.Expressions[i].Accept(this);
-            args[i] = Result;
+            args[i] = function.Expressions[i].Accept(this);
         }
 
         var functionName = function.Identifier.Name.ToUpperInvariant();
@@ -168,8 +118,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
                 args[2] = LinqExpression.Convert(args[2], numberTypePriority[Math.Min(index1, index2)]);
             }
 
-            Result = LinqExpression.Condition(args[0], args[1], args[2]);
-            return;
+            return LinqExpression.Condition(args[0], args[1], args[2]);
         }
 
         if (functionName == "IN")
@@ -179,16 +128,14 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
             var smi = typeof(Array).GetRuntimeMethod("IndexOf", [typeof(Array), typeof(object)]);
             var r = LinqExpression.Call(smi, LinqExpression.Convert(items, typeof(Array)),
                 LinqExpression.Convert(args[0], typeof(object)));
-            Result = LinqExpression.GreaterThanOrEqual(r, LinqExpression.Constant(0));
-            return;
+            return LinqExpression.GreaterThanOrEqual(r, LinqExpression.Constant(0));
         }
 
         //Context methods take precedence over built-in functions because they're user-customisable.
         var mi = FindMethod(function.Identifier.Name, args);
         if (mi != null)
         {
-            Result = LinqExpression.Call(_context, mi.MethodInfo, mi.PreparedArguments);
-            return;
+            return LinqExpression.Call(_context, mi.MethodInfo, mi.PreparedArguments);
         }
 
         Linq.UnaryExpression arg0;
@@ -203,20 +150,17 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
                 CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
-                Result = LinqExpression.Condition(LinqExpression.GreaterThan(arg0, arg1), arg0, arg1);
-                break;
+                return LinqExpression.Condition(LinqExpression.GreaterThan(arg0, arg1), arg0, arg1);
             case "MIN":
                 CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
-                Result = LinqExpression.Condition(LinqExpression.LessThan(arg0, arg1), arg0, arg1);
-                break;
+                return LinqExpression.Condition(LinqExpression.LessThan(arg0, arg1), arg0, arg1);
             case "POW":
                 CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
-                Result = LinqExpression.Power(arg0, arg1);
-                break;
+                return LinqExpression.Power(arg0, arg1);
             case "ROUND":
                 CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
@@ -224,50 +168,42 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor
                 var rounding = (_options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero
                     ? MidpointRounding.AwayFromZero
                     : MidpointRounding.ToEven;
-                Result = LinqExpression.Call(MathFunctionHelper.Functions["ROUND"].MethodInfo, arg0, arg1,
+                return LinqExpression.Call(MathFunctionHelper.Functions["ROUND"].MethodInfo, arg0, arg1,
                     LinqExpression.Constant(rounding));
-                break;
+       
             default:
                 // Regular handling
                 if (MathFunctionHelper.Functions.TryGetValue(functionName, out var func))
-                {
-                    MakeMathCallExpression(func, actualNumArgs);
-                }
-                else
-                {
-                    throw new MissingMethodException($"method not found: {functionName}");
+                { 
+                    return MakeMathCallExpression(func, actualNumArgs);
                 }
 
-                break;
+                throw new MissingMethodException($"method not found: {functionName}");
         }
-
-        return;
-
+        
         static void CheckArgumentsLengthForFunction(string funcStr, int argsNum, int argsNeed)
         {
             if (argsNum != argsNeed)
                 throw new ArgumentException($"{funcStr} takes exactly {argsNeed} argument");
         }
 
-        void MakeMathCallExpression(MathMethodInfo mathMethod, int argsNumActual)
+        LinqExpression MakeMathCallExpression(MathMethodInfo mathMethod, int argsNumActual)
         {
             CheckArgumentsLengthForFunction(mathMethod.MethodInfo.Name, argsNumActual, mathMethod.ArgumentCount);
 
-            Result = LinqExpression.Call(mathMethod.MethodInfo,
+            return LinqExpression.Call(mathMethod.MethodInfo,
                 Enumerable.Range(0, argsNumActual).Select(i => LinqExpression.Convert(args[i], typeof(double))));
         }
     }
 
-    public void Visit(Identifier function)
+    public LinqExpression Visit(Identifier function)
     {
         if (_context == null)
         {
-            Result = LinqExpression.Constant(_parameters[function.Name]);
+            return LinqExpression.Constant(_parameters[function.Name]);
         }
-        else
-        {
-            Result = LinqExpression.PropertyOrField(_context, function.Name);
-        }
+
+        return LinqExpression.PropertyOrField(_context, function.Name);
     }
 
     private ExtendedMethodInfo FindMethod(string methodName, LinqExpression[] methodArgs)
