@@ -17,6 +17,7 @@
 - `IEvaluationVisitor` is removed, please use `IEvaluationService` for an easier to implement interface
 - `ILogicalExpressionVisitor` is now `ILogicalExpressionVisitor<T>`, where `<T>` is the return of the visitor
 - `IAsyncLogicalExpressionVisitor` is removed, please use `ILogicalExpressionVisitor<Task<object?>>`
+- `AdvancedExpression` and `AsyncAdvancedExpression` are removed, please use the respective constructors at `Expression` and `AsyncExpression` to prevent unnecessary casting.
 
 # 4.3.3
 * Add `MemberNotNullWhen` attribute to `HasErrors` by @gmcchessney in https://github.com/ncalc/ncalc/pull/250
