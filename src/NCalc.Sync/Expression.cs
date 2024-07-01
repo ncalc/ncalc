@@ -236,55 +236,41 @@ public partial class Expression
     {
         var parameterEnumerators = new Dictionary<string, IEnumerator>();
         int? size = null;
-        var results = new List<object?>();
         
-        foreach (var parameter in Parameters.Values)
+        foreach (var parameter in Parameters)
         {
-            if (parameter is not IEnumerable enumerable)
-                continue;
+            if (parameter.Value is IEnumerable enumerable)
+            {
+                parameterEnumerators.Add(parameter.Key, enumerable.GetEnumerator());
 
-            var localSize = enumerable.Cast<object>().Count();
+                int localSize = 0;
+                foreach (var o in enumerable)
+                    localSize++;
 
-            if (size == null)
-                size = localSize;
-            else if (localSize != size)
-                throw new NCalcException(
-                    "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
+                if (size == null)
+                    size = localSize;
+                else if (localSize != size)
+                {
+                    throw new NCalcException(
+                        "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
+                }
+            };
         }
 
-        try
+        var results = new List<object?>();
+
+        for (int i = 0; i < size; i++)
         {
-            foreach (var key in Parameters.Keys)
+            foreach (var kvp in parameterEnumerators)
             {
-                if (Parameters[key] is IEnumerable parameter)
-                {
-                    parameterEnumerators[key] = parameter.GetEnumerator();
-                }
+                kvp.Value.MoveNext();
+                Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            for (var i = 0; i < size; i++)
-            {
-                foreach (var kvp in parameterEnumerators)
-                {
-                    kvp.Value.MoveNext();
-                    Parameters[kvp.Key] = kvp.Value.Current;
-                }
-
-                results.Add(EvaluationService.Evaluate(LogicalExpression!, Context));
-            }
-
-            return results;
+            results.Add(EvaluationService.Evaluate(LogicalExpression!, Context));
         }
-        finally
-        {
-            foreach (var enumerator in parameterEnumerators.Values)
-            {
-                if (enumerator is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
-            }
-        }
+
+        return results;
     }
     
     /// <summary>
