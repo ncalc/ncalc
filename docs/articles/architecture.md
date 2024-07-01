@@ -5,7 +5,7 @@ The entire process of evaluating an expression can be demonstrated at this flowc
 ```mermaid
 flowchart TB
 
-A["1+1"] -->|Parsing| B("new BinaryExpression(new ValueExpression(1),new ValueExpression(1), BinaryExpressionType.Plus)")
+A["1+1"] -->|Parsing| B("new BinaryExpression(new ValueExpression(1), new ValueExpression(1), BinaryExpressionType.Plus)")
 B --> |Evaluation|2
 ```
 

@@ -32,7 +32,7 @@ If you want to evaluate simple expressions:
 ```
 dotnet add package NCalcSync 
 ```
-Want async support at event handlers?
+Want `async` support at your functions and parameters?
 ```
 dotnet add package NCalcAsync 
 ```
