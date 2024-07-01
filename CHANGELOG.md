@@ -1,3 +1,24 @@
+# 5.0.0
+* Overflow protection by @Bykiev in https://github.com/ncalc/ncalc/pull/256
+* Consolidate NETStandard.Library package version by @Bykiev in https://github.com/ncalc/ncalc/pull/257
+* Add OverflowProtection to `LambdaExpressionVisitor` by @gumbarros in https://github.com/ncalc/ncalc/pull/259
+* Improve CI with `DOTNET_NOLOGO` and `DOTNET_CLI_TELEMETRY_OPTOUT` by @gumbarros in https://github.com/ncalc/ncalc/pull/260
+* Fix treating an expression with whitespace in fractional part as valid by @Bykiev in https://github.com/ncalc/ncalc/pull/262
+* Added `IDictionary<string,ExpressionFunction>` and `IDictionary<string,ExpressionParameter>` support by @gumbarros in https://github.com/ncalc/ncalc/pull/254
+* Use decimal with exponentiation when DecimalAsDefault is used by @Bykiev in https://github.com/ncalc/ncalc/pull/269
+* Add NOTRACE for the entire solution at Release by @gumbarros in https://github.com/ncalc/ncalc/pull/268
+* Fix `AsyncFunctionArgs` regression by @gumbarros in https://github.com/ncalc/ncalc/pull/271
+* Added `Id` property to `Identifier` by @gumbarros in https://github.com/ncalc/ncalc/pull/266
+* Visitor pattern is now stateless with generics by @gumbarros in https://github.com/ncalc/ncalc/pull/272
+
+## Breaking Changes
+- `NCalcAsync` now uses `AsyncExpressionContext`
+- `ExpressionContext` is now a `record` instead of a `class`, allowing support for shallow cloning
+- `IEvaluationVisitor` is removed, please use `IEvaluationService` for an easier to implement interface
+- `ILogicalExpressionVisitor` is now `ILogicalExpressionVisitor<T>`, where `<T>` is the return of the visitor
+- `IAsyncLogicalExpressionVisitor` is removed, please use `ILogicalExpressionVisitor<Task<object?>>`
+- `AdvancedExpression` and `AsyncAdvancedExpression` are removed, please use the respective constructors at `Expression` and `AsyncExpression` to prevent unnecessary casting.
+
 # 4.3.3
 * Add `MemberNotNullWhen` attribute to `HasErrors` by @gmcchessney in https://github.com/ncalc/ncalc/pull/250
 * Fix tests by @Bykiev in https://github.com/ncalc/ncalc/pull/251
