@@ -25,3 +25,4 @@ Though, you can also detect syntax errors before the evaluation by using the <xr
  {
      Console.WriteLine(expression.Error);
  }
+```

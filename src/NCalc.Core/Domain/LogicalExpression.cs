@@ -1,16 +1,19 @@
+using System.Diagnostics.Contracts;
 using NCalc.Visitors;
 
 namespace NCalc.Domain;
 
+/// <summary>
+/// Represents an abstract syntax tree (AST) node for logical expressions.
+/// </summary>
 public abstract class LogicalExpression
 {
     public override string ToString()
     {
         var serializer = new SerializationVisitor();
-        Accept(serializer);
-
-        return serializer.Result.ToString().TrimEnd(' ');
+        return Accept(serializer).TrimEnd(' ');
     }
 
-    public abstract void Accept(ILogicalExpressionVisitor visitor);
+    [Pure]
+    public abstract T Accept<T>(ILogicalExpressionVisitor<T> visitor);
 }

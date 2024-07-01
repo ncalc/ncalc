@@ -9,6 +9,11 @@ using NCalc.Services;
 
 namespace NCalc;
 
+/// <summary>
+/// This class represents a mathematical or logical expression that can be evaluated.
+/// It supports caching, custom parameter and function evaluation, and options for handling null parameters and iterating over parameter collections.
+/// The class manages the parsing, validation, and evaluation of expressions, and provides mechanisms for error detection and reporting.
+/// </summary>
 public class AsyncExpression
 {
     /// <summary>
@@ -295,7 +300,6 @@ public class AsyncExpression
     {
         var parameterExtractionVisitor = new ParameterExtractionVisitor();
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
-        LogicalExpression.Accept(parameterExtractionVisitor);
-        return parameterExtractionVisitor.Parameters.ToList();
+        return LogicalExpression.Accept(parameterExtractionVisitor);
     }
 }
