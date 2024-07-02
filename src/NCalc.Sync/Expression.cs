@@ -243,9 +243,7 @@ public partial class Expression
             {
                 parameterEnumerators.Add(parameter.Key, enumerable.GetEnumerator());
 
-                int localSize = 0;
-                foreach (var o in enumerable)
-                    localSize++;
+                int localSize = enumerable.Cast<object>().Count();
 
                 if (size == null)
                     size = localSize;
