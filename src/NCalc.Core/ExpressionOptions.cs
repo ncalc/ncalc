@@ -62,5 +62,10 @@ public enum ExpressionOptions
     /// <summary>
     /// Check for arithmetic binary operation overflow
     /// </summary>
-    OverflowProtection = 1 << 10
+    OverflowProtection = 1 << 10,
+
+    /// <summary>
+    /// Concat values as strings instead of arithmetic addition
+    /// </summary>
+    StringConcat = 1 << 11
 }

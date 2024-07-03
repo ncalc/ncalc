@@ -25,9 +25,10 @@ public class StringTests
     [Theory]
     [InlineData("'to' + 'to'", "toto")]
     [InlineData("'one' + 2", "one2")]
+    [InlineData("2 + 'one'", "2one")]
     public void ShouldHandleStringConcatenation(string expression, object expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        Assert.Equal(expected, new Expression(expression, ExpressionOptions.StringConcat).Evaluate());
     }
 
     [Fact]

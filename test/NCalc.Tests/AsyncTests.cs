@@ -33,7 +33,7 @@ public class AsyncTests
     [Fact]
     public async Task ShouldEvaluateAsyncParameter()
     {
-        var expression = new AsyncExpression("(a + b) == 'Leo'");
+        var expression = new AsyncExpression("(a + b) == 'Leo'", ExpressionOptions.StringConcat);
         expression.Parameters["b"] = new AsyncExpression("'eo'");
         expression.DynamicParameters["a"] = async _ =>
         {
@@ -68,7 +68,7 @@ public class AsyncTests
     [Fact]
     public async Task ShouldEvaluateAsyncParameterHandler()
     {
-        var expression = new AsyncExpression("(a + b) == 'Leo'");
+        var expression = new AsyncExpression("(a + b) == 'Leo'", ExpressionOptions.StringConcat);
         expression.Parameters["b"] = new AsyncExpression("'eo'");
         expression.EvaluateParameterAsync += (name, args) =>
         {
