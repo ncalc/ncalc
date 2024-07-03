@@ -5,6 +5,7 @@ using NCalc.Factories;
 using NCalc.Visitors;
 using System.Diagnostics.CodeAnalysis;
 using NCalc.Handlers;
+using NCalc.Helpers;
 using NCalc.Services;
 
 namespace NCalc;
@@ -234,27 +235,7 @@ public partial class Expression
 
     private List<object?> IterateParameters()
     {
-        var parameterEnumerators = new Dictionary<string, IEnumerator>();
-        int? size = null;
-        
-        foreach (var parameter in Parameters)
-        {
-            if (parameter.Value is IEnumerable enumerable)
-            {
-                var list = enumerable as List<object> ?? enumerable.Cast<object>().ToList();
-                parameterEnumerators.Add(parameter.Key, list.GetEnumerator());
-
-                int localSize = list.Count;
-
-                if (size == null)
-                    size = localSize;
-                else if (localSize != size)
-                {
-                    throw new NCalcException(
-                        "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
-                }
-            };
-        }
+        var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
         var results = new List<object?>();
 
@@ -271,7 +252,7 @@ public partial class Expression
 
         return results;
     }
-    
+
     /// <summary>
     /// Returns a list with all parameters names from the expression.
     /// </summary>
