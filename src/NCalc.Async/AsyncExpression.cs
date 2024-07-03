@@ -247,9 +247,10 @@ public class AsyncExpression
         {
             if (parameter.Value is IEnumerable enumerable)
             {
+                var list = enumerable as List<object> ?? enumerable.Cast<object>().ToList();
                 parameterEnumerators.Add(parameter.Key, enumerable.GetEnumerator());
 
-                int localSize = enumerable.Cast<object>().Count();
+                int localSize = list.Count;
 
                 if (size == null)
                     size = localSize;
