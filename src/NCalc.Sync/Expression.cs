@@ -242,7 +242,7 @@ public partial class Expression
             if (parameter.Value is IEnumerable enumerable)
             {
                 var list = enumerable as List<object> ?? enumerable.Cast<object>().ToList();
-                parameterEnumerators.Add(parameter.Key, enumerable.GetEnumerator());
+                parameterEnumerators.Add(parameter.Key, list.GetEnumerator());
 
                 int localSize = list.Count;
 
