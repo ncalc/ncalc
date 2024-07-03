@@ -5,6 +5,7 @@ using NCalc.Factories;
 using NCalc.Visitors;
 using System.Diagnostics.CodeAnalysis;
 using NCalc.Handlers;
+using NCalc.Helpers;
 using NCalc.Services;
 
 namespace NCalc;
@@ -234,59 +235,24 @@ public partial class Expression
 
     private List<object?> IterateParameters()
     {
-        var parameterEnumerators = new Dictionary<string, IEnumerator>();
-        int? size = null;
+        var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
+
         var results = new List<object?>();
-        
-        foreach (var parameter in Parameters.Values)
+
+        for (int i = 0; i < size; i++)
         {
-            if (parameter is not IEnumerable enumerable)
-                continue;
-
-            var localSize = enumerable.Cast<object>().Count();
-
-            if (size == null)
-                size = localSize;
-            else if (localSize != size)
-                throw new NCalcException(
-                    "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
-        }
-
-        try
-        {
-            foreach (var key in Parameters.Keys)
+            foreach (var kvp in parameterEnumerators)
             {
-                if (Parameters[key] is IEnumerable parameter)
-                {
-                    parameterEnumerators[key] = parameter.GetEnumerator();
-                }
+                kvp.Value.MoveNext();
+                Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            for (var i = 0; i < size; i++)
-            {
-                foreach (var kvp in parameterEnumerators)
-                {
-                    kvp.Value.MoveNext();
-                    Parameters[kvp.Key] = kvp.Value.Current;
-                }
-
-                results.Add(EvaluationService.Evaluate(LogicalExpression!, Context));
-            }
-
-            return results;
+            results.Add(EvaluationService.Evaluate(LogicalExpression!, Context));
         }
-        finally
-        {
-            foreach (var enumerator in parameterEnumerators.Values)
-            {
-                if (enumerator is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
-            }
-        }
+
+        return results;
     }
-    
+
     /// <summary>
     /// Returns a list with all parameters names from the expression.
     /// </summary>
