@@ -610,7 +610,7 @@ public static class MathHelper
             int => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'int'"),
             long => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'ulong'"),
+                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'long'"),
             byte or ushort or uint or ulong or float or double or decimal => func(left, right),
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for types 'ulong' and {right?.GetType().ToString() ?? "null"}"),
