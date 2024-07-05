@@ -50,7 +50,7 @@ public class EvaluationTests
         Assert.Equal(false, eout.Evaluate());
 
         // Should work with strings
-        var estring = new Expression("in('to' + 'to', 'titi', 'toto')");
+        var estring = new Expression("in('to' + 'to', 'titi', 'toto')", ExpressionOptions.StringConcat);
 
         Assert.Equal(true, estring.Evaluate());
     }

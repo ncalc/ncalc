@@ -82,7 +82,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                     var left = await leftValue.Value;
                     var right = await rightValue.Value;
 
-                    if ((left is string && right is string) || context.Options.HasFlag(ExpressionOptions.StringConcat))
+                    if ((left is string || right is string) && context.Options.HasFlag(ExpressionOptions.StringConcat))
                         return string.Concat(left, right);
 
                     return MathHelper.Add(left, right, context);

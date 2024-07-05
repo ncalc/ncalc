@@ -26,6 +26,7 @@ public class StringTests
     [InlineData("'to' + 'to'", "toto")]
     [InlineData("'one' + 2", "one2")]
     [InlineData("2 + 'one'", "2one")]
+    [InlineData("'1' + '2'", "12")]
     public void ShouldHandleStringConcatenation(string expression, object expected)
     {
         Assert.Equal(expected, new Expression(expression, ExpressionOptions.StringConcat).Evaluate());
@@ -34,6 +35,7 @@ public class StringTests
     [Theory]
     [InlineData("1 + '2'")]
     [InlineData("'1' + 2")]
+    [InlineData("'1' + '2'")]
     public void ShouldHandleStringAddition(string expr)
     {
         Assert.Equal(3m, new Expression(expr, ExpressionOptions.DecimalAsDefault).Evaluate());
