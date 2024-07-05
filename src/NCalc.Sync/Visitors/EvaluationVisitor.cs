@@ -76,10 +76,13 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
             case BinaryExpressionType.Plus:
                 {
-                    if (context.Options.HasFlag(ExpressionOptions.StringConcat))
-                        return string.Concat(leftValue.Value, rightValue.Value);
+                    var left = leftValue.Value;
+                    var right = rightValue.Value;
 
-                    return MathHelper.Add(leftValue.Value, rightValue.Value, context);
+                    if ((left is string && right is string) || context.Options.HasFlag(ExpressionOptions.StringConcat))
+                        return string.Concat(left, right);
+
+                    return MathHelper.Add(left, right, context);
                 }
 
             case BinaryExpressionType.Times:

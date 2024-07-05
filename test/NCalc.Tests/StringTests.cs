@@ -1,6 +1,6 @@
 namespace NCalc.Tests;
 
-[Trait("Category","Strings")]
+[Trait("Category", "Strings")]
 public class StringTests
 {
     [Theory]
@@ -21,7 +21,7 @@ public class StringTests
     {
         Assert.Equal(expected, new Expression(expression).Evaluate());
     }
-    
+
     [Theory]
     [InlineData("'to' + 'to'", "toto")]
     [InlineData("'one' + 2", "one2")]
@@ -31,9 +31,11 @@ public class StringTests
         Assert.Equal(expected, new Expression(expression, ExpressionOptions.StringConcat).Evaluate());
     }
 
-    [Fact]
-    public void ShouldHandleStringAddition()
+    [Theory]
+    [InlineData("1 + '2'")]
+    [InlineData("'1' + 2")]
+    public void ShouldHandleStringAddition(string expr)
     {
-        Assert.Equal(3m, new Expression("1 + '2'", ExpressionOptions.DecimalAsDefault).Evaluate());
+        Assert.Equal(3m, new Expression(expr, ExpressionOptions.DecimalAsDefault).Evaluate());
     }
 }

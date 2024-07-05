@@ -79,10 +79,13 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
             case BinaryExpressionType.Plus:
                 {
-                    if (context.Options.HasFlag(ExpressionOptions.StringConcat))
-                        return string.Concat(await leftValue.Value, await rightValue.Value);
+                    var left = await leftValue.Value;
+                    var right = await rightValue.Value;
 
-                    return MathHelper.Add(await leftValue.Value, await rightValue.Value, context);
+                    if ((left is string && right is string) || context.Options.HasFlag(ExpressionOptions.StringConcat))
+                        return string.Concat(left, right);
+
+                    return MathHelper.Add(left, right, context);
                 }
 
             case BinaryExpressionType.Times:
