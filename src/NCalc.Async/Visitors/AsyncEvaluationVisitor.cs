@@ -82,10 +82,20 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                     var left = await leftValue.Value;
                     var right = await rightValue.Value;
 
-                    if ((left is string || right is string) && context.Options.HasFlag(ExpressionOptions.StringConcat))
+                    if (context.Options.HasFlag(ExpressionOptions.StringConcat))
                         return string.Concat(left, right);
 
-                    return MathHelper.Add(left, right, context);
+                    try
+                    {
+                        return MathHelper.Add(left, right, context);
+                    }
+                    catch (FormatException)
+                    {
+                        if (left is string && right is string)
+                            return string.Concat(left, right);
+
+                        throw;
+                    }
                 }
 
             case BinaryExpressionType.Times:
@@ -112,18 +122,18 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                        Convert.ToInt32(await rightValue.Value, context.CultureInfo);
 
             case BinaryExpressionType.Exponentiation:
-            {
-                if (context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
                 {
-                    BigDecimal @base = new BigDecimal(Convert.ToDecimal(leftValue.Value));
-                    BigInteger exponent = new BigInteger(Convert.ToDecimal(rightValue.Value));
+                    if (context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+                    {
+                        BigDecimal @base = new BigDecimal(Convert.ToDecimal(leftValue.Value));
+                        BigInteger exponent = new BigInteger(Convert.ToDecimal(rightValue.Value));
 
-                    return (decimal)BigDecimal.Pow(@base, exponent);
+                        return (decimal)BigDecimal.Pow(@base, exponent);
+                    }
+
+                    return Math.Pow(Convert.ToDouble(await leftValue.Value, context.CultureInfo),
+                        Convert.ToDouble(await rightValue.Value, context.CultureInfo));
                 }
-
-                return Math.Pow(Convert.ToDouble(await leftValue.Value, context.CultureInfo),
-                    Convert.ToDouble(await rightValue.Value, context.CultureInfo));
-            }
         }
 
         return null;
