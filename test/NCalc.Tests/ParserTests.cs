@@ -57,4 +57,18 @@ public class ParserTests
         
         Assert.Equal("{Diagnostic}.Data",((Identifier)logicalExpression).Name);
     }
+    
+    [Fact]
+    public void ShouldHandleBinaryExpression()
+    {
+        const string formula = "(1+2)*3";
+        
+        var logicalExpression = LogicalExpressionFactory.Create(formula);
+
+        Assert.IsType<BinaryExpression>(logicalExpression);
+        
+        var expression = new Expression(logicalExpression);
+        
+        Assert.Equal(9, expression.Evaluate());
+    }
 }
