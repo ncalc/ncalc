@@ -1,15 +1,26 @@
+using System.Runtime.CompilerServices;
+
 namespace NCalc.Helpers;
 
-public readonly struct ComparisonOptions
-{
-    public required CultureInfo CultureInfo { get; init; }
-    public required bool IsCaseInsensitive { get; init; }
-    public required bool IsOrdinal { get; init; }
 
-    public void Deconstruct(out CultureInfo cultureInfo, out bool isCaseInsensitive, out bool isOrdinal)
+public readonly struct ComparisonOptions(CultureInfo cultureInfo, ExpressionOptions options)
+{
+    public CultureInfo CultureInfo { get; } = cultureInfo;
+
+    public bool IsCaseInsensitive
     {
-        cultureInfo = CultureInfo;
-        isCaseInsensitive = IsCaseInsensitive;
-        isOrdinal = IsOrdinal;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
+    }
+
+    public bool IsOrdinal
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => options.HasFlag(ExpressionOptions.OrdinalStringComparer);
+    }
+
+    public static implicit operator ComparisonOptions(CultureInfo cultureInfo)
+    {
+        return new ComparisonOptions(cultureInfo, ExpressionOptions.None);
     }
 }

@@ -115,18 +115,18 @@ public static class TypeHelper
 
     public static int CompareUsingMostPreciseType(object? a, object? b, ComparisonOptions options)
     {
-        var (cultureInfo, isCaseInsensitiveComparer, isOrdinal) = options;
-
         var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
 
-        var aValue = a != null ? Convert.ChangeType(a, mpt, cultureInfo) : null;
-        var bValue = b != null ? Convert.ChangeType(b, mpt, cultureInfo) : null;
+        var aValue = a != null ? Convert.ChangeType(a, mpt, options.CultureInfo) : null;
+        var bValue = b != null ? Convert.ChangeType(b, mpt, options.CultureInfo) : null;
 
-        return isOrdinal switch
+        var isCaseInsensitive = options.IsCaseInsensitive;
+        
+        return options.IsOrdinal switch
         {
-            true when isCaseInsensitiveComparer => StringComparer.OrdinalIgnoreCase.Compare(aValue, bValue),
+            true when isCaseInsensitive => StringComparer.OrdinalIgnoreCase.Compare(aValue, bValue),
             true => StringComparer.Ordinal.Compare(aValue, bValue),
-            false when isCaseInsensitiveComparer => CaseInsensitiveComparer.Default.Compare(aValue, bValue),
+            false when isCaseInsensitive => CaseInsensitiveComparer.Default.Compare(aValue, bValue),
             _ => Comparer.Default.Compare(aValue, bValue)
         };
     }

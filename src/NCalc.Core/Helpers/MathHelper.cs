@@ -315,7 +315,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Abs(Convert.ToDecimal(a));
 
         return Math.Abs(Convert.ToDouble(a));
@@ -351,7 +351,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Ceiling(Convert.ToDecimal(a));
 
         return Math.Ceiling(Convert.ToDouble(a));
@@ -373,7 +373,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Floor(Convert.ToDecimal(a));
 
         return Math.Floor(Convert.ToDouble(a));
@@ -411,7 +411,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
         {
             BigDecimal @base = new BigDecimal(Convert.ToDecimal(a));
             BigInteger exponent = new BigInteger(Convert.ToDecimal(b));
@@ -427,7 +427,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Round(Convert.ToDecimal(a), Convert.ToInt16(b), rounding);
 
         return Math.Round(Convert.ToDouble(a), Convert.ToInt16(b), rounding);
@@ -437,7 +437,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Sign(Convert.ToDecimal(a));
 
         return Math.Sign(Convert.ToDouble(a));
@@ -466,7 +466,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Truncate(Convert.ToDecimal(a));
 
         return Math.Truncate(Convert.ToDouble(a));
@@ -476,11 +476,11 @@ public static class MathHelper
     {
         return value switch
         {
-            char when options is { UseDecimals: true, AllowCharValues: false } => decimal.Parse(value.ToString()!, options.CultureInfo),
-            string when options is { UseDecimals: true } => decimal.Parse(value.ToString()!, options.CultureInfo),
+            char when options is { DecimalAsDefault: true, AllowCharValues: false } => decimal.Parse(value.ToString()!, options.CultureInfo),
+            string when options is { DecimalAsDefault: true } => decimal.Parse(value.ToString()!, options.CultureInfo),
             char when options is { AllowCharValues:false } => double.Parse(value.ToString()!, options.CultureInfo),
             string => double.Parse(value.ToString()!, options.CultureInfo),
-            bool boolean when options.EnableBooleanCalculation => boolean ? 1 : 0,
+            bool boolean when options.AllowBooleanCalculation => boolean ? 1 : 0,
             _ => value
         };
     }
@@ -578,7 +578,7 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal or char => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
             ulong => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'ulong'"),
             _ => throw new InvalidOperationException(
