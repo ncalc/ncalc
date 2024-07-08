@@ -197,15 +197,25 @@ public static class LogicalExpressionParser
         var booleanFalse = Terms.Text("false", true)
             .Then<LogicalExpression>(False);
 
-        var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
-            .Then<LogicalExpression>((ctx, value) =>
-            {
-                if (value.Length == 1 &&
-                    ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
-                    return new ValueExpression(value.Span[0]);
-                return new ValueExpression(value.ToString());
-            });
+        var singleQuotesStringValue =
+            Terms.String(quotes: StringLiteralQuotes.Single)
+                .Then<LogicalExpression>((ctx, value) =>
+                {
+                    if (value.Length == 1 && ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
+                    {
+                        return new ValueExpression(value.Span[0]);
+                    }
 
+                    return new ValueExpression(value.ToString());
+                });
+        
+        var doubleQuotesStringValue = 
+            Terms
+            .String(quotes: StringLiteralQuotes.Double)
+            .Then<LogicalExpression>(value => new ValueExpression(value.ToString()));
+
+        var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
+        
         var charIsNumber = Literals.Pattern(char.IsNumber);
 
         var dateDefinition = charIsNumber

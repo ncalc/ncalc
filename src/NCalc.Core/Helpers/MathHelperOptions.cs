@@ -6,7 +6,6 @@ public class MathHelperOptions
     public required bool EnableBooleanCalculation { get; init; }
     public required bool UseDecimals { get; init; }
     public required bool OverflowProtection { get; init; }
-    
     public required bool AllowCharValues { get; init; }
     
     public static implicit operator MathHelperOptions(CultureInfo cultureInfo)
