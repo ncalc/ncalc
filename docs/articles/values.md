@@ -82,7 +82,7 @@ greeting("Chers")
 You can escape special characters using \\, \', \n, \r, \t.
 
 ## Chars
-If you use <xref:ExpressionOptions.AllowCharValues>, single length strings are interpreted as <xref:System.Char>
+If you use <xref:ExpressionOptions.AllowCharValues>, single quoted strings are interpreted as <xref:System.Char>
 ```
 var expression = new Expression("'g'", ExpressionOptions.AllowCharValues);
 var result = expression.Evalutate();

@@ -158,7 +158,7 @@ public static class LogicalExpressionParser
         var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
 
         var bitwiseAnd = Terms.Text("&");
-        var bitwiserOr = Terms.Text("|");
+        var bitwiseOr = Terms.Text("|");
         var bitwiseXOr = Terms.Text("^");
         var bitwiseNot = Terms.Text("~");
 
@@ -381,7 +381,7 @@ public static class LogicalExpressionParser
             .Or(bitwiseAnd.Then(BinaryExpressionType.BitwiseAnd));
 
         var orParser = or.Then(BinaryExpressionType.Or)
-            .Or(bitwiserOr.Then(BinaryExpressionType.BitwiseOr));
+            .Or(bitwiseOr.Then(BinaryExpressionType.BitwiseOr));
 
         var xorParser = bitwiseXOr.Then(BinaryExpressionType.BitwiseXOr);
 

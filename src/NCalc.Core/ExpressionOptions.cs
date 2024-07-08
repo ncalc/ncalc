@@ -70,7 +70,7 @@ public enum ExpressionOptions
     StringConcat = 1 << 11,
     
     /// <summary>
-    /// Parse single length strings as <see cref="char"/>
+    /// Parse single quoted strings as <see cref="char"/>
     /// </summary>
     AllowCharValues = 1 << 12
 }
