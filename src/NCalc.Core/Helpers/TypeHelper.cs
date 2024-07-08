@@ -119,14 +119,12 @@ public static class TypeHelper
 
         var aValue = a != null ? Convert.ChangeType(a, mpt, options.CultureInfo) : null;
         var bValue = b != null ? Convert.ChangeType(b, mpt, options.CultureInfo) : null;
-
-        var isCaseInsensitive = options.IsCaseInsensitive;
         
         return options.IsOrdinal switch
         {
-            true when isCaseInsensitive => StringComparer.OrdinalIgnoreCase.Compare(aValue, bValue),
+            true when options.IsCaseInsensitive => StringComparer.OrdinalIgnoreCase.Compare(aValue, bValue),
             true => StringComparer.Ordinal.Compare(aValue, bValue),
-            false when isCaseInsensitive => CaseInsensitiveComparer.Default.Compare(aValue, bValue),
+            false when options.IsCaseInsensitive => CaseInsensitiveComparer.Default.Compare(aValue, bValue),
             _ => Comparer.Default.Compare(aValue, bValue)
         };
     }
