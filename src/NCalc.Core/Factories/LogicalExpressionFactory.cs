@@ -21,12 +21,12 @@ public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
         return Create(expression, options);
     }
 
-    public static LogicalExpression Create(string expression, ExpressionOptions? options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
     {
         LogicalExpression? logicalExpression;
         try
         {
-            var parserContext = new LogicalExpressionParserContext(expression,options ?? ExpressionOptions.None);
+            var parserContext = new LogicalExpressionParserContext(expression, options);
             logicalExpression = LogicalExpressionParser.Parse(parserContext);
 
             if (logicalExpression is null)
