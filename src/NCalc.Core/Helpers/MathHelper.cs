@@ -9,14 +9,14 @@ namespace NCalc.Helpers;
 public static class MathHelper
 {
     // unchecked
-    static readonly Func<dynamic, dynamic, object> AddFunc = (a, b) => a + b;
-    static readonly Func<dynamic, dynamic, object> SubtractFunc = (a, b) => a - b;
-    static readonly Func<dynamic, dynamic, object> MultiplyFunc = (a, b) => a * b;
-    static readonly Func<dynamic, dynamic, object> DivideFunc = (a, b) => a / b;
-    static readonly Func<dynamic, dynamic, object> ModuloFunc = (a, b) => a % b;
+    private static readonly Func<dynamic, dynamic, object> AddFunc = (a, b) => a + b;
+    private static readonly Func<dynamic, dynamic, object> SubtractFunc = (a, b) => a - b;
+    private static readonly Func<dynamic, dynamic, object> MultiplyFunc = (a, b) => a * b;
+    private static readonly Func<dynamic, dynamic, object> DivideFunc = (a, b) => a / b;
+    private static readonly Func<dynamic, dynamic, object> ModuloFunc = (a, b) => a % b;
 
     // checked
-    static readonly Func<dynamic, dynamic, object> AddFuncChecked = (a, b) =>
+    private static readonly Func<dynamic, dynamic, object> AddFuncChecked = (a, b) =>
     {
         var res = checked(a + b);
         CheckOverflow(res);
@@ -24,7 +24,7 @@ public static class MathHelper
         return res;
     };
 
-    static readonly Func<dynamic, dynamic, object> SubtractFuncChecked = (a, b) =>
+    private static readonly Func<dynamic, dynamic, object> SubtractFuncChecked = (a, b) =>
     {
         var res = checked(a - b);
         CheckOverflow(res);
@@ -32,7 +32,7 @@ public static class MathHelper
         return res;
     };
 
-    static readonly Func<dynamic, dynamic, object> MultiplyFuncChecked = (a, b) =>
+    private static readonly Func<dynamic, dynamic, object> MultiplyFuncChecked = (a, b) =>
     {
         var res = checked(a * b);
         CheckOverflow(res);
@@ -40,7 +40,7 @@ public static class MathHelper
         return res;
     };
 
-    static readonly Func<dynamic, dynamic, object> DivideFuncChecked = (a, b) =>
+    private static readonly Func<dynamic, dynamic, object> DivideFuncChecked = (a, b) =>
     {
         var res = checked(a / b);
         CheckOverflow(res);
