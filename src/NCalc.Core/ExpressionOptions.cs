@@ -67,5 +67,10 @@ public enum ExpressionOptions
     /// <summary>
     /// Concat values as strings instead of arithmetic addition
     /// </summary>
-    StringConcat = 1 << 11
+    StringConcat = 1 << 11,
+    
+    /// <summary>
+    /// Parse single length strings as <see cref="char"/>
+    /// </summary>
+    AllowCharValues = 1 << 12
 }
