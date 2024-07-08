@@ -1,7 +1,4 @@
-using System.Runtime.CompilerServices;
-
 namespace NCalc.Helpers;
-
 
 public readonly struct ComparisonOptions(CultureInfo cultureInfo, ExpressionOptions options)
 {
