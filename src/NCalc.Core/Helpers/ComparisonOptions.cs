@@ -18,9 +18,4 @@ public readonly struct ComparisonOptions(CultureInfo cultureInfo, ExpressionOpti
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => options.HasFlag(ExpressionOptions.OrdinalStringComparer);
     }
-
-    public static implicit operator ComparisonOptions(CultureInfo cultureInfo)
-    {
-        return new ComparisonOptions(cultureInfo, ExpressionOptions.None);
-    }
 }
