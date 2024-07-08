@@ -107,8 +107,7 @@ public static class LogicalExpressionParser
                             result = (double)res;
                     }
 
-                    if (ctx is LogicalExpressionParserContext logicalCtx &&
-                        logicalCtx.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+                    if (((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault))
                     {
                         return new ValueExpression((decimal)result);
                     }
@@ -201,8 +200,8 @@ public static class LogicalExpressionParser
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
             .Then<LogicalExpression>((ctx, value) =>
             {
-                if (value.Length == 1 && ctx is LogicalExpressionParserContext logicalCtx &&
-                    logicalCtx.Options.HasFlag(ExpressionOptions.AllowCharValues))
+                if (value.Length == 1 &&
+                    ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
                     return new ValueExpression(value.Span[0]);
                 return new ValueExpression(value.ToString());
             });
