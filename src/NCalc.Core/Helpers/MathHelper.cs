@@ -476,8 +476,10 @@ public static class MathHelper
     {
         return value switch
         {
-            string or char when options is { UseDecimals: true, AllowCharValues: false } => decimal.Parse(value.ToString()!, options.CultureInfo),
-            string or char when options is {AllowCharValues:false} => double.Parse(value.ToString()!, options.CultureInfo),
+            char when options is { UseDecimals: true, AllowCharValues: false } => decimal.Parse(value.ToString()!, options.CultureInfo),
+            string when options is { UseDecimals: true } => decimal.Parse(value.ToString()!, options.CultureInfo),
+            char when options is { AllowCharValues:false } => double.Parse(value.ToString()!, options.CultureInfo),
+            string => double.Parse(value.ToString()!, options.CultureInfo),
             bool boolean when options.EnableBooleanCalculation => boolean ? 1 : 0,
             _ => value
         };

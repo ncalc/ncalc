@@ -431,10 +431,13 @@ public class MathsTests
     }
     
     [Theory]
-    [InlineData("3 + '3'", 54)]
-    [InlineData("'4' + '2'", 102)]
-    public void ShouldHandleCharAddition(string expression, object expected)
+    [InlineData("3 + '3'", ExpressionOptions.AllowCharValues,54)]
+    [InlineData("3 + '3'", ExpressionOptions.None,6d)]
+    [InlineData("'4' + '2'",ExpressionOptions.AllowCharValues, 102)]
+    [InlineData("'4' + '2'",ExpressionOptions.StringConcat, "42")]
+    [InlineData("'4' + '2'",ExpressionOptions.None, 6d)]
+    public void ShouldHandleCharAddition(string expression, ExpressionOptions options, object expected)
     {
-        Assert.Equal(expected, new Expression(expression, ExpressionOptions.AllowCharValues).Evaluate());
+        Assert.Equal(expected, new Expression(expression, options).Evaluate());
     }
 }
