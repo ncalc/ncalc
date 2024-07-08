@@ -1,5 +1,4 @@
-﻿using NCalc.Factories;
-using NCalc.Helpers;
+﻿using NCalc.Helpers;
 
 namespace NCalc;
 
@@ -27,14 +26,6 @@ public abstract record ExpressionContextBase
             CultureInfo = context.CultureInfo,
             IsCaseInsensitive = context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer),
             IsOrdinal = context.Options.HasFlag(ExpressionOptions.OrdinalStringComparer)
-        };
-    }
-    
-    public static implicit operator LogicalExpressionOptions(ExpressionContextBase context)
-    {
-        return new LogicalExpressionOptions
-        {
-            NumbersAsDecimal = context.Options.HasFlag(ExpressionOptions.DecimalAsDefault)
         };
     }
 }

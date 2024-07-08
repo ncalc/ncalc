@@ -128,7 +128,7 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomLogicalExpressionFactory : ILogicalExpressionFactory
     {
-        public LogicalExpression Create(string expression, LogicalExpressionOptions options) => throw new NCalcException("Stub method intented for testing.");
+        public LogicalExpression Create(string expression, ExpressionOptions options) => throw new NCalcException("Stub method intented for testing.");
     }
 
     private class CustomEvaluationService : IEvaluationService

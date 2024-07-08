@@ -107,7 +107,8 @@ public static class LogicalExpressionParser
                             result = (double)res;
                     }
 
-                    if (ctx is LogicalExpressionParserContext { ParseNumbersAsDecimal: true })
+                    if (ctx is LogicalExpressionParserContext logicalCtx &&
+                        logicalCtx.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
                     {
                         return new ValueExpression((decimal)result);
                     }
@@ -169,12 +170,13 @@ public static class LogicalExpressionParser
             .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
 
         var curlyBraceIdentifier =
-            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
+            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true, failOnEof: true)
+                .ElseError("Brace not closed."));
 
         // ("[" | "{") identifier ("]" | "}")
         var identifierExpression = OneOf(
-                braceIdentifier, 
-                curlyBraceIdentifier, 
+                braceIdentifier,
+                curlyBraceIdentifier,
                 identifier)
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
@@ -197,7 +199,13 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(False);
 
         var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
-            .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
+            .Then<LogicalExpression>((ctx, value) =>
+            {
+                if (value.Length == 1 && ctx is LogicalExpressionParserContext logicalCtx &&
+                    logicalCtx.Options.HasFlag(ExpressionOptions.AllowCharValues))
+                    return new ValueExpression(value.Span[0]);
+                return new ValueExpression(value.ToString());
+            });
 
         var charIsNumber = Literals.Pattern(char.IsNumber);
 

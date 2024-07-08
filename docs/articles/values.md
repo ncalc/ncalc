@@ -7,6 +7,7 @@ A value is a terminal token representing a concrete element. This can be:
 - A <xref:System.DateTime> or <xref:System.TimeSpan>
 - A <xref:System.Boolean>
 - A <xref:System.String>
+- A <xref:System.Char>
 - A <xref:NCalc.Domain.Function>
 - An <xref:NCalc.Domain.Identifier> (parameter).
 
@@ -69,13 +70,24 @@ true
 ```
 ## Strings
 
-Any character between single quotes "'" are evaluated as <xref:System.String>. 
+Any character between single or double quotes are evaluated as <xref:System.String>. 
 
 ```
 'hello'
 ```
 
+```
+greeting("Chers")
+```
 You can escape special characters using \\, \', \n, \r, \t.
+
+## Chars
+If you use <xref:ExpressionOptions.AllowCharValues>, single length strings are interpreted as <xref:System.Char>
+```
+var expression = new Expression("'g'", ExpressionOptions.AllowCharValues);
+var result = expression.Evalutate();
+Debug.Assert(result); // 'g' -> System.Char
+```
 
 ## Function
 
