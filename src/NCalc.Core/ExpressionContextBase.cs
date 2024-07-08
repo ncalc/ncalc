@@ -13,6 +13,7 @@ public abstract record ExpressionContextBase
         return new MathHelperOptions
         {
             CultureInfo = context.CultureInfo,
+            AllowCharValues = context.Options.HasFlag(ExpressionOptions.AllowCharValues),
             EnableBooleanCalculation = context.Options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
             UseDecimals = context.Options.HasFlag(ExpressionOptions.DecimalAsDefault),
             OverflowProtection = context.Options.HasFlag(ExpressionOptions.OverflowProtection)

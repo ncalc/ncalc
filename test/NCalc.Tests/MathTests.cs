@@ -429,4 +429,12 @@ public class MathsTests
 
         Assert.Throws<OverflowException>(() => e.Evaluate());
     }
+    
+    [Theory]
+    [InlineData("3 + '3'", 54)]
+    [InlineData("'4' + '2'", 102)]
+    public void ShouldHandleCharAddition(string expression, object expected)
+    {
+        Assert.Equal(expected, new Expression(expression, ExpressionOptions.AllowCharValues).Evaluate());
+    }
 }
