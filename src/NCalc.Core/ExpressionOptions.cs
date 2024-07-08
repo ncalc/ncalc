@@ -63,9 +63,9 @@ public enum ExpressionOptions
     /// Check for arithmetic binary operation overflow
     /// </summary>
     OverflowProtection = 1 << 10,
-        
+
     /// <summary>
-    /// Parse single length strings as <see cref="char"/>
+    /// Concat values as strings instead of arithmetic addition
     /// </summary>
-    AllowCharValues = 1 << 12,
+    StringConcat = 1 << 11
 }

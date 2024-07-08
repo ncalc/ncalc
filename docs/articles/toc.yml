@@ -16,6 +16,8 @@
   href: case_sensitivity.md
 - name: Overflow Protection
   href: overflow_protection.md
+- name: String Concatenation
+  href: string_concatenation.md
 - name: Async Support
   href: async.md
 - name: Caching
