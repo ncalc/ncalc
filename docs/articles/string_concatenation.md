@@ -1,6 +1,6 @@
 ﻿# String concatenation
 
-If the left or right values of expression are strings and <xref:NCalc.ExpressionOptions.StringConcat> option specified the result will be a string concatenation. Otherwise the arithmetic addition will be performed event with <xref:NCalc.ExpressionOptions.StringConcat> option specified.
+If the <xref:NCalc.ExpressionOptions.StringConcat> option specified the result will be a string concatenation. Otherwise it will try to perform an arithmetic addition if possible or if both values are strings then the result will be a string concatenation.
 
 ```c#
 try
