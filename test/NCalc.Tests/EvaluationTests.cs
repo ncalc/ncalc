@@ -34,7 +34,7 @@ public class EvaluationTests
     
 
     [Fact]
-    public void ShouldEvaluateInOperator()
+    public void ShouldEvaluateInFunction()
     {
         // The last argument should not be evaluated
         var ein = new Expression("in((2 + 2), [1], [2], 1 + 2, 4, 1 / 0)");
@@ -211,5 +211,21 @@ public class EvaluationTests
         Assert.Equal(4, result[2]);
         Assert.Equal(9, result[3]);
         Assert.Equal(16, result[4]);
+    }
+    
+    [Fact]
+    public void ShouldEvaluateInOperator()
+    {
+        var context = new ExpressionContext();
+        context.StaticParameters["PageState"] = "Insert";
+        Assert.Equal(true, new Expression("{PageState} in ('Insert','Update')", context).Evaluate());
+    }
+    
+    [Fact]
+    public void InOperatorShouldThrowExceptionIfNotArray()
+    {
+        var context = new ExpressionContext();
+        context.StaticParameters["PageState"] = "Insert";
+        Assert.Throws<NCalcParserException>(()=>new Expression("{PageState} in 'Insert')", context).Evaluate());
     }
 }

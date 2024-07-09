@@ -17,6 +17,22 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
         return parameters;
     }
 
+    public List<string> Visit(ArrayExpression arrayExpression)
+    {
+        var parameters = new List<string>();
+        foreach (var value in arrayExpression.Values)
+        {
+            if (value is not Identifier identifier) 
+                continue;
+            
+            if (!parameters.Contains(identifier.Name))
+            {
+                parameters.Add(identifier.Name);
+            }
+        }
+        return parameters;
+    }
+
     public List<string> Visit(UnaryExpression expression) => expression.Expression.Accept(this);
 
     public List<string> Visit(BinaryExpression expression)

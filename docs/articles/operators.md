@@ -26,9 +26,11 @@ The **and** operator has more priority than the **or**, thus in the example abov
 
 * =, ==, !=, <>
 * <, <=, >, >=
+* in
 
 ```
-  1 < 2
+ 1 < 2
+ {PageState} in ('Insert', 'Update')
 ```
 
 ## Additive

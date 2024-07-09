@@ -127,6 +127,14 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
                     return (decimal)BigDecimal.Pow(@base, exponent);
                 }
+
+            case BinaryExpressionType.In:
+            {
+                var left = leftValue.Value;
+                var right = (object?[])rightValue.Value!;
+
+                return right.Contains(left);
+            }
         }
 
         return null;
@@ -219,6 +227,18 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         }
 
         throw new NCalcParameterNotDefinedException(identifierName);
+    }
+
+    public object Visit(ArrayExpression arrayExpression)
+    {
+        List<object?> result = [];
+
+        foreach (var value in arrayExpression.Values)
+        {
+            result.Add(Evaluate(value));
+        }
+
+        return result.ToArray();
     }
 
     protected int CompareUsingMostPreciseType(object? a, object? b)

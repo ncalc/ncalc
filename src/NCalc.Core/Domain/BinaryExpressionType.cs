@@ -21,5 +21,6 @@ public enum BinaryExpressionType
     LeftShift,
     RightShift,
     Exponentiation,
-    Unknown
+    In,
+    Unknown = -1
 }

@@ -129,6 +129,13 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                     return Math.Pow(Convert.ToDouble(await leftValue.Value, context.CultureInfo),
                         Convert.ToDouble(await rightValue.Value, context.CultureInfo));
                 }
+            case BinaryExpressionType.In:
+            {
+                var left = await leftValue.Value;
+                var right = (object?[])(await rightValue.Value)!;
+
+                return right.Contains(left);
+            }
         }
 
         return null;
@@ -223,6 +230,19 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     public Task<object?> Visit(ValueExpression expression) => Task.FromResult(expression.Value);
 
+    
+    public async Task<object?> Visit(ArrayExpression arrayExpression)
+    {
+        List<object?> result = [];
+
+        foreach (var value in arrayExpression.Values)
+        {
+            result.Add(await EvaluateAsync(value));
+        }
+
+        return result.ToArray();
+    }
+    
     protected int CompareUsingMostPreciseType(object? a, object? b)
     {
         return TypeHelper.CompareUsingMostPreciseType(a, b, context);

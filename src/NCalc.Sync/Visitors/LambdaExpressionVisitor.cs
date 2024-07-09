@@ -206,6 +206,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         return LinqExpression.PropertyOrField(_context, function.Name);
     }
 
+    public LinqExpression Visit(ArrayExpression arrayExpression)
+    {
+        throw new NotSupportedException("Arrays are not supported at the moment.");
+    }
+
     private ExtendedMethodInfo FindMethod(string methodName, LinqExpression[] methodArgs)
     {
         if (_context == null)

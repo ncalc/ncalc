@@ -40,4 +40,12 @@ public class ParameterExtractionTests
         var p = expression.GetParametersNames();
         Assert.Empty(p);
     }
+    
+    [Fact]
+    public void ShouldGetParametersInsideArray()
+    {
+        var expression = new Expression("(a,b,c)");
+        var p = expression.GetParametersNames();
+        Assert.Equal(3, p.Count);
+    }
 }

@@ -129,4 +129,16 @@ public class SerializationTests
         Assert.Equal("'c'", new ValueExpression('c').ToString());
         Assert.Equal("#" + new DateTime(2009, 1, 1) + "#", new ValueExpression(new DateTime(2009, 1, 1)).ToString());
     }
+    
+    [Fact]
+    public void ArraySerializationTest()
+    {
+        var trueArrayExpression = new ArrayExpression([new ValueExpression(true)]);
+        var helloWorldArrayExpression = new ArrayExpression([new ValueExpression("Hello"), new ValueExpression("World")]);
+        Assert.Equal("(True)", trueArrayExpression.ToString());
+        Assert.Equal("('Hello','World')", helloWorldArrayExpression.ToString());
+        Assert.Equal("()", new ArrayExpression([]).ToString());
+        Assert.Equal("((True),('Hello','World'))", new ArrayExpression([trueArrayExpression,helloWorldArrayExpression]).ToString());
+
+    }
 }

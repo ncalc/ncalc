@@ -41,6 +41,7 @@ public static class LogicalExpressionParser
          *                  | "false"
          *                  | ("[" | "{") anything ("]" | "}")
          *                  | function
+         *                  | array
          *                  | "(" expression ")" ;
          *
          * function       => Identifier "(" arguments ")"
@@ -129,6 +130,8 @@ public static class LogicalExpressionParser
 
         var equal = OneOf(Terms.Text("=="), Terms.Text("="));
         var notEqual = OneOf(Terms.Text("<>"), Terms.Text("!="));
+        var @in = Terms.Text("in", true);
+
 
         var greater = Terms.Text(">");
         var greaterOrEqual = Terms.Text(">=");
@@ -163,7 +166,7 @@ public static class LogicalExpressionParser
         var bitwiseNot = Terms.Text("~");
 
         // "(" expression ")"
-        var groupExpression = Between(openParen, expression, closeParen.ElseError("Parenthesis not closed."));
+        var groupExpression = Between(openParen, expression, closeParen);
 
         var braceIdentifier = openBrace
             .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
@@ -201,21 +204,22 @@ public static class LogicalExpressionParser
             Terms.String(quotes: StringLiteralQuotes.Single)
                 .Then<LogicalExpression>((ctx, value) =>
                 {
-                    if (value.Length == 1 && ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
+                    if (value.Length == 1 &&
+                        ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
                     {
                         return new ValueExpression(value.Span[0]);
                     }
 
                     return new ValueExpression(value.ToString());
                 });
-        
-        var doubleQuotesStringValue = 
+
+        var doubleQuotesStringValue =
             Terms
-            .String(quotes: StringLiteralQuotes.Double)
-            .Then<LogicalExpression>(value => new ValueExpression(value.ToString()));
+                .String(quotes: StringLiteralQuotes.Double)
+                .Then<LogicalExpression>(value => new ValueExpression(value.ToString()));
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
-        
+
         var charIsNumber = Literals.Pattern(char.IsNumber);
 
         var dateDefinition = charIsNumber
@@ -277,6 +281,16 @@ public static class LogicalExpressionParser
         var decimalNumber = Terms.Decimal(NumberOptions.AllowSign).Then<LogicalExpression>(d => new ValueExpression(d));
         var doubleNumber = Terms.Double(NumberOptions.AllowSign).Then<LogicalExpression>(d => new ValueExpression(d));
 
+        // array => "(" (expression ("," expression)*)? ")"
+        var populatedArray =
+            Between(openParen, Separated(comma, expression), closeParen.ElseError("Parenthesis not closed."))
+                .Then<LogicalExpression>(values => new ArrayExpression(values.ToArray()));
+
+        var emptyArray = openParen.AndSkip(closeParen)
+            .Then<LogicalExpression>(_ => new ArrayExpression([]));
+
+        var array = OneOf(emptyArray, populatedArray);
+        
         // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
         var primary = OneOf(
             number,
@@ -288,7 +302,8 @@ public static class LogicalExpressionParser
             stringValue,
             function,
             groupExpression,
-            identifierExpression);
+            identifierExpression,
+            array);
 
         // exponential => unary ( "**" unary )* ;
         var exponential = primary.And(ZeroOrMany(exponent.And(primary)))
@@ -344,12 +359,13 @@ public static class LogicalExpressionParser
             (rightShift, static (a, b) => new BinaryExpression(BinaryExpressionType.RightShift, a, b))
         );
 
-        // relational => shift ( ( ">=" | "<=" | "<" | ">" ) shift )* ;
+        // relational => shift ( ( ">=" | "<=" | "<" | ">" | "in" ) shift )* ;
         var relational = shift.And(ZeroOrMany(OneOf(
                     greaterOrEqual.Then(BinaryExpressionType.GreaterOrEqual),
                     lesserOrEqual.Then(BinaryExpressionType.LesserOrEqual),
                     lesser.Then(BinaryExpressionType.Lesser),
-                    greater.Then(BinaryExpressionType.Greater))
+                    greater.Then(BinaryExpressionType.Greater),
+                    @in.Then(BinaryExpressionType.In))
                 .And(shift)))
             .Then(static x =>
             {
