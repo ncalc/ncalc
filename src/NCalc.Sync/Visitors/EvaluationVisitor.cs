@@ -38,11 +38,11 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         {
             case BinaryExpressionType.And:
                 return Convert.ToBoolean(leftValue.Value, context.CultureInfo) &&
-                         Convert.ToBoolean(rightValue.Value, context.CultureInfo);
+                       Convert.ToBoolean(rightValue.Value, context.CultureInfo);
 
             case BinaryExpressionType.Or:
                 return Convert.ToBoolean(leftValue.Value, context.CultureInfo) ||
-                         Convert.ToBoolean(rightValue.Value, context.CultureInfo);
+                       Convert.ToBoolean(rightValue.Value, context.CultureInfo);
 
             case BinaryExpressionType.Div:
                 return TypeHelper.IsReal(leftValue.Value) || TypeHelper.IsReal(rightValue.Value)
@@ -75,25 +75,15 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 return CompareUsingMostPreciseType(leftValue.Value, rightValue.Value) != 0;
 
             case BinaryExpressionType.Plus:
-                {
-                    var left = leftValue.Value;
-                    var right = rightValue.Value;
+            {
+                var left = leftValue.Value;
+                var right = rightValue.Value;
 
-                    if (context.Options.HasFlag(ExpressionOptions.StringConcat))
-                        return string.Concat(left, right);
+                if (context.Options.HasFlag(ExpressionOptions.StringConcat) || left is string && right is string)
+                    return string.Concat(left, right);
 
-                    try
-                    {
-                        return MathHelper.Add(left, right, context);
-                    }
-                    catch (FormatException)
-                    {
-                        if (left is string && right is string)
-                            return string.Concat(left, right);
-
-                        throw;
-                    }
-                }
+                return MathHelper.Add(left, right, context);
+            }
 
             case BinaryExpressionType.Times:
                 return MathHelper.Multiply(leftValue.Value, rightValue.Value, context);
@@ -101,38 +91,38 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
             case BinaryExpressionType.BitwiseAnd:
                 return Convert.ToUInt64(leftValue.Value, context.CultureInfo) &
-                         Convert.ToUInt64(rightValue.Value, context.CultureInfo);
+                       Convert.ToUInt64(rightValue.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.BitwiseOr:
                 return Convert.ToUInt64(leftValue.Value, context.CultureInfo) |
-                         Convert.ToUInt64(rightValue.Value, context.CultureInfo);
+                       Convert.ToUInt64(rightValue.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.BitwiseXOr:
                 return Convert.ToUInt64(leftValue.Value, context.CultureInfo) ^
-                         Convert.ToUInt64(rightValue.Value, context.CultureInfo);
+                       Convert.ToUInt64(rightValue.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.LeftShift:
                 return Convert.ToUInt64(leftValue.Value, context.CultureInfo) <<
-                         Convert.ToInt32(rightValue.Value, context.CultureInfo);
+                       Convert.ToInt32(rightValue.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.RightShift:
                 return Convert.ToUInt64(leftValue.Value, context.CultureInfo) >>
-                         Convert.ToInt32(rightValue.Value, context.CultureInfo);
+                       Convert.ToInt32(rightValue.Value, context.CultureInfo);
 
             case BinaryExpressionType.Exponentiation:
-                {
-                    if (!context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
-                        return Math.Pow(Convert.ToDouble(leftValue.Value, context.CultureInfo),
-                            Convert.ToDouble(rightValue.Value, context.CultureInfo));
-                    BigDecimal @base = new BigDecimal(Convert.ToDecimal(leftValue.Value));
-                    BigInteger exponent = new BigInteger(Convert.ToDecimal(rightValue.Value));
+            {
+                if (!context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+                    return Math.Pow(Convert.ToDouble(leftValue.Value, context.CultureInfo),
+                        Convert.ToDouble(rightValue.Value, context.CultureInfo));
+                BigDecimal @base = new BigDecimal(Convert.ToDecimal(leftValue.Value));
+                BigInteger exponent = new BigInteger(Convert.ToDecimal(rightValue.Value));
 
-                    return (decimal)BigDecimal.Pow(@base, exponent);
-                }
+                return (decimal)BigDecimal.Pow(@base, exponent);
+            }
         }
 
         return null;
@@ -233,10 +223,12 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     {
         return TypeHelper.CompareUsingMostPreciseType(a, b, context);
     }
+
     protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
         EvaluateFunction?.Invoke(name, args);
     }
+
     protected void OnEvaluateParameter(string name, ParameterArgs args)
     {
         EvaluateParameter?.Invoke(name, args);
