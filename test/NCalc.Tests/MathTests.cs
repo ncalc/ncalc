@@ -438,6 +438,6 @@ public class MathsTests
     [InlineData("'4' + '2'",ExpressionOptions.None, 6d)]
     public void ShouldHandleCharAddition(string expression, ExpressionOptions options, object expected)
     {
-        Assert.Equal(expected, new Expression(expression, options).Evaluate());
+        Assert.Equal(expected, new Expression(expression, options | ExpressionOptions.NoCache).Evaluate());
     }
 }
