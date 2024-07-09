@@ -1,0 +1,39 @@
+name: Benchmarks
+
+on:
+  push:
+    branches:
+      - master
+      - release/*
+  pull_request:
+    branches:
+      - master
+      - release/*
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run Benchmarks
+        run: dotnet run --project test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release --filter *Benchmark --output ./TestResults/Benchmarks/BenchmarkResults.md --format markdown
+
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results
+          path: ./TestResults/Benchmarks/BenchmarkResults.md
+
