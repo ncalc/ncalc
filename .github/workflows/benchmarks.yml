@@ -37,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: benchmark-results
-          path: ./Benchmarks/BenchmarkResults.md
+          path: ./Benchmarks/
