@@ -31,8 +31,8 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     public object? Visit(BinaryExpression expression)
     {
-        var leftValue = new Lazy<object?>(() => Evaluate(expression.LeftExpression));
-        var rightValue = new Lazy<object?>(() => Evaluate(expression.RightExpression));
+        var leftValue = new Lazy<object?>(() => Evaluate(expression.LeftExpression), LazyThreadSafetyMode.None);
+        var rightValue = new Lazy<object?>(() => Evaluate(expression.RightExpression), LazyThreadSafetyMode.None);
 
         switch (expression.Type)
         {
