@@ -28,9 +28,18 @@ jobs:
           dotnet-version: |
             6.0.x
             8.0.x
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
       - name: Build
         run: dotnet build
       - name: Test
-        run: dotnet test --verbosity normal
+        run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
+      - name: Generate Code Coverage Report
+        run: reportgenerator -reports:./TestResults/**/*.xml -targetdir:./TestResults/CoverageReport -reporttypes:Html
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: ./TestResults/CoverageReport
       - name: Benchmark
         run: dotnet run --project test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release
