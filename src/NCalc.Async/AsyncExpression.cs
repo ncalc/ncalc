@@ -184,7 +184,7 @@ public class AsyncExpression
 
         try
         {
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
@@ -206,7 +206,7 @@ public class AsyncExpression
     {
         try
         {
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -265,7 +265,7 @@ public class AsyncExpression
     public List<string> GetParametersNames()
     {
         var parameterExtractionVisitor = new ParameterExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
         return LogicalExpression.Accept(parameterExtractionVisitor);
     }
 }

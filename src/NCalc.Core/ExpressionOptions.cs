@@ -55,7 +55,7 @@ public enum ExpressionOptions
     OrdinalStringComparer = 1 << 8,
 
     /// <summary>
-    /// Allow calculation with boolean values
+    /// Allow calculation with <see cref="bool"/> values
     /// </summary>
     AllowBooleanCalculation = 1 << 9,
 
@@ -67,5 +67,10 @@ public enum ExpressionOptions
     /// <summary>
     /// Concat values as strings instead of arithmetic addition
     /// </summary>
-    StringConcat = 1 << 11
+    StringConcat = 1 << 11,
+    
+    /// <summary>
+    /// Parse single quoted strings as <see cref="char"/>
+    /// </summary>
+    AllowCharValues = 1 << 12
 }

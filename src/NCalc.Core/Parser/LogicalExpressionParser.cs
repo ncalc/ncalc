@@ -107,7 +107,7 @@ public static class LogicalExpressionParser
                             result = (double)res;
                     }
 
-                    if (ctx is LogicalExpressionParserContext { ParseNumbersAsDecimal: true })
+                    if (((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault))
                     {
                         return new ValueExpression((decimal)result);
                     }
@@ -158,7 +158,7 @@ public static class LogicalExpressionParser
         var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
 
         var bitwiseAnd = Terms.Text("&");
-        var bitwiserOr = Terms.Text("|");
+        var bitwiseOr = Terms.Text("|");
         var bitwiseXOr = Terms.Text("^");
         var bitwiseNot = Terms.Text("~");
 
@@ -169,12 +169,13 @@ public static class LogicalExpressionParser
             .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
 
         var curlyBraceIdentifier =
-            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
+            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true, failOnEof: true)
+                .ElseError("Brace not closed."));
 
         // ("[" | "{") identifier ("]" | "}")
         var identifierExpression = OneOf(
-                braceIdentifier, 
-                curlyBraceIdentifier, 
+                braceIdentifier,
+                curlyBraceIdentifier,
                 identifier)
             .Then<LogicalExpression>(x => new Identifier(x.ToString()));
 
@@ -196,9 +197,25 @@ public static class LogicalExpressionParser
         var booleanFalse = Terms.Text("false", true)
             .Then<LogicalExpression>(False);
 
-        var stringValue = Terms.String(quotes: StringLiteralQuotes.SingleOrDouble)
-            .Then<LogicalExpression>(x => new ValueExpression(x.ToString()));
+        var singleQuotesStringValue =
+            Terms.String(quotes: StringLiteralQuotes.Single)
+                .Then<LogicalExpression>((ctx, value) =>
+                {
+                    if (value.Length == 1 && ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
+                    {
+                        return new ValueExpression(value.Span[0]);
+                    }
 
+                    return new ValueExpression(value.ToString());
+                });
+        
+        var doubleQuotesStringValue = 
+            Terms
+            .String(quotes: StringLiteralQuotes.Double)
+            .Then<LogicalExpression>(value => new ValueExpression(value.ToString()));
+
+        var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
+        
         var charIsNumber = Literals.Pattern(char.IsNumber);
 
         var dateDefinition = charIsNumber
@@ -364,7 +381,7 @@ public static class LogicalExpressionParser
             .Or(bitwiseAnd.Then(BinaryExpressionType.BitwiseAnd));
 
         var orParser = or.Then(BinaryExpressionType.Or)
-            .Or(bitwiserOr.Then(BinaryExpressionType.BitwiseOr));
+            .Or(bitwiseOr.Then(BinaryExpressionType.BitwiseOr));
 
         var xorParser = bitwiseXOr.Then(BinaryExpressionType.BitwiseXOr);
 

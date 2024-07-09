@@ -131,7 +131,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             case ValueType.Integer:
                 result.Append(expression.Value).Append(' ');
                 break;
-            case ValueType.String:
+            case ValueType.String or ValueType.Char:
                 result.Append('\'').Append(expression.Value).Append('\'').Append(' ');
                 break;
         }
