@@ -11,9 +11,11 @@ on:
       - release/*
 
 jobs:
-  benchmark:
+  benchmarks:
     runs-on: ubuntu-latest
-
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -29,11 +31,10 @@ jobs:
         run: dotnet restore
 
       - name: Run Benchmarks
-        run: dotnet run --project test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release --filter *Benchmark --output ./TestResults/Benchmarks/BenchmarkResults.md --format markdown
+        run: dotnet run --project test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release --artifacts ./Benchmarks/
 
       - name: Upload Benchmark Results
         uses: actions/upload-artifact@v3
         with:
           name: benchmark-results
-          path: ./TestResults/Benchmarks/BenchmarkResults.md
-
+          path: ./Benchmarks/BenchmarkResults.md

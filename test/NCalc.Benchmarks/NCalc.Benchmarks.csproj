@@ -8,6 +8,7 @@
     <Configurations>Debug;Release;SignedRelease</Configurations>
     <Platforms>AnyCPU</Platforms>
     <IsPackable>false</IsPackable>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,9 +18,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj" />
   </ItemGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
-    <Optimize>true</Optimize>
-  </PropertyGroup>
 
 </Project>
