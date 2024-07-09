@@ -1,12 +1,5 @@
 ﻿using BenchmarkDotNet.Running;
+using NCalc.Benchmarks;
 
-namespace NCalc.Benchmarks;
-
-public static class Program
-{
-    public static void Main()
-    {
-        BenchmarkRunner.Run<LogicalExpressionFactoryBenchmark>();
-        BenchmarkRunner.Run<EvaluateVsLambdaBenchmark>();
-    }
-}
+BenchmarkRunner.Run<LogicalExpressionFactoryBenchmark>(null, args);
+BenchmarkRunner.Run<EvaluateVsLambdaBenchmark>(null, args);
