@@ -1,5 +1,6 @@
 ﻿using ExtendedNumerics;
 using System.Numerics;
+using System.Threading;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Handlers;
@@ -33,8 +34,8 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     public async Task<object?> Visit(BinaryExpression expression)
     {
-        var leftValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression));
-        var rightValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression));
+        var leftValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression), LazyThreadSafetyMode.None);
+        var rightValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression), LazyThreadSafetyMode.None);
 
         switch (expression.Type)
         {
