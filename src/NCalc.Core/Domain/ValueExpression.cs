@@ -21,6 +21,7 @@ public sealed class ValueExpression : LogicalExpression
             bool => ValueType.Boolean,
             DateTime => ValueType.DateTime,
             TimeSpan => ValueType.TimeSpan,
+            char => ValueType.Char,
             decimal or double or float => ValueType.Float,
             byte or sbyte or short or int or long or ushort or uint or ulong => ValueType.Integer,
             string => ValueType.String,
@@ -34,6 +35,12 @@ public sealed class ValueExpression : LogicalExpression
     {
         Value = value;
         Type = ValueType.String;
+    }
+    
+    public ValueExpression(char value)
+    {
+        Value = value;
+        Type = ValueType.Char;
     }
 
     public ValueExpression(int value)

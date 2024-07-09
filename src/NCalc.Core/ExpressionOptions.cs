@@ -55,12 +55,22 @@ public enum ExpressionOptions
     OrdinalStringComparer = 1 << 8,
 
     /// <summary>
-    /// Allow calculation with boolean values
+    /// Allow calculation with <see cref="bool"/> values
     /// </summary>
     AllowBooleanCalculation = 1 << 9,
 
     /// <summary>
     /// Check for arithmetic binary operation overflow
     /// </summary>
-    OverflowProtection = 1 << 10
+    OverflowProtection = 1 << 10,
+
+    /// <summary>
+    /// Concat values as strings instead of arithmetic addition
+    /// </summary>
+    StringConcat = 1 << 11,
+    
+    /// <summary>
+    /// Parse single quoted strings as <see cref="char"/>
+    /// </summary>
+    AllowCharValues = 1 << 12
 }

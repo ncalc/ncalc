@@ -9,14 +9,14 @@ namespace NCalc.Helpers;
 public static class MathHelper
 {
     // unchecked
-    static readonly Func<dynamic, dynamic, object> AddFunc = (a, b) => a + b;
-    static readonly Func<dynamic, dynamic, object> SubtractFunc = (a, b) => a - b;
-    static readonly Func<dynamic, dynamic, object> MultiplyFunc = (a, b) => a * b;
-    static readonly Func<dynamic, dynamic, object> DivideFunc = (a, b) => a / b;
-    static readonly Func<dynamic, dynamic, object> ModuloFunc = (a, b) => a % b;
+    private static readonly Func<dynamic, dynamic, object> AddFunc = (a, b) => a + b;
+    private static readonly Func<dynamic, dynamic, object> SubtractFunc = (a, b) => a - b;
+    private static readonly Func<dynamic, dynamic, object> MultiplyFunc = (a, b) => a * b;
+    private static readonly Func<dynamic, dynamic, object> DivideFunc = (a, b) => a / b;
+    private static readonly Func<dynamic, dynamic, object> ModuloFunc = (a, b) => a % b;
 
     // checked
-    static readonly Func<dynamic, dynamic, object> AddFuncChecked = (a, b) =>
+    private static readonly Func<dynamic, dynamic, object> AddFuncChecked = (a, b) =>
     {
         var res = checked(a + b);
         CheckOverflow(res);
@@ -24,7 +24,7 @@ public static class MathHelper
         return res;
     };
 
-    static readonly Func<dynamic, dynamic, object> SubtractFuncChecked = (a, b) =>
+    private static readonly Func<dynamic, dynamic, object> SubtractFuncChecked = (a, b) =>
     {
         var res = checked(a - b);
         CheckOverflow(res);
@@ -32,7 +32,7 @@ public static class MathHelper
         return res;
     };
 
-    static readonly Func<dynamic, dynamic, object> MultiplyFuncChecked = (a, b) =>
+    private static readonly Func<dynamic, dynamic, object> MultiplyFuncChecked = (a, b) =>
     {
         var res = checked(a * b);
         CheckOverflow(res);
@@ -40,7 +40,7 @@ public static class MathHelper
         return res;
     };
 
-    static readonly Func<dynamic, dynamic, object> DivideFuncChecked = (a, b) =>
+    private static readonly Func<dynamic, dynamic, object> DivideFuncChecked = (a, b) =>
     {
         var res = checked(a / b);
         CheckOverflow(res);
@@ -315,7 +315,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Abs(Convert.ToDecimal(a));
 
         return Math.Abs(Convert.ToDouble(a));
@@ -351,7 +351,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Ceiling(Convert.ToDecimal(a));
 
         return Math.Ceiling(Convert.ToDouble(a));
@@ -373,7 +373,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Floor(Convert.ToDecimal(a));
 
         return Math.Floor(Convert.ToDouble(a));
@@ -411,7 +411,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
         {
             BigDecimal @base = new BigDecimal(Convert.ToDecimal(a));
             BigInteger exponent = new BigInteger(Convert.ToDecimal(b));
@@ -427,7 +427,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Round(Convert.ToDecimal(a), Convert.ToInt16(b), rounding);
 
         return Math.Round(Convert.ToDouble(a), Convert.ToInt16(b), rounding);
@@ -437,7 +437,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Sign(Convert.ToDecimal(a));
 
         return Math.Sign(Convert.ToDouble(a));
@@ -466,7 +466,7 @@ public static class MathHelper
     {
         a = ConvertIfNeeded(a, options);
 
-        if (options.UseDecimals)
+        if (options.DecimalAsDefault)
             return Math.Truncate(Convert.ToDecimal(a));
 
         return Math.Truncate(Convert.ToDouble(a));
@@ -476,9 +476,11 @@ public static class MathHelper
     {
         return value switch
         {
-            string or char when options.UseDecimals => decimal.Parse(value.ToString()!, options.CultureInfo),
-            string or char => double.Parse(value.ToString()!, options.CultureInfo),
-            bool boolean when options.EnableBooleanCalculation => boolean ? 1 : 0,
+            char when options is { DecimalAsDefault: true, AllowCharValues: false } => decimal.Parse(value.ToString()!, options.CultureInfo),
+            string when options is { DecimalAsDefault: true } => decimal.Parse(value.ToString()!, options.CultureInfo),
+            char when options is { AllowCharValues:false } => double.Parse(value.ToString()!, options.CultureInfo),
+            string => double.Parse(value.ToString()!, options.CultureInfo),
+            bool boolean when options.AllowBooleanCalculation => boolean ? 1 : 0,
             _ => value
         };
     }
@@ -490,6 +492,7 @@ public static class MathHelper
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}"),
             byte b1 => ExecuteByteOperation(b1, b, operatorName, func),
+            char @char => ExecuteCharOperation(@char, b, operatorName,func),
             sbyte @sbyte => ExecuteSByteOperation(@sbyte, b, operatorName, func),
             short s => ExecuteShortOperation(s, b, operatorName, func),
             ushort @ushort => ExecuteUShortOperation(@ushort, b, operatorName, func),
@@ -511,19 +514,31 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'byte' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for 'byte' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
+    private static object ExecuteCharOperation(char left, object? right, char operatorName, Func<object, object, object> func)
+    {
+        return right switch
+        {
+            bool => throw new InvalidOperationException(
+                $"Operator '{operatorName}' can't be applied to operands of types 'char' and 'bool'"),
+            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
+            _ => throw new InvalidOperationException(
+                $"Operator '{operatorName}' not implemented for 'char' and {right?.GetType().ToString() ?? "null"}"),
+        };
+    }
+    
     private static object ExecuteSByteOperation(sbyte left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'sbyte' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
             ulong => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'sbyte' and 'ulong'"),
             _ => throw new InvalidOperationException(
@@ -537,7 +552,7 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'short' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
             ulong => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'short' and 'ulong'"),
             _ => throw new InvalidOperationException(
@@ -551,7 +566,7 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'ushort' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for types 'ushort' and {right?.GetType().ToString() ?? "null"}"),
         };
@@ -563,7 +578,7 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
             ulong => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'ulong'"),
             _ => throw new InvalidOperationException(
@@ -577,7 +592,7 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'uint' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for types 'uint' and {right?.GetType().ToString() ?? "null"}"),
         };
@@ -589,7 +604,7 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'long' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
             ulong => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'long' and 'ulong'"),
             _ => throw new InvalidOperationException(
@@ -611,7 +626,7 @@ public static class MathHelper
                                 $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'int'"),
             long => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'long'"),
-            byte or ushort or uint or ulong or float or double or decimal => func(left, right),
+            byte or char or ushort or uint or ulong or float or double or decimal => func(left, right),
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for types 'ulong' and {right?.GetType().ToString() ?? "null"}"),
         };
@@ -623,7 +638,7 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'float' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
             decimal => func(Convert.ToDecimal(left), right),
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for types 'float' and {right?.GetType().ToString() ?? "null"}"),
@@ -636,7 +651,7 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'double' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
             decimal => func(Convert.ToDecimal(left), right),
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for types 'double' and {right?.GetType().ToString() ?? "null"}"),
@@ -649,7 +664,7 @@ public static class MathHelper
         {
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'decimal' and 'bool'"),
-            byte or sbyte or short or ushort or int or uint or long or ulong or decimal => func(left, right),
+            byte or char or sbyte or short or ushort or int or uint or long or ulong or decimal => func(left, right),
             float or double => func(left, Convert.ToDecimal(right)),
             _ => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' not implemented for types 'decimal' and {right?.GetType().ToString() ?? "null"}"),
@@ -658,14 +673,11 @@ public static class MathHelper
 
     private static void CheckOverflow(dynamic value)
     {
-        if (value is double doubleVal)
+        switch (value)
         {
-            if (double.IsInfinity(doubleVal))
+            case double doubleVal when double.IsInfinity(doubleVal):
                 throw new OverflowException("Arithmetic operation resulted in an overflow");
-        }
-        else if (value is float floatValue)
-        {
-            if (float.IsInfinity(floatValue))
+            case float floatValue when float.IsInfinity(floatValue):
                 throw new OverflowException("Arithmetic operation resulted in an overflow");
         }
     }

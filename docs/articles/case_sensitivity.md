@@ -1,9 +1,9 @@
 ﻿# Case Sensitivity
 
-## Functions and Parameters"
+## Functions and Parameters
 By default, the evaluation process is case-sensitive.
-This means every parameter and function evaluation will match using case. 
-This behavior can be overriden for both using a custom `Dictionary` instance.
+This means every parameter and function evaluation will match with case sensitivity. 
+This behavior can be overriden for both using a `IDictionary` implementation with a custom `StringComparer`.
 
 ### Case-insensitive function
 ```c#
@@ -32,9 +32,8 @@ var expression = new Expression("name == 'Beatriz'")
 var expression = new Expression("aBs(-1)", ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
 ```
 
-
 ## String Comparison
-You can also change the comparison of string values using <xref:NCalc.Expression.ExpressionOptions.CaseInsensitiveStringComparer>.
+You can also change the comparison of string values using <xref:NCalc.ExpressionOptions.CaseInsensitiveStringComparer>.
 
 ```c#
  var expression = new Expression("{PageState} == 'list'");

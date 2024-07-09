@@ -1,13 +1,10 @@
 # NCalc
 
-[![Appveyor](https://img.shields.io/appveyor/ci/yallie/ncalc.svg)](https://ci.appveyor.com/project/yallie/ncalc)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ncalc/ncalc/dotnet.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/ncalc/ncalc.svg)](https://codecov.io/gh/ncalc/ncalc)
-[![Tests](https://img.shields.io/appveyor/tests/yallie/ncalc.svg)](https://ci.appveyor.com/project/yallie/ncalc/build/tests)
-[![NuGet](https://img.shields.io/nuget/v/NCalcSync.svg?label=nuget%20unsigned
-)](https://nuget.org/packages/NCalcSync)
-[![NuGet](https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget%20signed
+[![NuGet](https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget&color=004880
 )](https://nuget.org/packages/NCalcSync.signed)
-[![Discord](https://img.shields.io/discord/1237181265426387005?logo=discord&logoColor=white&label=%20&labelColor=%23697EC4&color=%237289DA
+[![Discord](https://img.shields.io/discord/1237181265426387005?color=5b62ef&label=discord
 )](https://discord.gg/TeJkmXbqFk)
 
 NCalc is a mathematical expression evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.

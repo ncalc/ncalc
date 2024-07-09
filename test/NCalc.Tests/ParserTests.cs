@@ -58,6 +58,18 @@ public class ParserTests
         Assert.Equal("{Diagnostic}.Data",((Identifier)logicalExpression).Name);
     }
     
+    [Fact]
+    public void AllowCharValues()
+    {
+        const string formula = "'c'";
+
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues);
+
+        Assert.IsType<ValueExpression>(logicalExpression);
+        
+        Assert.Equal('c',((ValueExpression)logicalExpression).Value);
+    }
+    
     [InlineData("(1+2)*3",9)]
     [InlineData("(8 * 8) + 1", 65)]
     [InlineData("1 + 1", 2)]

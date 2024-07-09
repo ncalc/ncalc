@@ -12,7 +12,7 @@ namespace NCalc.Antlr;
 /// </summary>
 public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
 {
-    public LogicalExpression Create(string expression, LogicalExpressionOptions options = null)
+    public LogicalExpression Create(string expression, ExpressionOptions options)
     {
         LogicalExpression logicalExpression;
         var lexer = new NCalcLexer(new AntlrInputStream(expression));
@@ -20,7 +20,7 @@ public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
         lexer.AddErrorListener(errorListenerLexer);
 
         var parser = new NCalcParser(new CommonTokenStream(lexer)) {
-            UseDecimal = options?.NumbersAsDecimal ?? false
+            UseDecimal = options.HasFlag(ExpressionOptions.DecimalAsDefault)
         };
 
         var errorListenerParser = new ErrorListenerParser();
