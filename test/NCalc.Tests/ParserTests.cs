@@ -57,4 +57,20 @@ public class ParserTests
         
         Assert.Equal("{Diagnostic}.Data",((Identifier)logicalExpression).Name);
     }
+    
+    [InlineData("(1+2)*3",9)]
+    [InlineData("(8 * 8) + 1", 65)]
+    [InlineData("1 + 1", 2)]
+    [InlineData("-1 - 1", -2)]
+    [Theory]
+    public void ShouldHandleBinaryExpression(string formula, int expectedResult)
+    {
+        var logicalExpression = LogicalExpressionFactory.Create(formula);
+
+        Assert.IsType<BinaryExpression>(logicalExpression);
+        
+        var expression = new Expression(logicalExpression);
+        
+        Assert.Equal(expectedResult, expression.Evaluate());
+    }
 }
