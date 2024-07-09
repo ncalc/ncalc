@@ -1,3 +1,5 @@
+using NCalc.Handlers;
+
 namespace NCalc;
 
 public record ExpressionContext : ExpressionContextBase
@@ -6,6 +8,9 @@ public record ExpressionContext : ExpressionContextBase
 
     public IDictionary<string, ExpressionFunction> Functions { get; set; } = new Dictionary<string, ExpressionFunction>();
 
+    public EvaluateParameterHandler? EvaluateParameterHandler { get; set; }
+    public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
+    
     public ExpressionContext()
     {
     }
