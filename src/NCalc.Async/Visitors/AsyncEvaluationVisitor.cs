@@ -90,12 +90,9 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                     {
                         return MathHelper.Add(left, right, context);
                     }
-                    catch (FormatException)
+                    catch (FormatException) when (left is string && right is string)
                     {
-                        if (left is string && right is string)
-                            return string.Concat(left, right);
-
-                        throw;
+                        return string.Concat(left, right);
                     }
                 }
 
