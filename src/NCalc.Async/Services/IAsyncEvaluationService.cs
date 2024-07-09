@@ -8,8 +8,5 @@ namespace NCalc.Services;
 /// </summary>
 public interface IAsyncEvaluationService
 {
-    public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync;
-    public event AsyncEvaluateParameterHandler? EvaluateParameterAsync;
-
     Task<object?> EvaluateAsync(LogicalExpression expression, AsyncExpressionContext context);
 }

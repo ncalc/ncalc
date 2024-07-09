@@ -1,5 +1,4 @@
 using NCalc.Domain;
-using NCalc.Handlers;
 
 namespace NCalc.Services;
 
@@ -8,7 +7,5 @@ namespace NCalc.Services;
 /// </summary>
 public interface IEvaluationService
 {
-    public event EvaluateFunctionHandler? EvaluateFunction;
-    public event EvaluateParameterHandler? EvaluateParameter;
     object? Evaluate(LogicalExpression expression, ExpressionContext context);
 }
