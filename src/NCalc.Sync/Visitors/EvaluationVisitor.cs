@@ -13,9 +13,6 @@ namespace NCalc.Visitors;
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
 public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor<object?>
 {
-    public event EvaluateFunctionHandler? EvaluateFunction;
-    public event EvaluateParameterHandler? EvaluateParameter;
-
     public object? Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
@@ -31,8 +28,8 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     public object? Visit(BinaryExpression expression)
     {
-        var leftValue = new Lazy<object?>(() => Evaluate(expression.LeftExpression));
-        var rightValue = new Lazy<object?>(() => Evaluate(expression.RightExpression));
+        var leftValue = new Lazy<object?>(() => Evaluate(expression.LeftExpression), LazyThreadSafetyMode.None);
+        var rightValue = new Lazy<object?>(() => Evaluate(expression.RightExpression), LazyThreadSafetyMode.None);
 
         switch (expression.Type)
         {
@@ -86,12 +83,9 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                     {
                         return MathHelper.Add(left, right, context);
                     }
-                    catch (FormatException)
+                    catch (FormatException) when (left is string && right is string)
                     {
-                        if (left is string && right is string)
-                            return string.Concat(left, right);
-
-                        throw;
+                        return string.Concat(left, right);
                     }
                 }
 
@@ -166,8 +160,6 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         for (var i = 0; i < argsCount; i++)
         {
             args[i] = new Expression(function.Expressions[i], context);
-            args[i].EvaluateParameter += EvaluateParameter;
-            args[i].EvaluateFunction += EvaluateFunction;
         }
 
         var functionName = function.Identifier.Name;
@@ -212,9 +204,9 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 foreach (var p in context.DynamicParameters)
                     expression.DynamicParameters[p.Key] = p.Value;
 
-                expression.EvaluateFunction += EvaluateFunction;
-                expression.EvaluateParameter += EvaluateParameter;
-
+                expression.EvaluateFunction += context.EvaluateFunctionHandler;
+                expression.EvaluateParameter += context.EvaluateParameterHandler;
+                
                 return expression.Evaluate();
             }
 
@@ -235,11 +227,11 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     }
     protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
-        EvaluateFunction?.Invoke(name, args);
+        context.EvaluateFunctionHandler?.Invoke(name, args);
     }
     protected void OnEvaluateParameter(string name, ParameterArgs args)
     {
-        EvaluateParameter?.Invoke(name, args);
+        context.EvaluateParameterHandler?.Invoke(name, args);
     }
 
     private object? Evaluate(LogicalExpression expression)

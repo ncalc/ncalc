@@ -71,8 +71,8 @@ public class AsyncExpression
     /// </summary>
     public event AsyncEvaluateFunctionHandler EvaluateFunctionAsync
     {
-        add => EvaluationService.EvaluateFunctionAsync += value;
-        remove => EvaluationService.EvaluateFunctionAsync -= value;
+        add => Context.AsyncEvaluateFunctionHandler += value;
+        remove => Context.AsyncEvaluateFunctionHandler -= value;
     }
     
     /// <summary>
@@ -80,8 +80,8 @@ public class AsyncExpression
     /// </summary>
     public event AsyncEvaluateParameterHandler EvaluateParameterAsync
     {
-        add => EvaluationService.EvaluateParameterAsync += value;
-        remove => EvaluationService.EvaluateParameterAsync -= value;
+        add => Context.AsyncEvaluateParameterHandler += value;
+        remove => Context.AsyncEvaluateParameterHandler -= value;
     }
     
     /// <summary>

@@ -28,8 +28,8 @@ public partial class Expression
     /// </summary>
     public event EvaluateFunctionHandler EvaluateFunction
     {
-        add => EvaluationService.EvaluateFunction += value;
-        remove => EvaluationService.EvaluateFunction -= value;
+        add => Context.EvaluateFunctionHandler += value;
+        remove => Context.EvaluateFunctionHandler -= value;
     }
     
     /// <summary>
@@ -37,8 +37,8 @@ public partial class Expression
     /// </summary>
     public event EvaluateParameterHandler EvaluateParameter
     {
-        add => EvaluationService.EvaluateParameter += value;
-        remove => EvaluationService.EvaluateParameter -= value;
+        add => Context.EvaluateParameterHandler += value;
+        remove => Context.EvaluateParameterHandler -= value;
     }
     
     /// <summary>

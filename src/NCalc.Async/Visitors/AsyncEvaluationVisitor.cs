@@ -1,5 +1,6 @@
 ﻿using ExtendedNumerics;
 using System.Numerics;
+using System.Threading;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Handlers;
@@ -15,9 +16,6 @@ namespace NCalc.Visitors;
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
 public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalExpressionVisitor<Task<object?>>
 {
-    public event AsyncEvaluateFunctionHandler? EvaluateFunctionAsync;
-    public event AsyncEvaluateParameterHandler? EvaluateParameterAsync;
-
     public async Task<object?> Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
@@ -33,8 +31,8 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     public async Task<object?> Visit(BinaryExpression expression)
     {
-        var leftValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression));
-        var rightValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression));
+        var leftValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression), LazyThreadSafetyMode.None);
+        var rightValue = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression), LazyThreadSafetyMode.None);
 
         switch (expression.Type)
         {
@@ -89,12 +87,9 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                     {
                         return MathHelper.Add(left, right, context);
                     }
-                    catch (FormatException)
+                    catch (FormatException) when (left is string && right is string)
                     {
-                        if (left is string && right is string)
-                            return string.Concat(left, right);
-
-                        throw;
+                        return string.Concat(left, right);
                     }
                 }
 
@@ -165,8 +160,6 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         for (var i = 0; i < argsCount; i++)
         {
             args[i] = new AsyncExpression(function.Expressions[i], context);
-            args[i].EvaluateParameterAsync += EvaluateParameterAsync;
-            args[i].EvaluateFunctionAsync += EvaluateFunctionAsync;
         }
 
         var functionName = function.Identifier.Name;
@@ -211,8 +204,8 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 foreach (var p in context.DynamicParameters)
                     expression.DynamicParameters[p.Key] = p.Value;
 
-                expression.EvaluateFunctionAsync += EvaluateFunctionAsync;
-                expression.EvaluateParameterAsync += EvaluateParameterAsync;
+                expression.EvaluateFunctionAsync += context.AsyncEvaluateFunctionHandler;
+                expression.EvaluateParameterAsync += context.AsyncEvaluateParameterHandler;
 
                 return await expression.EvaluateAsync();
             }
@@ -237,12 +230,12 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     protected ValueTask OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)
     {
-        return EvaluateFunctionAsync?.Invoke(name, args) ?? default;
+        return context.AsyncEvaluateFunctionHandler?.Invoke(name, args) ?? default;
     }
 
     protected ValueTask OnEvaluateParameterAsync(string name, AsyncParameterArgs args)
     {
-        return EvaluateParameterAsync?.Invoke(name, args) ?? default;
+        return context.AsyncEvaluateParameterHandler?.Invoke(name, args) ?? default;
     }
 
     private async ValueTask<object?> EvaluateAsync(LogicalExpression expression)
