@@ -17,10 +17,10 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
         return parameters;
     }
 
-    public List<string> Visit(ArrayExpression arrayExpression)
+    public List<string> Visit(LogicalExpressionList list)
     {
         var parameters = new List<string>();
-        foreach (var value in arrayExpression.Values)
+        foreach (var value in list)
         {
             if (value is not Identifier identifier) 
                 continue;

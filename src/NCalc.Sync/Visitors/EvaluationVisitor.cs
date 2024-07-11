@@ -229,11 +229,11 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    public object Visit(ArrayExpression arrayExpression)
+    public object Visit(LogicalExpressionList list)
     {
         List<object?> result = [];
 
-        foreach (var value in arrayExpression.Values)
+        foreach (var value in list)
         {
             result.Add(Evaluate(value));
         }

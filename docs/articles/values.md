@@ -10,7 +10,8 @@ A value is a terminal token representing a concrete element. This can be:
 - A <xref:System.Char>
 - A <xref:NCalc.Domain.Function>
 - An <xref:NCalc.Domain.Identifier> (parameter)
-- An <xref:NCalc.Domain.ArrayExpression> 
+- A <xref:NCalc.Domain.LogicalExpressionList>  (List of other expressions)
+
 ## Integers
 
 They are represented using numbers. 
@@ -113,9 +114,9 @@ A parameter as a name, and can be optionally contained inside brackets or double
 
 Please read the [parameters page](parameters.md) for details.
 
-## Arrays
+## Lists
 
-Arrays are collections of expressions enclosed in parentheses.
+Lists are collections of expressions enclosed in parentheses. They are the equivalent of `List<LogicalExpression>` at CLR.
 ```
-('List', secretOperation(), 3.14)
+('Chers', secretOperation(), 3.14)
 ```

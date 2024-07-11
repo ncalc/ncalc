@@ -168,14 +168,14 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return result.ToString();
     }
 
-    public string Visit(ArrayExpression arrayExpression)
+    public string Visit(LogicalExpressionList list)
     {
         var result = new StringBuilder();
         result.Append('(');
-        for (var i = 0; i < arrayExpression.Values.Length; i++)
+        for (var i = 0; i < list.Count; i++)
         {
-            result.Append(arrayExpression.Values[i].Accept(this).TrimEnd());
-            if (i < arrayExpression.Values.Length - 1)
+            result.Append(list[i].Accept(this).TrimEnd());
+            if (i < list.Count - 1)
             {
                 result.Append(',');
             }

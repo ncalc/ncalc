@@ -284,10 +284,10 @@ public static class LogicalExpressionParser
         // array => "(" (expression ("," expression)*)? ")"
         var populatedArray =
             Between(openParen, Separated(comma, expression), closeParen.ElseError("Parenthesis not closed."))
-                .Then<LogicalExpression>(values => new ArrayExpression(values.ToArray()));
+                .Then<LogicalExpression>(values => new LogicalExpressionList(values.ToArray()));
 
         var emptyArray = openParen.AndSkip(closeParen)
-            .Then<LogicalExpression>(_ => new ArrayExpression([]));
+            .Then<LogicalExpression>(_ => new LogicalExpressionList([]));
 
         var array = OneOf(emptyArray, populatedArray);
         

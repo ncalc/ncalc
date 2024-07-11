@@ -231,11 +231,11 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
     public Task<object?> Visit(ValueExpression expression) => Task.FromResult(expression.Value);
 
     
-    public async Task<object?> Visit(ArrayExpression arrayExpression)
+    public async Task<object?> Visit(LogicalExpressionList list)
     {
         List<object?> result = [];
 
-        foreach (var value in arrayExpression.Values)
+        foreach (var value in list)
         {
             result.Add(await EvaluateAsync(value));
         }

@@ -90,12 +90,12 @@ public class ParserTests
     [InlineData("()", 0)]
     [InlineData("('Hello', func())", 2)]
     [Theory]
-    public void ShouldParseArrays(string formula, int arrayExpectedCount)
+    public void ShouldParseLists(string formula, int arrayExpectedCount)
     {
         var logicalExpression = LogicalExpressionFactory.Create(formula);
 
-        Assert.IsType<ArrayExpression>(logicalExpression);
+        Assert.IsType<LogicalExpressionList>(logicalExpression);
         
-        Assert.Equal(arrayExpectedCount, ((ArrayExpression)logicalExpression).Values.Length);
+        Assert.Equal(arrayExpectedCount, ((LogicalExpressionList)logicalExpression).Count);
     }
 }
