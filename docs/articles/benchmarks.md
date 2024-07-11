@@ -64,3 +64,10 @@ DefaultJob : .NET 8.0.5 (8.0.524.21615), X64 RyuJIT AVX2
 // * Hints *
 Outliers
 EvaluateVsLambdaBenchmark.Evaluate: Default -> 1 outlier  was  removed (460.11 ns)
+
+# Parlot parser compilation
+
+Parlot parser, which is used as a default parser in NCalc, supports parser compilation. It can improve the performance by 20%. You can find the benchmark results in Parlot [repository](https://github.com/sebastienros/parlot#performance).
+By default, it is disabled in NCalc, you can enable it by using AppContext switch:
+
+`AppContext.SetSwitch("NCalc.EnableParlotParserCompilation", true)`
