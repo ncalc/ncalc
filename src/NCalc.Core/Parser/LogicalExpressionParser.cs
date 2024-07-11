@@ -18,10 +18,14 @@ public static class LogicalExpressionParser
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
+    internal static readonly bool ParserCompilation;
+
     private const string InvalidTokenMessage = "Invalid token in expression";
 
     static LogicalExpressionParser()
     {
+        ParserCompilation = AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out bool enabled) && enabled;
+
         /*
          * Grammar:
          * expression     => ternary ( ( "-" | "+" ) ternary )* ;
@@ -208,14 +212,14 @@ public static class LogicalExpressionParser
 
                     return new ValueExpression(value.ToString());
                 });
-        
-        var doubleQuotesStringValue = 
+
+        var doubleQuotesStringValue =
             Terms
             .String(quotes: StringLiteralQuotes.Double)
             .Then<LogicalExpression>(value => new ValueExpression(value.ToString()));
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
-        
+
         var charIsNumber = Literals.Pattern(char.IsNumber);
 
         var dateDefinition = charIsNumber
@@ -417,14 +421,10 @@ public static class LogicalExpressionParser
         var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
             .ElseError(InvalidTokenMessage);
 
-#if NET6_0_OR_GREATER
-        if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+        if (ParserCompilation)
             Parser = expressionParser.Compile();
         else
             Parser = expressionParser;
-#else
-        Parser = expressionParser.Compile();
-#endif
     }
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
