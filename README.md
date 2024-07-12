@@ -165,9 +165,9 @@ A TypeScript/JavaScript port of NCalc.
 
 NCalc 101 is a simple web application that allows you to try out the NCalc expression evaluator, developed by [Panoramic Data](https://github.com/panoramicdata).
 
-### [JJMasterData.NCalc](https://md.jjconsulting.tech/articles/plugins/ncalc.html)
+### [JJMasterData](https://github.com/JJConsulting/JJMasterData/)
 
-Plugin of NCalc used to evaluate [JJMasterData](https://github.com/jjconsulting/jjmasterdata) expressions. JJMasterData is a runtime form generator from database metadata.
+JJMasterData is a runtime form generator from database metadata. It uses NCalc to evaluate expressions used in field visibility and other dynamic behaviors.
 
 # NCalc versioning
 
