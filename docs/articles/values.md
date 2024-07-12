@@ -9,7 +9,8 @@ A value is a terminal token representing a concrete element. This can be:
 - A <xref:System.String>
 - A <xref:System.Char>
 - A <xref:NCalc.Domain.Function>
-- An <xref:NCalc.Domain.Identifier> (parameter).
+- An <xref:NCalc.Domain.Identifier> (parameter)
+- A <xref:NCalc.Domain.LogicalExpressionList>  (List of other expressions)
 
 ## Integers
 
@@ -94,8 +95,13 @@ Debug.Assert(result); // 'g' -> System.Char
 A function is made of a name followed by braces, containing optionally any value as arguments.
 
 ```
-  Abs(1), doSomething(1, 'dummy')
+  Abs(1)
 ```
+
+```
+doSomething(1, 'dummy')
+```
+
 Please read the [functions page](functions.md) for details.
 
 ## Parameters
@@ -107,3 +113,10 @@ A parameter as a name, and can be optionally contained inside brackets or double
 ```
 
 Please read the [parameters page](parameters.md) for details.
+
+## Lists
+
+Lists are collections of expressions enclosed in parentheses. They are the equivalent of `List<LogicalExpression>` at CLR.
+```
+('Chers', secretOperation(), 3.14)
+```

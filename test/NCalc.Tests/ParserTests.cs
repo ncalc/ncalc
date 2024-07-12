@@ -85,4 +85,17 @@ public class ParserTests
         
         Assert.Equal(expectedResult, expression.Evaluate());
     }
+    
+    [InlineData("(1,2,3,4,5)",5)]
+    [InlineData("()", 0)]
+    [InlineData("('Hello', func())", 2)]
+    [Theory]
+    public void ShouldParseLists(string formula, int arrayExpectedCount)
+    {
+        var logicalExpression = LogicalExpressionFactory.Create(formula);
+
+        Assert.IsType<LogicalExpressionList>(logicalExpression);
+        
+        Assert.Equal(arrayExpectedCount, ((LogicalExpressionList)logicalExpression).Count);
+    }
 }

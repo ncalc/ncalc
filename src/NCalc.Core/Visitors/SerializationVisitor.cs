@@ -168,6 +168,22 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return result.ToString();
     }
 
+    public string Visit(LogicalExpressionList list)
+    {
+        var result = new StringBuilder();
+        result.Append('(');
+        for (var i = 0; i < list.Count; i++)
+        {
+            result.Append(list[i].Accept(this).TrimEnd());
+            if (i < list.Count - 1)
+            {
+                result.Append(',');
+            }
+        }
+        result.Append(')');
+        return result.ToString();
+    }
+
     protected virtual string EncapsulateNoValue(LogicalExpression expression)
     {
         if (expression is ValueExpression valueExpression)

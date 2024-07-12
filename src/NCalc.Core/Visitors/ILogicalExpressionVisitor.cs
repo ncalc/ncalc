@@ -14,4 +14,5 @@ public interface ILogicalExpressionVisitor<out T>
     T Visit(ValueExpression expression);
     T Visit(Function function);
     T Visit(Identifier identifier);
+    T Visit(LogicalExpressionList list);
 }
