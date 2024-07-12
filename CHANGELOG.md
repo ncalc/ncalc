@@ -1,3 +1,18 @@
+# 5.1.0
+* Fix typo in MathHelper by @Bykiev in https://github.com/ncalc/ncalc/pull/273
+* Small refactoring of Expression.IterateParameters by @Bykiev in https://github.com/ncalc/ncalc/pull/274
+* Added `ShouldHandleBinaryExpression` unit test by @gumbarros in https://github.com/ncalc/ncalc/pull/278
+* Add new `ExpressionOptions.StringConcat` to concat values as string by @Bykiev in https://github.com/ncalc/ncalc/pull/276
+* Added `ExpressionOptions.AllowCharValues` by @gumbarros in https://github.com/ncalc/ncalc/pull/279
+* Remove appveyor and use GH Actions with Coverlet by @gumbarros in https://github.com/ncalc/ncalc/pull/284
+* Small performance improvement for `BinaryExpression` by @gumbarros in https://github.com/ncalc/ncalc/pull/283
+* Move benchmarks to a separate workflow by @gumbarros in https://github.com/ncalc/ncalc/pull/285
+* Improve string_concatenation.md docs by @gumbarros in https://github.com/ncalc/ncalc/pull/281
+* Move event handlers to `ExpressionContext` by @gumbarros in https://github.com/ncalc/ncalc/pull/286
+* Add support for Parlot parser compilation via AppContext switch by @Bykiev in https://github.com/ncalc/ncalc/pull/288
+* Update Parlot parser by @Bykiev in https://github.com/ncalc/ncalc/pull/289
+* Added `LogicalExpressionList` and `in` operator by @gumbarros in https://github.com/ncalc/ncalc/pull/287
+
 # 5.0.0
 * Overflow protection by @Bykiev in https://github.com/ncalc/ncalc/pull/256
 * Consolidate NETStandard.Library package version by @Bykiev in https://github.com/ncalc/ncalc/pull/257
