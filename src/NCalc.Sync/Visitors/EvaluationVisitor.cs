@@ -138,6 +138,16 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                         "'in' operator right value must implement IEnumerable or be a string.")
                 };
             }
+            case BinaryExpressionType.NotIn:
+            {
+                return right.Value switch
+                {
+                    IEnumerable<object> rightValueEnumerable => !rightValueEnumerable.Contains(left.Value),
+                    string rightValueString => !rightValueString.Contains(left.Value?.ToString() ?? string.Empty),
+                    _ => throw new NCalcEvaluationException(
+                        "'not in' operator right value must implement IEnumerable or be a string.")
+                };
+            }
         }
 
         return null;

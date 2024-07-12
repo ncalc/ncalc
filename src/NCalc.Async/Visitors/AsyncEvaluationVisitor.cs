@@ -141,6 +141,18 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                         "'in' operator right value must implement IEnumerable or be a string.")
                 };
             }
+            case BinaryExpressionType.NotIn:
+            {
+                var rightValue = await right.Value;
+                var leftValue = await left.Value;
+                return rightValue switch
+                {
+                    IEnumerable<object> rightValueEnumerable => rightValueEnumerable.Contains(leftValue),
+                    string rightValueString => rightValueString.Contains(leftValue?.ToString() ?? string.Empty),
+                    _ => throw new NCalcEvaluationException(
+                        "'not in' operator right value must implement IEnumerable or be a string.")
+                };
+            }
         }
 
         return null;

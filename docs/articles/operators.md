@@ -26,13 +26,15 @@ The **and** operator has more priority than the **or**, thus in the example abov
 
 * =, ==, !=, <>
 * <, <=, >, >=
-* in
+* in, not in
 
 ```
- 1 < 2
- 42 == 42
- {PageState} in ('Insert', 'Update')
- "Sergio" in "Sergio is at Argentina"
+ 3 < 2 
+ 42 == 42 
+ 'Insert' in ('Insert', 'Update') 
+ "Sergio" in "Sergio is at Argentina" 
+ "Mozard" not in ("Chopin", "Beethoven", GetComposer())
+ 945 != 202
 ```
 
 ## Additive
