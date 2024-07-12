@@ -136,4 +136,13 @@ public class ExceptionsTests
         var expression = new Expression("1.3,4.5");
         Assert.Throws<NCalcParserException>(() => expression.Evaluate());
     }
+    
+    [Fact]
+    public void ShouldThrowExceptionInOperator()
+    {
+        var context = new ExpressionContext();
+        context.StaticParameters["PageState"] = "Insert";
+        
+        Assert.Throws<NCalcEvaluationException>(()=>new Expression("{PageState} in 4", context).Evaluate());
+    }
 }

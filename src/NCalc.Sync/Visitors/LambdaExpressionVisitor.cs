@@ -206,6 +206,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         return LinqExpression.PropertyOrField(_context, function.Name);
     }
 
+    public LinqExpression Visit(LogicalExpressionList list)
+    {
+        throw new NotSupportedException("Collections are not supported for Lambda expressions yet. Please open a issue at https://www.github.com/ncalc/ncalc if you want this support.");
+    }
+
     private ExtendedMethodInfo FindMethod(string methodName, LinqExpression[] methodArgs)
     {
         if (_context == null)
