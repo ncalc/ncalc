@@ -30,7 +30,9 @@ The **and** operator has more priority than the **or**, thus in the example abov
 
 ```
  1 < 2
+ 42 == 42
  {PageState} in ('Insert', 'Update')
+ "Sergio" in "Sergio is at Argentina"
 ```
 
 ## Additive

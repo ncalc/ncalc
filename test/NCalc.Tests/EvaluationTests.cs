@@ -214,7 +214,7 @@ public class EvaluationTests
     }
     
     [Fact]
-    public void ShouldEvaluateInOperator()
+    public void ShouldEvaluateInOperatorWithList()
     {
         var context = new ExpressionContext();
         context.StaticParameters["PageState"] = "Insert";
@@ -222,10 +222,11 @@ public class EvaluationTests
     }
     
     [Fact]
-    public void InOperatorShouldThrowExceptionIfNotArray()
+    public void ShouldEvaluateInOperatorWithString()
     {
         var context = new ExpressionContext();
         context.StaticParameters["PageState"] = "Insert";
-        Assert.Throws<NCalcParserException>(()=>new Expression("{PageState} in 'Insert')", context).Evaluate());
+        
+        Assert.Equal(true, new Expression("{PageState} in 'Insert a quote, you must.'", context).Evaluate());
     }
 }
