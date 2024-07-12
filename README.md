@@ -1,6 +1,6 @@
 # NCalc
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ncalc/ncalc/dotnet.yml)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ncalc/ncalc/build-test.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/ncalc/ncalc.svg)](https://codecov.io/gh/ncalc/ncalc)
 [![NuGet](https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget&color=004880
 )](https://nuget.org/packages/NCalcSync.signed)
