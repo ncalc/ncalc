@@ -18,10 +18,14 @@ public static class LogicalExpressionParser
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
+    internal static readonly bool ParserCompilation;
+
     private const string InvalidTokenMessage = "Invalid token in expression";
 
     static LogicalExpressionParser()
     {
+        ParserCompilation = AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out bool enabled) && enabled;
+
         /*
          * Grammar:
          * expression     => ternary ( ( "-" | "+" ) ternary )* ;
@@ -51,14 +55,14 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var exponentNumberPart =
-            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowSign)).ThenElse<long?>(x => x, null);
+            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowLeadingSign)).ThenElse<long?>(x => x, null);
 
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
             SkipWhiteSpace(OneOf(
                     Literals.Char('.')
                         .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0)
-                            .And(ZeroOrOne(Literals.Integer().ThenElse<long?>(x => x, 0)))
+                            .And(ZeroOrOne(Literals.Integer()).ThenElse<long?>(x => x, 0))
                             .Then(x =>
                             {
                                 if (x.Item1 == 0 && x.Item2 == 0)
@@ -68,7 +72,7 @@ public static class LogicalExpressionParser
                             }))
                         .And(exponentNumberPart)
                         .Then(x => (0L, x.Item1.Item1, x.Item1.Item2, x.Item2)),
-                    Literals.Integer(NumberOptions.AllowSign)
+                    Literals.Integer(NumberOptions.AllowLeadingSign)
                         .And(Literals.Char('.')
                             .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0))
                             .And(ZeroOrOne(Literals.Integer()))
@@ -180,18 +184,18 @@ public static class LogicalExpressionParser
                 braceIdentifier,
                 curlyBraceIdentifier,
                 identifier)
-            .Then<LogicalExpression>(x => new Identifier(x.ToString()));
+            .Then<LogicalExpression>(x => new Identifier(x.ToString()!));
 
         var arguments = Separated(comma.Or(semicolon), expression);
 
         var functionWithArguments = identifier
             .And(openParen.SkipAnd(arguments).AndSkip(closeParen))
-            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), x.Item2.ToArray()));
+            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()!), x.Item2.ToArray()));
 
         var functionWithoutArguments = Terms
             .Identifier()
             .And(openParen.AndSkip(closeParen))
-            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()), []));
+            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()!), []));
 
         var function = OneOf(functionWithArguments, functionWithoutArguments);
 
@@ -210,13 +214,13 @@ public static class LogicalExpressionParser
                         return new ValueExpression(value.Span[0]);
                     }
 
-                    return new ValueExpression(value.ToString());
+                    return new ValueExpression(value.ToString()!);
                 });
 
         var doubleQuotesStringValue =
             Terms
-                .String(quotes: StringLiteralQuotes.Double)
-                .Then<LogicalExpression>(value => new ValueExpression(value.ToString()));
+            .String(quotes: StringLiteralQuotes.Double)
+            .Then<LogicalExpression>(value => new ValueExpression(value.ToString()!));
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
 
@@ -278,8 +282,8 @@ public static class LogicalExpressionParser
             .AndSkip(Literals.Char('#'));
 
 
-        var decimalNumber = Terms.Decimal(NumberOptions.AllowSign).Then<LogicalExpression>(d => new ValueExpression(d));
-        var doubleNumber = Terms.Double(NumberOptions.AllowSign).Then<LogicalExpression>(d => new ValueExpression(d));
+        var decimalNumber = Terms.Number<decimal>(NumberOptions.Number).Then<LogicalExpression>(d => new ValueExpression(d));
+        var doubleNumber = Terms.Number<double>(NumberOptions.Float).Then<LogicalExpression>(d => new ValueExpression(d));
 
         // array => "(" (expression ("," expression)*)? ")"
         var populatedArray =
@@ -433,19 +437,15 @@ public static class LogicalExpressionParser
         var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
             .ElseError(InvalidTokenMessage);
 
-#if NET6_0_OR_GREATER
-        if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+        if (ParserCompilation)
             Parser = expressionParser.Compile();
         else
             Parser = expressionParser;
-#else
-        Parser = expressionParser.Compile();
-#endif
     }
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        if (Parser.TryParse(context, out LogicalExpression result, out ParseError error))
+        if (Parser.TryParse(context, out LogicalExpression result, out ParseError? error))
             return result;
 
         string message;
