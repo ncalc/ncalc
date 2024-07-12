@@ -10,6 +10,8 @@ Expressions can be combined using operators, each of which has a precedence prio
 6. Relational
 7. Logical
 
+These operators follow the precedence rules to determine the order in which operations are performed in an expression.
+
 ## Logical
 
 Logical operators perform logical comparisons between expressions.
@@ -17,15 +19,17 @@ Logical operators perform logical comparisons between expressions.
 * `or`, `||`
 * `and`, `&&`
 
-Example:
+Examples:
 ```
 true or false and true
+(1 == 1) || false
 ```
-The **and** operator has higher priority than the **or** operator, thus in the example above, **false and true** is evaluated first.
+The `and` operator has higher priority than the `or` operator, thus in the example above, `false and true` is evaluated first.
 
 ## Relational
 
-Relational operators compare two values and return a boolean result.
+Relational operators compare two values and return a boolean result. 
+The `in` and `not in` operators right value must be a <xref:string> or <xref:System.Collections.IEnumerable>.
 
 * `=`, `==`, `!=`, `<>`
 * `<`, `<=`, `>`, `>=`
@@ -98,14 +102,14 @@ Example:
 
 ## Primary
 
-Primary operators include grouping of expressions and direct values. Check [Values](values.md) for more info.
+Primary operators include grouping of expressions, lists and direct values. Check [Values](values.md) for more info.
 
 * `(`, `)`
 * values
 
-Example:
+Examples:
 ```
 2 * (3 + 2)
+("foo","bar", 5)
+drop_database()
 ```
-
-These operators follow the precedence rules to determine the order in which operations are performed in an expression.
