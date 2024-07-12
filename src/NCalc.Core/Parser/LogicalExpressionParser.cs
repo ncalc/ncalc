@@ -45,7 +45,7 @@ public static class LogicalExpressionParser
          *                  | "false"
          *                  | ("[" | "{") anything ("]" | "}")
          *                  | function
-         *                  | array
+         *                  | list
          *                  | "(" expression ")" ;
          *
          * function       => Identifier "(" arguments ")"
@@ -285,17 +285,17 @@ public static class LogicalExpressionParser
         var decimalNumber = Terms.Number<decimal>(NumberOptions.Number).Then<LogicalExpression>(d => new ValueExpression(d));
         var doubleNumber = Terms.Number<double>(NumberOptions.Float).Then<LogicalExpression>(d => new ValueExpression(d));
 
-        // array => "(" (expression ("," expression)*)? ")"
-        var populatedArray =
+        // list => "(" (expression ("," expression)*)? ")"
+        var populatedList =
             Between(openParen, Separated(comma, expression), closeParen.ElseError("Parenthesis not closed."))
-                .Then<LogicalExpression>(values => new LogicalExpressionList(values.ToArray()));
+                .Then<LogicalExpression>(values => new LogicalExpressionList(values.ToList()));
 
-        var emptyArray = openParen.AndSkip(closeParen)
+        var emptyList = openParen.AndSkip(closeParen)
             .Then<LogicalExpression>(_ => new LogicalExpressionList([]));
 
-        var array = OneOf(emptyArray, populatedArray);
+        var list = OneOf(emptyList, populatedList);
         
-        // primary => NUMBER | "[" identifier "]" | DateTime | string | function | boolean | "(" expression ")";
+        // primary => NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
             number,
             decimalNumber,
@@ -307,7 +307,7 @@ public static class LogicalExpressionParser
             function,
             groupExpression,
             identifierExpression,
-            array);
+            list);
 
         // exponential => unary ( "**" unary )* ;
         var exponential = primary.And(ZeroOrMany(exponent.And(primary)))
