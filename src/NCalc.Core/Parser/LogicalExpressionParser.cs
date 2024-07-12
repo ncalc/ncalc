@@ -65,7 +65,7 @@ public static class LogicalExpressionParser
                             .And(ZeroOrOne(Literals.Integer()).ThenElse<long?>(x => x, 0))
                             .Then(x =>
                             {
-                                if (x.Item1 == 0 && x.Item2 == 0)
+                                if (x is { Item1: 0, Item2: 0 })
                                     throw new NCalcParserException(InvalidTokenMessage);
 
                                 return (x.Item1, x.Item2);
@@ -363,7 +363,7 @@ public static class LogicalExpressionParser
             (rightShift, static (a, b) => new BinaryExpression(BinaryExpressionType.RightShift, a, b))
         );
 
-        // relational => shift ( ( ">=" | "<=" | "<" | ">" | "in" ) shift )* ;
+        // relational => shift ( ( ">=" | "<=" | "<" | ">" | "in" | "not in" ) shift )* ;
         var relational = shift.And(ZeroOrMany(OneOf(
                     greaterOrEqual.Then(BinaryExpressionType.GreaterOrEqual),
                     lesserOrEqual.Then(BinaryExpressionType.LesserOrEqual),
