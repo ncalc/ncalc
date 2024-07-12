@@ -1,88 +1,111 @@
 # Operators
 
-Expressions can be combined using operators. Each operator as a precedence priority. Here is the list of those expression's priority.
-1. primary
-2. unary
-3. power
-4. multiplicative
-5. additive
-6. relational
-7. logical
+Expressions can be combined using operators, each of which has a precedence priority. Below is the list of expression priorities in descending order:
+
+1. Primary
+2. Unary
+3. Power
+4. Multiplicative
+5. Additive
+6. Relational
+7. Logical
 
 ## Logical
 
-These operators can do some logical comparison between other expressions:
+Logical operators perform logical comparisons between expressions.
 
-* or, ||
-* and, &&
+* `or`, `||`
+* `and`, `&&`
 
+Example:
 ```
-  true or false and true
+true or false and true
 ```
-
-The **and** operator has more priority than the **or**, thus in the example above, **false and true** is evaluated first.
+The **and** operator has higher priority than the **or** operator, thus in the example above, **false and true** is evaluated first.
 
 ## Relational
 
-* =, ==, !=, <>
-* <, <=, >, >=
-* in, not in
+Relational operators compare two values and return a boolean result.
 
+* `=`, `==`, `!=`, `<>`
+* `<`, `<=`, `>`, `>=`
+* `in`, `not in`
+
+Examples:
 ```
- 3 < 2 
- 42 == 42 
- 'Insert' in ('Insert', 'Update') 
- "Sergio" in "Sergio is at Argentina" 
- "Mozard" not in ("Chopin", "Beethoven", GetComposer())
- 945 != 202
+3 < 2 
+42 == 42 
+'Insert' in ('Insert', 'Update') 
+"Sergio" in "Sergio is at Argentina" 
+"Mozart" not in ("Chopin", "Beethoven", GetComposer())
+945 != 202
 ```
 
 ## Additive
 
-* +, -
+Additive operators perform addition and subtraction.
 
+* `+`, `-`
+
+Example:
 ```
-  1 + 2 - 3
+1 + 2 - 3
 ```
 
 ## Multiplicative
 
-* *, /, %
+Multiplicative operators perform multiplication, division, and modulus operations.
 
+* `*`, `/`, `%`
+
+Example:
 ```
- 1 * 2 % 3
+1 * 2 % 3
 ```
 
 ## Bitwise
 
-* & (bitwise and), | (bitwise or), ^(bitwise xor), << (left shift), >>(right shift)
+Bitwise operators perform bitwise operations on integers.
 
+* `&` (bitwise and), `|` (bitwise or), `^` (bitwise xor), `<<` (left shift), `>>` (right shift)
+
+Example:
 ```
-  2 >> 3
+2 >> 3
 ```
 
 ## Unary
 
-* !, not, -, ~ (bitwise not)
+Unary operators operate on a single operand.
 
+* `!`, `not`, `-`, `~` (bitwise not)
+
+Example:
 ```
-  not true
+not true
 ```
 
 ## Exponential
 
-* **
+Exponential operators perform exponentiation.
 
-```
-  2 ** 2
-```
+* `**`
 
+Example:
+```
+2 ** 2
+```
 
 ## Primary
 
-* (, )
+Primary operators include grouping of expressions and direct values. Check [Values](values.md) for more info.
+
+* `(`, `)`
 * values
 
+Example:
 ```
-  2 * ( 3 + 2 )
+2 * (3 + 2)
 ```
+
+These operators follow the precedence rules to determine the order in which operations are performed in an expression.
