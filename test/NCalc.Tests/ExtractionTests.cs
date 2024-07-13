@@ -16,7 +16,7 @@ public class ExtractionTests
         expression.DynamicParameters["PageState"] = _ => "List";
         expression.Functions["customfunction"] = _ => true;
 
-        var parameters = expression.GetParametersNames();
+        var parameters = expression.GetParameterNames();
         Assert.Contains("a", parameters);
         Assert.Contains("PageState", parameters);
         Assert.Equal(2, parameters.Count);
@@ -28,7 +28,7 @@ public class ExtractionTests
         var expression =
             new Expression("if(x=0,x,y)",
                 ExpressionOptions.CaseInsensitiveStringComparer);
-        var parameters = expression.GetParametersNames();
+        var parameters = expression.GetParameterNames();
         
         Assert.Equal(2,parameters.Count);
     }
@@ -37,7 +37,7 @@ public class ExtractionTests
     public void ShouldGetParametersWithUnary()
     {
         var expression = new Expression("-0.68");
-        var p = expression.GetParametersNames();
+        var p = expression.GetParameterNames();
         Assert.Empty(p);
     }
     
@@ -48,7 +48,7 @@ public class ExtractionTests
     public void ShouldGetParameters(string formula, int expectedCount)
     {
         var expression = new Expression(formula);
-        var p = expression.GetParametersNames();
+        var p = expression.GetParameterNames();
         Assert.Equal(expectedCount, p.Count);
     }
 
@@ -59,7 +59,7 @@ public class ExtractionTests
     public void ShouldGetFunctions(string formula, int expectedCount)
     {
         var expression = new Expression(formula);
-        var functions = expression.GetFunctionsNames();
+        var functions = expression.GetFunctionNames();
         Assert.Equal(expectedCount, functions.Count);
     }
 }
