@@ -260,7 +260,7 @@ public class AsyncExpression
     }
     
     /// <summary>
-    /// Returns a list with all parameters names from the expression.
+    /// Returns a list with all parameter names from the expression.
     /// </summary>
     public List<string> GetParameterNames()
     {
