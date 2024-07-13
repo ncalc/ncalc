@@ -1,36 +1,28 @@
-﻿using NCalc.Domain;
+using NCalc.Domain;
 
 namespace NCalc.Visitors;
 
 /// <summary>
-/// Visitor dedicated to extract <see cref="Identifier"/> names from a <see cref="LogicalExpression"/>.
+/// Visitor dedicated to extract <see cref="Function"/> names from a <see cref="LogicalExpression"/>.
 /// </summary>
-public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<string>>
+public sealed class FunctionExtractionVisitor : ILogicalExpressionVisitor<List<string>>
 {
-    public List<string> Visit(Identifier identifier)
-    {
-        var parameters = new List<string>();
-        if (!parameters.Contains(identifier.Name))
-        {
-            parameters.Add(identifier.Name);
-        }
-        return parameters;
-    }
+    public List<string> Visit(Identifier identifier) => [];
 
     public List<string> Visit(LogicalExpressionList list)
     {
-        var parameters = new List<string>();
+        var functions = new List<string>();
         foreach (var value in list)
         {
-            if (value is not Identifier identifier) 
+            if (value is not Function function) 
                 continue;
             
-            if (!parameters.Contains(identifier.Name))
+            if (!functions.Contains(function.Identifier.Name))
             {
-                parameters.Add(identifier.Name);
+                functions.Add(function.Identifier.Name);
             }
         }
-        return parameters;
+        return functions;
     }
 
     public List<string> Visit(UnaryExpression expression) => expression.Expression.Accept(this);
@@ -57,13 +49,14 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
 
     public List<string> Visit(Function function)
     {
-        var parameters = new List<string>();
+        var functions = new List<string> { function.Identifier.Name };
+
         foreach (var expression in function.Expressions)
         {
             var exprParameters = expression.Accept(this);
-            parameters.AddRange(exprParameters);
+            functions.AddRange(exprParameters);
         }
-        return parameters.Distinct().ToList();
+        return functions.Distinct().ToList();
     }
 
     public List<string> Visit(ValueExpression expression) => [];

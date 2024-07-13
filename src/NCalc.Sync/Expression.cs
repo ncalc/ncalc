@@ -262,4 +262,14 @@ public partial class Expression
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
         return LogicalExpression.Accept(parameterExtractionVisitor);
     }
+    
+    /// <summary>
+    /// Returns a list with all function names from the expression.
+    /// </summary>
+    public List<string> GetFunctionsNames()
+    {
+        var functionExtractionVisitor = new FunctionExtractionVisitor();
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
+        return LogicalExpression.Accept(functionExtractionVisitor);
+    }
 }

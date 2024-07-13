@@ -1,10 +1,10 @@
 namespace NCalc.Tests;
 
-[Trait("Category","Parameter Extraction")]
-public class ParameterExtractionTests
+[Trait("Category","Extraction")]
+public class ExtractionTests
 {
     [Fact]
-    public void Should_Get_Parameters_Issue_103()
+    public void ShouldGetParametersIssue103()
     {
         var expression = new Expression("PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3)", ExpressionOptions.CaseInsensitiveStringComparer)
         {
@@ -23,7 +23,7 @@ public class ParameterExtractionTests
     }
 
     [Fact]
-    public void Should_Get_Parameters_One_Time_Issue_141()
+    public void ShouldGetParametersOneTimeIssue141()
     {
         var expression =
             new Expression("if(x=0,x,y)",
@@ -34,18 +34,32 @@ public class ParameterExtractionTests
     }
 
     [Fact]
-    public void Should_Get_Parameters_With_Unary()
+    public void ShouldGetParametersWithUnary()
     {
         var expression = new Expression("-0.68");
         var p = expression.GetParametersNames();
         Assert.Empty(p);
     }
     
-    [Fact]
-    public void ShouldGetParametersInsideArray()
+    [Theory]
+    [InlineData("(a, b, c)", 3)]
+    [InlineData("725 - 1 == result * secret_operation(secretValue)", 2)]
+    [InlineData("getLightsaberColor(selectedJedi) == selectedColor", 2)]
+    public void ShouldGetParameters(string formula, int expectedCount)
     {
-        var expression = new Expression("(a,b,c)");
+        var expression = new Expression(formula);
         var p = expression.GetParametersNames();
-        Assert.Equal(3, p.Count);
+        Assert.Equal(expectedCount, p.Count);
+    }
+
+    [InlineData("(a, drop_database(), c) == toUpper(getName())", 3)]
+    [InlineData("Abs(523/2) == Abs(523/2)", 1)]
+    [InlineData("getLightsaberColor('Yoda') == selectedColor", 1)]
+    [Theory]
+    public void ShouldGetFunctions(string formula, int expectedCount)
+    {
+        var expression = new Expression(formula);
+        var functions = expression.GetFunctionsNames();
+        Assert.Equal(expectedCount, functions.Count);
     }
 }
