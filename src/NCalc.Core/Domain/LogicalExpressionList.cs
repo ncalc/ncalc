@@ -28,7 +28,6 @@ public sealed class LogicalExpressionList : LogicalExpression, IList<LogicalExpr
     
     public IEnumerator<LogicalExpression> GetEnumerator()
     {
-        // ReSharper disable once NotDisposedResourceIsReturned
         return _list.GetEnumerator();
     }
 
