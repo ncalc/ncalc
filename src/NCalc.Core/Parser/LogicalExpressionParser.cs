@@ -18,14 +18,10 @@ public static class LogicalExpressionParser
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
-    internal static readonly bool ParserCompilation;
-
     private const string InvalidTokenMessage = "Invalid token in expression";
 
     static LogicalExpressionParser()
     {
-        ParserCompilation = AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out bool enabled) && enabled;
-
         /*
          * Grammar:
          * expression     => ternary ( ( "-" | "+" ) ternary )* ;
@@ -193,8 +189,7 @@ public static class LogicalExpressionParser
                     closeParen.ElseError("Parenthesis not closed."))
                 .Then<LogicalExpression>(values => new LogicalExpressionList(values.ToList()));
 
-        var emptyList = openParen.AndSkip(closeParen)
-            .Then<LogicalExpression>(_ => new LogicalExpressionList([]));
+        var emptyList = openParen.AndSkip(closeParen).Then<LogicalExpression>(_ => new LogicalExpressionList());
 
         var list = OneOf(emptyList, populatedList);
 
@@ -434,11 +429,10 @@ public static class LogicalExpressionParser
         expression.Parser = operatorSequence;
         var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
             .ElseError(InvalidTokenMessage);
-
-        if (ParserCompilation)
-            Parser = expressionParser.Compile();
-        else
-            Parser = expressionParser;
+        
+        AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
+        
+        Parser = enableParserCompilation ? expressionParser.Compile() : expressionParser;
     }
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
