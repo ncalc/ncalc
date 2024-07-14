@@ -22,12 +22,12 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
         var parameters = new List<string>();
         foreach (var value in list)
         {
-            if (value is not Identifier identifier) 
-                continue;
-            
-            if (!parameters.Contains(identifier.Name))
+            if (value is Identifier identifier)
             {
-                parameters.Add(identifier.Name);
+                if (!parameters.Contains(identifier.Name))
+                {
+                    parameters.Add(identifier.Name);
+                }
             }
         }
         return parameters;

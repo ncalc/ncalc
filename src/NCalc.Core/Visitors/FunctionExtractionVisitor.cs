@@ -14,12 +14,12 @@ public sealed class FunctionExtractionVisitor : ILogicalExpressionVisitor<List<s
         var functions = new List<string>();
         foreach (var value in list)
         {
-            if (value is not Function function) 
-                continue;
-            
-            if (!functions.Contains(function.Identifier.Name))
+            if (value is Function function)
             {
-                functions.Add(function.Identifier.Name);
+                if (!functions.Contains(function.Identifier.Name))
+                {
+                    functions.Add(function.Identifier.Name);
+                }
             }
         }
         return functions;
