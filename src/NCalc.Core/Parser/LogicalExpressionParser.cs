@@ -185,20 +185,21 @@ public static class LogicalExpressionParser
                 curlyBraceIdentifier,
                 identifier)
             .Then<LogicalExpression>(x => new Identifier(x.ToString()!));
+        
+        // list => "(" (expression ("," expression)*)? ")"
+        var populatedList =
+            Between(openParen, Separated(comma.Or(semicolon), expression), closeParen.ElseError("Parenthesis not closed."))
+                .Then<LogicalExpression>(values => new LogicalExpressionList(values.ToList()));
 
-        var arguments = Separated(comma.Or(semicolon), expression);
+        var emptyList = openParen.AndSkip(closeParen)
+            .Then<LogicalExpression>(_ => new LogicalExpressionList([]));
 
-        var functionWithArguments = identifier
-            .And(openParen.SkipAnd(arguments).AndSkip(closeParen))
-            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()!), x.Item2.ToArray()));
-
-        var functionWithoutArguments = Terms
-            .Identifier()
-            .And(openParen.AndSkip(closeParen))
-            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()!), []));
-
-        var function = OneOf(functionWithArguments, functionWithoutArguments);
-
+        var list = OneOf(emptyList, populatedList);
+        
+        var function = identifier
+            .And(list)
+            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()!), (LogicalExpressionList)x.Item2));
+        
         var booleanTrue = Terms.Text("true", true)
             .Then<LogicalExpression>(True);
         var booleanFalse = Terms.Text("false", true)
@@ -284,16 +285,6 @@ public static class LogicalExpressionParser
 
         var decimalNumber = Terms.Number<decimal>(NumberOptions.Number).Then<LogicalExpression>(d => new ValueExpression(d));
         var doubleNumber = Terms.Number<double>(NumberOptions.Float).Then<LogicalExpression>(d => new ValueExpression(d));
-
-        // list => "(" (expression ("," expression)*)? ")"
-        var populatedList =
-            Between(openParen, Separated(comma, expression), closeParen.ElseError("Parenthesis not closed."))
-                .Then<LogicalExpression>(values => new LogicalExpressionList(values.ToList()));
-
-        var emptyList = openParen.AndSkip(closeParen)
-            .Then<LogicalExpression>(_ => new LogicalExpressionList([]));
-
-        var list = OneOf(emptyList, populatedList);
         
         // primary => NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(

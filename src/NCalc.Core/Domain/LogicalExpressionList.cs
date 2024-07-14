@@ -2,10 +2,21 @@ using NCalc.Visitors;
 
 namespace NCalc.Domain;
 
-public sealed class LogicalExpressionList(IEnumerable<LogicalExpression> values) : LogicalExpression, IList<LogicalExpression>
+public sealed class LogicalExpressionList : LogicalExpression, IList<LogicalExpression>
 {
-    private readonly List<LogicalExpression> _list = values.ToList();
-    
+    private readonly List<LogicalExpression> _list;
+
+    public LogicalExpressionList()
+    {
+        _list = [];
+    }
+
+    public LogicalExpressionList(IEnumerable<LogicalExpression> values)
+    {
+
+        _list = values.ToList();
+    }
+
     public int Count => _list.Count;
     public bool IsReadOnly => false;
 
@@ -18,7 +29,7 @@ public sealed class LogicalExpressionList(IEnumerable<LogicalExpression> values)
     public IEnumerator<LogicalExpression> GetEnumerator()
     {
         // ReSharper disable once NotDisposedResourceIsReturned
-        return values.GetEnumerator();
+        return _list.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()

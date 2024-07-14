@@ -175,7 +175,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     public async Task<object?> Visit(Function function)
     {
-        var argsCount = function.Expressions.Length;
+        var argsCount = function.Parameters.Count;
         var args = new AsyncExpression[argsCount];
 
         // Don't call parameters right now, instead let the function do it as needed.
@@ -183,7 +183,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         // Evaluating every value could produce unexpected behaviour
         for (var i = 0; i < argsCount; i++)
         {
-            args[i] = new AsyncExpression(function.Expressions[i], context);
+            args[i] = new AsyncExpression(function.Parameters[i], context);
         }
 
         var functionName = function.Identifier.Name;
