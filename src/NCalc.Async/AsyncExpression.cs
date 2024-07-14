@@ -260,12 +260,28 @@ public class AsyncExpression
     }
     
     /// <summary>
-    /// Returns a list with all parameters names from the expression.
+    /// Returns a list with all parameter names from the expression.
     /// </summary>
-    public List<string> GetParametersNames()
+    public List<string> GetParameterNames()
     {
         var parameterExtractionVisitor = new ParameterExtractionVisitor();
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
         return LogicalExpression.Accept(parameterExtractionVisitor);
+    }
+
+    [Obsolete("Please use GetParameterNames (correct english spelling).")]
+    public List<string> GetParametersNames()
+    {
+        return GetParameterNames();
+    }
+    
+    /// <summary>
+    /// Returns a list with all function names from the expression.
+    /// </summary>
+    public List<string> GetFunctionNames()
+    {
+        var functionExtractionVisitor = new FunctionExtractionVisitor();
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
+        return LogicalExpression.Accept(functionExtractionVisitor);
     }
 }
