@@ -55,7 +55,8 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var exponentNumberPart =
-            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowLeadingSign)).ThenElse<long?>(x => x, null);
+            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowLeadingSign))
+                .ThenElse<long?>(x => x, null);
 
         // [integral_value]['.'decimal_value}]['e'exponent_value]
         var number =
@@ -185,21 +186,23 @@ public static class LogicalExpressionParser
                 curlyBraceIdentifier,
                 identifier)
             .Then<LogicalExpression>(x => new Identifier(x.ToString()!));
-        
+
         // list => "(" (expression ("," expression)*)? ")"
         var populatedList =
-            Between(openParen, Separated(comma.Or(semicolon), expression), closeParen.ElseError("Parenthesis not closed."))
+            Between(openParen, Separated(comma.Or(semicolon), expression),
+                    closeParen.ElseError("Parenthesis not closed."))
                 .Then<LogicalExpression>(values => new LogicalExpressionList(values.ToList()));
 
         var emptyList = openParen.AndSkip(closeParen)
             .Then<LogicalExpression>(_ => new LogicalExpressionList([]));
 
         var list = OneOf(emptyList, populatedList);
-        
+
         var function = identifier
             .And(list)
-            .Then<LogicalExpression>(x => new Function(new Identifier(x.Item1.ToString()!), (LogicalExpressionList)x.Item2));
-        
+            .Then<LogicalExpression>(x =>
+                new Function(new Identifier(x.Item1.ToString()!), (LogicalExpressionList)x.Item2));
+
         var booleanTrue = Terms.Text("true", true)
             .Then<LogicalExpression>(True);
         var booleanFalse = Terms.Text("false", true)
@@ -220,8 +223,8 @@ public static class LogicalExpressionParser
 
         var doubleQuotesStringValue =
             Terms
-            .String(quotes: StringLiteralQuotes.Double)
-            .Then<LogicalExpression>(value => new ValueExpression(value.ToString()!));
+                .String(quotes: StringLiteralQuotes.Double)
+                .Then<LogicalExpression>(value => new ValueExpression(value.ToString()!));
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
 
@@ -283,9 +286,11 @@ public static class LogicalExpressionParser
             .AndSkip(Literals.Char('#'));
 
 
-        var decimalNumber = Terms.Number<decimal>(NumberOptions.Number).Then<LogicalExpression>(d => new ValueExpression(d));
-        var doubleNumber = Terms.Number<double>(NumberOptions.Float).Then<LogicalExpression>(d => new ValueExpression(d));
-        
+        var decimalNumber = Terms.Number<decimal>(NumberOptions.Number)
+            .Then<LogicalExpression>(d => new ValueExpression(d));
+        var doubleNumber = Terms.Number<double>(NumberOptions.Float)
+            .Then<LogicalExpression>(d => new ValueExpression(d));
+
         // primary => NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
             number,
@@ -362,7 +367,7 @@ public static class LogicalExpressionParser
                     greater.Then(BinaryExpressionType.Greater),
                     @in.Then(BinaryExpressionType.In),
                     notIn.Then(BinaryExpressionType.NotIn)
-                    )
+                )
                 .And(shift)))
             .Then(static x =>
             {

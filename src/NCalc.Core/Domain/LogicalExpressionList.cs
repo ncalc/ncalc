@@ -13,7 +13,6 @@ public sealed class LogicalExpressionList : LogicalExpression, IList<LogicalExpr
 
     public LogicalExpressionList(IEnumerable<LogicalExpression> values)
     {
-
         _list = values.ToList();
     }
 
@@ -25,7 +24,7 @@ public sealed class LogicalExpressionList : LogicalExpression, IList<LogicalExpr
         get => _list[index];
         set => _list[index] = value;
     }
-    
+
     public IEnumerator<LogicalExpression> GetEnumerator()
     {
         return _list.GetEnumerator();
@@ -60,6 +59,7 @@ public sealed class LogicalExpressionList : LogicalExpression, IList<LogicalExpr
     {
         return _list.Remove(item);
     }
+
     public int IndexOf(LogicalExpression item)
     {
         return _list.IndexOf(item);
@@ -74,7 +74,7 @@ public sealed class LogicalExpressionList : LogicalExpression, IList<LogicalExpr
     {
         _list.RemoveAt(index);
     }
-    
+
     public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
     {
         return visitor.Visit(this);
