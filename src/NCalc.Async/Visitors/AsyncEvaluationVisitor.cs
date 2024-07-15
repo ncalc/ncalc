@@ -230,7 +230,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             result.Add(await EvaluateAsync(value));
         }
 
-        return result.ToArray();
+        return result;
     }
 
     protected int CompareUsingMostPreciseType(object? a, object? b)
