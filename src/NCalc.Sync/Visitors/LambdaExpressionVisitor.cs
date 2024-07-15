@@ -100,10 +100,10 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
     public LinqExpression Visit(Function function)
     {
-        var args = new LinqExpression[function.Expressions.Length];
-        for (var i = 0; i < function.Expressions.Length; i++)
+        var args = new LinqExpression[function.Parameters.Count];
+        for (var i = 0; i < function.Parameters.Count; i++)
         {
-            args[i] = function.Expressions[i].Accept(this);
+            args[i] = function.Parameters[i].Accept(this);
         }
 
         var functionName = function.Identifier.Name.ToUpperInvariant();
@@ -141,28 +141,28 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         Linq.UnaryExpression arg0;
         Linq.UnaryExpression arg1;
 
-        var actualNumArgs = function.Expressions.Length;
+        var actualNumArgs = function.Parameters.Count;
 
         switch (functionName)
         {
             // Exceptional handling
             case "MAX":
-                CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
+                CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
                 return LinqExpression.Condition(LinqExpression.GreaterThan(arg0, arg1), arg0, arg1);
             case "MIN":
-                CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
+                CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
                 return LinqExpression.Condition(LinqExpression.LessThan(arg0, arg1), arg0, arg1);
             case "POW":
-                CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
+                CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
                 return LinqExpression.Power(arg0, arg1);
             case "ROUND":
-                CheckArgumentsLengthForFunction(functionName, function.Expressions.Length, 2);
+                CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(int));
                 var rounding = (_options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero

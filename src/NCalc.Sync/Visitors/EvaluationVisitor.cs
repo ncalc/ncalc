@@ -172,7 +172,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     public object? Visit(Function function)
     {
-        var argsCount = function.Expressions.Length;
+        var argsCount = function.Parameters.Count;
         var args = new Expression[argsCount];
 
         // Don't call parameters right now, instead let the function do it as needed.
@@ -180,7 +180,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         // Evaluating every value could produce unexpected behaviour
         for (var i = 0; i < argsCount; i++)
         {
-            args[i] = new Expression(function.Expressions[i], context);
+            args[i] = new Expression(function.Parameters[i], context);
         }
 
         var functionName = function.Identifier.Name;
