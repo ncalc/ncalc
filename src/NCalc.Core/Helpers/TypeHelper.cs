@@ -75,7 +75,7 @@ public static class TypeHelper
         }.ToFrozenDictionary();
 
     /// <summary>
-    /// Gets the the most precise type.
+    /// Gets the most precise type.
     /// </summary>
     /// <param name="a">Type a.</param>
     /// <param name="b">Type b.</param>
