@@ -4,6 +4,7 @@ using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using System.Numerics;
+using static NCalc.Helpers.TypeHelper;
 
 namespace NCalc.Visitors;
 
@@ -35,14 +36,14 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         {
             case BinaryExpressionType.And:
                 return Convert.ToBoolean(left.Value, context.CultureInfo) &&
-                         Convert.ToBoolean(right.Value, context.CultureInfo);
+                       Convert.ToBoolean(right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Or:
                 return Convert.ToBoolean(left.Value, context.CultureInfo) ||
-                         Convert.ToBoolean(right.Value, context.CultureInfo);
+                       Convert.ToBoolean(right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Div:
-                return TypeHelper.IsReal(left.Value) || TypeHelper.IsReal(right.Value)
+                return IsReal(left.Value) || IsReal(right.Value)
                     ? MathHelper.Divide(left.Value, right.Value, context)
                     : MathHelper.Divide(Convert.ToDouble(left.Value, context.CultureInfo), right.Value,
                         context);
@@ -72,22 +73,12 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 return CompareUsingMostPreciseType(left.Value, right.Value) != 0;
 
             case BinaryExpressionType.Plus:
-                {
-                    var leftValue = left.Value;
-                    var rightValue = right.Value;
+            {
+                var leftValue = left.Value;
+                var rightValue = right.Value;
 
-                    if (context.Options.HasFlag(ExpressionOptions.StringConcat))
-                        return string.Concat(leftValue, rightValue);
-
-                    try
-                    {
-                        return MathHelper.Add(leftValue, rightValue, context);
-                    }
-                    catch (FormatException) when (leftValue is string && rightValue is string)
-                    {
-                        return string.Concat(leftValue, rightValue);
-                    }
-                }
+                return EvaluationHelper.Plus(leftValue, rightValue, context);
+            }
 
             case BinaryExpressionType.Times:
                 return MathHelper.Multiply(left.Value, right.Value, context);
@@ -95,58 +86,50 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
             case BinaryExpressionType.BitwiseAnd:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) &
-                         Convert.ToUInt64(right.Value, context.CultureInfo);
+                       Convert.ToUInt64(right.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.BitwiseOr:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) |
-                         Convert.ToUInt64(right.Value, context.CultureInfo);
+                       Convert.ToUInt64(right.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.BitwiseXOr:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) ^
-                         Convert.ToUInt64(right.Value, context.CultureInfo);
+                       Convert.ToUInt64(right.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.LeftShift:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) <<
-                         Convert.ToInt32(right.Value, context.CultureInfo);
+                       Convert.ToInt32(right.Value, context.CultureInfo);
 
 
             case BinaryExpressionType.RightShift:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) >>
-                         Convert.ToInt32(right.Value, context.CultureInfo);
+                       Convert.ToInt32(right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Exponentiation:
-                {
-                    if (!context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
-                        return Math.Pow(Convert.ToDouble(left.Value, context.CultureInfo),
-                            Convert.ToDouble(right.Value, context.CultureInfo));
-                    BigDecimal @base = new BigDecimal(Convert.ToDecimal(left.Value));
-                    BigInteger exponent = new BigInteger(Convert.ToDecimal(right.Value));
+            {
+                if (!context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+                    return Math.Pow(Convert.ToDouble(left.Value, context.CultureInfo),
+                        Convert.ToDouble(right.Value, context.CultureInfo));
+                BigDecimal @base = new BigDecimal(Convert.ToDecimal(left.Value));
+                BigInteger exponent = new BigInteger(Convert.ToDecimal(right.Value));
 
-                    return (decimal)BigDecimal.Pow(@base, exponent);
-                }
+                return (decimal)BigDecimal.Pow(@base, exponent);
+            }
 
             case BinaryExpressionType.In:
             {
-                return right.Value switch
-                {
-                    IEnumerable<object> rightValueEnumerable => rightValueEnumerable.Contains(left.Value),
-                    string rightValueString => rightValueString.Contains(left.Value?.ToString() ?? string.Empty),
-                    _ => throw new NCalcEvaluationException(
-                        "'in' operator right value must implement IEnumerable or be a string.")
-                };
+                var rightValue = right.Value;
+                var leftValue = left.Value;
+                return EvaluationHelper.In(rightValue, leftValue, context);
             }
             case BinaryExpressionType.NotIn:
             {
-                return right.Value switch
-                {
-                    IEnumerable<object> rightValueEnumerable => !rightValueEnumerable.Contains(left.Value),
-                    string rightValueString => !rightValueString.Contains(left.Value?.ToString() ?? string.Empty),
-                    _ => throw new NCalcEvaluationException(
-                        "'not in' operator right value must implement IEnumerable or be a string.")
-                };
+                var rightValue = right.Value;
+                var leftValue = left.Value;
+                return !EvaluationHelper.In(rightValue, leftValue, context);
             }
         }
 
@@ -158,21 +141,14 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         // Recursively evaluates the underlying expression
         var result = expression.Expression.Accept(this);
 
-        return expression.Type switch
-        {
-            UnaryExpressionType.Not => !Convert.ToBoolean(result, context.CultureInfo),
-            UnaryExpressionType.Negate => MathHelper.Subtract(0, result, context),
-            UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, context.CultureInfo),
-            UnaryExpressionType.Positive => result,
-            _ => throw new InvalidOperationException("Unknown UnaryExpressionType")
-        };
+        return EvaluationHelper.Unary(expression, result, context);
     }
 
     public object? Visit(ValueExpression expression) => expression.Value;
 
     public object? Visit(Function function)
     {
-        var argsCount = function.Expressions.Length;
+        var argsCount = function.Parameters.Count;
         var args = new Expression[argsCount];
 
         // Don't call parameters right now, instead let the function do it as needed.
@@ -180,7 +156,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         // Evaluating every value could produce unexpected behaviour
         for (var i = 0; i < argsCount; i++)
         {
-            args[i] = new Expression(function.Expressions[i], context);
+            args[i] = new Expression(function.Parameters[i], context);
         }
 
         var functionName = function.Identifier.Name;
@@ -189,9 +165,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         OnEvaluateFunction(functionName, functionArgs);
 
         if (functionArgs.HasResult)
-        {
             return functionArgs.Result;
-        }
 
         if (context.Functions.TryGetValue(functionName, out var expressionFunction))
         {
@@ -227,7 +201,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
                 expression.EvaluateFunction += context.EvaluateFunctionHandler;
                 expression.EvaluateParameter += context.EvaluateParameterHandler;
-                
+
                 return expression.Evaluate();
             }
 
@@ -247,21 +221,21 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         List<object?> result = [];
 
         foreach (var value in list)
-        {
             result.Add(Evaluate(value));
-        }
 
-        return result.ToArray();
+        return result;
     }
 
     protected int CompareUsingMostPreciseType(object? a, object? b)
     {
         return TypeHelper.CompareUsingMostPreciseType(a, b, context);
     }
+
     protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
         context.EvaluateFunctionHandler?.Invoke(name, args);
     }
+
     protected void OnEvaluateParameter(string name, ParameterArgs args)
     {
         context.EvaluateParameterHandler?.Invoke(name, args);

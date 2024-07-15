@@ -50,12 +50,10 @@ public sealed class FunctionExtractionVisitor : ILogicalExpressionVisitor<List<s
     public List<string> Visit(Function function)
     {
         var functions = new List<string> { function.Identifier.Name };
-
-        foreach (var expression in function.Expressions)
-        {
-            var exprParameters = expression.Accept(this);
-            functions.AddRange(exprParameters);
-        }
+        
+        var innerFunctions = function.Parameters.Accept(this);
+        functions.AddRange(innerFunctions);
+        
         return functions.Distinct().ToList();
     }
 

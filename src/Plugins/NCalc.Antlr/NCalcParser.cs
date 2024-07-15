@@ -1412,7 +1412,7 @@ public partial class NCalcParser : Parser {
 					{
 					State = 240;
 					_localctx._arguments = arguments();
-					_localctx.retValue =  new Function(_localctx._identifier.retValue, (_localctx._arguments.retValue).ToArray()); 
+					_localctx.retValue =  new Function(_localctx._identifier.retValue, new LogicalExpressionList(_localctx._arguments.retValue)); 
 					}
 				}
 

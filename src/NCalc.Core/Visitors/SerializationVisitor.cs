@@ -144,10 +144,10 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         var result = new StringBuilder();
         result.Append(function.Identifier.Name).Append('(');
 
-        for (int i = 0; i < function.Expressions.Length; i++)
+        for (int i = 0; i < function.Parameters.Count; i++)
         {
-            result.Append(function.Expressions[i].Accept(this));
-            if (i < function.Expressions.Length - 1)
+            result.Append(function.Parameters[i].Accept(this));
+            if (i < function.Parameters.Count - 1)
             {
                 result.Remove(result.Length - 1, 1);
                 result.Append(", ");

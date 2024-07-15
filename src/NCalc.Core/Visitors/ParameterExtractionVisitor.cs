@@ -58,11 +58,10 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
     public List<string> Visit(Function function)
     {
         var parameters = new List<string>();
-        foreach (var expression in function.Expressions)
-        {
-            var exprParameters = expression.Accept(this);
-            parameters.AddRange(exprParameters);
-        }
+        
+        var innerParameters = function.Parameters.Accept(this);
+        parameters.AddRange(innerParameters);
+        
         return parameters.Distinct().ToList();
     }
 

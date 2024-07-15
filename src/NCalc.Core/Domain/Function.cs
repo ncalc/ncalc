@@ -2,11 +2,19 @@ using NCalc.Visitors;
 
 namespace NCalc.Domain;
 
-public sealed class Function(Identifier identifier, LogicalExpression[] expressions) : LogicalExpression
+public sealed class Function(Identifier identifier, LogicalExpressionList parameters) : LogicalExpression
 {
     public Identifier Identifier { get; set; } = identifier;
 
-    public LogicalExpression[] Expressions { get; set; } = expressions;
+    public LogicalExpressionList Parameters { get; set; } = parameters;
+
+
+    [Obsolete("Please use Parameters property.")]
+    public LogicalExpression[] Expressions
+    {
+        get => Parameters.ToArray();
+        set => Parameters = new LogicalExpressionList(value);
+    }
 
     public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
     {
