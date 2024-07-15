@@ -1,9 +1,10 @@
 # NCalc
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ncalc/ncalc/dotnet.yml)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ncalc/ncalc/build-test.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/ncalc/ncalc.svg)](https://codecov.io/gh/ncalc/ncalc)
 [![NuGet](https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget&color=004880
 )](https://nuget.org/packages/NCalcSync.signed)
+![NuGet Downloads](https://img.shields.io/nuget/dt/NCalcSync.svg?color=004880)
 [![Discord](https://img.shields.io/discord/1237181265426387005?color=5b62ef&label=discord
 )](https://discord.gg/TeJkmXbqFk)
 
@@ -165,9 +166,9 @@ A TypeScript/JavaScript port of NCalc.
 
 NCalc 101 is a simple web application that allows you to try out the NCalc expression evaluator, developed by [Panoramic Data](https://github.com/panoramicdata).
 
-### [JJMasterData.NCalc](https://md.jjconsulting.tech/articles/plugins/ncalc.html)
+### [JJMasterData](https://github.com/JJConsulting/JJMasterData/)
 
-Plugin of NCalc used to evaluate [JJMasterData](https://github.com/jjconsulting/jjmasterdata) expressions. JJMasterData is a runtime form generator from database metadata.
+JJMasterData is a runtime form generator from database metadata. It uses NCalc to evaluate expressions used in field visibility and other dynamic behaviors.
 
 # NCalc versioning
 

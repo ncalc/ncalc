@@ -4,7 +4,7 @@ using ValueType = NCalc.Domain.ValueType;
 namespace NCalc.Visitors;
 
 /// <summary>
-/// Class responsible to converting an <see cref="LogicalExpression"/> into a <see cref="string"/> representation.
+/// Class responsible to converting a <see cref="LogicalExpression"/> into a <see cref="string"/> representation.
 /// </summary>
 public class SerializationVisitor : ILogicalExpressionVisitor<string>
 {
