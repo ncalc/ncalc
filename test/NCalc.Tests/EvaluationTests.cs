@@ -237,4 +237,12 @@ public class EvaluationTests
         context.StaticParameters["PageState"] = "Import";
         Assert.Equal(true, new Expression("{PageState} not in  ('Insert','Update')", context).Evaluate());
     }
+    
+    [Fact]
+    public void InOperatorShouldRespectStringComparer()
+    {
+        ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
+        context.StaticParameters["PageState"] = "Insert";
+        Assert.Equal(true, new Expression("{PageState} in ('INSERT','UPDATE')", context).Evaluate());
+    }
 }

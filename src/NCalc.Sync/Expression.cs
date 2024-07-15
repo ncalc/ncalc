@@ -187,9 +187,10 @@ public partial class Expression
     }
 
     /// <summary>
-    /// Evaluate the expression and return the result.
+    /// Evaluates the logical expression.
     /// </summary>
     /// <returns>The result of the evaluation.</returns>
+    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public object? Evaluate()
     {
         LogicalExpression ??= GetLogicalExpression();

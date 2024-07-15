@@ -11,7 +11,7 @@ using NCalc.Services;
 namespace NCalc;
 
 /// <summary>
-/// This class represents a mathematical or logical expression that can be evaluated.
+/// This class represents a mathematical or logical expression that can be asynchronous evaluated.
 /// It supports caching, custom parameter and function evaluation, and options for handling null parameters and iterating over parameter collections.
 /// The class manages the parsing, validation, and evaluation of expressions, and provides mechanisms for error detection and reporting.
 /// </summary>
@@ -218,10 +218,12 @@ public class AsyncExpression
         }
     }
     
+
     /// <summary>
-    /// Asynchronous evaluate the expression and return the Task.
+    /// Asynchronously evaluates the logical expression.
     /// </summary>
     /// <returns>The result of the evaluation.</returns>
+    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public async Task<object?> EvaluateAsync()
     {
         LogicalExpression ??= GetLogicalExpression();
