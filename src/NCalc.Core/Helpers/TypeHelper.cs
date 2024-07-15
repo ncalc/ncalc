@@ -113,19 +113,26 @@ public static class TypeHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsReal(object? value) => value is decimal or double or float;
 
+    public static StringComparer GetStringComparer(ComparisonOptions options)
+    {
+        return options.IsOrdinal switch
+        {
+            true when options.IsCaseInsensitive => StringComparer.OrdinalIgnoreCase,
+            true => StringComparer.Ordinal,
+            false when options.IsCaseInsensitive => StringComparer.CurrentCultureIgnoreCase,
+            _ => StringComparer.CurrentCulture
+        };
+    }
+
     public static int CompareUsingMostPreciseType(object? a, object? b, ComparisonOptions options)
     {
         var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
 
         var aValue = a != null ? Convert.ChangeType(a, mpt, options.CultureInfo) : null;
         var bValue = b != null ? Convert.ChangeType(b, mpt, options.CultureInfo) : null;
+
+        var comparer = GetStringComparer(options);
         
-        return options.IsOrdinal switch
-        {
-            true when options.IsCaseInsensitive => StringComparer.OrdinalIgnoreCase.Compare(aValue, bValue),
-            true => StringComparer.Ordinal.Compare(aValue, bValue),
-            false when options.IsCaseInsensitive => CaseInsensitiveComparer.Default.Compare(aValue, bValue),
-            _ => Comparer.Default.Compare(aValue, bValue)
-        };
+        return comparer.Compare(aValue, bValue);
     }
 }

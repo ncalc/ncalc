@@ -31,8 +31,10 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     public async Task<object?> Visit(BinaryExpression expression)
     {
-        var left = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression), LazyThreadSafetyMode.None);
-        var right = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression), LazyThreadSafetyMode.None);
+        var left = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression),
+            LazyThreadSafetyMode.None);
+        var right = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression),
+            LazyThreadSafetyMode.None);
 
         switch (expression.Type)
         {
@@ -76,22 +78,12 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return CompareUsingMostPreciseType(await left.Value, await right.Value) != 0;
 
             case BinaryExpressionType.Plus:
-                {
-                    var leftValue = await left.Value;
-                    var rightValue = await right.Value;
+            {
+                var leftValue = await left.Value;
+                var rightValue = await right.Value;
 
-                    if (context.Options.HasFlag(ExpressionOptions.StringConcat))
-                        return string.Concat(leftValue, rightValue);
-
-                    try
-                    {
-                        return MathHelper.Add(leftValue, rightValue, context);
-                    }
-                    catch (FormatException) when (leftValue is string && rightValue is string)
-                    {
-                        return string.Concat(leftValue, rightValue);
-                    }
-                }
+                return EvaluationHelper.Plus(leftValue, rightValue, context);
+            }
 
             case BinaryExpressionType.Times:
                 return MathHelper.Multiply(await left.Value, await right.Value, context);
@@ -117,41 +109,29 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                        Convert.ToInt32(await right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Exponentiation:
+            {
+                if (context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
                 {
-                    if (context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
-                    {
-                        BigDecimal @base = new BigDecimal(Convert.ToDecimal(left.Value));
-                        BigInteger exponent = new BigInteger(Convert.ToDecimal(right.Value));
+                    BigDecimal @base = new BigDecimal(Convert.ToDecimal(left.Value));
+                    BigInteger exponent = new BigInteger(Convert.ToDecimal(right.Value));
 
-                        return (decimal)BigDecimal.Pow(@base, exponent);
-                    }
-
-                    return Math.Pow(Convert.ToDouble(await left.Value, context.CultureInfo),
-                        Convert.ToDouble(await right.Value, context.CultureInfo));
+                    return (decimal)BigDecimal.Pow(@base, exponent);
                 }
+
+                return Math.Pow(Convert.ToDouble(await left.Value, context.CultureInfo),
+                    Convert.ToDouble(await right.Value, context.CultureInfo));
+            }
             case BinaryExpressionType.In:
             {
                 var rightValue = await right.Value;
                 var leftValue = await left.Value;
-                return rightValue switch
-                {
-                    IEnumerable<object> rightValueEnumerable => rightValueEnumerable.Contains(leftValue),
-                    string rightValueString => rightValueString.Contains(leftValue?.ToString() ?? string.Empty),
-                    _ => throw new NCalcEvaluationException(
-                        "'in' operator right value must implement IEnumerable or be a string.")
-                };
+                return EvaluationHelper.In(rightValue, leftValue, context);
             }
             case BinaryExpressionType.NotIn:
             {
                 var rightValue = await right.Value;
                 var leftValue = await left.Value;
-                return rightValue switch
-                {
-                    IEnumerable<object> rightValueEnumerable => rightValueEnumerable.Contains(leftValue),
-                    string rightValueString => rightValueString.Contains(leftValue?.ToString() ?? string.Empty),
-                    _ => throw new NCalcEvaluationException(
-                        "'not in' operator right value must implement IEnumerable or be a string.")
-                };
+                return !EvaluationHelper.In(rightValue, leftValue, context);
             }
         }
 
@@ -163,14 +143,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         // Recursively evaluates the underlying expression
         var result = await expression.Expression.Accept(this);
 
-        return expression.Type switch
-        {
-            UnaryExpressionType.Not => !Convert.ToBoolean(result, context.CultureInfo),
-            UnaryExpressionType.Negate => MathHelper.Subtract(0, result, context),
-            UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, context.CultureInfo),
-            UnaryExpressionType.Positive => result,
-            _ => throw new InvalidOperationException("Unknown UnaryExpressionType")
-        };
+        return EvaluationHelper.Unary(expression, result, context);
     }
 
     public async Task<object?> Visit(Function function)
@@ -247,7 +220,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     public Task<object?> Visit(ValueExpression expression) => Task.FromResult(expression.Value);
 
-    
+
     public async Task<object?> Visit(LogicalExpressionList list)
     {
         List<object?> result = [];
@@ -259,7 +232,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
         return result.ToArray();
     }
-    
+
     protected int CompareUsingMostPreciseType(object? a, object? b)
     {
         return TypeHelper.CompareUsingMostPreciseType(a, b, context);
