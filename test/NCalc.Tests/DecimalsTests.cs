@@ -27,37 +27,37 @@ public class DecimalsTests
     [Fact]
     public void ShouldAddDoubleAndDecimal()
     {
-        var e = new Expression("1.8 + Abs([var1])");
-        e.Parameters["var1"] = 9.2;
+        var e = new Expression("1.8 + [var1]");
+        e.Parameters["var1"] = 9.2m;
 
-        Assert.Equal(11d, e.Evaluate());
+        Assert.Equal(11m, e.Evaluate());
     }
 
     [Fact]
     public void ShouldSubtractDoubleAndDecimal()
     {
-        var e = new Expression("1.8 - Abs([var1])");
-        e.Parameters["var1"] = 0.8;
+        var e = new Expression("1.8 - [var1]");
+        e.Parameters["var1"] = 0.8m;
 
-        Assert.Equal(1d, e.Evaluate());
+        Assert.Equal(1m, e.Evaluate());
     }
 
     [Fact]
     public void ShouldMultiplyDoubleAndDecimal()
     {
-        var e = new Expression("1.8 * Abs([var1])");
-        e.Parameters["var1"] = 9.2;
+        var e = new Expression("1.8 * [var1]", ExpressionOptions.DecimalAsDefault);
+        e.Parameters["var1"] = 9.2m;
 
-        Assert.Equal(16.56, e.Evaluate());
+        Assert.Equal(16.56m, e.Evaluate());
     }
 
     [Fact]
     public void ShouldDivideDoubleAndDecimal()
     {
-        var e = new Expression("1.8 / Abs([var1])");
-        e.Parameters["var1"] = 0.5;
+        var e = new Expression("1.8 / [var1]", ExpressionOptions.DecimalAsDefault);
+        e.Parameters["var1"] = 0.5m;
 
-        Assert.Equal(3.6d, e.Evaluate());
+        Assert.Equal(3.6m, e.Evaluate());
     }
     
     [Fact]
