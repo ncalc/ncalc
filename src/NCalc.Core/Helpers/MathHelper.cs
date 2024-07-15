@@ -224,40 +224,28 @@ public static class MathHelper
 
     private static TypeCode ConvertToHighestPrecision(ref object? a, ref object? b, CultureInfo cultureInfo)
     {
-        var typeCodeA = Type.GetTypeCode(a?.GetType());
-        var typeCodeB = Type.GetTypeCode(b?.GetType());
+        if (a == null || b == null)
+            return TypeCode.Empty;
+
+        var typeCodeA = Type.GetTypeCode(a.GetType());
+        var typeCodeB = Type.GetTypeCode(b.GetType());
 
         if (typeCodeA == typeCodeB)
             return typeCodeA;
 
         if (TypeCodeBitSize(typeCodeA, out var floatingPointA) is not { } bitSizeA)
             return TypeCode.Empty;
+
         if (TypeCodeBitSize(typeCodeB, out var floatingPointB) is not { } bitSizeB)
             return TypeCode.Empty;
 
-        if (floatingPointA != floatingPointB)
+        if ((floatingPointA && !floatingPointB) || (bitSizeA > bitSizeB))
         {
-            if (floatingPointA)
-            {
-                b = ConvertTo(b, typeCodeA, cultureInfo);
-
-                return typeCodeA;
-            }
-
-            a = ConvertTo(a, typeCodeB, cultureInfo);
-
-            return typeCodeB;
-        }
-
-        if (bitSizeA > bitSizeB)
-        {
-            b = ConvertTo(b, typeCodeA, cultureInfo);
-
+            b = Convert.ChangeType(b, typeCodeA, cultureInfo);
             return typeCodeA;
         }
 
-        a = ConvertTo(a, typeCodeB, cultureInfo);
-
+        a = Convert.ChangeType(a, typeCodeB, cultureInfo);
         return typeCodeB;
     }
 
@@ -290,26 +278,6 @@ public static class MathHelper
             default: return null;
         }
     }
-
-    private static object? ConvertTo(object? value, TypeCode toType, CultureInfo cultureInfo)
-    {
-        return toType switch
-        {
-            TypeCode.Byte => Convert.ToByte(value, cultureInfo),
-            TypeCode.SByte => Convert.ToSByte(value, cultureInfo),
-            TypeCode.Int16 => Convert.ToInt16(value, cultureInfo),
-            TypeCode.UInt16 => Convert.ToUInt16(value, cultureInfo),
-            TypeCode.Int32 => Convert.ToInt32(value, cultureInfo),
-            TypeCode.UInt32 => Convert.ToUInt32(value, cultureInfo),
-            TypeCode.Int64 => Convert.ToInt64(value, cultureInfo),
-            TypeCode.UInt64 => Convert.ToUInt64(value, cultureInfo),
-            TypeCode.Single => Convert.ToSingle(value, cultureInfo),
-            TypeCode.Double => Convert.ToDouble(value, cultureInfo),
-            TypeCode.Decimal => Convert.ToDecimal(value, cultureInfo),
-            _ => null
-        };
-    }
-
 
     public static object Abs(object? a, MathHelperOptions options)
     {
@@ -478,7 +446,7 @@ public static class MathHelper
         {
             char when options is { DecimalAsDefault: true, AllowCharValues: false } => decimal.Parse(value.ToString()!, options.CultureInfo),
             string when options is { DecimalAsDefault: true } => decimal.Parse(value.ToString()!, options.CultureInfo),
-            char when options is { AllowCharValues:false } => double.Parse(value.ToString()!, options.CultureInfo),
+            char when options is { AllowCharValues: false } => double.Parse(value.ToString()!, options.CultureInfo),
             string => double.Parse(value.ToString()!, options.CultureInfo),
             bool boolean when options.AllowBooleanCalculation => boolean ? 1 : 0,
             _ => value
@@ -492,7 +460,7 @@ public static class MathHelper
             bool => throw new InvalidOperationException(
                                 $"Operator '{operatorName}' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}"),
             byte b1 => ExecuteByteOperation(b1, b, operatorName, func),
-            char @char => ExecuteCharOperation(@char, b, operatorName,func),
+            char @char => ExecuteCharOperation(@char, b, operatorName, func),
             sbyte @sbyte => ExecuteSByteOperation(@sbyte, b, operatorName, func),
             short s => ExecuteShortOperation(s, b, operatorName, func),
             ushort @ushort => ExecuteUShortOperation(@ushort, b, operatorName, func),
@@ -531,7 +499,7 @@ public static class MathHelper
                 $"Operator '{operatorName}' not implemented for 'char' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
-    
+
     private static object ExecuteSByteOperation(sbyte left, object? right, char operatorName, Func<object, object, object> func)
     {
         return right switch
