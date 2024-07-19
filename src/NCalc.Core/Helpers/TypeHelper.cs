@@ -132,7 +132,7 @@ public static class TypeHelper
         var bValue = b != null ? Convert.ChangeType(b, mpt, options.CultureInfo) : null;
 
         var comparer = GetStringComparer(options);
-        
+
         return comparer.Compare(aValue, bValue);
     }
 }

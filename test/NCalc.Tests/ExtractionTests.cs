@@ -1,6 +1,6 @@
 namespace NCalc.Tests;
 
-[Trait("Category","Extraction")]
+[Trait("Category", "Extraction")]
 public class ExtractionTests
 {
     [Fact]
@@ -29,8 +29,8 @@ public class ExtractionTests
             new Expression("if(x=0,x,y)",
                 ExpressionOptions.CaseInsensitiveStringComparer);
         var parameters = expression.GetParameterNames();
-        
-        Assert.Equal(2,parameters.Count);
+
+        Assert.Equal(2, parameters.Count);
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class ExtractionTests
         var p = expression.GetParameterNames();
         Assert.Empty(p);
     }
-    
+
     [Theory]
     [InlineData("(a, b, c)", 3)]
     [InlineData("725 - 1 == result * secret_operation(secretValue)", 2)]

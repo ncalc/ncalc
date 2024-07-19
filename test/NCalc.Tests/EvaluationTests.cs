@@ -1,27 +1,27 @@
-using System.Diagnostics;
 using NCalc.Exceptions;
 using NCalc.Tests.TestData;
 
 namespace NCalc.Tests;
 
-[Trait("Category","Evaluations")]
+[Trait("Category", "Evaluations")]
 public class EvaluationTests
 {
-    
+
     [Theory]
     [ClassData(typeof(EvaluationTestData))]
     public void Expression_Should_Evaluate(string expression, object expected)
     {
         Assert.Equal(expected, new Expression(expression).Evaluate());
     }
-    
+
     [Theory]
     [ClassData(typeof(ValuesTestData))]
     public void ShouldParseValues(string input, object expectedValue)
     {
         var expression = new Expression(input);
+
         var result = expression.Evaluate();
-        
+
         if (expectedValue is double expectedDouble)
         {
             Assert.Equal(expectedDouble, (double)result, precision: 15);
@@ -31,7 +31,7 @@ public class EvaluationTests
             Assert.Equal(expectedValue, result);
         }
     }
-    
+
 
     [Fact]
     public void ShouldEvaluateInFunction()
@@ -54,14 +54,14 @@ public class EvaluationTests
 
         Assert.Equal(true, estring.Evaluate());
     }
-    
+
     [Fact]
     public void ShouldEvaluateTernaryExpression()
     {
         Assert.Equal(1, new Expression("1+2<3 ? 3+4 : 1").Evaluate());
     }
-    
-    
+
+
     [Fact]
     public void Should_Not_Throw_Function_Not_Found_Issue_110()
     {
@@ -78,7 +78,7 @@ public class EvaluationTests
         Assert.Equal(true, expression.Evaluate());
     }
 
-        
+
     [Fact]
     public void Should_Evaluate_Ifs()
     {
@@ -109,7 +109,7 @@ public class EvaluationTests
 
         Assert.Equal(8, eifs.Evaluate());
     }
-    
+
     [Fact]
     public void ShouldEvaluateConditional()
     {
@@ -191,7 +191,7 @@ public class EvaluationTests
         var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
         Assert.Equal(expected, e.Evaluate());
     }
-    
+
     [Fact]
     public void ShouldEvaluateArrayParameters()
     {
@@ -212,7 +212,7 @@ public class EvaluationTests
         Assert.Equal(9, result[3]);
         Assert.Equal(16, result[4]);
     }
-    
+
     [Fact]
     public void ShouldEvaluateInOperatorWithList()
     {
@@ -220,16 +220,16 @@ public class EvaluationTests
         context.StaticParameters["PageState"] = "Insert";
         Assert.Equal(true, new Expression("{PageState} in ('Insert','Update')", context).Evaluate());
     }
-    
+
     [Fact]
     public void ShouldEvaluateInOperatorWithString()
     {
         var context = new ExpressionContext();
         context.StaticParameters["PageState"] = "Insert";
-        
+
         Assert.Equal(true, new Expression("{PageState} in 'Insert a quote, you must.'", context).Evaluate());
     }
-    
+
     [Fact]
     public void ShouldEvaluateNotInOperator()
     {
@@ -237,7 +237,7 @@ public class EvaluationTests
         context.StaticParameters["PageState"] = "Import";
         Assert.Equal(true, new Expression("{PageState} not in  ('Insert','Update')", context).Evaluate());
     }
-    
+
     [Fact]
     public void InOperatorShouldRespectStringComparer()
     {

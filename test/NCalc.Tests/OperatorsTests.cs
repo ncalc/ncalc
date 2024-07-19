@@ -4,7 +4,7 @@ using NCalc.Factories;
 
 namespace NCalc.Tests;
 
-[Trait("Category","Operators")]
+[Trait("Category", "Operators")]
 public class OperatorsTests
 {
     [Theory]
@@ -16,7 +16,7 @@ public class OperatorsTests
         var expr = new Expression(logicalExpression);
         Assert.False((bool)expr.Evaluate()!);
     }
-    
+
     [Theory]
     [InlineData("!true", false)]
     [InlineData("not false", true)]
@@ -62,7 +62,7 @@ public class OperatorsTests
     {
         Assert.Equal(expected, new Expression(expression).Evaluate());
     }
-    
+
     [Theory]
     [InlineData("2+2+2+2", 8)]
     [InlineData("2*2*2*2", 16)]
@@ -80,7 +80,7 @@ public class OperatorsTests
     {
         Assert.Equal(expected, new Expression(expression).Evaluate());
     }
-    
+
     [Fact]
     public void Should_Compare_Bool_Issue_122()
     {
@@ -101,7 +101,7 @@ public class OperatorsTests
         Assert.Equal("1 ^ 2", serializedString);
         Assert.Equal(3UL, new Expression(logicalExpression).Evaluate());
     }
-    
+
     [Fact]
     public void Should_Short_Circuit_Boolean_Expressions()
     {

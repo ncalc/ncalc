@@ -17,9 +17,9 @@ public static class LinqUtils
     /// <returns></returns>
     public static Tuple<int, System.Linq.Expressions.Expression[]> PrepareMethodArgumentsIfValid(ParameterInfo[] parameters, System.Linq.Expressions.Expression[] arguments)
     {
-        if (parameters.Length == 0 && arguments.Length == 0) 
+        if (parameters.Length == 0 && arguments.Length == 0)
             return Tuple.Create(0, arguments);
-        
+
         if (parameters.Length == 0)
             return null;
 

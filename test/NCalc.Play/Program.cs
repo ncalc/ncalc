@@ -14,7 +14,7 @@ while (true)
         Console.WriteLine("Expression cannot be empty.");
         continue;
     }
-    
+
     try
     {
         var expression = new Expression(input);

@@ -23,20 +23,19 @@ public sealed class LogicalExpressionFactory : ILogicalExpressionFactory
 
     public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
     {
-        LogicalExpression? logicalExpression;
         try
         {
             var parserContext = new LogicalExpressionParserContext(expression, options);
-            logicalExpression = LogicalExpressionParser.Parse(parserContext);
+            var logicalExpression = LogicalExpressionParser.Parse(parserContext);
 
             if (logicalExpression is null)
                 throw new ArgumentNullException(nameof(logicalExpression));
+
+            return logicalExpression;
         }
         catch (Exception exception)
         {
             throw new NCalcParserException("Error parsing the expression.", exception);
         }
-
-        return logicalExpression;
     }
 }

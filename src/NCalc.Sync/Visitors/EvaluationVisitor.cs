@@ -1,9 +1,9 @@
-﻿using ExtendedNumerics;
+﻿using System.Numerics;
+using ExtendedNumerics;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
-using System.Numerics;
 using static NCalc.Helpers.TypeHelper;
 
 namespace NCalc.Visitors;
@@ -88,21 +88,17 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 return Convert.ToUInt64(left.Value, context.CultureInfo) &
                        Convert.ToUInt64(right.Value, context.CultureInfo);
 
-
             case BinaryExpressionType.BitwiseOr:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) |
                        Convert.ToUInt64(right.Value, context.CultureInfo);
-
 
             case BinaryExpressionType.BitwiseXOr:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) ^
                        Convert.ToUInt64(right.Value, context.CultureInfo);
 
-
             case BinaryExpressionType.LeftShift:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) <<
                        Convert.ToInt32(right.Value, context.CultureInfo);
-
 
             case BinaryExpressionType.RightShift:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) >>
@@ -125,6 +121,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 var leftValue = left.Value;
                 return EvaluationHelper.In(rightValue, leftValue, context);
             }
+
             case BinaryExpressionType.NotIn:
             {
                 var rightValue = right.Value;

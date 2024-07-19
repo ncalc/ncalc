@@ -17,7 +17,7 @@ public class ParserTests
 
         Assert.Equal(expectedValue, result);
     }
-    
+
     [Theory]
     [InlineData("not( true )", false)]
     [InlineData("not ( true )", false)]
@@ -45,7 +45,7 @@ public class ParserTests
 
         Assert.Equal(5, result);
     }
-    
+
     [Fact]
     public void RequireClosingAtIdentifiersIssue244()
     {
@@ -54,10 +54,10 @@ public class ParserTests
         var logicalExpression = LogicalExpressionFactory.Create(formula);
 
         Assert.IsType<Identifier>(logicalExpression);
-        
-        Assert.Equal("{Diagnostic}.Data",((Identifier)logicalExpression).Name);
+
+        Assert.Equal("{Diagnostic}.Data", ((Identifier)logicalExpression).Name);
     }
-    
+
     [Fact]
     public void AllowCharValues()
     {
@@ -66,11 +66,11 @@ public class ParserTests
         var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues);
 
         Assert.IsType<ValueExpression>(logicalExpression);
-        
-        Assert.Equal('c',((ValueExpression)logicalExpression).Value);
+
+        Assert.Equal('c', ((ValueExpression)logicalExpression).Value);
     }
-    
-    [InlineData("(1+2)*3",9)]
+
+    [InlineData("(1+2)*3", 9)]
     [InlineData("(8 * 8) + 1", 65)]
     [InlineData("1 + 1", 2)]
     [InlineData("-1 - 1", -2)]
@@ -80,13 +80,13 @@ public class ParserTests
         var logicalExpression = LogicalExpressionFactory.Create(formula);
 
         Assert.IsType<BinaryExpression>(logicalExpression);
-        
+
         var expression = new Expression(logicalExpression);
-        
+
         Assert.Equal(expectedResult, expression.Evaluate());
     }
-    
-    [InlineData("(1,2,3,4,5)",5)]
+
+    [InlineData("(1,2,3,4,5)", 5)]
     [InlineData("()", 0)]
     [InlineData("('Hello', func())", 2)]
     [Theory]
@@ -95,7 +95,7 @@ public class ParserTests
         var logicalExpression = LogicalExpressionFactory.Create(formula);
 
         Assert.IsType<LogicalExpressionList>(logicalExpression);
-        
+
         Assert.Equal(arrayExpectedCount, ((LogicalExpressionList)logicalExpression).Count);
     }
 }

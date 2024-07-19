@@ -103,23 +103,23 @@ public class ExceptionsTests
             Assert.Equal("Invalid token in expression at position (1:3)", ex.InnerException.Message);
         }
     }
-    
+
     [Fact]
     public void Should_Throw_Function_Not_Found()
     {
         var expression = new Expression("drop_database()");
         var exception = Assert.Throws<NCalcFunctionNotFoundException>(() => expression.Evaluate());
-        Assert.Equal("drop_database",exception.FunctionName);
+        Assert.Equal("drop_database", exception.FunctionName);
     }
-    
+
     [Fact]
     public void Should_Throw_Parameter_Not_Found()
     {
         var expression = new Expression("{Name} == 'Spinella'");
         var exception = Assert.Throws<NCalcParameterNotDefinedException>(() => expression.Evaluate());
-        Assert.Equal("Name",exception.ParameterName);
+        Assert.Equal("Name", exception.ParameterName);
     }
-    
+
     [Theory]
     [InlineData("5+-*10")]
     [InlineData("5+*10")]
@@ -136,13 +136,13 @@ public class ExceptionsTests
         var expression = new Expression("1.3,4.5");
         Assert.Throws<NCalcParserException>(() => expression.Evaluate());
     }
-    
+
     [Fact]
     public void ShouldThrowExceptionInOperator()
     {
         var context = new ExpressionContext();
         context.StaticParameters["PageState"] = "Insert";
-        
-        Assert.Throws<NCalcEvaluationException>(()=>new Expression("{PageState} in 4", context).Evaluate());
+
+        Assert.Throws<NCalcEvaluationException>(() => new Expression("{PageState} in 4", context).Evaluate());
     }
 }

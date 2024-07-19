@@ -10,10 +10,10 @@ public enum ExpressionOptions
     /// Specifies that no options are set.
     /// </summary>
     None = 1 << 0,
-    
+
     [Obsolete("Please use IgnoreCaseAtBuiltInFunctions")]
     IgnoreCase = 1 << 1,
-    
+
     /// <summary>
     /// Specifies case-insensitive matching for built-in functions
     /// </summary>
@@ -33,7 +33,7 @@ public enum ExpressionOptions
     /// When using Round(), if a number is halfway between two others, it is rounded toward the nearest number that is away from zero.
     /// </summary>
     RoundAwayFromZero = 1 << 4,
-    
+
     /// <summary>
     /// Specifies the use of CaseInsensitiveComparer for comparisons.
     /// </summary>
@@ -68,7 +68,7 @@ public enum ExpressionOptions
     /// Concat values as strings instead of arithmetic addition
     /// </summary>
     StringConcat = 1 << 11,
-    
+
     /// <summary>
     /// Parse single quoted strings as <see cref="char"/>
     /// </summary>

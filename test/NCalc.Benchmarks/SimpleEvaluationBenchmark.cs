@@ -25,7 +25,7 @@ public class SimpleEvaluationBenchmark
             }
         };
 
-        expression.EvaluateParameter += delegate(string name, ParameterArgs args)
+        expression.EvaluateParameter += delegate (string name, ParameterArgs args)
         {
             if (name == "pi")
                 args.Result = 3.14;
@@ -33,7 +33,7 @@ public class SimpleEvaluationBenchmark
 
         Expression = expression;
     }
-    
+
     [Benchmark]
     public object SimpleEvaluation()
     {

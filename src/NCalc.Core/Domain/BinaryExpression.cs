@@ -15,6 +15,6 @@ public sealed class BinaryExpression(
 
     public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
     {
-       return visitor.Visit(this);
+        return visitor.Visit(this);
     }
 }
