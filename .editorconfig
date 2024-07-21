@@ -10,3 +10,4 @@ csharp_indent_case_contents_when_block = false
 dotnet_sort_system_directives_first = true
 indent_style = space
 indent_size = 4
+trim_trailing_whitespace = true
