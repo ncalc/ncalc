@@ -4,18 +4,7 @@ namespace NCalc.Helpers;
 
 public static class BuiltInFunctionHelper
 {
-    public static object? Evaluate(string functionName, ExpressionBase[] arguments, ExpressionContextBase context)
-    {
-        var result = EvaluateInt(functionName, arguments, context, EvaluateSyncInt);
-        return result.GetAwaiter().GetResult();
-    }
-
-    public static async Task<object?> EvaluateAsync(string functionName, ExpressionBase[] arguments, ExpressionContextBase context)
-    {
-        return await EvaluateInt(functionName, arguments, context, EvaluateAsyncInt);
-    }
-
-    private static async Task<object?> EvaluateInt(string functionName, ExpressionBase[] arguments, ExpressionContextBase context, Func<ExpressionBase, Task<object?>> evaluate)
+    public static async Task<object?> Evaluate(string functionName, ExpressionBase[] arguments, ExpressionContextBase context, Func<ExpressionBase, Task<object?>> evaluate)
     {
         var caseInsensitive = context.Options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
         var comparison = caseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
@@ -200,15 +189,5 @@ public static class BuiltInFunctionHelper
         }
 
         throw new NCalcFunctionNotFoundException(functionName);
-    }
-
-    private static async Task<object?> EvaluateSyncInt(ExpressionBase expressionBase)
-    {
-        return await Task.FromResult(expressionBase.Evaluate());
-    }
-
-    private static async Task<object?> EvaluateAsyncInt(ExpressionBase expressionBase)
-    {
-        return await expressionBase.EvaluateAsync();
     }
 }

@@ -169,7 +169,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             return expressionFunction(new(function.Identifier.Id, args, context));
         }
 
-        return BuiltInFunctionHelper.Evaluate(functionName, args, context);
+        return SyncBuiltInFunctionHelper.Evaluate(functionName, args, context);
     }
 
     public object? Visit(Identifier identifier)
