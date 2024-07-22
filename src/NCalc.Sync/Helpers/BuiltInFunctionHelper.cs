@@ -6,8 +6,8 @@ public static class BuiltInFunctionHelper
 {
     public static object? Evaluate(string functionName, Expression[] arguments, ExpressionContext context)
     {
-        var caseSensitive = !context.Options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
-        var comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+        var caseInsensitive = context.Options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
+        var comparison = caseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
         if (functionName.Equals("Abs", comparison))
         {

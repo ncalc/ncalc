@@ -1,8 +1,6 @@
-using System.Globalization;
-
 namespace NCalc.Tests;
 
-[Trait("Category","Custom Culture")]
+[Trait("Category", "Custom Culture")]
 public class CustomCultureTests
 {
     [Fact]
@@ -27,7 +25,7 @@ public class CustomCultureTests
             //Correctly evaluate with decimal dot culture and parameter with dot
             Assert.Equal(expectedValue, new Expression(formula, cultureDot)
             {
-                Parameters = 
+                Parameters =
                 {
                     {"A","2.0"},
                     {"B","0.5"}
@@ -37,7 +35,7 @@ public class CustomCultureTests
             //Correctly evaluate with decimal comma and parameter with comma
             Assert.Equal(expectedValue, new Expression(formula, cultureComma)
             {
-                Parameters = 
+                Parameters =
                 {
                     {"A","2.0"},
                     {"B","0.5"}
@@ -47,7 +45,7 @@ public class CustomCultureTests
             //combining decimal dot and comma fails
             Assert.Throws<FormatException>(() => new Expression(formula, cultureComma)
             {
-                Parameters = 
+                Parameters =
                 {
                     {"A","2,0"},
                     {"B","0.5"}
@@ -57,7 +55,7 @@ public class CustomCultureTests
             //combining decimal dot and comma fails
             Assert.Throws<FormatException>(() => new Expression(formula, cultureDot)
             {
-                Parameters = 
+                Parameters =
                 {
                     {"A","2,0"},
                     {"B","0.5"}
@@ -65,7 +63,7 @@ public class CustomCultureTests
             }.Evaluate());
         }
     }
-    
+
     [Fact]
     public void ShouldParseInvariantCulture()
     {

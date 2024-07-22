@@ -28,9 +28,9 @@ public partial class Expression
         {
             visitor = new(Parameters, Options);
         }
-        
 
-        var body =LogicalExpression.Accept(visitor);
+
+        var body = LogicalExpression.Accept(visitor);
         if (body.Type != typeof(TResult))
         {
             body = LinqExpression.Convert(body, typeof(TResult));

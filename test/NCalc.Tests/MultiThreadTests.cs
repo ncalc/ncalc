@@ -1,6 +1,6 @@
 namespace NCalc.Tests;
 
-[Trait("Category","Multiple Threads")]
+[Trait("Category", "Multiple Threads")]
 public class MultiThreadTests
 {
     private List<Exception> _exceptions;

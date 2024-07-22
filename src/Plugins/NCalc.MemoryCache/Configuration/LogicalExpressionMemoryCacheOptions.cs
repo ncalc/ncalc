@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NCalc.Cache.Configuration;
+﻿namespace NCalc.Cache.Configuration;
 
 public class LogicalExpressionMemoryCacheOptions
 {

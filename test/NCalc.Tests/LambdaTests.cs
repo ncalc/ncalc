@@ -432,7 +432,7 @@ public class LambdaTests
     public void ExpressionAndLambdaFuncBehaviorMatch()
     {
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-        
+
         // Arrange
         double[] testValues = [double.MinValue, -Math.PI, -1, Math.BitDecrement(0), 0, Math.BitIncrement(0), 0.001, 1, 2, 3.14, Math.PI, 10, 100, double.MaxValue
         ];
@@ -447,7 +447,7 @@ public class LambdaTests
             "Round", "IEEERemainder", "Log", "Max", "Min", "Pow"
         };
 
-        var doubleToStringFormats = new [] { "F17", "0" };
+        var doubleToStringFormats = new[] { "F17", "0" };
 
         List<ContextAndResult> testResults = [];
         ContextAndResult currentContext = new();
@@ -632,7 +632,7 @@ public class LambdaTests
         Assert.Equal(expectedLog1, actualLog1);
         Assert.Equal(expectedLog2, actualLog2);
     }
-    
+
     [Theory]
     [InlineData(int.MaxValue, '+', int.MaxValue)]
     [InlineData(int.MinValue, '-', int.MaxValue)]
@@ -644,7 +644,7 @@ public class LambdaTests
         e.Parameters["b"] = b;
 
         var lambda = e.ToLambda<int>();
-        
+
         Assert.Throws<OverflowException>(() => lambda());
     }
 }

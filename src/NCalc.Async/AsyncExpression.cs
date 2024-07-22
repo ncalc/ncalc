@@ -1,12 +1,12 @@
-﻿using NCalc.Cache;
+﻿using System.Diagnostics.CodeAnalysis;
+using NCalc.Cache;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Visitors;
-using System.Diagnostics.CodeAnalysis;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using NCalc.Services;
+using NCalc.Visitors;
 
 namespace NCalc;
 
@@ -22,7 +22,7 @@ public class AsyncExpression
     /// Default Value: True
     /// </summary>
     public static bool CacheEnabled { get; set; } = true;
-    
+
     /// <summary>
     /// Options for the expression evaluation.
     /// </summary>
@@ -40,7 +40,7 @@ public class AsyncExpression
         get => Context.CultureInfo;
         set => Context.CultureInfo = value;
     }
-    
+
     protected AsyncExpressionContext Context { get; init; }
 
     /// <summary>
@@ -52,20 +52,18 @@ public class AsyncExpression
         set => Context.StaticParameters = value;
     }
 
-
     public IDictionary<string, AsyncExpressionParameter> DynamicParameters
     {
         get => Context.DynamicParameters;
         set => Context.DynamicParameters = value;
     }
-    
+
     public IDictionary<string, AsyncExpressionFunction> Functions
     {
         get => Context.Functions;
         set => Context.Functions = value;
     }
-    
-    
+
     /// <summary>
     /// Event triggered to handle function evaluation.
     /// </summary>
@@ -74,7 +72,7 @@ public class AsyncExpression
         add => Context.AsyncEvaluateFunctionHandler += value;
         remove => Context.AsyncEvaluateFunctionHandler -= value;
     }
-    
+
     /// <summary>
     /// Event triggered to handle parameter evaluation.
     /// </summary>
@@ -83,7 +81,7 @@ public class AsyncExpression
         add => Context.AsyncEvaluateParameterHandler += value;
         remove => Context.AsyncEvaluateParameterHandler -= value;
     }
-    
+
     /// <summary>
     /// Textual representation of the expression.
     /// </summary>
@@ -93,13 +91,12 @@ public class AsyncExpression
 
     public Exception? Error { get; private set; }
 
-    protected ILogicalExpressionCache LogicalExpressionCache { get;}
+    protected ILogicalExpressionCache LogicalExpressionCache { get; }
 
     protected ILogicalExpressionFactory LogicalExpressionFactory { get; }
 
     protected IAsyncEvaluationService EvaluationService { get; }
-    
-    
+
     private AsyncExpression(AsyncExpressionContext? context = null)
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
@@ -121,7 +118,7 @@ public class AsyncExpression
         EvaluationService = evaluationService;
         LogicalExpressionFactory = factory;
     }
-    
+
     public AsyncExpression(
         LogicalExpression logicalExpression,
         AsyncExpressionContext context,
@@ -135,12 +132,11 @@ public class AsyncExpression
         EvaluationService = evaluationService;
         LogicalExpressionFactory = factory;
     }
-    
+
     public AsyncExpression(string expression, AsyncExpressionContext? context = null) : this(context)
     {
         ExpressionString = expression;
     }
-
 
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, ExpressionContext have implicit conversions.
@@ -169,7 +165,7 @@ public class AsyncExpression
         CultureInfo? cultureInfo = null) : this(logicalExpression, new AsyncExpressionContext(options, cultureInfo))
     {
     }
-    
+
     private LogicalExpression? GetLogicalExpression()
     {
         if (string.IsNullOrEmpty(ExpressionString))
@@ -195,7 +191,7 @@ public class AsyncExpression
 
         return logicalExpression;
     }
-    
+
     /// <summary>
     /// Create the LogicalExpression in order to check syntax errors.
     /// If errors are detected, the Error property contains the exception.
@@ -217,7 +213,7 @@ public class AsyncExpression
             return true;
         }
     }
-    
+
 
     /// <summary>
     /// Asynchronously evaluates the logical expression.
@@ -240,7 +236,7 @@ public class AsyncExpression
 
         return await EvaluationService.EvaluateAsync(LogicalExpression!, Context);
     }
-    
+
     private async Task<List<object?>> IterateParametersAsync()
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
@@ -260,7 +256,7 @@ public class AsyncExpression
 
         return results;
     }
-    
+
     /// <summary>
     /// Returns a list with all parameter names from the expression.
     /// </summary>
@@ -276,7 +272,7 @@ public class AsyncExpression
     {
         return GetParameterNames();
     }
-    
+
     /// <summary>
     /// Returns a list with all function names from the expression.
     /// </summary>

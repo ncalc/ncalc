@@ -2,13 +2,12 @@ using NCalc.Exceptions;
 
 namespace NCalc.Helpers;
 
-
 public static class AsyncBuiltInFunctionHelper
 {
     public static async Task<object?> EvaluateAsync(string functionName, AsyncExpression[] arguments, AsyncExpressionContext context)
     {
-        var caseSensitive = !context.Options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
-        var comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+        var caseInsensitive = context.Options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
+        var comparison = caseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
         if (functionName.Equals("Abs", comparison))
         {

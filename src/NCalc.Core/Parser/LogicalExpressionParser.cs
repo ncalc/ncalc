@@ -429,9 +429,9 @@ public static class LogicalExpressionParser
         expression.Parser = operatorSequence;
         var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
             .ElseError(InvalidTokenMessage);
-        
+
         AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
-        
+
         Parser = enableParserCompilation ? expressionParser.Compile() : expressionParser;
     }
 

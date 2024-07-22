@@ -29,7 +29,7 @@ public static class EvaluationHelper
             return string.Concat(leftValue, rightValue);
         }
     }
-    
+
     /// <summary>
     /// Determines if the left value is contained within the right value, which must be either an enumerable or a string.
     /// </summary>
@@ -59,7 +59,7 @@ public static class EvaluationHelper
                     "'in' operator right value must implement IEnumerable or be a string.");
         }
     }
-    
+
     /// <summary>
     /// Evaluates a unary expression.
     /// </summary>

@@ -1,7 +1,6 @@
 ﻿using NCalc.Cache;
 using NCalc.Domain;
 using NCalc.Services;
-using NCalc.Visitors;
 
 namespace NCalc.Factories;
 
@@ -22,6 +21,5 @@ public sealed class ExpressionFactory(
     public Expression Create(LogicalExpression logicalExpression, ExpressionContext? expressionContext = null)
     {
         return new Expression(logicalExpression, expressionContext ?? new(), logicalExpressionFactory, cache, evaluationService);
-
     }
 }
