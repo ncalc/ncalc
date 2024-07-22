@@ -15,7 +15,7 @@ namespace NCalc;
 /// It supports caching, custom parameter and function evaluation, and options for handling null parameters and iterating over parameter collections.
 /// The class manages the parsing, validation, and evaluation of expressions, and provides mechanisms for error detection and reporting.
 /// </summary>
-public partial class Expression
+public partial class Expression : ExpressionBase
 {
     /// <summary>
     /// Static property to enable or disable cache.
@@ -191,7 +191,7 @@ public partial class Expression
     /// </summary>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public object? Evaluate()
+    public override object? Evaluate()
     {
         LogicalExpression ??= GetLogicalExpression();
 

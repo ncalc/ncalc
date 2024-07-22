@@ -176,7 +176,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             return await expressionFunction(new(function.Identifier.Id, args, context));
         }
 
-        return await AsyncBuiltInFunctionHelper.EvaluateAsync(functionName, args, context);
+        return await BuiltInFunctionHelper.EvaluateAsync(functionName, args, context);
     }
 
     public async Task<object?> Visit(Identifier identifier)

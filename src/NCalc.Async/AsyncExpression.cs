@@ -15,7 +15,7 @@ namespace NCalc;
 /// It supports caching, custom parameter and function evaluation, and options for handling null parameters and iterating over parameter collections.
 /// The class manages the parsing, validation, and evaluation of expressions, and provides mechanisms for error detection and reporting.
 /// </summary>
-public class AsyncExpression
+public class AsyncExpression : ExpressionBase
 {
     /// <summary>
     /// Static property to enable or disable cache.
@@ -220,7 +220,7 @@ public class AsyncExpression
     /// </summary>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public async Task<object?> EvaluateAsync()
+    public override async Task<object?> EvaluateAsync()
     {
         LogicalExpression ??= GetLogicalExpression();
 
