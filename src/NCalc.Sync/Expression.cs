@@ -1,12 +1,12 @@
-﻿using NCalc.Cache;
+﻿using System.Diagnostics.CodeAnalysis;
+using NCalc.Cache;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Visitors;
-using System.Diagnostics.CodeAnalysis;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using NCalc.Services;
+using NCalc.Visitors;
 
 namespace NCalc;
 
@@ -22,7 +22,7 @@ public partial class Expression
     /// Default Value: True
     /// </summary>
     public static bool CacheEnabled { get; set; } = true;
-    
+
     /// <summary>
     /// Event triggered to handle function evaluation.
     /// </summary>
@@ -31,7 +31,7 @@ public partial class Expression
         add => Context.EvaluateFunctionHandler += value;
         remove => Context.EvaluateFunctionHandler -= value;
     }
-    
+
     /// <summary>
     /// Event triggered to handle parameter evaluation.
     /// </summary>
@@ -40,7 +40,7 @@ public partial class Expression
         add => Context.EvaluateParameterHandler += value;
         remove => Context.EvaluateParameterHandler -= value;
     }
-    
+
     /// <summary>
     /// Options for the expression evaluation.
     /// </summary>
@@ -69,13 +69,13 @@ public partial class Expression
         get => Context.StaticParameters;
         set => Context.StaticParameters = value;
     }
-    
+
     public IDictionary<string, ExpressionParameter> DynamicParameters
     {
         get => Context.DynamicParameters;
         set => Context.DynamicParameters = value;
     }
-    
+
     public IDictionary<string, ExpressionFunction> Functions
     {
         get => Context.Functions;
@@ -94,7 +94,7 @@ public partial class Expression
     protected ILogicalExpressionCache LogicalExpressionCache { get; }
     protected ILogicalExpressionFactory LogicalExpressionFactory { get; }
     protected IEvaluationService EvaluationService { get; }
-    
+
     private Expression(ExpressionContext? context = null)
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
@@ -116,7 +116,7 @@ public partial class Expression
         EvaluationService = evaluationService;
         LogicalExpressionFactory = factory;
     }
-    
+
     public Expression(
         LogicalExpression logicalExpression,
         ExpressionContext context,
@@ -135,7 +135,7 @@ public partial class Expression
     {
         ExpressionString = expression;
     }
-    
+
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, ExpressionContext have implicit conversions.
     public Expression(string expression) : this(expression, ExpressionOptions.None)
@@ -263,13 +263,13 @@ public partial class Expression
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
         return LogicalExpression.Accept(parameterExtractionVisitor);
     }
-    
+
     [Obsolete("Please use GetParameterNames (correct english spelling).")]
     public List<string> GetParametersNames()
     {
         return GetParameterNames();
     }
-    
+
     /// <summary>
     /// Returns a list with all function names from the expression.
     /// </summary>

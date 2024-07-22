@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using Antlr4.Runtime;
+﻿using Antlr4.Runtime;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
@@ -19,7 +17,8 @@ public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
         var errorListenerLexer = new ErrorListenerLexer();
         lexer.AddErrorListener(errorListenerLexer);
 
-        var parser = new NCalcParser(new CommonTokenStream(lexer)) {
+        var parser = new NCalcParser(new CommonTokenStream(lexer))
+        {
             UseDecimal = options.HasFlag(ExpressionOptions.DecimalAsDefault)
         };
 
@@ -30,7 +29,7 @@ public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
         {
             logicalExpression = parser.ncalcExpression().retValue;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             var message = new StringBuilder(ex.Message);
             if (errorListenerLexer.Errors.Count != 0)
@@ -54,7 +53,7 @@ public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
         {
             throw new NCalcParserException(string.Join(Environment.NewLine, errorListenerParser.Errors.ToArray()));
         }
-        
+
         return logicalExpression;
     }
 }

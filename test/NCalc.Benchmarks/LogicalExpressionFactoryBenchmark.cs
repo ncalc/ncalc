@@ -20,14 +20,14 @@ public class LogicalExpressionFactoryBenchmark
     private const string SimpleExpression = "(3.2 < waterlevel AND 5.3 >= waterlevel)";
 
     private const string AdvancedExpression = "PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3) && Name == 'Sergio'";
-    
+
     [GlobalSetup]
     public void Setup()
     {
         AntlrFactory = new AntlrLogicalExpressionFactory();
         ParlotFactory = new LogicalExpressionFactory();
     }
-    
+
     [Benchmark]
     public LogicalExpression SimpleAntlrExpression()
     {
@@ -40,7 +40,7 @@ public class LogicalExpressionFactoryBenchmark
     {
         return ParlotFactory.Create(SimpleExpression);
     }
-    
+
     [Benchmark]
     public LogicalExpression AdvancedAntlrExpression()
     {

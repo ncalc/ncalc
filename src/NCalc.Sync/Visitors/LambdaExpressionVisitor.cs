@@ -26,17 +26,17 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         _checked = _options.HasFlag(ExpressionOptions.OverflowProtection);
         _caseInsensitiveStringComparer = _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
     }
-    
+
     public LambdaExpressionVisitor(IDictionary<string, object> parameters, ExpressionOptions options) : this(options)
     {
         _parameters = parameters;
     }
-    
+
     public LambdaExpressionVisitor(LinqParameterExpression context, ExpressionOptions options) : this(options)
     {
         _context = context;
     }
-    
+
 
     public LinqExpression Visit(TernaryExpression expression)
     {
@@ -170,17 +170,17 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                     : MidpointRounding.ToEven;
                 return LinqExpression.Call(MathFunctionHelper.Functions["ROUND"].MethodInfo, arg0, arg1,
                     LinqExpression.Constant(rounding));
-       
+
             default:
                 // Regular handling
                 if (MathFunctionHelper.Functions.TryGetValue(functionName, out var func))
-                { 
+                {
                     return MakeMathCallExpression(func, actualNumArgs);
                 }
 
                 throw new MissingMethodException($"method not found: {functionName}");
         }
-        
+
         static void CheckArgumentsLengthForFunction(string funcStr, int argsNum, int argsNeed)
         {
             if (argsNum != argsNeed)
@@ -296,7 +296,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
         if (typeof(string) != left.Type && typeof(string) != right.Type)
             return action(left, right);
-        
+
         switch (expressiontype)
         {
             case BinaryExpressionType.Equal:

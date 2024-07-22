@@ -2,7 +2,7 @@ using NCalc.Exceptions;
 
 namespace NCalc.Tests;
 
-[Trait("Category","Comparer")]
+[Trait("Category", "Comparer")]
 public class ComparerTests
 {
     [Fact]
@@ -13,7 +13,7 @@ public class ComparerTests
 
         Assert.True((bool)eif.Evaluate());
     }
-    
+
     [Theory]
     [InlineData(null, 2, false)]
     [InlineData(2, 2L, true)]

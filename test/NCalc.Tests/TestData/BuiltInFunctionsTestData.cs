@@ -23,8 +23,8 @@ public class BuiltInFunctionsTestData : TheoryData<string, object, double?>
         Add("Sqrt(4)", 2d, null);
         Add("Tan(0)", 0d, null);
         Add("Truncate(1.7)", 1d, null);
-        Add("Atan2(-1,0)", -Math.PI/2, 1e-16);
-        Add("Atan2(1,0)", Math.PI/2, 1e-16);
+        Add("Atan2(-1,0)", -Math.PI / 2, 1e-16);
+        Add("Atan2(1,0)", Math.PI / 2, 1e-16);
         Add("Atan2(0,-1)", Math.PI, 1e-16);
         Add("Atan2(0,1)", 0d, 1e-16);
         Add("Max(1,10)", 10, null);

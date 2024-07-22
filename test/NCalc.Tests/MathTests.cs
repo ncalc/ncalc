@@ -1,4 +1,3 @@
-using System.Globalization;
 using NCalc.Tests.TestData;
 using Assert = Xunit.Assert;
 
@@ -412,7 +411,7 @@ public class MathsTests
         var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
-        
+
         Assert.Throws<OverflowException>(() => e.Evaluate());
     }
 
@@ -429,13 +428,13 @@ public class MathsTests
 
         Assert.Throws<OverflowException>(() => e.Evaluate());
     }
-    
+
     [Theory]
-    [InlineData("3 + '3'", ExpressionOptions.AllowCharValues,54)]
-    [InlineData("3 + '3'", ExpressionOptions.None,6d)]
-    [InlineData("'4' + '2'",ExpressionOptions.AllowCharValues, 102)]
-    [InlineData("'4' + '2'",ExpressionOptions.StringConcat, "42")]
-    [InlineData("'4' + '2'",ExpressionOptions.None, 6d)]
+    [InlineData("3 + '3'", ExpressionOptions.AllowCharValues, 54)]
+    [InlineData("3 + '3'", ExpressionOptions.None, 6d)]
+    [InlineData("'4' + '2'", ExpressionOptions.AllowCharValues, 102)]
+    [InlineData("'4' + '2'", ExpressionOptions.StringConcat, "42")]
+    [InlineData("'4' + '2'", ExpressionOptions.None, 6d)]
     public void ShouldHandleCharAddition(string expression, ExpressionOptions options, object expected)
     {
         Assert.Equal(expected, new Expression(expression, options | ExpressionOptions.NoCache).Evaluate());

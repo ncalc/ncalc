@@ -1,6 +1,6 @@
-﻿using ExtendedNumerics;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Threading;
+using ExtendedNumerics;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Handlers;
@@ -121,12 +121,14 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return Math.Pow(Convert.ToDouble(await left.Value, context.CultureInfo),
                     Convert.ToDouble(await right.Value, context.CultureInfo));
             }
+
             case BinaryExpressionType.In:
             {
                 var rightValue = await right.Value;
                 var leftValue = await left.Value;
                 return EvaluationHelper.In(rightValue, leftValue, context);
             }
+
             case BinaryExpressionType.NotIn:
             {
                 var rightValue = await right.Value;

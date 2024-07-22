@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace NCalc.Tests;
 
-[Trait("Category","Async")]
+[Trait("Category", "Async")]
 public class AsyncTests
 {
     [Theory]
@@ -19,17 +19,18 @@ public class AsyncTests
     public async Task ShouldEvaluateAsyncFunction()
     {
         var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
-        expression.Functions["database_operation"] = async (_) => {
+        expression.Functions["database_operation"] = async (_) =>
+        {
             // My heavy database work.
             await Task.Delay(1);
 
             return "FOO";
         };
-        
+
         var result = await expression.EvaluateAsync();
-        Assert.Equal(true,result);
+        Assert.Equal(true, result);
     }
-    
+
     [Fact]
     public async Task ShouldEvaluateAsyncParameter()
     {
@@ -40,12 +41,12 @@ public class AsyncTests
             await Task.Delay(1);
             return "L";
         };
-        
+
         var result = await expression.EvaluateAsync();
-        Assert.Equal(true,result);
+        Assert.Equal(true, result);
     }
-    
-    
+
+
     [Fact]
     public async Task ShouldEvaluateAsyncFunctionHandler()
     {
@@ -60,11 +61,11 @@ public class AsyncTests
                 args.Result = "FOO";
             }
         };
-        
+
         var result = await expression.EvaluateAsync();
-        Assert.Equal(true,result);
+        Assert.Equal(true, result);
     }
-    
+
     [Fact]
     public async Task ShouldEvaluateAsyncParameterHandler()
     {
@@ -79,12 +80,12 @@ public class AsyncTests
 
             return default;
         };
-        
+
         var result = await expression.EvaluateAsync();
-        Assert.Equal(true,result);
+        Assert.Equal(true, result);
     }
 
-    
+
     [Fact]
     public async Task ShouldEvaluateArrayParameters()
     {
@@ -105,7 +106,7 @@ public class AsyncTests
         Assert.Equal(9, result[3]);
         Assert.Equal(16, result[4]);
     }
-    
+
     [Theory]
     [ClassData(typeof(BuiltInFunctionsTestData))]
     public async Task ShouldHandleBuiltInFunctions(string expression, object expected, double? tolerance)
@@ -121,14 +122,14 @@ public class AsyncTests
             Assert.Equal(expected, result);
         }
     }
-    
+
     [Theory]
     [ClassData(typeof(ValuesTestData))]
     public async Task ShouldParseValues(string input, object expectedValue)
     {
         var expression = new AsyncExpression(input);
         var result = await expression.EvaluateAsync();
-        
+
         if (expectedValue is double expectedDouble)
         {
             Assert.Equal(expectedDouble, (double)result, precision: 15);
@@ -138,7 +139,7 @@ public class AsyncTests
             Assert.Equal(expectedValue, result);
         }
     }
-    
+
     [Theory]
     [ClassData(typeof(NullCheckTestData))]
     public async Task ShouldAllowOperatorsWithNulls(string expression, object expected)
@@ -146,7 +147,7 @@ public class AsyncTests
         var e = new AsyncExpression(expression, ExpressionOptions.AllowNullParameter);
         Assert.Equal(expected, await e.EvaluateAsync());
     }
-    
+
     [Theory]
     [ClassData(typeof(WaterLevelCheckTestData))]
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
@@ -166,7 +167,7 @@ public class AsyncTests
 
         var exp = new AsyncExpression(deserialized)
         {
-            Parameters = 
+            Parameters =
             {
                 { "waterlevel", inputValue }
             }
@@ -185,17 +186,17 @@ public class AsyncTests
         // Assert
         Assert.Equal(expected, evaluated);
     }
-    
+
     [Theory]
-    [InlineData("1a + ]",true)]
-    [InlineData("sergio +",true)]
-    [InlineData("42 == 42",false)]
+    [InlineData("1a + ]", true)]
+    [InlineData("sergio +", true)]
+    [InlineData("42 == 42", false)]
     public void HasErrorsIssue239(string expressionString, bool hasError)
     {
         var expression = new AsyncExpression(expressionString);
         Assert.Equal(hasError, expression.HasErrors());
     }
-    
+
     [Fact]
     public void ShouldEvaluateSubExpressionsAsync()
     {

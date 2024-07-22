@@ -10,10 +10,10 @@ public record AsyncExpressionContext : ExpressionContextBase
     public IDictionary<string, AsyncExpressionFunction> Functions { get; set; } =
         new Dictionary<string, AsyncExpressionFunction>();
 
-    
+
     public AsyncEvaluateParameterHandler? AsyncEvaluateParameterHandler { get; set; }
     public AsyncEvaluateFunctionHandler? AsyncEvaluateFunctionHandler { get; set; }
-    
+
     public AsyncExpressionContext()
     {
     }

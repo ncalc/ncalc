@@ -1,5 +1,5 @@
-﻿using ExtendedNumerics;
-using System.Numerics;
+﻿using System.Numerics;
+using ExtendedNumerics;
 
 namespace NCalc.Helpers;
 
