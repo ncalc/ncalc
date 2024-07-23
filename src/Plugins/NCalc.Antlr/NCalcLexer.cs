@@ -23,8 +23,6 @@
 
 
 using System.Globalization;
-using NCalc.Domain;
-
 using System;
 using System.IO;
 using System.Text;

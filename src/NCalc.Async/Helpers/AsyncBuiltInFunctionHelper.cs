@@ -15,7 +15,6 @@ public static class AsyncBuiltInFunctionHelper
                 throw new NCalcEvaluationException("Abs() takes exactly 1 argument");
             return MathHelper.Abs(await arguments[0].EvaluateAsync(), context);
         }
-
         if (functionName.Equals("Acos", comparison))
         {
             if (arguments.Length != 1)
@@ -153,9 +152,12 @@ public static class AsyncBuiltInFunctionHelper
             foreach (var argument in arguments.Where((_, i) => i % 2 == 0))
             {
                 var index = Array.IndexOf(arguments, argument);
+                if (index == arguments.Length - 1)
+                    return await argument.EvaluateAsync();
+
                 var tf = Convert.ToBoolean(await argument.EvaluateAsync(), context.CultureInfo);
-                if (index == arguments.Length - 1) return await argument.EvaluateAsync();
-                if (tf) return await arguments[index + 1].EvaluateAsync();
+                if (tf)
+                    return await arguments[index + 1].EvaluateAsync();
             }
 
             return null;
