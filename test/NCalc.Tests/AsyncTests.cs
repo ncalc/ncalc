@@ -162,9 +162,7 @@ public class AsyncTests
             TypeNameHandling = TypeNameHandling.All
         });
 
-        Expression.CacheEnabled = false;
-
-        var exp = new AsyncExpression(deserialized)
+        var exp = new AsyncExpression(deserialized, ExpressionOptions.NoCache)
         {
             Parameters = 
             {

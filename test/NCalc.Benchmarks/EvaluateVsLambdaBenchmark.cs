@@ -17,7 +17,7 @@ public class EvaluateVsLambdaBenchmark
     public void Setup()
     {
         var logicalExpression = LogicalExpressionFactory.Create("(1 + a == 5 + b) == (42 == answer)");
-        var expression = new Expression(logicalExpression)
+        var expression = new Expression(logicalExpression, ExpressionOptions.NoCache)
         {
             Parameters =
             {
@@ -26,8 +26,6 @@ public class EvaluateVsLambdaBenchmark
                 ["answer"] = 42
             }
         };
-
-        Expression.CacheEnabled = false;
         
         Expression = expression;
         LambdaExpression = expression.ToLambda<bool>();

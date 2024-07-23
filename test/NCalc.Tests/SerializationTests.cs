@@ -23,9 +23,7 @@ public class SerializationTests
             TypeNameHandling = TypeNameHandling.All
         });
 
-        Expression.CacheEnabled = false;
-
-        var exp = new Expression(deserialized)
+        var exp = new Expression(deserialized, ExpressionOptions.NoCache)
         {
             Parameters = 
             {
