@@ -10,7 +10,7 @@ public record ExpressionContext : ExpressionContextBase
 
     public EvaluateParameterHandler? EvaluateParameterHandler { get; set; }
     public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
-    
+
     public ExpressionContext()
     {
     }
@@ -20,7 +20,7 @@ public record ExpressionContext : ExpressionContextBase
         Options = options;
         CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
     }
-    
+
     public static implicit operator ExpressionContext(ExpressionOptions options) => new()
     {
         Options = options

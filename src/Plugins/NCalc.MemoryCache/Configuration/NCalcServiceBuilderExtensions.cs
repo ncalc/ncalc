@@ -1,6 +1,5 @@
 ﻿#nullable enable
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using NCalc.DependencyInjection;
 
@@ -20,7 +19,7 @@ public static class NCalcServiceBuilderExtensions
             builder.Services.Configure(configureOptions);
         else
             builder.Services.AddOptions<LogicalExpressionMemoryCacheOptions>();
-        
+
         builder.WithCache<LogicalExpressionMemoryCache>();
         return builder;
     }

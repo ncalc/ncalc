@@ -1,4 +1,3 @@
-using System.Collections;
 using NCalc.Handlers;
 
 namespace NCalc.Tests;
@@ -13,7 +12,7 @@ public class EventHandlersTests
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs args)
+        e.EvaluateFunction += delegate (string name, FunctionArgs args)
         {
             if (name == "SecretOperation")
                 args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
@@ -29,7 +28,7 @@ public class EventHandlersTests
         e.Parameters["e"] = 3;
         e.Parameters["f"] = 1;
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs args)
+        e.EvaluateFunction += delegate (string name, FunctionArgs args)
         {
             if (name == "SecretOperation")
                 args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
@@ -46,7 +45,7 @@ public class EventHandlersTests
         e.Parameters["Pi Squared"] = new Expression("Pi * [Pi]");
         e.Parameters["X"] = 10;
 
-        e.EvaluateParameter += delegate(string name, ParameterArgs args)
+        e.EvaluateParameter += delegate (string name, ParameterArgs args)
         {
             if (name == "Pi")
                 args.Result = 3.14;
@@ -91,7 +90,7 @@ public class EventHandlersTests
 
         Assert.Equal(1.99d, e.Evaluate());
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs args)
+        e.EvaluateFunction += delegate (string name, FunctionArgs args)
         {
             if (name == "Round")
                 args.Result = 3;
@@ -105,7 +104,7 @@ public class EventHandlersTests
     {
         var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");
 
-        e.EvaluateParameter += delegate(string name, ParameterArgs arg)
+        e.EvaluateParameter += delegate (string name, ParameterArgs arg)
         {
             if (name == "Pi")
                 arg.Result = 3.14;
@@ -119,7 +118,7 @@ public class EventHandlersTests
     {
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs arg)
+        e.EvaluateFunction += delegate (string name, FunctionArgs arg)
         {
             switch (name)
             {
@@ -135,7 +134,7 @@ public class EventHandlersTests
             }
         };
 
-        e.EvaluateParameter += delegate(string name, ParameterArgs arg)
+        e.EvaluateParameter += delegate (string name, ParameterArgs arg)
         {
             switch (name)
             {
@@ -159,7 +158,7 @@ public class EventHandlersTests
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.EvaluateFunction += delegate(string name, FunctionArgs args)
+        e.EvaluateFunction += delegate (string name, FunctionArgs args)
         {
             Assert.False(args.HasResult);
             if (name == "SecretOperation")
@@ -175,7 +174,7 @@ public class EventHandlersTests
     {
         var e = new Expression("x");
 
-        e.EvaluateParameter += delegate(string name, ParameterArgs args)
+        e.EvaluateParameter += delegate (string name, ParameterArgs args)
         {
             Assert.False(args.HasResult);
             if (name == "x")
@@ -234,7 +233,7 @@ public class EventHandlersTests
 
         Assert.Equal(12, e.Evaluate());
         Assert.Equal(12, e.Evaluate());
-        
+
         Assert.Equal(2, d.FirstOrDefault().Value);
     }
 
@@ -264,19 +263,19 @@ public class EventHandlersTests
                     }
                 }
 
-                args.Result =  r && times[id] == 0;
+                args.Result = r && times[id] == 0;
             }
         };
         e.Parameters["value"] = 9;
 
         Assert.Equal(false, e.Evaluate());
-        
+
         e.Parameters["value"] = 11;
         Assert.Equal(false, e.Evaluate());
         e.Parameters["value"] = 12;
-        Assert.Equal(false, e.Evaluate()); 
+        Assert.Equal(false, e.Evaluate());
         e.Parameters["value"] = 13;
-        Assert.Equal(true, e.Evaluate()); 
+        Assert.Equal(true, e.Evaluate());
         Assert.Single(times);
     }
 

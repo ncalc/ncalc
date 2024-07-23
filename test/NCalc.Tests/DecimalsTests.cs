@@ -1,8 +1,6 @@
-using System.Globalization;
-
 namespace NCalc.Tests;
 
-[Trait("Category","Decimals")]
+[Trait("Category", "Decimals")]
 public class DecimalsTests
 {
     [Fact]
@@ -23,7 +21,7 @@ public class DecimalsTests
         var result = expression.Evaluate();
         Assert.Equal(0M, result);
     }
-    
+
     [Fact]
     public void ShouldAddDoubleAndDecimal()
     {
@@ -59,7 +57,7 @@ public class DecimalsTests
 
         Assert.Equal(3.6d, e.Evaluate());
     }
-    
+
     [Fact]
     public void Should_Divide_Decimal_By_Double_Issue_16()
     {
@@ -80,13 +78,13 @@ public class DecimalsTests
 
         Assert.Equal(1m, e.Evaluate());
     }
-    
+
     [Fact]
     public void ShouldHandleTrailingDecimalPoint()
     {
         Assert.Equal(3.0, new Expression("1. + 2.").Evaluate());
     }
-    
+
     [Fact]
     public void ShouldNotLoosePrecision()
     {

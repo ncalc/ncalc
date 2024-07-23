@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace NCalc.Tests;
 
-[Trait("Category","Serialization")]
+[Trait("Category", "Serialization")]
 public class SerializationTests
 {
     [Theory]
@@ -25,7 +25,7 @@ public class SerializationTests
 
         var exp = new Expression(deserialized, ExpressionOptions.NoCache)
         {
-            Parameters = 
+            Parameters =
             {
                 { "waterlevel", inputValue }
             }
@@ -48,9 +48,9 @@ public class SerializationTests
     [Fact]
     public void Binary_Expression_Serialization_Test()
     {
-                Assert.Equal("True and False",
-            new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false))
-                .ToString());
+        Assert.Equal("True and False",
+    new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false))
+        .ToString());
         Assert.Equal("1 / 2",
             new BinaryExpression(BinaryExpressionType.Div, new ValueExpression(1), new ValueExpression(2)).ToString());
         Assert.Equal("1 = 2",
@@ -110,12 +110,12 @@ public class SerializationTests
             new UnaryExpression(UnaryExpressionType.Negate,
                 new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false)))
         ]).ToString());
-        
+
         Assert.Equal("Sum(1 + 2)", new Function(new Identifier("Sum"), [
             new BinaryExpression(BinaryExpressionType.Plus, new ValueExpression(1), new ValueExpression(2))
         ]).ToString());
     }
-    
+
     [Fact]
     public void Value_Serialization_Test()
     {
@@ -127,7 +127,7 @@ public class SerializationTests
         Assert.Equal("'c'", new ValueExpression('c').ToString());
         Assert.Equal("#" + new DateTime(2009, 1, 1) + "#", new ValueExpression(new DateTime(2009, 1, 1)).ToString());
     }
-    
+
     [Fact]
     public void ArraySerializationTest()
     {
@@ -136,7 +136,7 @@ public class SerializationTests
         Assert.Equal("(True)", trueArrayExpression.ToString());
         Assert.Equal("('Hello','World')", helloWorldArrayExpression.ToString());
         Assert.Equal("()", new LogicalExpressionList([]).ToString());
-        Assert.Equal("((True),('Hello','World'))", new LogicalExpressionList([trueArrayExpression,helloWorldArrayExpression]).ToString());
+        Assert.Equal("((True),('Hello','World'))", new LogicalExpressionList([trueArrayExpression, helloWorldArrayExpression]).ToString());
 
     }
 }
