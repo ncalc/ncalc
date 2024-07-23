@@ -35,6 +35,6 @@
     <ItemGroup>
         <PackageReference Include="ExtendedNumerics.BigDecimal" Version="2025.1001.2.129" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-        <PackageReference Include="Parlot" Version="1.0.0" />
+        <PackageReference Include="Parlot" Version="1.0.1" />
     </ItemGroup>
 </Project>
