@@ -15,7 +15,6 @@ public static class BuiltInFunctionHelper
                 throw new NCalcEvaluationException("Abs() takes exactly 1 argument");
             return MathHelper.Abs(arguments[0].Evaluate(), context);
         }
-
         if (functionName.Equals("Acos", comparison))
         {
             if (arguments.Length != 1)
@@ -153,9 +152,12 @@ public static class BuiltInFunctionHelper
             foreach (var argument in arguments.Where((_, i) => i % 2 == 0))
             {
                 var index = Array.IndexOf(arguments, argument);
+                if (index == arguments.Length - 1)
+                    return argument.Evaluate();
+
                 var tf = Convert.ToBoolean(argument.Evaluate(), context.CultureInfo);
-                if (index == arguments.Length - 1) return argument.Evaluate();
-                if (tf) return arguments[index + 1].Evaluate();
+                if (tf)
+                    return arguments[index + 1].Evaluate();
             }
 
             return null;
