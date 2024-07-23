@@ -11,9 +11,6 @@ public enum ExpressionOptions
     /// </summary>
     None = 1 << 0,
 
-    [Obsolete("Please use IgnoreCaseAtBuiltInFunctions")]
-    IgnoreCase = 1 << 1,
-
     /// <summary>
     /// Specifies case-insensitive matching for built-in functions
     /// </summary>
