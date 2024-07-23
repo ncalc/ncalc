@@ -58,7 +58,7 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         ExpressionContext context,
         ILogicalExpressionFactory factory,
         ILogicalExpressionCache cache,
-        IEvaluationService evaluationService) : base(expression,context,factory,cache)
+        IEvaluationService evaluationService) : base(expression, context, factory, cache)
     {
         EvaluationService = evaluationService;
     }
@@ -68,7 +68,7 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         ExpressionContext context,
         ILogicalExpressionFactory factory,
         ILogicalExpressionCache cache,
-        IEvaluationService evaluationService) : base(logicalExpression, context,factory,cache)
+        IEvaluationService evaluationService) : base(logicalExpression, context, factory, cache)
     {
         EvaluationService = evaluationService;
     }

@@ -60,7 +60,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         AsyncExpressionContext context,
         ILogicalExpressionFactory factory,
         ILogicalExpressionCache cache,
-        IAsyncEvaluationService evaluationService) : base(expression,context,factory,cache)
+        IAsyncEvaluationService evaluationService) : base(expression, context, factory, cache)
     {
         EvaluationService = evaluationService;
     }
@@ -70,7 +70,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         AsyncExpressionContext context,
         ILogicalExpressionFactory factory,
         ILogicalExpressionCache cache,
-        IAsyncEvaluationService evaluationService) : base(logicalExpression, context,factory,cache)
+        IAsyncEvaluationService evaluationService) : base(logicalExpression, context, factory, cache)
     {
         EvaluationService = evaluationService;
     }
@@ -113,7 +113,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
     /// </summary>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public async Task<object?> EvaluateAsync()
+    public Task<object?> EvaluateAsync()
     {
         LogicalExpression ??= GetLogicalExpression();
 
@@ -125,12 +125,12 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
-            return await IterateParametersAsync();
+            return IterateParametersAsync();
 
-        return await EvaluationService.EvaluateAsync(LogicalExpression!, Context);
+        return EvaluationService.EvaluateAsync(LogicalExpression!, Context);
     }
 
-    private async Task<List<object?>> IterateParametersAsync()
+    private async Task<object?> IterateParametersAsync()
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 

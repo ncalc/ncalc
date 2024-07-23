@@ -8,12 +8,12 @@ using NCalc.Visitors;
 namespace NCalc;
 
 /// <summary>
-/// Base class with common utilities of AST parsing and evaluation. 
+/// Base class with common utilities of AST parsing and evaluation.
 /// </summary>
 public abstract class ExpressionBase<TExpressionContext> where TExpressionContext : ExpressionContextBase, new()
 {
     protected TExpressionContext Context { get; }
-    
+
     /// <summary>
     /// Options for the expression evaluation.
     /// </summary>
@@ -22,7 +22,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         get => Context.Options;
         set => Context.Options = value;
     }
-    
+
     /// <summary>
     /// Culture information for the expression evaluation.
     /// </summary>
@@ -31,7 +31,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         get => Context.CultureInfo;
         set => Context.CultureInfo = value;
     }
-    
+
     /// <summary>
     /// Parameters for the expression evaluation.
     /// </summary>
@@ -40,26 +40,26 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         get => Context.StaticParameters;
         set => Context.StaticParameters = value;
     }
-    
+
     /// <summary>
     /// Textual representation of the expression.
     /// </summary>
     public string? ExpressionString { get; protected init; }
-        
+
     public LogicalExpression? LogicalExpression { get; protected set; }
-    
+
     public Exception? Error { get; private set; }
 
-    protected ILogicalExpressionCache LogicalExpressionCache { get; }
-    protected ILogicalExpressionFactory LogicalExpressionFactory { get; }
+    private ILogicalExpressionCache LogicalExpressionCache { get; }
+    private ILogicalExpressionFactory LogicalExpressionFactory { get; }
 
-    public ExpressionBase(TExpressionContext? context = null)
+    protected ExpressionBase(TExpressionContext? context = null)
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
         LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
         Context = context ?? new TExpressionContext();
     }
-    
+
     protected ExpressionBase(
         string expressionString,
         TExpressionContext context,
@@ -83,8 +83,8 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         LogicalExpressionFactory = logicalExpressionFactory;
         Context = context;
     }
-    
-    
+
+
     /// <summary>
     /// Returns a list with all parameter names from the expression.
     /// </summary>
@@ -94,7 +94,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
         return LogicalExpression.Accept(parameterExtractionVisitor);
     }
-    
+
     /// <summary>
     /// Returns a list with all function names from the expression.
     /// </summary>
@@ -104,7 +104,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
         return LogicalExpression.Accept(functionExtractionVisitor);
     }
-    
+
     /// <summary>
     /// Create the LogicalExpression in order to check syntax errors.
     /// If errors are detected, the Error property contains the exception.
@@ -126,7 +126,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
             return true;
         }
     }
-    
+
     protected LogicalExpression? GetLogicalExpression()
     {
         if (string.IsNullOrEmpty(ExpressionString))
