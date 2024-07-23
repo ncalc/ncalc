@@ -2,8 +2,6 @@
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Visitors;
-using System.Diagnostics.CodeAnalysis;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using NCalc.Services;
@@ -25,7 +23,7 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         add => Context.EvaluateFunctionHandler += value;
         remove => Context.EvaluateFunctionHandler -= value;
     }
-    
+
     /// <summary>
     /// Event triggered to handle parameter evaluation.
     /// </summary>
@@ -34,22 +32,22 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         add => Context.EvaluateParameterHandler += value;
         remove => Context.EvaluateParameterHandler -= value;
     }
-    
-    
+
+
     public IDictionary<string, ExpressionParameter> DynamicParameters
     {
         get => Context.DynamicParameters;
         set => Context.DynamicParameters = value;
     }
-    
+
     public IDictionary<string, ExpressionFunction> Functions
     {
         get => Context.Functions;
         set => Context.Functions = value;
     }
-    
+
     protected IEvaluationService EvaluationService { get; }
-    
+
     private Expression(ExpressionContext? context = null) : base(context ?? new ExpressionContext())
     {
         EvaluationService = new EvaluationService();
@@ -64,7 +62,7 @@ public partial class Expression : ExpressionBase<ExpressionContext>
     {
         EvaluationService = evaluationService;
     }
-    
+
     public Expression(
         LogicalExpression logicalExpression,
         ExpressionContext context,
@@ -79,7 +77,7 @@ public partial class Expression : ExpressionBase<ExpressionContext>
     {
         ExpressionString = expression;
     }
-    
+
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, ExpressionContext have implicit conversions.
     public Expression(string expression) : this(expression, ExpressionOptions.None)
@@ -107,7 +105,7 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
     {
     }
-    
+
 
     /// <summary>
     /// Evaluates the logical expression.

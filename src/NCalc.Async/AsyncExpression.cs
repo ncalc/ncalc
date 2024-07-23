@@ -2,8 +2,6 @@
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Visitors;
-using System.Diagnostics.CodeAnalysis;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using NCalc.Services;
@@ -22,14 +20,14 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         get => Context.DynamicParameters;
         set => Context.DynamicParameters = value;
     }
-    
+
     public IDictionary<string, AsyncExpressionFunction> Functions
     {
         get => Context.Functions;
         set => Context.Functions = value;
     }
-    
-    
+
+
     /// <summary>
     /// Event triggered to handle function evaluation.
     /// </summary>
@@ -38,7 +36,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         add => Context.AsyncEvaluateFunctionHandler += value;
         remove => Context.AsyncEvaluateFunctionHandler -= value;
     }
-    
+
     /// <summary>
     /// Event triggered to handle parameter evaluation.
     /// </summary>
@@ -50,8 +48,8 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
 
 
     protected IAsyncEvaluationService EvaluationService { get; }
-    
-    
+
+
     private AsyncExpression(AsyncExpressionContext? context = null) : base(context ?? new AsyncExpressionContext())
     {
         EvaluationService = new AsyncEvaluationService();
@@ -66,7 +64,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
     {
         EvaluationService = evaluationService;
     }
-    
+
     public AsyncExpression(
         LogicalExpression logicalExpression,
         AsyncExpressionContext context,
@@ -81,7 +79,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
     {
         ExpressionString = expression;
     }
-    
+
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, AsyncExpressionContext have implicit conversions.
     public AsyncExpression(string expression) : this(expression, ExpressionOptions.None)
@@ -109,7 +107,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         CultureInfo? cultureInfo = null) : this(logicalExpression, new AsyncExpressionContext(options, cultureInfo))
     {
     }
-    
+
     /// <summary>
     /// Asynchronously evaluates the logical expression.
     /// </summary>
@@ -131,7 +129,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
 
         return await EvaluationService.EvaluateAsync(LogicalExpression!, Context);
     }
-    
+
     private async Task<List<object?>> IterateParametersAsync()
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
