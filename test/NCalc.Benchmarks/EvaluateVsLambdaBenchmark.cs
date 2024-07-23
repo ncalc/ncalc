@@ -26,7 +26,7 @@ public class EvaluateVsLambdaBenchmark
                 ["answer"] = 42
             }
         };
-        
+
         Expression = expression;
         LambdaExpression = expression.ToLambda<bool>();
     }
@@ -36,13 +36,13 @@ public class EvaluateVsLambdaBenchmark
     {
         return (bool)Expression.Evaluate()!;
     }
-    
+
     [Benchmark]
     public bool LambdaWithCompilation()
     {
         return Expression.ToLambda<bool>()();
     }
-    
+
     [Benchmark]
     public bool LambdaWithoutCompilation()
     {
