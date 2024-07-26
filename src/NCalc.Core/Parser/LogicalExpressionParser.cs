@@ -51,7 +51,7 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var exponentNumberPart =
-            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowLeadingSign))
+            Literals.Text("e", true).SkipAnd(Literals.Integer())
                 .ThenElse<long?>(x => x, null);
 
         // [integral_value]['.'decimal_value}]['e'exponent_value]
@@ -280,14 +280,43 @@ public static class LogicalExpressionParser
             .SkipAnd(OneOf(dateAndTime, date, time))
             .AndSkip(Literals.Char('#'));
 
+        var eightHexSequence = Terms
+            .Pattern(Character.IsHexDigit, 8, 8);
 
-        var decimalNumber = Terms.Number<decimal>(NumberOptions.Number)
+        var fourHexSequence = Terms
+            .Pattern(Character.IsHexDigit, 4, 4);
+
+        var twelveHexSequence = Terms
+            .Pattern(Character.IsHexDigit, 12, 12);
+
+        var thirtyTwoHexSequence = Terms
+            .Pattern(Character.IsHexDigit, 32, 32);
+
+        var guidWithHyphens = eightHexSequence
+                .AndSkip(minus)
+                .And(fourHexSequence)
+                .AndSkip(minus)
+                .And(fourHexSequence)
+                .AndSkip(minus)
+                .And(fourHexSequence)
+                .AndSkip(minus)
+                .And(twelveHexSequence)
+            .Then<LogicalExpression>(g =>
+                    new ValueExpression(Guid.Parse(g.Item1.ToString() + g.Item2 + g.Item3 + g.Item4 + g.Item5)));
+
+        var guidWithoutHyphens = thirtyTwoHexSequence
+            .Then<LogicalExpression>(g => new ValueExpression(Guid.Parse(g.ToString()!)));
+
+        var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
+
+        var decimalNumber = Terms.Number<decimal>()
             .Then<LogicalExpression>(d => new ValueExpression(d));
         var doubleNumber = Terms.Number<double>(NumberOptions.Float)
             .Then<LogicalExpression>(d => new ValueExpression(d));
 
-        // primary => NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
+        // primary => GUID | NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
+            guid,
             number,
             decimalNumber,
             doubleNumber,
