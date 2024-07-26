@@ -4,7 +4,7 @@ namespace NCalc.Helpers;
 
 public static class AsyncBuiltInFunctionHelper
 {
-    public static async Task<object?> EvaluateAsync(string functionName, AsyncExpression[] arguments, AsyncExpressionContext context)
+    public static async ValueTask<object?> EvaluateAsync(string functionName, AsyncExpression[] arguments, AsyncExpressionContext context)
     {
         var caseInsensitive = context.Options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
         var comparison = caseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;

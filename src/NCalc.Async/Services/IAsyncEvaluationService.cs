@@ -7,5 +7,5 @@ namespace NCalc.Services;
 /// </summary>
 public interface IAsyncEvaluationService
 {
-    Task<object?> EvaluateAsync(LogicalExpression expression, AsyncExpressionContext context);
+    ValueTask<object?> EvaluateAsync(LogicalExpression expression, AsyncExpressionContext context);
 }
