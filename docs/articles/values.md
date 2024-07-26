@@ -90,6 +90,13 @@ var result = expression.Evalutate();
 Debug.Assert(result); // 'g' -> System.Char
 ```
 
+## Guid
+NCalc also supports <xref:System.Guid>, they can be parsed with or without hyphens.
+```csharp
+b1548bd5-2556-4d2a-9f47-bb8d421026dd
+getUser(78b1941f4e7941c9bef656fad7326538)
+```
+
 ## Function
 
 A function is made of a name followed by braces, containing optionally any value as arguments.

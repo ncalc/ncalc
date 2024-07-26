@@ -280,17 +280,48 @@ public static class LogicalExpressionParser
             .SkipAnd(OneOf(dateAndTime, date, time))
             .AndSkip(Literals.Char('#'));
 
-
-        var decimalNumber = Terms.Number<decimal>(NumberOptions.Number)
+        var decimalNumber = Terms.Number<decimal>()
             .Then<LogicalExpression>(d => new ValueExpression(d));
         var doubleNumber = Terms.Number<double>(NumberOptions.Float)
             .Then<LogicalExpression>(d => new ValueExpression(d));
 
-        // primary => NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
+        var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
+
+        var eightHexSequence = Terms
+            .Pattern(Character.IsHexDigit, 8, 8);
+
+        var fourHexSequence = Terms
+            .Pattern(Character.IsHexDigit, 4, 4);
+
+        var twelveHexSequence = Terms
+            .Pattern(Character.IsHexDigit, 12, 12);
+
+        var thirtyTwoHexSequence = Terms
+            .Pattern(Character.IsHexDigit, 32, 32);
+
+        var guidWithHyphens = eightHexSequence
+                .AndSkip(minus)
+                .And(fourHexSequence)
+                .AndSkip(minus)
+                .And(fourHexSequence)
+                .AndSkip(minus)
+                .And(fourHexSequence)
+                .AndSkip(minus)
+                .And(twelveHexSequence)
+            .Then<LogicalExpression>(g =>
+                    new ValueExpression(Guid.Parse(g.Item1.ToString() + g.Item2 + g.Item3 + g.Item4 + g.Item5)));
+
+        var guidWithoutHyphens = thirtyTwoHexSequence
+            .AndSkip(Not(decimalOrDoubleNumber))
+            .Then<LogicalExpression>(g => new ValueExpression(Guid.Parse(g.ToString()!)));
+
+        var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
+
+        // primary => GUID | NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
+            guid,
             number,
-            decimalNumber,
-            doubleNumber,
+            decimalOrDoubleNumber,
             booleanTrue,
             booleanFalse,
             dateTime,

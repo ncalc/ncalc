@@ -8,5 +8,6 @@ public enum ValueType
     Float,
     Boolean,
     TimeSpan,
-    Char
+    Char,
+    Guid
 }
