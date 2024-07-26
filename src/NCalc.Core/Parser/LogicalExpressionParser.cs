@@ -51,7 +51,7 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var exponentNumberPart =
-            Literals.Text("e", true).SkipAnd(Literals.Integer())
+            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowLeadingSign))
                 .ThenElse<long?>(x => x, null);
 
         // [integral_value]['.'decimal_value}]['e'exponent_value]
@@ -280,6 +280,13 @@ public static class LogicalExpressionParser
             .SkipAnd(OneOf(dateAndTime, date, time))
             .AndSkip(Literals.Char('#'));
 
+        var decimalNumber = Terms.Number<decimal>()
+            .Then<LogicalExpression>(d => new ValueExpression(d));
+        var doubleNumber = Terms.Number<double>(NumberOptions.Float)
+            .Then<LogicalExpression>(d => new ValueExpression(d));
+
+        var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
+
         var eightHexSequence = Terms
             .Pattern(Character.IsHexDigit, 8, 8);
 
@@ -305,21 +312,16 @@ public static class LogicalExpressionParser
                     new ValueExpression(Guid.Parse(g.Item1.ToString() + g.Item2 + g.Item3 + g.Item4 + g.Item5)));
 
         var guidWithoutHyphens = thirtyTwoHexSequence
+            .AndSkip(Not(decimalOrDoubleNumber))
             .Then<LogicalExpression>(g => new ValueExpression(Guid.Parse(g.ToString()!)));
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
-
-        var decimalNumber = Terms.Number<decimal>()
-            .Then<LogicalExpression>(d => new ValueExpression(d));
-        var doubleNumber = Terms.Number<double>(NumberOptions.Float)
-            .Then<LogicalExpression>(d => new ValueExpression(d));
 
         // primary => GUID | NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
             guid,
             number,
-            decimalNumber,
-            doubleNumber,
+            decimalOrDoubleNumber,
             booleanTrue,
             booleanFalse,
             dateTime,

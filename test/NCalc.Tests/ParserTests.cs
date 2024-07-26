@@ -119,4 +119,19 @@ public class ParserTests
 
         Assert.IsType<Guid>(new Expression(logicalExpression).Evaluate());
     }
+
+    [Fact]
+    public void ShouldParseGuidInsideFunction()
+    {
+        var logicalExpression = LogicalExpressionFactory.Create("getUser(78b1941f4e7941c9bef656fad7326538)");
+
+        if (logicalExpression is Function function)
+        {
+            Assert.True(function.Parameters[0] is ValueExpression { Value: Guid });
+        }
+        else
+        {
+            Assert.Fail("Logical expression is not a function.");
+        }
+    }
 }
