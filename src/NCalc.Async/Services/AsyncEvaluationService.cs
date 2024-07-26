@@ -6,7 +6,7 @@ namespace NCalc.Services;
 /// <inheritdoc cref="IAsyncEvaluationService"/>
 public class AsyncEvaluationService : IAsyncEvaluationService
 {
-    public Task<object?> EvaluateAsync(LogicalExpression expression, AsyncExpressionContext context)
+    public ValueTask<object?> EvaluateAsync(LogicalExpression expression, AsyncExpressionContext context)
     {
         var visitor = new AsyncEvaluationVisitor(context);
         return expression.Accept(visitor);

@@ -20,7 +20,7 @@ public class AsyncFunctionArgs(Guid id, AsyncExpression[] parameters) : EventArg
 
     public bool HasResult { get; private set; }
 
-    public async Task<object?[]> EvaluateParametersAsync()
+    public async ValueTask<object?[]> EvaluateParametersAsync()
     {
         var values = new object?[Parameters.Length];
         for (var i = 0; i < values.Length; i++)
