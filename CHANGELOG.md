@@ -1,3 +1,18 @@
+# 5.2.0
+* Added `FunctionExtractionVisitor` by @gumbarros in https://github.com/ncalc/ncalc/pull/290
+* Re-use `LogicalExpressionList` logic for `Function` parameters by @gumbarros in https://github.com/ncalc/ncalc/pull/291
+* Added `EvaluationHelper` and `in` operator should respect string comparer by @gumbarros in https://github.com/ncalc/ncalc/pull/292
+* Small refactoring of MathHelper.ConvertToHighestPrecision by @Bykiev in https://github.com/ncalc/ncalc/pull/293
+* Code cleanup by @Bykiev in https://github.com/ncalc/ncalc/pull/294
+* Added `ExpressionBase` by @gumbarros in https://github.com/ncalc/ncalc/pull/297
+* ifs improvement by @Bykiev in https://github.com/ncalc/ncalc/pull/298
+* Update Parlot package by @Bykiev in https://github.com/ncalc/ncalc/pull/299
+* Update Parlot (1.0.2) by @Bykiev in https://github.com/ncalc/ncalc/pull/300
+* Add `ValueType.Guid` by @gumbarros in https://github.com/ncalc/ncalc/pull/301
+* Breaking Change: Use `ValueTask` instead of `Task` at `NCalc.Async` by @gumbarros in https://github.com/ncalc/ncalc/pull/302
+
+**Full Changelog**: https://github.com/ncalc/ncalc/compare/v5.1.0...v5.2.0
+
 # 5.1.0
 * Fix typo in MathHelper by @Bykiev in https://github.com/ncalc/ncalc/pull/273
 * Small refactoring of Expression.IterateParameters by @Bykiev in https://github.com/ncalc/ncalc/pull/274
