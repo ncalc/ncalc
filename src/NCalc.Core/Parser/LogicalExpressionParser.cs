@@ -259,7 +259,6 @@ public static class LogicalExpressionParser
             throw new FormatException("Invalid TimeSpan format.");
         });
 
-
         // dateAndTime => number/number/number number:number:number
         var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
             dateTime =>

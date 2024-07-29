@@ -70,7 +70,6 @@ public class EventHandlersTests
             _ = expression.Evaluate();
         }
 
-
         void Expression_EvaluateFunction(string name, FunctionArgs args)
         {
             if (name != "MyFunc")
@@ -185,7 +184,6 @@ public class EventHandlersTests
         Assert.Null(e.Evaluate());
     }
 
-
     [Theory]
     [InlineData("notExistingfunction")]
     [InlineData("andDoThis")]
@@ -201,12 +199,10 @@ public class EventHandlersTests
         Assert.Equal(1, expression.Evaluate());
     }
 
-
     [Fact]
     public void ExpressionShouldEvaluateCustomFunctionsWithSameName()
     {
         var e = new Expression("SecretOperation(3, 6) + SecretOperation(1, 2)");
-
 
         var d = new Dictionary<string, int>();
 
@@ -278,5 +274,4 @@ public class EventHandlersTests
         Assert.Equal(true, e.Evaluate());
         Assert.Single(times);
     }
-
 }

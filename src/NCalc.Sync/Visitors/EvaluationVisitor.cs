@@ -83,7 +83,6 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             case BinaryExpressionType.Times:
                 return MathHelper.Multiply(left.Value, right.Value, context);
 
-
             case BinaryExpressionType.BitwiseAnd:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) &
                        Convert.ToUInt64(right.Value, context.CultureInfo);

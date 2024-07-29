@@ -3,8 +3,6 @@ using NCalc.Tests.Fixtures;
 
 namespace NCalc.Tests;
 
-
-
 [Trait("Category", "DependencyInjection")]
 public class FactoriesTests(FactoriesFixture fixture) : IClassFixture<FactoriesFixture>
 {

@@ -6,7 +6,6 @@ namespace NCalc.Tests;
 [Trait("Category", "Evaluations")]
 public class EvaluationTests
 {
-
     [Theory]
     [ClassData(typeof(EvaluationTestData))]
     public void Expression_Should_Evaluate(string expression, object expected)
@@ -31,7 +30,6 @@ public class EvaluationTests
             Assert.Equal(expectedValue, result);
         }
     }
-
 
     [Fact]
     public void ShouldEvaluateInFunction()
@@ -61,7 +59,6 @@ public class EvaluationTests
         Assert.Equal(1, new Expression("1+2<3 ? 3+4 : 1").Evaluate());
     }
 
-
     [Fact]
     public void Should_Not_Throw_Function_Not_Found_Issue_110()
     {
@@ -77,7 +74,6 @@ public class EvaluationTests
 
         Assert.Equal(true, expression.Evaluate());
     }
-
 
     [Fact]
     public void Should_Evaluate_Ifs()

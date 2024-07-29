@@ -222,7 +222,6 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     public ValueTask<object?> Visit(ValueExpression expression) => new(expression.Value);
 
-
     public async ValueTask<object?> Visit(LogicalExpressionList list)
     {
         List<object?> result = [];

@@ -104,7 +104,6 @@ public class LambdaTests
             public int Count2 { get; set; }
         }
 
-
         public TestObject1 CreateTestObject1(int count)
         {
             return new TestObject1() { Count1 = count };
@@ -193,7 +192,6 @@ public class LambdaTests
         Assert.Equal(10, sut(context));
     }
 
-
     [Fact]
     public void ShouldHandleParamsKeyword()
     {
@@ -262,13 +260,11 @@ public class LambdaTests
         }
         catch (MissingMethodException ex)
         {
-
             System.Diagnostics.Debug.Write(ex);
             Assert.True(true);
             return;
         }
         Assert.True(false);
-
     }
 
     [Fact]
@@ -537,7 +533,6 @@ public class LambdaTests
                         currentContext.LambdaResult = lambda();
                         testResults.Add(currentContext);
                     }
-
                 }
             }
         }
