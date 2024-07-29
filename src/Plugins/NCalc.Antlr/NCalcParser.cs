@@ -22,7 +22,6 @@ namespace NCalc.Antlr;
 // Ambiguous reference in cref attribute
 #pragma warning disable 419
 
-
 using System.Globalization;
 using NCalc.Domain;
 
@@ -42,36 +41,36 @@ public partial class NCalcParser : Parser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
-		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17, 
-		T__17=18, T__18=19, T__19=20, T__20=21, T__21=22, T__22=23, T__23=24, 
-		T__24=25, T__25=26, T__26=27, T__27=28, TRUE=29, FALSE=30, AND=31, OR=32, 
-		NOT=33, ID=34, INTEGER=35, FLOAT=36, STRING=37, DATETIME=38, NAME=39, 
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9,
+		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17,
+		T__17=18, T__18=19, T__19=20, T__20=21, T__21=22, T__22=23, T__23=24,
+		T__24=25, T__25=26, T__26=27, T__27=28, TRUE=29, FALSE=30, AND=31, OR=32,
+		NOT=33, ID=34, INTEGER=35, FLOAT=36, STRING=37, DATETIME=38, NAME=39,
 		EXPONENT=40, WS=41;
 	public const int
-		RULE_ncalcExpression = 0, RULE_logicalExpression = 1, RULE_conditionalExpression = 2, 
-		RULE_booleanAndExpression = 3, RULE_bitwiseOrExpression = 4, RULE_bitwiseXOrExpression = 5, 
-		RULE_bitwiseAndExpression = 6, RULE_equalityExpression = 7, RULE_relationalExpression = 8, 
-		RULE_shiftExpression = 9, RULE_additiveExpression = 10, RULE_multiplicativeExpression = 11, 
-		RULE_unaryExpression = 12, RULE_exponentialExpression = 13, RULE_primaryExpression = 14, 
+		RULE_ncalcExpression = 0, RULE_logicalExpression = 1, RULE_conditionalExpression = 2,
+		RULE_booleanAndExpression = 3, RULE_bitwiseOrExpression = 4, RULE_bitwiseXOrExpression = 5,
+		RULE_bitwiseAndExpression = 6, RULE_equalityExpression = 7, RULE_relationalExpression = 8,
+		RULE_shiftExpression = 9, RULE_additiveExpression = 10, RULE_multiplicativeExpression = 11,
+		RULE_unaryExpression = 12, RULE_exponentialExpression = 13, RULE_primaryExpression = 14,
 		RULE_value = 15, RULE_identifier = 16, RULE_expressionList = 17, RULE_arguments = 18;
 	public static readonly string[] ruleNames = {
-		"ncalcExpression", "logicalExpression", "conditionalExpression", "booleanAndExpression", 
-		"bitwiseOrExpression", "bitwiseXOrExpression", "bitwiseAndExpression", 
-		"equalityExpression", "relationalExpression", "shiftExpression", "additiveExpression", 
-		"multiplicativeExpression", "unaryExpression", "exponentialExpression", 
+		"ncalcExpression", "logicalExpression", "conditionalExpression", "booleanAndExpression",
+		"bitwiseOrExpression", "bitwiseXOrExpression", "bitwiseAndExpression",
+		"equalityExpression", "relationalExpression", "shiftExpression", "additiveExpression",
+		"multiplicativeExpression", "unaryExpression", "exponentialExpression",
 		"primaryExpression", "value", "identifier", "expressionList", "arguments"
 	};
 
 	private static readonly string[] _LiteralNames = {
-		null, "'?'", "':'", "'||'", "'&&'", "'|'", "'^'", "'&'", "'=='", "'='", 
-		"'!='", "'<>'", "'<'", "'<='", "'>'", "'>='", "'<<'", "'>>'", "'+'", "'-'", 
+		null, "'?'", "':'", "'||'", "'&&'", "'|'", "'^'", "'&'", "'=='", "'='",
+		"'!='", "'<>'", "'<'", "'<='", "'>'", "'>='", "'<<'", "'>>'", "'+'", "'-'",
 		"'*'", "'/'", "'%'", "'!'", "'~'", "'**'", "'('", "')'", "','"
 	};
 	private static readonly string[] _SymbolicNames = {
-		null, null, null, null, null, null, null, null, null, null, null, null, 
-		null, null, null, null, null, null, null, null, null, null, null, null, 
-		null, null, null, null, null, "TRUE", "FALSE", "AND", "OR", "NOT", "ID", 
+		null, null, null, null, null, null, null, null, null, null, null, null,
+		null, null, null, null, null, null, null, null, null, null, null, null,
+		null, null, null, null, null, "TRUE", "FALSE", "AND", "OR", "NOT", "ID",
 		"INTEGER", "FLOAT", "STRING", "DATETIME", "NAME", "EXPONENT", "WS"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
@@ -105,7 +104,7 @@ public partial class NCalcParser : Parser {
 	private static NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
 
 	private static string extractString(string text) {
-	    
+
 	    StringBuilder sb = new StringBuilder(text);
 	    int startIndex = 1; // Skip initial quote
 	    int slashIndex = -1;
@@ -119,7 +118,7 @@ public partial class NCalcParser : Parser {
 	              string hcode = String.Concat(sb[slashIndex+4], sb[slashIndex+5]);
 	              string lcode = String.Concat(sb[slashIndex+2], sb[slashIndex+3]);
 	              char unicodeChar = Encoding.Unicode.GetChars(new byte[] { System.Convert.ToByte(hcode, 16), System.Convert.ToByte(lcode, 16)} )[0];
-	              sb.Remove(slashIndex, 6).Insert(slashIndex, unicodeChar); 
+	              sb.Remove(slashIndex, 6).Insert(slashIndex, unicodeChar);
 	              break;
 	            case 'n': sb.Remove(slashIndex, 2).Insert(slashIndex, '\n'); break;
 	            case 'r': sb.Remove(slashIndex, 2).Insert(slashIndex, '\r'); break;
@@ -183,7 +182,7 @@ public partial class NCalcParser : Parser {
 			_localctx._logicalExpression = logicalExpression();
 			State = 39;
 			Match(Eof);
-			 _localctx.retValue =  _localctx._logicalExpression.retValue; 
+			 _localctx.retValue =  _localctx._logicalExpression.retValue;
 			}
 		}
 		catch (RecognitionException re) {
@@ -235,7 +234,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 42;
 			_localctx.left = conditionalExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 50;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
@@ -249,7 +248,7 @@ public partial class NCalcParser : Parser {
 				Match(T__1);
 				State = 47;
 				_localctx.right = conditionalExpression();
-				 _localctx.retValue =  new TernaryExpression(_localctx.left.retValue, _localctx.middle.retValue, _localctx.right.retValue); 
+				 _localctx.retValue =  new TernaryExpression(_localctx.left.retValue, _localctx.middle.retValue, _localctx.right.retValue);
 				}
 			}
 
@@ -314,7 +313,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 52;
 			_localctx.left = booleanAndExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 61;
 			ErrorHandler.Sync(this);
 			_alt = Interpreter.AdaptivePredict(TokenStream,1,Context);
@@ -331,12 +330,12 @@ public partial class NCalcParser : Parser {
 						ErrorHandler.ReportMatch(this);
 					    Consume();
 					}
-					 type = BinaryExpressionType.Or; 
+					 type = BinaryExpressionType.Or;
 					State = 56;
 					_localctx.right = conditionalExpression();
-					 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+					 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 					}
-					} 
+					}
 				}
 				State = 63;
 				ErrorHandler.Sync(this);
@@ -399,7 +398,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 64;
 			_localctx.left = bitwiseOrExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 73;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
@@ -415,10 +414,10 @@ public partial class NCalcParser : Parser {
 					ErrorHandler.ReportMatch(this);
 				    Consume();
 				}
-				 type = BinaryExpressionType.And; 
+				 type = BinaryExpressionType.And;
 				State = 68;
 				_localctx.right = bitwiseOrExpression();
-				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 				}
 				}
 				State = 75;
@@ -481,7 +480,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 76;
 			_localctx.left = bitwiseXOrExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 85;
 			ErrorHandler.Sync(this);
 			_alt = Interpreter.AdaptivePredict(TokenStream,3,Context);
@@ -491,12 +490,12 @@ public partial class NCalcParser : Parser {
 					{
 					State = 78;
 					Match(T__4);
-					 type = BinaryExpressionType.BitwiseOr; 
+					 type = BinaryExpressionType.BitwiseOr;
 					State = 80;
 					_localctx.right = bitwiseOrExpression();
-					 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+					 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 					}
-					} 
+					}
 				}
 				State = 87;
 				ErrorHandler.Sync(this);
@@ -555,7 +554,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 88;
 			_localctx.left = bitwiseAndExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 97;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
@@ -564,10 +563,10 @@ public partial class NCalcParser : Parser {
 				{
 				State = 90;
 				Match(T__5);
-				 type = BinaryExpressionType.BitwiseXOr; 
+				 type = BinaryExpressionType.BitwiseXOr;
 				State = 92;
 				_localctx.right = bitwiseAndExpression();
-				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 				}
 				}
 				State = 99;
@@ -627,7 +626,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 100;
 			_localctx.left = equalityExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 109;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
@@ -636,10 +635,10 @@ public partial class NCalcParser : Parser {
 				{
 				State = 102;
 				Match(T__6);
-				 type = BinaryExpressionType.BitwiseAnd; 
+				 type = BinaryExpressionType.BitwiseAnd;
 				State = 104;
 				_localctx.right = equalityExpression();
-				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 				}
 				}
 				State = 111;
@@ -699,7 +698,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 112;
 			_localctx.left = relationalExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 125;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
@@ -721,7 +720,7 @@ public partial class NCalcParser : Parser {
 						ErrorHandler.ReportMatch(this);
 					    Consume();
 					}
-					 type = BinaryExpressionType.Equal; 
+					 type = BinaryExpressionType.Equal;
 					}
 					break;
 				case T__9:
@@ -736,7 +735,7 @@ public partial class NCalcParser : Parser {
 						ErrorHandler.ReportMatch(this);
 					    Consume();
 					}
-					 type = BinaryExpressionType.NotEqual; 
+					 type = BinaryExpressionType.NotEqual;
 					}
 					break;
 				default:
@@ -744,7 +743,7 @@ public partial class NCalcParser : Parser {
 				}
 				State = 120;
 				_localctx.right = relationalExpression();
-				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 				}
 				}
 				State = 127;
@@ -804,7 +803,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 128;
 			_localctx.left = shiftExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 145;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
@@ -818,28 +817,28 @@ public partial class NCalcParser : Parser {
 					{
 					State = 130;
 					Match(T__11);
-					 type = BinaryExpressionType.Lesser; 
+					 type = BinaryExpressionType.Lesser;
 					}
 					break;
 				case T__12:
 					{
 					State = 132;
 					Match(T__12);
-					 type = BinaryExpressionType.LesserOrEqual; 
+					 type = BinaryExpressionType.LesserOrEqual;
 					}
 					break;
 				case T__13:
 					{
 					State = 134;
 					Match(T__13);
-					 type = BinaryExpressionType.Greater; 
+					 type = BinaryExpressionType.Greater;
 					}
 					break;
 				case T__14:
 					{
 					State = 136;
 					Match(T__14);
-					 type = BinaryExpressionType.GreaterOrEqual; 
+					 type = BinaryExpressionType.GreaterOrEqual;
 					}
 					break;
 				default:
@@ -847,7 +846,7 @@ public partial class NCalcParser : Parser {
 				}
 				State = 140;
 				_localctx.right = shiftExpression();
-				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 				}
 				}
 				State = 147;
@@ -907,7 +906,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 148;
 			_localctx.left = additiveExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 161;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
@@ -921,14 +920,14 @@ public partial class NCalcParser : Parser {
 					{
 					State = 150;
 					Match(T__15);
-					 type = BinaryExpressionType.LeftShift; 
+					 type = BinaryExpressionType.LeftShift;
 					}
 					break;
 				case T__16:
 					{
 					State = 152;
 					Match(T__16);
-					 type = BinaryExpressionType.RightShift; 
+					 type = BinaryExpressionType.RightShift;
 					}
 					break;
 				default:
@@ -936,7 +935,7 @@ public partial class NCalcParser : Parser {
 				}
 				State = 156;
 				_localctx.right = additiveExpression();
-				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 				}
 				}
 				State = 163;
@@ -996,7 +995,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 164;
 			_localctx.left = multiplicativeExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 177;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
@@ -1010,14 +1009,14 @@ public partial class NCalcParser : Parser {
 					{
 					State = 166;
 					Match(T__17);
-					 type = BinaryExpressionType.Plus; 
+					 type = BinaryExpressionType.Plus;
 					}
 					break;
 				case T__18:
 					{
 					State = 168;
 					Match(T__18);
-					 type = BinaryExpressionType.Minus; 
+					 type = BinaryExpressionType.Minus;
 					}
 					break;
 				default:
@@ -1025,7 +1024,7 @@ public partial class NCalcParser : Parser {
 				}
 				State = 172;
 				_localctx.right = multiplicativeExpression();
-				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 				}
 				}
 				State = 179;
@@ -1085,7 +1084,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 180;
 			_localctx.left = unaryExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 195;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
@@ -1099,21 +1098,21 @@ public partial class NCalcParser : Parser {
 					{
 					State = 182;
 					Match(T__19);
-					 type = BinaryExpressionType.Times; 
+					 type = BinaryExpressionType.Times;
 					}
 					break;
 				case T__20:
 					{
 					State = 184;
 					Match(T__20);
-					 type = BinaryExpressionType.Div; 
+					 type = BinaryExpressionType.Div;
 					}
 					break;
 				case T__21:
 					{
 					State = 186;
 					Match(T__21);
-					 type = BinaryExpressionType.Modulo; 
+					 type = BinaryExpressionType.Modulo;
 					}
 					break;
 				default:
@@ -1121,7 +1120,7 @@ public partial class NCalcParser : Parser {
 				}
 				State = 190;
 				_localctx.right = unaryExpression();
-				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue); 
+				 _localctx.retValue =  new BinaryExpression(type, _localctx.retValue, _localctx.right.retValue);
 				}
 				}
 				State = 197;
@@ -1187,7 +1186,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 198;
 				_localctx._exponentialExpression = exponentialExpression();
-				 _localctx.retValue =  _localctx._exponentialExpression.retValue; 
+				 _localctx.retValue =  _localctx._exponentialExpression.retValue;
 				}
 				break;
 			case T__22:
@@ -1205,7 +1204,7 @@ public partial class NCalcParser : Parser {
 				}
 				State = 202;
 				_localctx._exponentialExpression = exponentialExpression();
-				 _localctx.retValue =  new UnaryExpression(UnaryExpressionType.Not, _localctx._exponentialExpression.retValue); 
+				 _localctx.retValue =  new UnaryExpression(UnaryExpressionType.Not, _localctx._exponentialExpression.retValue);
 				}
 				break;
 			case T__23:
@@ -1217,7 +1216,7 @@ public partial class NCalcParser : Parser {
 				}
 				State = 206;
 				_localctx._exponentialExpression = exponentialExpression();
-				 _localctx.retValue =  new UnaryExpression(UnaryExpressionType.BitwiseNot, _localctx._exponentialExpression.retValue); 
+				 _localctx.retValue =  new UnaryExpression(UnaryExpressionType.BitwiseNot, _localctx._exponentialExpression.retValue);
 				}
 				break;
 			case T__18:
@@ -1227,7 +1226,7 @@ public partial class NCalcParser : Parser {
 				Match(T__18);
 				State = 210;
 				_localctx._exponentialExpression = exponentialExpression();
-				 _localctx.retValue =  new UnaryExpression(UnaryExpressionType.Negate, _localctx._exponentialExpression.retValue); 
+				 _localctx.retValue =  new UnaryExpression(UnaryExpressionType.Negate, _localctx._exponentialExpression.retValue);
 				}
 				break;
 			case T__17:
@@ -1237,7 +1236,7 @@ public partial class NCalcParser : Parser {
 				Match(T__17);
 				State = 214;
 				_localctx._exponentialExpression = exponentialExpression();
-				 _localctx.retValue =  new UnaryExpression(UnaryExpressionType.Positive, _localctx._exponentialExpression.retValue); 
+				 _localctx.retValue =  new UnaryExpression(UnaryExpressionType.Positive, _localctx._exponentialExpression.retValue);
 				}
 				break;
 			default:
@@ -1295,7 +1294,7 @@ public partial class NCalcParser : Parser {
 			{
 			State = 219;
 			_localctx.left = primaryExpression();
-			 _localctx.retValue =  _localctx.left.retValue; 
+			 _localctx.retValue =  _localctx.left.retValue;
 			State = 227;
 			ErrorHandler.Sync(this);
 			_alt = Interpreter.AdaptivePredict(TokenStream,17,Context);
@@ -1307,9 +1306,9 @@ public partial class NCalcParser : Parser {
 					Match(T__24);
 					State = 222;
 					_localctx.right = unaryExpression();
-					 _localctx.retValue =  new BinaryExpression(BinaryExpressionType.Exponentiation, _localctx.retValue, _localctx.right.retValue); 
+					 _localctx.retValue =  new BinaryExpression(BinaryExpressionType.Exponentiation, _localctx.retValue, _localctx.right.retValue);
 					}
-					} 
+					}
 				}
 				State = 229;
 				ErrorHandler.Sync(this);
@@ -1381,7 +1380,7 @@ public partial class NCalcParser : Parser {
 				_localctx._logicalExpression = logicalExpression();
 				State = 232;
 				Match(T__26);
-				 _localctx.retValue =  _localctx._logicalExpression.retValue; 
+				 _localctx.retValue =  _localctx._logicalExpression.retValue;
 				}
 				break;
 			case TRUE:
@@ -1394,7 +1393,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 235;
 				_localctx.expr = value();
-				 _localctx.retValue =  _localctx.expr.retValue; 
+				 _localctx.retValue =  _localctx.expr.retValue;
 				}
 				break;
 			case ID:
@@ -1403,7 +1402,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 238;
 				_localctx._identifier = identifier();
-				_localctx.retValue =  (LogicalExpression) _localctx._identifier.retValue; 
+				_localctx.retValue =  (LogicalExpression) _localctx._identifier.retValue;
 				State = 243;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
@@ -1411,7 +1410,7 @@ public partial class NCalcParser : Parser {
 					{
 					State = 240;
 					_localctx._arguments = arguments();
-					_localctx.retValue =  new Function(_localctx._identifier.retValue, new LogicalExpressionList(_localctx._arguments.retValue)); 
+					_localctx.retValue =  new Function(_localctx._identifier.retValue, new LogicalExpressionList(_localctx._arguments.retValue));
 					}
 				}
 
@@ -1474,7 +1473,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 247;
 				_localctx._INTEGER = Match(INTEGER);
-				 try { _localctx.retValue =  new ValueExpression(int.Parse((_localctx._INTEGER!=null?_localctx._INTEGER.Text:null))); } catch(System.OverflowException) { _localctx.retValue =  new ValueExpression(long.Parse((_localctx._INTEGER!=null?_localctx._INTEGER.Text:null))); } 
+				 try { _localctx.retValue =  new ValueExpression(int.Parse((_localctx._INTEGER!=null?_localctx._INTEGER.Text:null))); } catch(System.OverflowException) { _localctx.retValue =  new ValueExpression(long.Parse((_localctx._INTEGER!=null?_localctx._INTEGER.Text:null))); }
 				}
 				break;
 			case FLOAT:
@@ -1483,8 +1482,8 @@ public partial class NCalcParser : Parser {
 				State = 249;
 				_localctx._FLOAT = Match(FLOAT);
 				 _localctx.retValue =  new ValueExpression(
-					                                    (UseDecimal) ? decimal.Parse((_localctx._FLOAT!=null?_localctx._FLOAT.Text:null), NumberStyles.Float, numberFormatInfo) : 
-					                                        double.Parse((_localctx._FLOAT!=null?_localctx._FLOAT.Text:null), NumberStyles.Float, numberFormatInfo)); 
+					                                    (UseDecimal) ? decimal.Parse((_localctx._FLOAT!=null?_localctx._FLOAT.Text:null), NumberStyles.Float, numberFormatInfo) :
+					                                        double.Parse((_localctx._FLOAT!=null?_localctx._FLOAT.Text:null), NumberStyles.Float, numberFormatInfo));
 				}
 				break;
 			case STRING:
@@ -1492,7 +1491,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 251;
 				_localctx._STRING = Match(STRING);
-				 _localctx.retValue =  new ValueExpression(extractString((_localctx._STRING!=null?_localctx._STRING.Text:null))); 
+				 _localctx.retValue =  new ValueExpression(extractString((_localctx._STRING!=null?_localctx._STRING.Text:null)));
 				}
 				break;
 			case DATETIME:
@@ -1500,7 +1499,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 253;
 				_localctx._DATETIME = Match(DATETIME);
-				 _localctx.retValue =  new ValueExpression(DateTime.Parse((_localctx._DATETIME!=null?_localctx._DATETIME.Text:null).Substring(1, (_localctx._DATETIME!=null?_localctx._DATETIME.Text:null).Length-2))); 
+				 _localctx.retValue =  new ValueExpression(DateTime.Parse((_localctx._DATETIME!=null?_localctx._DATETIME.Text:null).Substring(1, (_localctx._DATETIME!=null?_localctx._DATETIME.Text:null).Length-2)));
 				}
 				break;
 			case TRUE:
@@ -1508,7 +1507,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 255;
 				Match(TRUE);
-				 _localctx.retValue =  new ValueExpression(true); 
+				 _localctx.retValue =  new ValueExpression(true);
 				}
 				break;
 			case FALSE:
@@ -1516,7 +1515,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 257;
 				Match(FALSE);
-				 _localctx.retValue =  new ValueExpression(false); 
+				 _localctx.retValue =  new ValueExpression(false);
 				}
 				break;
 			default:
@@ -1570,7 +1569,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 261;
 				_localctx._ID = Match(ID);
-				 _localctx.retValue =  new Identifier((_localctx._ID!=null?_localctx._ID.Text:null)); 
+				 _localctx.retValue =  new Identifier((_localctx._ID!=null?_localctx._ID.Text:null));
 				}
 				break;
 			case NAME:
@@ -1578,7 +1577,7 @@ public partial class NCalcParser : Parser {
 				{
 				State = 263;
 				_localctx._NAME = Match(NAME);
-				 _localctx.retValue =  new Identifier((_localctx._NAME!=null?_localctx._NAME.Text:null).Substring(1, (_localctx._NAME!=null?_localctx._NAME.Text:null).Length-2)); 
+				 _localctx.retValue =  new Identifier((_localctx._NAME!=null?_localctx._NAME.Text:null).Substring(1, (_localctx._NAME!=null?_localctx._NAME.Text:null).Length-2));
 				}
 				break;
 			default:
@@ -1654,7 +1653,7 @@ public partial class NCalcParser : Parser {
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
-			 _localctx.retValue =  expressions; 
+			 _localctx.retValue =  expressions;
 			}
 		}
 		catch (RecognitionException re) {

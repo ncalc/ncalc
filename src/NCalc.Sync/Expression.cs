@@ -33,7 +33,6 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         remove => Context.EvaluateParameterHandler -= value;
     }
 
-
     public IDictionary<string, ExpressionParameter> DynamicParameters
     {
         get => Context.DynamicParameters;
@@ -105,7 +104,6 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
     {
     }
-
 
     /// <summary>
     /// Evaluates the logical expression.

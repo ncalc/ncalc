@@ -37,7 +37,6 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         _context = context;
     }
 
-
     public LinqExpression Visit(TernaryExpression expression)
     {
         var conditional = expression.LeftExpression.Accept(this);
@@ -91,7 +90,6 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             _ => throw new ArgumentOutOfRangeException()
         };
     }
-
 
     public LinqExpression Visit(ValueExpression expression)
     {

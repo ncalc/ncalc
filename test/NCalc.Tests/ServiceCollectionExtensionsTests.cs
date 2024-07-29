@@ -42,7 +42,6 @@ public class ServiceCollectionExtensionsTests
         Assert.IsType<CustomExpressionFactory>(factory);
     }
 
-
     [Fact]
     public void WithCache_ShouldReplaceCache()
     {
@@ -119,7 +118,6 @@ public class ServiceCollectionExtensionsTests
     private class CustomCache : ILogicalExpressionCache
     {
         public bool TryGetValue(string expression, out LogicalExpression logicalExpression) => throw new NCalcException("Stub method intented for testing.");
-
 
         public void Set(string expression, LogicalExpression logicalExpression)
         {

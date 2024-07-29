@@ -46,7 +46,6 @@ public class AsyncTests
         Assert.Equal(true, result);
     }
 
-
     [Fact]
     public async Task ShouldEvaluateAsyncFunctionHandler()
     {
@@ -84,7 +83,6 @@ public class AsyncTests
         var result = await expression.EvaluateAsync();
         Assert.Equal(true, result);
     }
-
 
     [Fact]
     public async Task ShouldEvaluateArrayParameters()

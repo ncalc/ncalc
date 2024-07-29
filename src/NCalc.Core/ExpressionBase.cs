@@ -84,7 +84,6 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         Context = context;
     }
 
-
     /// <summary>
     /// Returns a list with all parameter names from the expression.
     /// </summary>

@@ -6,6 +6,7 @@
     <Company>https://github.com/ncalc</Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">
@@ -16,6 +17,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+
+    <PackageReference Include="Roslynator.Analyzers" Version="4.12.4"/>
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.4"/>
+    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.4"/>
+
   </ItemGroup>
   <ItemGroup>
     <Using Include="System" />

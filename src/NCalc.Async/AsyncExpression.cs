@@ -27,7 +27,6 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         set => Context.Functions = value;
     }
 
-
     /// <summary>
     /// Event triggered to handle function evaluation.
     /// </summary>
@@ -46,9 +45,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         remove => Context.AsyncEvaluateParameterHandler -= value;
     }
 
-
     protected IAsyncEvaluationService EvaluationService { get; }
-
 
     private AsyncExpression(AsyncExpressionContext? context = null) : base(context ?? new AsyncExpressionContext())
     {

@@ -34,7 +34,6 @@ public class LogicalExpressionFactoryBenchmark
         return AntlrFactory.Create(SimpleExpression);
     }
 
-
     [Benchmark]
     public LogicalExpression SimpleParlotExpression()
     {
@@ -46,7 +45,6 @@ public class LogicalExpressionFactoryBenchmark
     {
         return AntlrFactory.Create(AdvancedExpression);
     }
-
 
     [Benchmark]
     public LogicalExpression AdvancedParlotExpression()

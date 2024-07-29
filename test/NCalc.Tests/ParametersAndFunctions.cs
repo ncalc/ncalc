@@ -26,7 +26,6 @@ public class ParametersAndFunctions
         Assert.Equal(10, e.Evaluate());
     }
 
-
     [Fact]
     public void ExpressionShouldEvaluateCustomFunctionsWithSameName()
     {
@@ -58,7 +57,6 @@ public class ParametersAndFunctions
 
         Assert.Equal(2, d.FirstOrDefault().Value);
     }
-
 
     [Fact]
     public void ExpressionShouldEvaluateCustomFunctionsWithEffects()
@@ -128,7 +126,6 @@ public class ParametersAndFunctions
             _ = expression.Evaluate();
         }
 
-
         object Expression_EvaluateFunction(ExpressionFunctionData args)
         {
             counter++;
@@ -193,10 +190,8 @@ public class ParametersAndFunctions
 
         e.DynamicParameters["x"] = _ => null;
 
-
         Assert.Null(e.Evaluate());
     }
-
 
     [Theory]
     [InlineData("notExistingfunction")]
