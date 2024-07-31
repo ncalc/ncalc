@@ -21,6 +21,10 @@ public sealed class FunctionExtractionVisitor : ILogicalExpressionVisitor<List<s
                     functions.Add(function.Identifier.Name);
                 }
             }
+            else
+            {
+                functions.AddRange(value.Accept(this));
+            }
         }
         return functions;
     }
