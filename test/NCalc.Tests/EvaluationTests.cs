@@ -124,7 +124,9 @@ public class EvaluationTests
     [Fact]
     public void ShouldHandleCaseSensitiveness()
     {
-        Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.DecimalAsDefault | ExpressionOptions.IgnoreCaseAtBuiltInFunctions).Evaluate());
+        Assert.Equal(1M,
+            new Expression("aBs(-1)",
+                ExpressionOptions.DecimalAsDefault | ExpressionOptions.IgnoreCaseAtBuiltInFunctions).Evaluate());
         Assert.Equal(1M, new Expression("Abs(-1)", ExpressionOptions.DecimalAsDefault).Evaluate());
 
         Assert.Throws<NCalcFunctionNotFoundException>(() => new Expression("aBs(-1)").Evaluate());
@@ -195,7 +197,7 @@ public class EvaluationTests
         {
             Parameters =
             {
-                ["x"] = new [] { 0, 1, 2, 3, 4 }
+                ["x"] = new[] { 0, 1, 2, 3, 4 }
             }
         };
 
@@ -240,5 +242,18 @@ public class EvaluationTests
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["PageState"] = "Insert";
         Assert.Equal(true, new Expression("{PageState} in ('INSERT','UPDATE')", context).Evaluate());
+    }
+
+    [Fact]
+    public void Issue122()
+    {
+        var context = new ExpressionContext()
+        {
+            StaticParameters =
+            {
+                { "foo", 60 }
+            }
+        };
+        Assert.Equal("bar", new Expression("ifs(foo > 50, \"bar\", foo > 75, \"baz\", \"quux\")", context).Evaluate());
     }
 }
