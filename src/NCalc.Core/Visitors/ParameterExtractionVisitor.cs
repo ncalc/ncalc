@@ -29,6 +29,10 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
                     parameters.Add(identifier.Name);
                 }
             }
+            else
+            {
+                parameters.AddRange(value.Accept(this));
+            }
         }
         return parameters;
     }
