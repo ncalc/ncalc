@@ -1,3 +1,7 @@
+# 5.2.1
+* Fix inner parameter and functions at extraction visitors by @gumbarros in https://github.com/ncalc/ncalc/pull/306
+* Fix ExpressionOptions.IterateParameters by @Bykiev in https://github.com/ncalc/ncalc/pull/309
+
 # 5.2.0
 * Added `FunctionExtractionVisitor` by @gumbarros in https://github.com/ncalc/ncalc/pull/290
 * Re-use `LogicalExpressionList` logic for `Function` parameters by @gumbarros in https://github.com/ncalc/ncalc/pull/291
