@@ -1,5 +1,3 @@
-
-
 using NCalc.Factories;
 
 namespace NCalc.Tests;
@@ -110,5 +108,4 @@ public class OperatorsTests
 
         Assert.False((bool)e.Evaluate()!);
     }
-
 }

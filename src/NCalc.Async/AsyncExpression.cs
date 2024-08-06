@@ -27,7 +27,6 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         set => Context.Functions = value;
     }
 
-
     /// <summary>
     /// Event triggered to handle function evaluation.
     /// </summary>
@@ -46,9 +45,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         remove => Context.AsyncEvaluateParameterHandler -= value;
     }
 
-
     protected IAsyncEvaluationService EvaluationService { get; }
-
 
     private AsyncExpression(AsyncExpressionContext? context = null) : base(context ?? new AsyncExpressionContext())
     {
@@ -113,7 +110,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
     /// </summary>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public Task<object?> EvaluateAsync()
+    public ValueTask<object?> EvaluateAsync()
     {
         LogicalExpression ??= GetLogicalExpression();
 
@@ -130,7 +127,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         return EvaluationService.EvaluateAsync(LogicalExpression!, Context);
     }
 
-    private async Task<object?> IterateParametersAsync()
+    private async ValueTask<object?> IterateParametersAsync()
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 

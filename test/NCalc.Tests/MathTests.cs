@@ -6,7 +6,6 @@ namespace NCalc.Tests;
 [Trait("Category", "Math")]
 public class MathsTests
 {
-
     [Theory]
     [ClassData(typeof(BuiltInFunctionsTestData))]
     public void BuiltInFunctions_Test(string expression, object expected, double? tolerance)
@@ -98,7 +97,6 @@ public class MathsTests
             }
         }
     }
-
 
     [Fact]
     public void Should_Add_All_Numeric_Types_Issue_58()
@@ -332,7 +330,6 @@ public class MathsTests
         expression.Parameters["X1"] = 1;
 
         Assert.Equal(expectedValue, expression.Evaluate());
-
 
         var lambda = expression.ToLambda<double>();
 

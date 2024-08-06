@@ -62,4 +62,20 @@ public class ExtractionTests
         var functions = expression.GetFunctionNames();
         Assert.Equal(expectedCount, functions.Count);
     }
+
+    [Fact]
+    public void ShouldGetParametersInsideFunctionsIssue305()
+    {
+        var expression = new Expression("if([Value] >= 50, 'background-color: #80ffcc;', null)", ExpressionOptions.AllowNullParameter);
+        var parameters = expression.GetParameterNames();
+        Assert.Equal(2, parameters.Count);
+    }
+
+    [Fact]
+    public void ShouldGetFunctionsInsideFunctionsIssue305()
+    {
+        var expression = new Expression("if(getValue() >= 50, 'background-color: #80ffcc;', null)", ExpressionOptions.AllowNullParameter);
+        var functions = expression.GetFunctionNames();
+        Assert.Equal(2, functions.Count);
+    }
 }

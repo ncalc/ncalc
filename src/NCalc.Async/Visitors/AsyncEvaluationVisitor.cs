@@ -14,9 +14,9 @@ namespace NCalc.Visitors;
 /// Class responsible to asynchronous evaluating <see cref="LogicalExpression"/> objects into CLR objects.
 /// </summary>
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
-public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalExpressionVisitor<Task<object?>>
+public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalExpressionVisitor<ValueTask<object?>>
 {
-    public async Task<object?> Visit(TernaryExpression expression)
+    public async ValueTask<object?> Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
         var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this), context.CultureInfo);
@@ -29,7 +29,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         return expression.RightExpression.Accept(this);
     }
 
-    public async Task<object?> Visit(BinaryExpression expression)
+    public async ValueTask<object?> Visit(BinaryExpression expression)
     {
         var left = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression),
             LazyThreadSafetyMode.None);
@@ -140,7 +140,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         return null;
     }
 
-    public async Task<object?> Visit(UnaryExpression expression)
+    public async ValueTask<object?> Visit(UnaryExpression expression)
     {
         // Recursively evaluates the underlying expression
         var result = await expression.Expression.Accept(this);
@@ -148,7 +148,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         return EvaluationHelper.Unary(expression, result, context);
     }
 
-    public async Task<object?> Visit(Function function)
+    public async ValueTask<object?> Visit(Function function)
     {
         var argsCount = function.Parameters.Count;
         var args = new AsyncExpression[argsCount];
@@ -179,7 +179,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         return await AsyncBuiltInFunctionHelper.EvaluateAsync(functionName, args, context);
     }
 
-    public async Task<object?> Visit(Identifier identifier)
+    public async ValueTask<object?> Visit(Identifier identifier)
     {
         var identifierName = identifier.Name;
 
@@ -220,10 +220,9 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    public Task<object?> Visit(ValueExpression expression) => Task.FromResult(expression.Value);
+    public ValueTask<object?> Visit(ValueExpression expression) => new(expression.Value);
 
-
-    public async Task<object?> Visit(LogicalExpressionList list)
+    public async ValueTask<object?> Visit(LogicalExpressionList list)
     {
         List<object?> result = [];
 

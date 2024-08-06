@@ -8,7 +8,6 @@ public sealed class Function(Identifier identifier, LogicalExpressionList parame
 
     public LogicalExpressionList Parameters { get; set; } = parameters;
 
-
     [Obsolete("Please use Parameters property.")]
     public LogicalExpression[] Expressions
     {

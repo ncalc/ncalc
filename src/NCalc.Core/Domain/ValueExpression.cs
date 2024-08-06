@@ -3,12 +3,10 @@ using NCalc.Visitors;
 
 namespace NCalc.Domain;
 
-
 public sealed class ValueExpression : LogicalExpression
 {
     public object? Value { get; set; }
     public ValueType Type { get; set; }
-
 
     public ValueExpression()
     {
@@ -21,6 +19,7 @@ public sealed class ValueExpression : LogicalExpression
             bool => ValueType.Boolean,
             DateTime => ValueType.DateTime,
             TimeSpan => ValueType.TimeSpan,
+            Guid => ValueType.Guid,
             char => ValueType.Char,
             decimal or double or float => ValueType.Float,
             byte or sbyte or short or int or long or ushort or uint or ulong => ValueType.Integer,
@@ -81,7 +80,6 @@ public sealed class ValueExpression : LogicalExpression
         Type = ValueType.DateTime;
     }
 
-
     public ValueExpression(TimeSpan value)
     {
         Value = value;
@@ -92,6 +90,12 @@ public sealed class ValueExpression : LogicalExpression
     {
         Value = value;
         Type = ValueType.Boolean;
+    }
+
+    public ValueExpression(Guid value)
+    {
+        Value = value;
+        Type = ValueType.Guid;
     }
 
     public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)

@@ -42,7 +42,6 @@ public class ServiceCollectionExtensionsTests
         Assert.IsType<CustomExpressionFactory>(factory);
     }
 
-
     [Fact]
     public void WithCache_ShouldReplaceCache()
     {
@@ -120,7 +119,6 @@ public class ServiceCollectionExtensionsTests
     {
         public bool TryGetValue(string expression, out LogicalExpression logicalExpression) => throw new NCalcException("Stub method intented for testing.");
 
-
         public void Set(string expression, LogicalExpression logicalExpression)
         {
         }
@@ -147,9 +145,9 @@ public class ServiceCollectionExtensionsTests
         public event AsyncEvaluateFunctionHandler EvaluateFunctionAsync;
         public event AsyncEvaluateParameterHandler EvaluateParameterAsync;
 
-        public Task<object> EvaluateAsync(LogicalExpression expression, AsyncExpressionContext context)
+        public ValueTask<object> EvaluateAsync(LogicalExpression expression, AsyncExpressionContext context)
         {
-            return Task.FromResult<object>(42);
+            return new(42);
         }
     }
     #endregion

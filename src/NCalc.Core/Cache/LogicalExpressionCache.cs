@@ -11,7 +11,6 @@ public sealed class LogicalExpressionCache : ILogicalExpressionCache
 
     private LogicalExpressionCache()
     {
-
     }
     public static LogicalExpressionCache GetInstance()
     {
