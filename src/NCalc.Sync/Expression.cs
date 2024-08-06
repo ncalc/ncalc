@@ -127,23 +127,28 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         return EvaluationService.Evaluate(LogicalExpression!, Context);
     }
 
-    private List<object?> IterateParameters()
+    private object? IterateParameters()
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
-        var results = new List<object?>();
-
-        for (int i = 0; i < size; i++)
+        if (size != null)
         {
-            foreach (var kvp in parameterEnumerators)
+            var results = new List<object?>();
+
+            for (int i = 0; i < size; i++)
             {
-                kvp.Value.MoveNext();
-                Parameters[kvp.Key] = kvp.Value.Current;
+                foreach (var kvp in parameterEnumerators)
+                {
+                    kvp.Value.MoveNext();
+                    Parameters[kvp.Key] = kvp.Value.Current;
+                }
+
+                results.Add(EvaluationService.Evaluate(LogicalExpression!, Context));
             }
 
-            results.Add(EvaluationService.Evaluate(LogicalExpression!, Context));
+            return results;
         }
 
-        return results;
+        return EvaluationService.Evaluate(LogicalExpression!, Context);
     }
 }
