@@ -122,7 +122,10 @@ public partial class Expression : ExpressionBase<ExpressionContext>
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
+        {
+            Options &= ~ExpressionOptions.IterateParameters;
             return IterateParameters();
+        }
 
         return EvaluationService.Evaluate(LogicalExpression!, Context);
     }

@@ -210,6 +210,27 @@ public class EvaluationTests
     }
 
     [Fact]
+    public void ShouldEvaluateArrayParametersWithFunctions()
+    {
+        var e = new Expression("Round(x, 2)", ExpressionOptions.IterateParameters)
+        {
+            Parameters =
+            {
+                ["x"] = new [] { 0.51, 1.671, 2.237, 3.568, 4.11 }
+            }
+        };
+
+        var result = (IList<object>)e.Evaluate();
+
+        Assert.NotNull(result);
+        Assert.Equal(0.51, result[0]);
+        Assert.Equal(1.67, result[1]);
+        Assert.Equal(2.24, result[2]);
+        Assert.Equal(3.57, result[3]);
+        Assert.Equal(4.11, result[4]);
+    }
+
+    [Fact]
     public void ShouldEvaluateInOperatorWithList()
     {
         var context = new ExpressionContext();
