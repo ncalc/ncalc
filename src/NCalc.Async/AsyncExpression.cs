@@ -131,19 +131,24 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
-        var results = new List<object?>();
-
-        for (int i = 0; i < size; i++)
+        if (size != null)
         {
-            foreach (var kvp in parameterEnumerators)
+            var results = new List<object?>();
+
+            for (int i = 0; i < size; i++)
             {
-                kvp.Value.MoveNext();
-                Parameters[kvp.Key] = kvp.Value.Current;
+                foreach (var kvp in parameterEnumerators)
+                {
+                    kvp.Value.MoveNext();
+                    Parameters[kvp.Key] = kvp.Value.Current;
+                }
+
+                results.Add(await EvaluationService.EvaluateAsync(LogicalExpression!, Context));
             }
 
-            results.Add(await EvaluationService.EvaluateAsync(LogicalExpression!, Context));
+            return results;
         }
 
-        return results;
+        return await EvaluationService.EvaluateAsync(LogicalExpression!, Context);
     }
 }
