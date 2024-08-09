@@ -10,6 +10,7 @@ public class ParserTests
     [InlineData("11+33 ", 44)]
     [InlineData(" 11+33", 44)]
     [InlineData(" 11+33 ", 44)]
+    [InlineData("0.0-1.1", -1.1)]
     public void ShouldIgnoreWhitespacesIssue222(string formula, object expectedValue)
     {
         var expression = new Expression(formula, CultureInfo.InvariantCulture);

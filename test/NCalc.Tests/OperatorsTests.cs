@@ -91,7 +91,6 @@ public class OperatorsTests
     [Fact]
     public void Should_Use_Correct_BitwiseXOr_133()
     {
-        const ExpressionOptions options = ExpressionOptions.None;
         var logicalExpression = LogicalExpressionFactory.Create(expression: "1 ^ 2");
 
         var serializedString = logicalExpression.ToString();
