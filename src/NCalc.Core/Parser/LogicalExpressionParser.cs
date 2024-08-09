@@ -59,7 +59,7 @@ public static class LogicalExpressionParser
             SkipWhiteSpace(OneOf(
                     Literals.Char('.')
                         .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0)
-                            .And(ZeroOrOne(Literals.Integer()).ThenElse<long?>(x => x, 0))
+                            .And(ZeroOrOne(Literals.Integer(NumberOptions.None)).ThenElse<long?>(x => x, 0))
                             .Then(x =>
                             {
                                 if (x is { Item1: 0, Item2: 0 })
