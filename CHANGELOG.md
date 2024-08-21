@@ -1,3 +1,6 @@
+# 5.2.2
+* Fix number parsing by @Bykiev in https://github.com/ncalc/ncalc/pull/316
+
 # 5.2.1
 * Fix inner parameter and functions at extraction visitors by @gumbarros in https://github.com/ncalc/ncalc/pull/306
 * Fix ExpressionOptions.IterateParameters by @Bykiev in https://github.com/ncalc/ncalc/pull/309
