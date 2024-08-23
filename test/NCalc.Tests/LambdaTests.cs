@@ -1,6 +1,6 @@
 ﻿#if NET8_0_OR_GREATER
+#nullable enable
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 
 // ReSharper disable MemberCanBeProtected.Local
 
