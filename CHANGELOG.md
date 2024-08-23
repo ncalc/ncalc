@@ -1,3 +1,7 @@
+# 5.2.3
+* Roslynator - PrivateAssets="all" by @Bykiev in https://github.com/ncalc/ncalc/pull/319
+* Fix compiler warnings in NCalc.Tests by @axunonb in https://github.com/ncalc/ncalc/pull/318
+
 # 5.2.2
 * Fix number parsing by @Bykiev in https://github.com/ncalc/ncalc/pull/316
 
