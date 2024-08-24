@@ -20,6 +20,12 @@ public static class EvaluationHelper
         if (context.Options.HasFlag(ExpressionOptions.StringConcat))
             return string.Concat(leftValue, rightValue);
 
+        if (context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion) &&
+            (leftValue is string || rightValue is string))
+        {
+            return string.Concat(leftValue, rightValue);
+        }
+
         try
         {
             return MathHelper.Add(leftValue, rightValue, context);
