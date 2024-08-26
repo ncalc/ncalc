@@ -69,5 +69,10 @@ public enum ExpressionOptions
     /// <summary>
     /// Parse single quoted strings as <see cref="char"/>
     /// </summary>
-    AllowCharValues = 1 << 12
+    AllowCharValues = 1 << 12,
+
+    /// <summary>
+    /// Disables coercion of string values to other types
+    /// </summary>
+    NoStringTypeCoercion = 1 << 13,
 }
