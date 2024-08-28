@@ -127,6 +127,32 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 var leftValue = left.Value;
                 return !EvaluationHelper.In(rightValue, leftValue, context);
             }
+            case BinaryExpressionType.Like:
+            {
+                var rightValue = right.Value?.ToString();
+                var leftValue = left.Value?.ToString();
+
+                if (rightValue == null || leftValue == null)
+                {
+                    return false;
+                }
+
+                return EvaluationHelper.Like(leftValue, rightValue, context);
+            }
+
+            case BinaryExpressionType.NotLike:
+            {
+                var rightValue = right.Value?.ToString();
+                var leftValue = left.Value?.ToString();
+
+                if (rightValue == null || leftValue == null)
+                {
+                    return false;
+                }
+
+                return !EvaluationHelper.Like(leftValue, rightValue, context);
+            }
+
         }
 
         return null;

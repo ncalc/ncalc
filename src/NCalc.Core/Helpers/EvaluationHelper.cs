@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using NCalc.Domain;
 using NCalc.Exceptions;
 
@@ -84,5 +85,21 @@ public static class EvaluationHelper
             UnaryExpressionType.Positive => result,
             _ => throw new InvalidOperationException("Unknown UnaryExpressionType")
         };
+    }
+
+    public static bool Like(string value, string pattern, ExpressionContextBase context)
+    {
+        // Escape special regex characters in the pattern except for % and _
+        var regexPattern = Regex.Escape(pattern)
+            .Replace("%", ".*")     // % matches zero or more characters
+            .Replace("_", ".");     // _ matches exactly one character
+
+        // Regex options for case-insensitivity if specified
+        var options = context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer)
+            ? RegexOptions.IgnoreCase
+            : RegexOptions.None;
+
+        // Use ^ and $ to match the start and end of the string
+        return Regex.IsMatch(value, $"^{regexPattern}$", options);
     }
 }

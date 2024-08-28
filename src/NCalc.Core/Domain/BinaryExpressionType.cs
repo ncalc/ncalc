@@ -23,5 +23,7 @@ public enum BinaryExpressionType
     Exponentiation,
     In,
     NotIn,
+    Like,
+    NotLike,
     Unknown = -1
 }
