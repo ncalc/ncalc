@@ -1,3 +1,4 @@
+#nullable enable
 using NCalc.Exceptions;
 using NCalc.Tests.TestData;
 
@@ -261,5 +262,12 @@ public class EvaluationTests
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["PageState"] = "Insert";
         Assert.Equal(true, new Expression("{PageState} in ('INSERT','UPDATE')", context).Evaluate());
+    }
+
+    [Fact]
+    public void AllowNullOrEmptyExpressions()
+    {
+        Assert.Equal("", new Expression("", ExpressionOptions.AllowNullOrEmptyExpressions).Evaluate());
+        Assert.Null(new Expression((string?)null, ExpressionOptions.AllowNullOrEmptyExpressions).Evaluate());
     }
 }

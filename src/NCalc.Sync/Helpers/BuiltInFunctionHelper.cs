@@ -147,8 +147,11 @@ public static class BuiltInFunctionHelper
         if (functionName.Equals("ifs", comparison))
         {
             if (arguments.Length < 3 || arguments.Length % 2 != 1)
+            {
                 throw new NCalcEvaluationException(
                     "ifs() takes at least 3 arguments, or an odd number of arguments");
+            }
+
             foreach (var argument in arguments.Where((_, i) => i % 2 == 0))
             {
                 var index = Array.IndexOf(arguments, argument);

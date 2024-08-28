@@ -75,4 +75,9 @@ public enum ExpressionOptions
     /// Disables coercion of string values to other types
     /// </summary>
     NoStringTypeCoercion = 1 << 13,
+
+    /// <summary>
+    /// Return the value instead of throwing an exception when the expression is null or empty.
+    /// </summary>
+    AllowNullOrEmptyExpressions = 1 << 14
 }

@@ -7,5 +7,5 @@ namespace NCalc.Services;
 /// </summary>
 public interface IEvaluationService
 {
-    object? Evaluate(LogicalExpression expression, ExpressionContext context);
+    object? Evaluate(LogicalExpression? expression, ExpressionContext context);
 }

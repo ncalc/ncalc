@@ -53,13 +53,13 @@ public sealed class ValueExpression : LogicalExpression
         if (value is > int.MaxValue or < int.MinValue)
         {
             Value = value;
-            Type = ValueType.Integer;
         }
         else
         {
             Value = (int)value;
-            Type = ValueType.Integer;
         }
+
+        Type = ValueType.Integer;
     }
 
     public ValueExpression(double value)
