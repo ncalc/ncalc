@@ -1,3 +1,4 @@
+#nullable enable
 using NCalc.Exceptions;
 using NCalc.Tests.TestData;
 
@@ -23,7 +24,7 @@ public class EvaluationTests
 
         if (expectedValue is double expectedDouble)
         {
-            Assert.Equal(expectedDouble, (double)result, precision: 15);
+            Assert.Equal(expectedDouble, (double)result!, precision: 15);
         }
         else
         {
@@ -199,7 +200,7 @@ public class EvaluationTests
             }
         };
 
-        var result = (IList<object>)e.Evaluate();
+        var result = (IList<object>?)e.Evaluate();
 
         Assert.NotNull(result);
         Assert.Equal(0, result[0]);
@@ -220,7 +221,7 @@ public class EvaluationTests
             }
         };
 
-        var result = (IList<object>)e.Evaluate();
+        var result = (IList<object>?)e.Evaluate();
 
         Assert.NotNull(result);
         Assert.Equal(0.51, result[0]);
@@ -261,5 +262,12 @@ public class EvaluationTests
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["PageState"] = "Insert";
         Assert.Equal(true, new Expression("{PageState} in ('INSERT','UPDATE')", context).Evaluate());
+    }
+
+    [Fact]
+    public void AllowNullOrEmptyExpressions()
+    {
+        Assert.Equal("", new Expression("", ExpressionOptions.AllowNullOrEmptyExpressions).Evaluate());
+        Assert.Null(new Expression((string?)null, ExpressionOptions.AllowNullOrEmptyExpressions).Evaluate());
     }
 }

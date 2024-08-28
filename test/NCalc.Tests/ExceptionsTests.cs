@@ -145,4 +145,11 @@ public class ExceptionsTests
 
         Assert.Throws<NCalcEvaluationException>(() => new Expression("{PageState} in 4", context).Evaluate());
     }
+
+    [Fact]
+    public void ShouldThrowExceptionWhenNullOrEmpty()
+    {
+        Assert.Throws<NCalcException>(() => new Expression("").Evaluate());
+        Assert.Throws<NCalcException>(() => new Expression((string)null).Evaluate());
+    }
 }

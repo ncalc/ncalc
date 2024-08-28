@@ -72,18 +72,18 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         EvaluationService = evaluationService;
     }
 
-    public Expression(string expression, ExpressionContext? context = null) : this(context)
+    public Expression(string? expression, ExpressionContext? context = null) : this(context)
     {
         ExpressionString = expression;
     }
 
     // ReSharper disable once RedundantOverload.Global
     // Reason: False positive, ExpressionContext have implicit conversions.
-    public Expression(string expression) : this(expression, ExpressionOptions.None)
+    public Expression(string? expression) : this(expression, ExpressionOptions.None)
     {
     }
 
-    public Expression(string expression, ExpressionOptions options = ExpressionOptions.None,
+    public Expression(string? expression, ExpressionOptions options = ExpressionOptions.None,
         CultureInfo? cultureInfo = null) : this(expression, new ExpressionContext(options, cultureInfo))
     {
     }
@@ -124,7 +124,7 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
             return IterateParameters();
 
-        return EvaluationService.Evaluate(LogicalExpression!, Context);
+        return EvaluationService.Evaluate(LogicalExpression, Context);
     }
 
     private object? IterateParameters()

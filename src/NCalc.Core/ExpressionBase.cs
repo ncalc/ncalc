@@ -129,7 +129,14 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     protected LogicalExpression? GetLogicalExpression()
     {
         if (string.IsNullOrEmpty(ExpressionString))
+        {
+            if (Options.HasFlag(ExpressionOptions.AllowNullOrEmptyExpressions))
+            {
+                return ExpressionString?.Length == 0 ? new ValueExpression(string.Empty) : null;
+            }
+
             throw new NCalcException($"{nameof(ExpressionString)} cannot be null or empty.");
+        }
 
         var isCacheEnabled = !Options.HasFlag(ExpressionOptions.NoCache);
 
