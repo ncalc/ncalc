@@ -1,4 +1,5 @@
 namespace NCalc.Tests;
+
 [Trait("Category", "Evaluations")]
 public class LikeOperatorTests
 {
@@ -56,7 +57,7 @@ public class LikeOperatorTests
         Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B'", context).Evaluate());
     }
 
-        [Fact]
+    [Fact]
     public void ShouldEvaluateLikeOperatorWithWildcardAtEnd()
     {
         var context = new ExpressionContext();
