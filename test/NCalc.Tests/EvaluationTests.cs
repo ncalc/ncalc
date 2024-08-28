@@ -24,7 +24,7 @@ public class EvaluationTests
 
         if (expectedValue is double expectedDouble)
         {
-            Assert.Equal(expectedDouble, (double)result, precision: 15);
+            Assert.Equal(expectedDouble, (double)result!, precision: 15);
         }
         else
         {
@@ -200,7 +200,7 @@ public class EvaluationTests
             }
         };
 
-        var result = (IList<object>)e.Evaluate();
+        var result = (IList<object>?)e.Evaluate();
 
         Assert.NotNull(result);
         Assert.Equal(0, result[0]);
@@ -221,7 +221,7 @@ public class EvaluationTests
             }
         };
 
-        var result = (IList<object>)e.Evaluate();
+        var result = (IList<object>?)e.Evaluate();
 
         Assert.NotNull(result);
         Assert.Equal(0.51, result[0]);
