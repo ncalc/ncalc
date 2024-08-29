@@ -134,6 +134,9 @@ public static class LogicalExpressionParser
         var @in = Terms.Text("in", true);
         var notIn = Terms.Text("not in", true);
 
+        var like = Terms.Text("like", true);
+        var notLike = Terms.Text("not like", true);
+
         var greater = Terms.Text(">");
         var greaterOrEqual = Terms.Text(">=");
         var lesser = Terms.Text("<");
@@ -391,7 +394,9 @@ public static class LogicalExpressionParser
                     lesser.Then(BinaryExpressionType.Lesser),
                     greater.Then(BinaryExpressionType.Greater),
                     @in.Then(BinaryExpressionType.In),
-                    notIn.Then(BinaryExpressionType.NotIn)
+                    notIn.Then(BinaryExpressionType.NotIn),
+                    like.Then(BinaryExpressionType.Like),
+                    notLike.Then(BinaryExpressionType.NotLike)
                 )
                 .And(shift)))
             .Then(static x =>
