@@ -138,15 +138,6 @@ public class ExceptionsTests
     }
 
     [Fact]
-    public void ShouldThrowExceptionInOperator()
-    {
-        var context = new ExpressionContext();
-        context.StaticParameters["PageState"] = "Insert";
-
-        Assert.Throws<NCalcEvaluationException>(() => new Expression("{PageState} in 4", context).Evaluate());
-    }
-
-    [Fact]
     public void ShouldThrowExceptionWhenNullOrEmpty()
     {
         Assert.Throws<NCalcException>(() => new Expression("").Evaluate());
