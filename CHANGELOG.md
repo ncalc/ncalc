@@ -1,3 +1,7 @@
+# 5.2.4
+* Add `ExpressionOptions.NoStringTypeCoercion` by @alexwarren in https://github.com/ncalc/ncalc/pull/321
+* Add `ExpressionOptions.AllowNullOrEmptyExpressions` by @gumbarros in https://github.com/ncalc/ncalc/pull/322
+
 # 5.2.3
 * Roslynator - PrivateAssets="all" by @Bykiev in https://github.com/ncalc/ncalc/pull/319
 * Fix compiler warnings in NCalc.Tests by @axunonb in https://github.com/ncalc/ncalc/pull/318
