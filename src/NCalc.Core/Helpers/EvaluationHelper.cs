@@ -47,24 +47,27 @@ public static class EvaluationHelper
     /// <exception cref="NCalcEvaluationException">Thrown when the right value is not an enumerable or a string.</exception>
     public static bool In(object? rightValue, object? leftValue, ExpressionContextBase context)
     {
-        switch (rightValue)
+        return rightValue switch
         {
-            case IEnumerable<object?> rightValueEnumerable:
-            {
-                var rightArray = rightValueEnumerable as object[] ?? rightValueEnumerable.ToArray();
+            string rightValueString => rightValueString.Contains(leftValue?.ToString() ?? string.Empty),
+            IEnumerable<object?> rightValueEnumerable => Contains(leftValue, rightValueEnumerable, context),
+            { } rightValueObject => Contains(leftValue, [rightValueObject], context),
+            _ => throw new NCalcEvaluationException(
+                "'in' operator right value must implement IEnumerable, be a string or an object.")
+        };
+    }
 
-                if (rightArray.All(v => v is string))
-                    return rightArray.OfType<string>().Contains(leftValue?.ToString() ?? string.Empty,
-                        TypeHelper.GetStringComparer(context));
+    private static bool Contains(object? leftValue, IEnumerable<object?> rightValue, ExpressionContextBase context)
+    {
+        var rightArray = rightValue as object[] ?? rightValue.ToArray();
 
-                return rightArray.Contains(leftValue);
-            }
-            case string rightValueString:
-                return rightValueString.Contains(leftValue?.ToString() ?? string.Empty);
-            default:
-                throw new NCalcEvaluationException(
-                    "'in' operator right value must implement IEnumerable or be a string.");
+        if (rightArray.All(v => v is string))
+        {
+            return rightArray.OfType<string>().Contains(leftValue?.ToString() ?? string.Empty,
+                TypeHelper.GetStringComparer(context));
         }
+
+        return rightArray.Contains(leftValue);
     }
 
     /// <summary>
