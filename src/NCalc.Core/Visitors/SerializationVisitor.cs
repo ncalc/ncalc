@@ -85,6 +85,26 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             case BinaryExpressionType.RightShift:
                 result.Append(">> ");
                 break;
+            case BinaryExpressionType.Exponentiation:
+                result.Append("** ");
+                break;
+            case BinaryExpressionType.In:
+                result.Append("in ");
+                break;
+            case BinaryExpressionType.NotIn:
+                result.Append("not in ");
+                break;
+            case BinaryExpressionType.Like:
+                result.Append("like ");
+                break;
+            case BinaryExpressionType.NotLike:
+                result.Append("not like ");
+                break;
+            case BinaryExpressionType.Unknown:
+                result.Append("unknown ");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
 
         result.Append(EncapsulateNoValue(expression.RightExpression));
