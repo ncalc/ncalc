@@ -1,3 +1,7 @@
+# 5.2.5
+
+* Added `Like` operator by @gumbarros in https://github.com/ncalc/ncalc/pull/324
+
 # 5.2.4
 * Add `ExpressionOptions.NoStringTypeCoercion` by @alexwarren in https://github.com/ncalc/ncalc/pull/321
 * Add `ExpressionOptions.AllowNullOrEmptyExpressions` by @gumbarros in https://github.com/ncalc/ncalc/pull/322
