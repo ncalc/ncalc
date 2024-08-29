@@ -190,7 +190,7 @@ public static class LogicalExpressionParser
         var populatedList =
             Between(openParen, Separated(comma.Or(semicolon), expression),
                     closeParen.ElseError("Parenthesis not closed."))
-                .Then<LogicalExpression>(values => new LogicalExpressionList(values.ToList()));
+                .Then<LogicalExpression>(values => new LogicalExpressionList(values));
 
         var emptyList = openParen.AndSkip(closeParen).Then<LogicalExpression>(_ => new LogicalExpressionList());
 
