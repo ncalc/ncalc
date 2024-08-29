@@ -50,7 +50,7 @@ public class InOperatorTests
     {
         Assert.Equal(false, new Expression("{PageState} in 4")
         {
-            Parameters = { { "PageState", 4 } }
+            Parameters = { { "PageState", "Insert" } }
         }.Evaluate());
     }
 }
