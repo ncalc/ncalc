@@ -8,21 +8,19 @@
 [![Discord](https://img.shields.io/discord/1237181265426387005?color=5b62ef&label=discord
 )](https://discord.gg/TeJkmXbqFk)
 
-NCalc is a mathematical expression evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
+NCalc is a fast and lightweight expression evaluator library for .NET, designed for flexibility and high performance. It supports a wide range of mathematical and logical operations. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions. NCalc targets .NET 8, .NET Standard 2.0 and NET Framework 4.8.
 
 ## Docs
 Need help or want to learn more? [Check our docs.](https://ncalc.github.io/ncalc)
 
 
-## Project Description
+## Learn more
 
-NCalc is a .NET library for evaluating mathematical expressions. It can handle various types of expressions, including those with static or dynamic parameters, as well as custom functions.
-It is supported by any target framework that accommodates .NET Standard 2.0.
+For additional information on the technique we used to create this framework please read [this article.](https://www.codeproject.com/Articles/18880/State-of-the-Art-Expression-Evaluation)
 
-For additional information on the technique we used to create this framework please read this article: https://www.codeproject.com/Articles/18880/State-of-the-Art-Expression-Evaluation.
-
+## Help
 > [!IMPORTANT]
-> If you need help, please open an issue and include the expression to help us better understand the problem. 
+> If you need help, [please open an issue](https://github.com/ncalc/ncalc/issues/new/choose) and include the expression to help us better understand the problem. 
 > Providing this information will aid in resolving the issue effectively.
 
 ## Getting Started
