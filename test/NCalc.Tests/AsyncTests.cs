@@ -205,4 +205,10 @@ public class AsyncTests
 
         Assert.Equal(6, volume.Evaluate());
     }
+
+    [Fact]
+    public async Task ShouldEvaluateTernaryAsync()
+    {
+        Assert.Equal(42, await new AsyncExpression("1 == 1 ? 42 : 3/0").EvaluateAsync());
+    }
 }
