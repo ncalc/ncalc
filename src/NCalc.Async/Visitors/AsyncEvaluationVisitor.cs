@@ -110,16 +110,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
             case BinaryExpressionType.Exponentiation:
             {
-                if (context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
-                {
-                    BigDecimal @base = new BigDecimal(Convert.ToDecimal(left.Value));
-                    BigInteger exponent = new BigInteger(Convert.ToDecimal(right.Value));
-
-                    return (decimal)BigDecimal.Pow(@base, exponent);
-                }
-
-                return Math.Pow(Convert.ToDouble(await left.Value, context.CultureInfo),
-                    Convert.ToDouble(await right.Value, context.CultureInfo));
+                return MathHelper.Pow(left.Value, right.Value, context);
             }
 
             case BinaryExpressionType.In:

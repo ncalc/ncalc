@@ -105,13 +105,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
             case BinaryExpressionType.Exponentiation:
             {
-                if (!context.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
-                    return Math.Pow(Convert.ToDouble(left.Value, context.CultureInfo),
-                        Convert.ToDouble(right.Value, context.CultureInfo));
-                BigDecimal @base = new BigDecimal(Convert.ToDecimal(left.Value));
-                BigInteger exponent = new BigInteger(Convert.ToDecimal(right.Value));
-
-                return (decimal)BigDecimal.Pow(@base, exponent);
+                return MathHelper.Pow(left.Value, right.Value, context);
             }
 
             case BinaryExpressionType.In:
