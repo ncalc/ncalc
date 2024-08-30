@@ -23,10 +23,10 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
         if (left)
         {
-            return expression.MiddleExpression.Accept(this);
+            return await expression.MiddleExpression.Accept(this);
         }
 
-        return expression.RightExpression.Accept(this);
+        return await expression.RightExpression.Accept(this);
     }
 
     public async ValueTask<object?> Visit(BinaryExpression expression)
@@ -274,8 +274,8 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         return context.AsyncEvaluateParameterHandler?.Invoke(name, args) ?? default;
     }
 
-    private async ValueTask<object?> EvaluateAsync(LogicalExpression expression)
+    private ValueTask<object?> EvaluateAsync(LogicalExpression expression)
     {
-        return await expression.Accept(this);
+        return expression.Accept(this);
     }
 }
