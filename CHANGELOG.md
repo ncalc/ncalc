@@ -1,3 +1,8 @@
+# 5.2.6
+* Allow objects to be used with the `in` operator by @gumbarros in https://github.com/ncalc/ncalc/pull/325
+* Fix ternary operator at NCalcAsync by @gumbarros in https://github.com/ncalc/ncalc/pull/326
+* Code Quality: Remove exponentiation duplicated logic by @gumbarros in https://github.com/ncalc/ncalc/pull/327
+
 # 5.2.5
 
 * Added `Like` operator by @gumbarros in https://github.com/ncalc/ncalc/pull/324
