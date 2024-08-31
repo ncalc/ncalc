@@ -1,6 +1,8 @@
 ﻿using NCalc;
 using NCalc.Exceptions;
 
+AppContext.SetSwitch("NCalc.Logging.EnableConsole",true);
+
 while (true)
 {
     Console.Write("Enter an expression (or type 'exit' to quit): ");
