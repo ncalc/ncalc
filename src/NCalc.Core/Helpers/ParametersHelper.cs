@@ -29,7 +29,9 @@ public static class ParametersHelper
                 var localSize = list.Count;
 
                 if (size == null)
+                {
                     size = localSize;
+                }
                 else if (localSize != size)
                 {
                     throw new NCalcException(
