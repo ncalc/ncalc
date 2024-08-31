@@ -17,7 +17,7 @@ Logging is disabled by default for performance reasons. The default logging conf
   AppContext.SetSwitch("NCalc.Logging.EnableTrace", true);
   ```
 
-These switches provide flexibility, allowing you to control where and how logging data is output.
+These switches provide flexibility, allowing you to control where logging data is output.
 
 #### Dependency Injection
 
