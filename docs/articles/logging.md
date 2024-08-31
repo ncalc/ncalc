@@ -2,15 +2,7 @@
 
 NCalc provides flexible and customizable logging capabilities using [
 `Microsoft.Extensions.Logging`](https://www.nuget.org/packages/Microsoft.Extensions.Logging).
-This allows developers to integrate logging into their applications seamlessly, ensuring that key operations and events
-within the `NCalc` library are tracked and available for troubleshooting or monitoring.
-
-#### Key Features
-
-- **Configurable Logging**: Logging behavior in `NCalc` can be controlled via configuration switches, allowing
-  developers to enable or disable specific logging outputs.
-- **Multiple Logging Providers**: By default, `NCalc` supports logging to the console and to trace sources, which can be
-  extended to other logging providers if needed.
+You can use the built-in configuration or dependency injection to change the log behavior.
 
 #### Default Configuration
 Logging is disabled by default for performance reasons. The default logging configuration can be enabled using the following switches:
