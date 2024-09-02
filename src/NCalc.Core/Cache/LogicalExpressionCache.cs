@@ -1,54 +1,51 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Extensions.Logging;
 using NCalc.Domain;
+using NCalc.Logging;
 
 namespace NCalc.Cache;
 
-public sealed class LogicalExpressionCache : ILogicalExpressionCache
+public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logger) : ILogicalExpressionCache
 {
     private readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
 
     private static LogicalExpressionCache? _instance;
 
-    private LogicalExpressionCache()
-    {
-    }
     public static LogicalExpressionCache GetInstance()
     {
-        return _instance ??= new LogicalExpressionCache();
+        return _instance ??= new LogicalExpressionCache(DefaultLoggerFactory.Value.CreateLogger<LogicalExpressionCache>());
     }
 
     public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)
     {
         logicalExpression = null;
-        if (_compiledExpressions.TryGetValue(expression, out var wr))
-        {
-            if (wr.TryGetTarget(out logicalExpression))
-            {
-                Trace.TraceInformation("Expression retrieved from cache: " + expression);
-                return true;
-            }
-        }
 
-        return false;
+        if (!_compiledExpressions.TryGetValue(expression, out var wr))
+            return false;
+        if (!wr.TryGetTarget(out logicalExpression))
+            return false;
+
+        logger.LogRetrievedFromCache(expression);
+
+        return true;
     }
 
     public void Set(string expression, LogicalExpression logicalExpression)
     {
         _compiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
         ClearCache();
-        Trace.TraceInformation("Expression added to cache: " + expression);
+        logger.LogAddedToCache(expression);
     }
 
     private void ClearCache()
     {
         foreach (var kvp in _compiledExpressions)
         {
-            if (!kvp.Value.TryGetTarget(out _))
+            if (kvp.Value.TryGetTarget(out _))
+                continue;
+
+            if (_compiledExpressions.TryRemove(kvp.Key, out _))
             {
-                if (_compiledExpressions.TryRemove(kvp.Key, out _))
-                {
-                    Trace.TraceInformation("Cache entry released: " + kvp.Key);
-                }
+                logger.LogRemovedFromCache(kvp.Key);
             }
         }
     }

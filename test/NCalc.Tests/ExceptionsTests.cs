@@ -74,8 +74,8 @@ public class ExceptionsTests
     {
         Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#t -chers"));
 
-        var invalidDateException = Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#13/13/2222#"));
-        Assert.IsType<FormatException>(invalidDateException.InnerException);
+        var invalidDateException = Assert.Throws<FormatException>(() => LogicalExpressionFactory.Create("#13/13/2222#"));
+        Assert.IsType<FormatException>(invalidDateException);
 
         //At v4, DateTime is better handled, and this should no longer cause errors.
         // https://github.com/ncalc/ncalc-async/issues/6

@@ -472,7 +472,7 @@ public static class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        if (Parser.TryParse(context, out LogicalExpression result, out ParseError? error))
+        if (Parser.TryParse(context, out var result, out var error))
             return result;
 
         string message;

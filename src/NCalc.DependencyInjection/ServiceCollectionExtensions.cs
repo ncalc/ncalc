@@ -25,6 +25,8 @@ public static class ServiceCollectionExtensions
 
     public static NCalcServiceBuilder AddNCalc(this IServiceCollection services)
     {
+        services.AddLogging();
+
         services.AddVisitors();
 
         services.AddFactories();
@@ -36,7 +38,7 @@ public static class ServiceCollectionExtensions
 
     private static void AddCache(this IServiceCollection services)
     {
-        services.AddSingleton<ILogicalExpressionCache>(_ => LogicalExpressionCache.GetInstance());
+        services.AddSingleton<ILogicalExpressionCache, LogicalExpressionCache>();
     }
 
     private static void AddFactories(this IServiceCollection services)
