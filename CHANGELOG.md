@@ -1,3 +1,7 @@
+# 5.2.7
+* Use `Microsoft.Extensions.Logging` instead of hard-coded logging by @gumbarros in https://github.com/ncalc/ncalc/pull/328
+* `ExpressionOptions.NoStringTypeCoercion` should respect `in` operator by @gumbarros in https://github.com/ncalc/ncalc/pull/329
+
 # 5.2.6
 * Allow objects to be used with the `in` operator by @gumbarros in https://github.com/ncalc/ncalc/pull/325
 * Fix ternary operator at NCalcAsync by @gumbarros in https://github.com/ncalc/ncalc/pull/326
