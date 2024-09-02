@@ -19,4 +19,22 @@ public class NoStringTypeCoercionTests
     {
         Assert.Equal(expected, new Expression(expression, ExpressionOptions.NoStringTypeCoercion).Evaluate());
     }
+
+    [Theory]
+    [InlineData("1 in ('1')", false)]
+    [InlineData("'1' in (1)", false)]
+    [InlineData("1 in ('1',2)", false)]
+    public void ShouldRespectDisabledCoercionAtInOperator(string expression, bool expected)
+    {
+        Assert.Equal(expected, new Expression(expression, ExpressionOptions.NoStringTypeCoercion).Evaluate());
+    }
+
+    [Theory]
+    [InlineData("1 in ('1')", true)]
+    [InlineData("'1' in (1)", true)]
+    [InlineData("1 in ('1',2)", true)]
+    public void ShouldRespectCoercionAtInOperator(string expression, bool expected)
+    {
+        Assert.Equal(expected, new Expression(expression).Evaluate());
+    }
 }

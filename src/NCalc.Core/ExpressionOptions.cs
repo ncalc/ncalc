@@ -9,10 +9,10 @@ public enum ExpressionOptions
     /// <summary>
     /// Specifies that no options are set.
     /// </summary>
-    None = 1 << 0,
+    None = 0,
 
     /// <summary>
-    /// Specifies case-insensitive matching for built-in functions
+    /// Specifies case-insensitive matching for built-in functions.
     /// </summary>
     IgnoreCaseAtBuiltInFunctions = 1 << 1,
 
@@ -47,32 +47,32 @@ public enum ExpressionOptions
     AllowNullParameter = 1 << 7,
 
     /// <summary>
-    /// Use ordinal culture on string compare
+    /// Use ordinal culture on string compare.
     /// </summary>
     OrdinalStringComparer = 1 << 8,
 
     /// <summary>
-    /// Allow calculation with <see cref="bool"/> values
+    /// Allow calculation with <see cref="bool"/> values.
     /// </summary>
     AllowBooleanCalculation = 1 << 9,
 
     /// <summary>
-    /// Check for arithmetic binary operation overflow
+    /// Check for arithmetic binary operation overflow.
     /// </summary>
     OverflowProtection = 1 << 10,
 
     /// <summary>
-    /// Concat values as strings instead of arithmetic addition
+    /// Concat values as strings instead of arithmetic addition.
     /// </summary>
     StringConcat = 1 << 11,
 
     /// <summary>
-    /// Parse single quoted strings as <see cref="char"/>
+    /// Parse single quoted strings as <see cref="char"/>.
     /// </summary>
     AllowCharValues = 1 << 12,
 
     /// <summary>
-    /// Disables coercion of string values to other types
+    /// Disables coercion of string values to other types.
     /// </summary>
     NoStringTypeCoercion = 1 << 13,
 

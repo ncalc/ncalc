@@ -49,7 +49,7 @@ public static class EvaluationHelper
     {
         return rightValue switch
         {
-            string rightValueString => rightValueString.Contains(leftValue?.ToString() ?? string.Empty),
+            string rightValueString => Contains(leftValue, rightValueString, context),
             IEnumerable<object?> rightValueEnumerable => Contains(leftValue, rightValueEnumerable, context),
             { } rightValueObject => Contains(leftValue, [rightValueObject], context),
             _ => throw new NCalcEvaluationException(
@@ -57,17 +57,37 @@ public static class EvaluationHelper
         };
     }
 
+    private static bool Contains(object? leftValue, string rightValue, ExpressionContextBase context)
+    {
+        if (leftValue is not string && context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion))
+        {
+            return false;
+        }
+
+        var leftValueString = leftValue?.ToString() ?? string.Empty;
+
+        return rightValue.Contains(leftValueString);
+    }
+
     private static bool Contains(object? leftValue, IEnumerable<object?> rightValue, ExpressionContextBase context)
     {
         var rightArray = rightValue as object[] ?? rightValue.ToArray();
 
+        var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
+
         if (rightArray.All(v => v is string))
         {
+            if (noStringTypeCoercion && leftValue is not string)
+            {
+                return false;
+            }
+
             return rightArray.OfType<string>().Contains(leftValue?.ToString() ?? string.Empty,
                 TypeHelper.GetStringComparer(context));
         }
 
-        return rightArray.Contains(leftValue);
+        return rightArray.Contains(leftValue,
+            noStringTypeCoercion ? EqualityComparer<object?>.Default : StringCoercionComparer.Default);
     }
 
     /// <summary>
@@ -105,8 +125,8 @@ public static class EvaluationHelper
     public static bool Like(string value, string pattern, ExpressionContextBase context)
     {
         var regexPattern = Regex.Escape(pattern)
-            .Replace("%", ".*")     // % matches zero or more characters
-            .Replace("_", ".");     // _ matches exactly one character
+            .Replace("%", ".*") // % matches zero or more characters
+            .Replace("_", "."); // _ matches exactly one character
 
         var options = context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer)
             ? RegexOptions.IgnoreCase
