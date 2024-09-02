@@ -22,6 +22,8 @@
   href: async.md
 - name: Caching
   href: caching.md
+- name: Logging
+  href: logging.md
 - name: Lambda Compilation
   href: lambda_compilation.md
 - name: Dependency Injection
