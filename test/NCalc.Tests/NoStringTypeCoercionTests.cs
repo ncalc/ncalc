@@ -33,6 +33,12 @@ public class NoStringTypeCoercionTests
     [InlineData("1 in ('1')", true)]
     [InlineData("'1' in (1)", true)]
     [InlineData("1 in ('1',2)", true)]
+    [InlineData("'' in ('')", true)]
+    [InlineData("'' not in ('')", false)]
+    [InlineData("'' in ('','1')", true)]
+    [InlineData("'1' in ('')", false)]
+    [InlineData("'1' in ('', 1)", true)]
+    [InlineData("('1' ='1'  AND '' IN ('6') OR ( '1' ='2'  AND '' IN ('6')) OR ( '1' ='6'  AND '' IN ('6')))", false)]
     public void ShouldRespectCoercionAtInOperator(string expression, bool expected)
     {
         Assert.Equal(expected, new Expression(expression).Evaluate());
