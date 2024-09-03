@@ -1,3 +1,6 @@
+# 5.2.8
+* Fix `in` operator when there is an empty string by @gumbarros in https://github.com/ncalc/ncalc/pull/330
+
 # 5.2.7
 * Use `Microsoft.Extensions.Logging` instead of hard-coded logging by @gumbarros in https://github.com/ncalc/ncalc/pull/328
 * `ExpressionOptions.NoStringTypeCoercion` should respect `in` operator by @gumbarros in https://github.com/ncalc/ncalc/pull/329
