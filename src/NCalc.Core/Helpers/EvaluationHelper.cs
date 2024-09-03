@@ -64,7 +64,13 @@ public static class EvaluationHelper
             return false;
         }
 
-        var leftValueString = leftValue?.ToString() ?? string.Empty;
+        var leftValueString = leftValue?.ToString();
+
+        if (string.IsNullOrEmpty(leftValueString) && string.IsNullOrEmpty(rightValue))
+            return true;
+
+        if (string.IsNullOrEmpty(leftValueString))
+            return false;
 
         return rightValue.Contains(leftValueString);
     }
