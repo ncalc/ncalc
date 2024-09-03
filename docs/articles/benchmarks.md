@@ -51,6 +51,21 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 | LambdaWithCompilation    | 22,926.9179 ns | 161.2515 ns | 142.9452 ns |    3 |      - |    4992 B |
 
 
+## NCalc vs DataTable
+
+[DataTable.Compute](https://learn.microsoft.com/en-us/dotnet/api/system.data.datatable.compute) it's the only way to evaluate expressions at .NET without a third-party library.
+
+BenchmarkDotNet v0.14.0, Ubuntu 24.04 LTS (Noble Numbat)
+AMD Ryzen 5 3600, 1 CPU, 12 logical and 6 physical cores
+.NET SDK 8.0.108
+[Host]     : .NET 8.0.8 (8.0.824.36612), X64 RyuJIT AVX2
+DefaultJob : .NET 8.0.8 (8.0.824.36612), X64 RyuJIT AVX2
+
+| Method            | Mean     | Error     | StdDev    | Median   | Rank | Gen0   | Allocated |
+|------------------ |---------:|----------:|----------:|---------:|-----:|-------:|----------:|
+| EvaluateNCalc     | 1.463 us | 0.0292 us | 0.0671 us | 1.434 us |    1 | 0.2766 |   2.27 KB |
+| EvaluateDataTable | 4.438 us | 0.0295 us | 0.0276 us | 4.440 us |    2 | 0.6790 |   5.58 KB |
+
 # Parlot parser compilation
 
 Parlot parser, which is used as a default parser in NCalc, supports parser compilation. It can improve the performance by 20%. You can find the benchmark results in Parlot [repository](https://github.com/sebastienros/parlot#performance).
