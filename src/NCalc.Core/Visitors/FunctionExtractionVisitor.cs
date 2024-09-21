@@ -25,7 +25,7 @@ public sealed class FunctionExtractionVisitor : ILogicalExpressionVisitor<List<s
                 {
                     if (parameter is not null)
                     {
-                        functions.AddRange( parameter.Accept(this));
+                        functions.AddRange(parameter.Accept(this));
                     }
                 }
             }
