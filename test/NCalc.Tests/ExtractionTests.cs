@@ -78,4 +78,14 @@ public class ExtractionTests
         var functions = expression.GetFunctionNames();
         Assert.Equal(2, functions.Count);
     }
+
+    [Fact]
+    public void ShouldGetNestedFunctionsIssue334()
+    {
+        var expression = new Expression("[a] + GetTimeValue(if([c] > [d]; test([e] > 0; [g]; [h]); [f]); 1; 'sec')");
+        var functions = expression.GetFunctionNames();
+        Assert.Contains("GetTimeValue", functions);
+        Assert.Contains("if", functions);
+        Assert.Contains("test", functions);
+    }
 }

@@ -20,6 +20,14 @@ public sealed class FunctionExtractionVisitor : ILogicalExpressionVisitor<List<s
                 {
                     functions.Add(function.Identifier.Name);
                 }
+
+                foreach (var parameter in function.Parameters)
+                {
+                    if (parameter is not null)
+                    {
+                        functions.AddRange( parameter.Accept(this));
+                    }
+                }
             }
             else
             {
