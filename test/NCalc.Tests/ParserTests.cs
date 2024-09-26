@@ -135,4 +135,10 @@ public class ParserTests
             Assert.Fail("Logical expression is not a function.");
         }
     }
+
+    [Fact]
+    public void OperatorPriorityIssue337()
+    {
+        Assert.True((bool)new Expression("true or true and false").Evaluate()!);
+    }
 }
