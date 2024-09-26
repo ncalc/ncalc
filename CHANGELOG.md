@@ -1,3 +1,7 @@
+# 5.2.9
+* Fix nested functions at `FunctionExtractionVisitor` by @gumbarros in https://github.com/ncalc/ncalc/pull/336
+* Fix logical operator priority by @gumbarros in https://github.com/ncalc/ncalc/pull/338
+
 # 5.2.8
 * Fix `in` operator when there is an empty string by @gumbarros in https://github.com/ncalc/ncalc/pull/330
 
@@ -11,7 +15,6 @@
 * Code Quality: Remove exponentiation duplicated logic by @gumbarros in https://github.com/ncalc/ncalc/pull/327
 
 # 5.2.5
-
 * Added `Like` operator by @gumbarros in https://github.com/ncalc/ncalc/pull/324
 
 # 5.2.4
