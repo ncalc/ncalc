@@ -84,42 +84,71 @@ public static class LogicalExpressionParser
                     long? decimalPart = x.Item3;
                     long? exponentPart = x.Item4;
 
-                    double result = integralValue;
-
-                    // decimal part?
-                    if (decimalPart != null && decimalPart.Value != 0)
-                    {
-                        var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
-                        result += decimalPart.Value / Math.Pow(10, digits);
-                    }
-
-                    // exponent part?
-                    if (exponentPart != null)
-                    {
-                        var left = BigDecimal.Parse(result);
-                        var right = BigDecimal.Pow(10, exponentPart.Value);
-
-                        var res = BigDecimal.Multiply(left, right);
-
-                        if (res > double.MaxValue)
-                            result = double.PositiveInfinity;
-                        else if (res < double.MinValue)
-                            result = double.NegativeInfinity;
-                        else
-                            result = (double)res;
-                    }
-
                     if (((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault))
                     {
-                        return new ValueExpression((decimal)result);
-                    }
+                        decimal result = (decimal)integralValue;
 
-                    if (decimalPart != null || exponentPart != null)
-                    {
+                        // decimal part?
+                        if (decimalPart != null && decimalPart.Value != 0)
+                        {
+                            var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
+                            result += (decimal)decimalPart.Value / (decimal)Math.Pow(10, digits);
+                        }
+
+                        // exponent part?
+                        if (exponentPart != null)
+                        {
+                            var left = BigDecimal.Parse((double)result);
+                            var right = BigDecimal.Pow(10, exponentPart.Value);
+
+                            var res = BigDecimal.Multiply(left, right);
+
+                            if (res > decimal.MaxValue)
+                                // There is no decimal.PositiveInfinity
+                                return new ValueExpression(double.PositiveInfinity);
+                            else if (res < decimal.MinValue)
+                                // There is no decimal.NegativeInfinity
+                                return new ValueExpression(double.NegativeInfinity);
+                            else
+                                result = (decimal)res;
+                        }
+
                         return new ValueExpression(result);
                     }
+                    else
+                    {
+                        double result = integralValue;
 
-                    return new ValueExpression((long)result);
+                        // decimal part?
+                        if (decimalPart != null && decimalPart.Value != 0)
+                        {
+                            var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
+                            result += decimalPart.Value / Math.Pow(10, digits);
+                        }
+
+                        // exponent part?
+                        if (exponentPart != null)
+                        {
+                            var left = BigDecimal.Parse(result);
+                            var right = BigDecimal.Pow(10, exponentPart.Value);
+
+                            var res = BigDecimal.Multiply(left, right);
+
+                            if (res > double.MaxValue)
+                                result = double.PositiveInfinity;
+                            else if (res < double.MinValue)
+                                result = double.NegativeInfinity;
+                            else
+                                result = (double)res;
+                        }
+
+                        if (decimalPart != null || exponentPart != null)
+                        {
+                            return new ValueExpression(result);
+                        }
+
+                        return new ValueExpression((long)result);
+                    }
                 });
 
         var comma = Terms.Char(',');
