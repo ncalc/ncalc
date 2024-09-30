@@ -475,7 +475,7 @@ public static class LogicalExpressionParser
             return new ValueExpression(result);
         }
 
-        return new ValueExpression((long)result);
+        return new ValueExpression(integralValue);
     }
 
     private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
