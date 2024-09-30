@@ -3,14 +3,47 @@ namespace NCalc.Tests;
 [Trait("Category", "Decimals")]
 public class DecimalsTests
 {
-    [Fact]
-    public void Should_Use_Decimal_When_Configured()
+    [Theory]
+    // It's not possible to specify decimal literals in annotations, so here we use
+    // a string to specify the expected results, and parse it to a decimal in the test.
+    [InlineData("12.34", "12.34")]
+    [InlineData("12345678901234567890123456789",  "12345678901234567890123456789")]
+    [InlineData("0.1234567890123456789",          "0.1234567890123456789")]
+    [InlineData("10000000000000000.12",           "10000000000000000.12")]
+    [InlineData("100000000000000000000000000.12", "100000000000000000000000000.12")]
+    [InlineData("123456789012345678901234567.89", "123456789012345678901234567.89")]
+    [InlineData("1234567890.1234567890123456789", "1234567890.1234567890123456789")]
+    public void Should_Correctly_Parse_Large_Decimal_Literals_Issue_335(String expressionStr, String expectedDecimalResultStr)
     {
-        var expression = new Expression("12.34", ExpressionOptions.DecimalAsDefault);
+        // https://github.com/ncalc/ncalc/issues/335
+        var expectedDecimalResult = decimal.Parse(expectedDecimalResultStr);
+        // Ensure that decimal.Parse is working as presumed
+        Assert.Equal(expectedDecimalResult.ToString(), expectedDecimalResultStr);
 
+        var expression = new Expression(expressionStr, ExpressionOptions.DecimalAsDefault);
         var result = expression.Evaluate();
         Assert.IsType<decimal>(result);
-        Assert.Equal(12.34m, result);
+        Assert.Equal(expectedDecimalResult, result);
+    }
+
+    [Fact]
+    public void Should_Return_PositiveInfinity_When_Overflow_Issue_335()
+    {
+        // https://github.com/ncalc/ncalc/issues/335
+        var expression = new Expression("8E28", ExpressionOptions.DecimalAsDefault);
+        var result = expression.Evaluate();
+        Assert.IsType<double>(result);
+        Assert.Equal(double.PositiveInfinity, result);
+    }
+
+    [Fact]
+    public void Should_Return_NegativeInfinity_When_Overflow_Issue_335()
+    {
+        // https://github.com/ncalc/ncalc/issues/335
+        var expression = new Expression("-8E28", ExpressionOptions.DecimalAsDefault);
+        var result = expression.Evaluate();
+        Assert.IsType<double>(result);
+        Assert.Equal(double.NegativeInfinity, result);
     }
 
     [Fact]
