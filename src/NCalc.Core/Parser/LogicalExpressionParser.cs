@@ -77,79 +77,7 @@ public static class LogicalExpressionParser
                         .And(exponentNumberPart)
                         .Then(x => (x.Item1, x.Item2.Item1, x.Item2.Item2, x.Item3))
                 ))
-                .Then<LogicalExpression>((ctx, x) =>
-                {
-                    long integralValue = x.Item1;
-                    int zeroCount = x.Item2;
-                    long? decimalPart = x.Item3;
-                    long? exponentPart = x.Item4;
-
-                    if (((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault))
-                    {
-                        decimal result = (decimal)integralValue;
-
-                        // decimal part?
-                        if (decimalPart != null && decimalPart.Value != 0)
-                        {
-                            var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
-                            result += (decimal)decimalPart.Value / (decimal)Math.Pow(10, digits);
-                        }
-
-                        // exponent part?
-                        if (exponentPart != null)
-                        {
-                            var left = BigDecimal.Parse((double)result);
-                            var right = BigDecimal.Pow(10, exponentPart.Value);
-
-                            var res = BigDecimal.Multiply(left, right);
-
-                            if (res > decimal.MaxValue)
-                                // There is no decimal.PositiveInfinity
-                                return new ValueExpression(double.PositiveInfinity);
-                            else if (res < decimal.MinValue)
-                                // There is no decimal.NegativeInfinity
-                                return new ValueExpression(double.NegativeInfinity);
-                            else
-                                result = (decimal)res;
-                        }
-
-                        return new ValueExpression(result);
-                    }
-                    else
-                    {
-                        double result = integralValue;
-
-                        // decimal part?
-                        if (decimalPart != null && decimalPart.Value != 0)
-                        {
-                            var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
-                            result += decimalPart.Value / Math.Pow(10, digits);
-                        }
-
-                        // exponent part?
-                        if (exponentPart != null)
-                        {
-                            var left = BigDecimal.Parse(result);
-                            var right = BigDecimal.Pow(10, exponentPart.Value);
-
-                            var res = BigDecimal.Multiply(left, right);
-
-                            if (res > double.MaxValue)
-                                result = double.PositiveInfinity;
-                            else if (res < double.MinValue)
-                                result = double.NegativeInfinity;
-                            else
-                                result = (double)res;
-                        }
-
-                        if (decimalPart != null || exponentPart != null)
-                        {
-                            return new ValueExpression(result);
-                        }
-
-                        return new ValueExpression((long)result);
-                    }
-                });
+                .Then(ParseNumber);
 
         var comma = Terms.Char(',');
         var divided = Terms.Text("/");
@@ -428,13 +356,13 @@ public static class LogicalExpressionParser
                     notLike.Then(BinaryExpressionType.NotLike)
                 )
                 .And(shift)))
-            .Then(GetBinaryExpression);
+            .Then(ParseBinaryExpression);
 
         var equality = relational.And(ZeroOrMany(OneOf(
                     equal.Then(BinaryExpressionType.Equal),
                     notEqual.Then(BinaryExpressionType.NotEqual))
                 .And(relational)))
-            .Then(GetBinaryExpression);
+            .Then(ParseBinaryExpression);
 
         var andTypeParser = and.Then(BinaryExpressionType.And)
             .Or(bitwiseAnd.Then(BinaryExpressionType.BitwiseAnd));
@@ -446,14 +374,14 @@ public static class LogicalExpressionParser
 
         // "and" has higher precedence than "or"
         var andParser = equality.And(ZeroOrMany(andTypeParser.And(equality)))
-            .Then(GetBinaryExpression);
+            .Then(ParseBinaryExpression);
 
         var orParser = andParser.And(ZeroOrMany(orTypeParser.And(andParser)))
-            .Then(GetBinaryExpression);
+            .Then(ParseBinaryExpression);
 
         // logical => equality ( ( "and" | "or" | "xor" ) equality )* ;
         var logical = orParser.And(ZeroOrMany(xorTypeParser.And(orParser)))
-            .Then(GetBinaryExpression);
+            .Then(ParseBinaryExpression);
 
         // ternary => logical("?" logical ":" logical) ?
         var ternary = logical.And(ZeroOrOne(questionMark.SkipAnd(logical).AndSkip(colon).And(logical)))
@@ -479,7 +407,78 @@ public static class LogicalExpressionParser
         Parser = enableParserCompilation ? expressionParser.Compile() : expressionParser;
     }
 
-    private static LogicalExpression GetBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
+    private static LogicalExpression ParseNumber(ParseContext context, (long, int, long?, long?) number)
+    {
+        long integralValue = number.Item1;
+        int zeroCount = number.Item2;
+        long? decimalPart = number.Item3;
+        long? exponentPart = number.Item4;
+
+        if (((LogicalExpressionParserContext)context).Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+        {
+            decimal result1 = integralValue;
+
+            // decimal part?
+            if (decimalPart != null && decimalPart.Value != 0)
+            {
+                var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
+                result1 += decimalPart.Value / (decimal)Math.Pow(10, digits);
+            }
+
+            // exponent part?
+            if (exponentPart == null) return new ValueExpression(result1);
+            var left = new BigDecimal(result1);
+            var right = BigDecimal.Pow(10, exponentPart.Value);
+
+            var res = BigDecimal.Multiply(left, right);
+
+            if (res > decimal.MaxValue)
+                // There is no decimal.PositiveInfinity
+                return new ValueExpression(double.PositiveInfinity);
+
+            if (res < decimal.MinValue)
+                // There is no decimal.NegativeInfinity
+                return new ValueExpression(double.NegativeInfinity);
+
+            result1 = (decimal)res;
+
+            return new ValueExpression(result1);
+        }
+
+        double result = integralValue;
+
+        // decimal part?
+        if (decimalPart != null && decimalPart.Value != 0)
+        {
+            var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
+            result += decimalPart.Value / Math.Pow(10, digits);
+        }
+
+        // exponent part?
+        if (exponentPart != null)
+        {
+            var left = BigDecimal.Parse(result);
+            var right = BigDecimal.Pow(10, exponentPart.Value);
+
+            var res = BigDecimal.Multiply(left, right);
+
+            if (res > double.MaxValue)
+                result = double.PositiveInfinity;
+            else if (res < double.MinValue)
+                result = double.NegativeInfinity;
+            else
+                result = (double)res;
+        }
+
+        if (decimalPart != null || exponentPart != null)
+        {
+            return new ValueExpression(result);
+        }
+
+        return new ValueExpression(integralValue);
+    }
+
+    private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
     {
         var result = x.Item1;
 
