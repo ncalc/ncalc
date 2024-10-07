@@ -211,4 +211,10 @@ public class AsyncTests
     {
         Assert.Equal(42, await new AsyncExpression("1 == 1 ? 42 : 3/0").EvaluateAsync());
     }
+
+    [Fact]
+    public async Task ShouldEvaluatePowAsync()
+    {
+        Assert.Equal(4d, await new AsyncExpression("2**2").EvaluateAsync());
+    }
 }

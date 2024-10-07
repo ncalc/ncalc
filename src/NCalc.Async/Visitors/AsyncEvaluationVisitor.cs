@@ -110,7 +110,9 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
             case BinaryExpressionType.Exponentiation:
             {
-                return MathHelper.Pow(left.Value, right.Value, context);
+                var rightValue = await right.Value;
+                var leftValue = await left.Value;
+                return MathHelper.Pow(leftValue, rightValue, context);
             }
 
             case BinaryExpressionType.In:
