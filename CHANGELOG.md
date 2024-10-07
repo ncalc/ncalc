@@ -1,3 +1,8 @@
+# 5.2.10
+* Issue 335 parsing of large decimal literals by @kierantop in https://github.com/ncalc/ncalc/pull/340
+* Improve number parser readability by @gumbarros in https://github.com/ncalc/ncalc/pull/341
+* Fix exponentiation at NCalc.Async by @gumbarros in https://github.com/ncalc/ncalc/pull/343
+
 # 5.2.9
 * Fix nested functions at `FunctionExtractionVisitor` by @gumbarros in https://github.com/ncalc/ncalc/pull/336
 * Fix logical operator priority by @gumbarros in https://github.com/ncalc/ncalc/pull/338
