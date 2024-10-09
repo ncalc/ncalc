@@ -1,0 +1,48 @@
+﻿<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Release" />
+    <BuildType Name="SignedRelease" />
+  </Configurations>
+  <Folder Name="/0. Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="CHANGELOG.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="README.md" />
+    <File Path="version.json" />
+  </Folder>
+  <Folder Name="/0. Solution Items/CI/">
+    <File Path=".github\workflows\publish-nuget.yml" />
+    <File Path=".github\workflows\benchmarks.yml" />
+    <File Path=".github\workflows\build-test.yml" />
+  </Folder>
+  <Folder Name="/1. Docs/">
+    <Project Path="docs\NCalc.Docs.csproj" />
+    <File Path=".github\workflows\docs.yml" />
+  </Folder>
+  <Folder Name="/2. Plugins/">
+    <Project Path="src\NCalc.DependencyInjection\NCalc.DependencyInjection.csproj" Type="Classic C#">
+      <Configuration Solution="SignedRelease|Any CPU" Project="Debug|Any CPU" />
+    </Project>
+    <Project Path="src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj" Type="Classic C#">
+      <Configuration Solution="SignedRelease|Any CPU" Project="Debug|Any CPU" />
+    </Project>
+    <Project Path="src\Plugins\NCalc.MemoryCache\NCalc.MemoryCache.csproj" Type="Classic C#">
+      <Configuration Solution="SignedRelease|Any CPU" Project="Debug|Any CPU" />
+    </Project>
+    <File Path="src\Plugins\Directory.build.props" />
+  </Folder>
+  <Folder Name="/3. Tests and Examples/">
+    <Project Path="test\NCalc.Benchmarks\NCalc.Benchmarks.csproj" Type="Classic C#" />
+    <Project Path="test\NCalc.Play\NCalc.Play.csproj" />
+    <Project Path="test\NCalc.Tests\NCalc.Tests.csproj" />
+  </Folder>
+  <Project Path="src\NCalc.Async\NCalc.Async.csproj" Type="Classic C#">
+    <Configuration Solution="SignedRelease|Any CPU" Project="Debug|Any CPU" />
+  </Project>
+  <Project Path="src\NCalc.Core\NCalc.Core.csproj" Type="Classic C#">
+    <Configuration Solution="SignedRelease|Any CPU" Project="Debug|Any CPU" />
+  </Project>
+  <Project Path="src\NCalc.Sync\NCalc.Sync.csproj" />
+</Solution>
