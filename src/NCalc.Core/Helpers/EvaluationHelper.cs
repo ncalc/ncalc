@@ -24,7 +24,7 @@ public static class EvaluationHelper
         if (context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion) &&
             (leftValue is string || rightValue is string))
         {
-            return string.Concat(leftValue, rightValue);
+            return string.Concat(Convert.ToString(leftValue, context.CultureInfo), Convert.ToString(rightValue, context.CultureInfo));
         }
 
         try
@@ -64,7 +64,7 @@ public static class EvaluationHelper
             return false;
         }
 
-        var leftValueString = leftValue?.ToString();
+        var leftValueString = Convert.ToString(leftValue, CultureInfo.InvariantCulture);
 
         if (string.IsNullOrEmpty(leftValueString) && string.IsNullOrEmpty(rightValue))
             return true;
@@ -88,7 +88,7 @@ public static class EvaluationHelper
                 return false;
             }
 
-            return rightArray.OfType<string>().Contains(leftValue?.ToString() ?? string.Empty,
+            return rightArray.OfType<string>().Contains(Convert.ToString(leftValue, context.CultureInfo) ?? string.Empty,
                 TypeHelper.GetStringComparer(context));
         }
 
