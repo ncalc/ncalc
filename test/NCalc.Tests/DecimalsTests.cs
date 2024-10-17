@@ -16,9 +16,9 @@ public class DecimalsTests
     public void Should_Correctly_Parse_Large_Decimal_Literals_Issue_335(String expressionStr, String expectedDecimalResultStr)
     {
         // https://github.com/ncalc/ncalc/issues/335
-        var expectedDecimalResult = decimal.Parse(expectedDecimalResultStr);
+        var expectedDecimalResult = decimal.Parse(expectedDecimalResultStr, CultureInfo.InvariantCulture);
         // Ensure that decimal.Parse is working as presumed
-        Assert.Equal(expectedDecimalResult.ToString(), expectedDecimalResultStr);
+        Assert.Equal(expectedDecimalResult.ToString(CultureInfo.InvariantCulture), expectedDecimalResultStr);
 
         var expression = new Expression(expressionStr, ExpressionOptions.DecimalAsDefault);
         var result = expression.Evaluate();
