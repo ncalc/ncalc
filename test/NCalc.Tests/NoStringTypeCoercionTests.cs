@@ -17,7 +17,8 @@ public class NoStringTypeCoercionTests
     [InlineData("'10' + 'mA - ' + (10 + 20) + 'mA'", "10mA - 30mA")]
     public void ShouldUseStringConcatenationIfEitherValueIsAString(string expression, object expected)
     {
-        Assert.Equal(expected, new Expression(expression, ExpressionOptions.NoStringTypeCoercion).Evaluate());
+        var res = new Expression(expression, ExpressionOptions.NoStringTypeCoercion, CultureInfo.InvariantCulture).Evaluate();
+        Assert.Equal(expected, res);
     }
 
     [Theory]
