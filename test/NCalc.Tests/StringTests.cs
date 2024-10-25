@@ -40,4 +40,15 @@ public class StringTests
     {
         Assert.Equal(3m, new Expression(expr, ExpressionOptions.DecimalAsDefault).Evaluate());
     }
+
+    [Theory]
+    [InlineData("'' == 01", false)]
+    [InlineData("' ' == 01", false)]
+    [InlineData("\" \" == 01", false)]
+    [InlineData("'' == ''", true)]
+    public void ShouldCompareEmptyString(string expr, bool expected)
+    {
+        var e = new Expression(expr, ExpressionOptions.None);
+        Assert.Equal(expected, e.Evaluate());
+    }
 }

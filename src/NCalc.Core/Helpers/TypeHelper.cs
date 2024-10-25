@@ -126,12 +126,21 @@ public static class TypeHelper
 
     public static int CompareUsingMostPreciseType(object? a, object? b, ComparisonOptions options)
     {
+        var comparer = GetStringComparer(options);
+
+        if (a is string || b is string)
+        {
+            string? strA = Convert.ToString(a, options.CultureInfo);
+            string? strB = Convert.ToString(b, options.CultureInfo);
+
+            if (string.IsNullOrWhiteSpace(strA) || string.IsNullOrWhiteSpace(strB))
+                return comparer.Compare(strA, strB);
+        }
+
         var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
 
         var aValue = a != null ? Convert.ChangeType(a, mpt, options.CultureInfo) : null;
         var bValue = b != null ? Convert.ChangeType(b, mpt, options.CultureInfo) : null;
-
-        var comparer = GetStringComparer(options);
 
         return comparer.Compare(aValue, bValue);
     }
