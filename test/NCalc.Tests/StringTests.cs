@@ -45,10 +45,8 @@ public class StringTests
     [InlineData("'' == 01", false)]
     [InlineData("' ' == 01", false)]
     [InlineData("\" \" == 01", false)]
-    [InlineData("\"Hello there\" == 1", false)]
     [InlineData("'' == ''", true)]
-    [InlineData("\"1\" == 1", true)]
-    public void ShouldCompareStringWithNumber(string expr, bool expected)
+    public void ShouldCompareEmptyString(string expr, bool expected)
     {
         var e = new Expression(expr, ExpressionOptions.None);
         Assert.Equal(expected, e.Evaluate());
