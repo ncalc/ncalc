@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-using ExtendedNumerics;
-using NCalc.Domain;
+﻿using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
@@ -47,31 +45,22 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                     ? MathHelper.Divide(left.Value, right.Value, context)
                     : MathHelper.Divide(Convert.ToDouble(left.Value, context.CultureInfo), right.Value,
                         context);
-
             case BinaryExpressionType.Equal:
-                return CompareUsingMostPreciseType(left.Value, right.Value) == 0;
-
+                return Compare(left.Value, right.Value, ComparisonType.Equal);
             case BinaryExpressionType.Greater:
-                return CompareUsingMostPreciseType(left.Value, right.Value) > 0;
-
+                return Compare(left.Value, right.Value, ComparisonType.Greater);
             case BinaryExpressionType.GreaterOrEqual:
-                return CompareUsingMostPreciseType(left.Value, right.Value) >= 0;
-
+                return Compare(left.Value, right.Value, ComparisonType.GreaterOrEqual);
             case BinaryExpressionType.Lesser:
-                return CompareUsingMostPreciseType(left.Value, right.Value) < 0;
-
+                return Compare(left.Value, right.Value, ComparisonType.Lesser);
             case BinaryExpressionType.LesserOrEqual:
-                return CompareUsingMostPreciseType(left.Value, right.Value) <= 0;
-
+                return Compare(left.Value, right.Value, ComparisonType.LesserOrEqual);
+            case BinaryExpressionType.NotEqual:
+                return Compare(left.Value, right.Value, ComparisonType.NotEqual);
             case BinaryExpressionType.Minus:
                 return MathHelper.Subtract(left.Value, right.Value, context);
-
             case BinaryExpressionType.Modulo:
                 return MathHelper.Modulo(left.Value, right.Value, context);
-
-            case BinaryExpressionType.NotEqual:
-                return CompareUsingMostPreciseType(left.Value, right.Value) != 0;
-
             case BinaryExpressionType.Plus:
             {
                 var leftValue = left.Value;
@@ -242,9 +231,23 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         return result;
     }
 
-    protected int CompareUsingMostPreciseType(object? a, object? b)
+    protected bool Compare(object? a, object? b, ComparisonType comparisonType)
     {
-        return TypeHelper.CompareUsingMostPreciseType(a, b, context);
+        if (context.Options.HasFlag(ExpressionOptions.StrictTypeMatching) && a?.GetType() != b?.GetType())
+            return false;
+
+        var result = CompareUsingMostPreciseType(a, b, context);
+
+        return comparisonType switch
+        {
+            ComparisonType.Equal => result == 0,
+            ComparisonType.Greater => result > 0,
+            ComparisonType.GreaterOrEqual => result >= 0,
+            ComparisonType.Lesser => result < 0,
+            ComparisonType.LesserOrEqual => result <= 0,
+            ComparisonType.NotEqual => result != 0,
+            _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
+        };
     }
 
     protected void OnEvaluateFunction(string name, FunctionArgs args)
