@@ -79,5 +79,10 @@ public enum ExpressionOptions
     /// <summary>
     /// Return the value instead of throwing an exception when the expression is null or empty.
     /// </summary>
-    AllowNullOrEmptyExpressions = 1 << 14
+    AllowNullOrEmptyExpressions = 1 << 14,
+
+    /// <summary>
+    /// Enables strict type matching, where comparisons between objects of different types will return false.
+    /// </summary>
+    StrictTypeMatching = 1 << 15
 }
