@@ -1,3 +1,8 @@
+# 5.2.11
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/346
+* Fix culture support with NoStringTypeCoercion by @Bykiev in https://github.com/ncalc/ncalc/pull/347
+* Added `ExpressionOptions.StrictTypeMatching` by @gumbarros in https://github.com/ncalc/ncalc/pull/351
+
 # 5.2.10
 * Issue 335 parsing of large decimal literals by @kierantop in https://github.com/ncalc/ncalc/pull/340
 * Improve number parser readability by @gumbarros in https://github.com/ncalc/ncalc/pull/341
