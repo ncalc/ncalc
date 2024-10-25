@@ -133,8 +133,7 @@ public static class TypeHelper
             string? strA = Convert.ToString(a, options.CultureInfo);
             string? strB = Convert.ToString(b, options.CultureInfo);
 
-            if (string.IsNullOrWhiteSpace(strA) || string.IsNullOrWhiteSpace(strB))
-                return comparer.Compare(strA, strB);
+            return comparer.Compare(strA, strB);
         }
 
         var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
