@@ -18,6 +18,8 @@
   href: overflow_protection.md
 - name: String Concatenation
   href: string_concatenation.md
+- name: Strict Type Matching
+  href: strict_type_matching.md
 - name: Async Support
   href: async.md
 - name: Caching
