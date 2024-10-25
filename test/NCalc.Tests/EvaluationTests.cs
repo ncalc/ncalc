@@ -237,4 +237,13 @@ public class EvaluationTests
         Assert.Equal("", new Expression("", ExpressionOptions.AllowNullOrEmptyExpressions).Evaluate());
         Assert.Null(new Expression((string?)null, ExpressionOptions.AllowNullOrEmptyExpressions).Evaluate());
     }
+    [Theory]
+    [InlineData("01 == ''")]
+    [InlineData("' ' == 01")]
+    [InlineData("\" \" == 01")]
+    [InlineData("\"dog\" == 01")]
+    public void ShouldUseStrictTypeMatching(string expression)
+    {
+        Assert.False(new Expression(expression, ExpressionOptions.StrictTypeMatching).Evaluate() as bool?);
+    }
 }
