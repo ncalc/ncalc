@@ -15,130 +15,148 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public string Visit(TernaryExpression expression)
     {
-        string result = EncapsulateNoValue(expression.LeftExpression) + "? ";
-        result += EncapsulateNoValue(expression.MiddleExpression) + ": ";
-        result += EncapsulateNoValue(expression.RightExpression);
-
-        return result;
+        var result = new StringBuilder();
+        result.Append(EncapsulateNoValue(expression.LeftExpression));
+        result.Append("? ");
+        result.Append(EncapsulateNoValue(expression.MiddleExpression));
+        result.Append(": ");
+        result.Append(EncapsulateNoValue(expression.RightExpression));
+        return result.ToString();
     }
 
     public string Visit(BinaryExpression expression)
     {
-        string result = EncapsulateNoValue(expression.LeftExpression);
+        var result = new StringBuilder();
+        result.Append(EncapsulateNoValue(expression.LeftExpression));
 
         switch (expression.Type)
         {
             case BinaryExpressionType.And:
-                result += "and ";
+                result.Append("and ");
                 break;
             case BinaryExpressionType.Or:
-                result += "or ";
+                result.Append("or ");
                 break;
             case BinaryExpressionType.Div:
-                result += "/ ";
+                result.Append("/ ");
                 break;
             case BinaryExpressionType.Equal:
-                result += "= ";
+                result.Append("= ");
                 break;
             case BinaryExpressionType.Greater:
-                result += "> ";
+                result.Append("> ");
                 break;
             case BinaryExpressionType.GreaterOrEqual:
-                result += ">= ";
+                result.Append(">= ");
                 break;
             case BinaryExpressionType.Lesser:
-                result += "< ";
+                result.Append("< ");
                 break;
             case BinaryExpressionType.LesserOrEqual:
-                result += "<= ";
+                result.Append("<= ");
                 break;
             case BinaryExpressionType.Minus:
-                result += "- ";
+                result.Append("- ");
                 break;
             case BinaryExpressionType.Modulo:
-                result += "% ";
+                result.Append("% ");
                 break;
             case BinaryExpressionType.NotEqual:
-                result += "!= ";
+                result.Append("!= ");
                 break;
             case BinaryExpressionType.Plus:
-                result += "+ ";
+                result.Append("+ ");
                 break;
             case BinaryExpressionType.Times:
-                result += "* ";
+                result.Append("* ");
                 break;
             case BinaryExpressionType.BitwiseAnd:
-                result += "& ";
+                result.Append("& ");
                 break;
             case BinaryExpressionType.BitwiseOr:
-                result += "| ";
+                result.Append("| ");
                 break;
             case BinaryExpressionType.BitwiseXOr:
-                result += "^ ";
+                result.Append("^ ");
                 break;
             case BinaryExpressionType.LeftShift:
-                result += "<< ";
+                result.Append("<< ");
                 break;
             case BinaryExpressionType.RightShift:
-                result += ">> ";
+                result.Append(">> ");
                 break;
             case BinaryExpressionType.Exponentiation:
-                result += "** ";
+                result.Append("** ");
                 break;
             case BinaryExpressionType.In:
-                result += "in ";
+                result.Append("in ");
                 break;
             case BinaryExpressionType.NotIn:
-                result += "not in ";
+                result.Append("not in ");
                 break;
             case BinaryExpressionType.Like:
-                result += "like ";
+                result.Append("like ");
                 break;
             case BinaryExpressionType.NotLike:
-                result += "not like ";
+                result.Append("not like ");
                 break;
             case BinaryExpressionType.Unknown:
-                result += "unknown ";
+                result.Append("unknown ");
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
 
-        result += EncapsulateNoValue(expression.RightExpression);
-        return result;
+        result.Append(EncapsulateNoValue(expression.RightExpression));
+        return result.ToString();
     }
 
     public string Visit(UnaryExpression expression)
     {
-        string result = "";
+        var result = new StringBuilder();
 
         switch (expression.Type)
         {
             case UnaryExpressionType.Not:
-                result = "!";
+                result.Append('!');
                 break;
             case UnaryExpressionType.Negate:
-                result = "-";
+                result.Append('-');
                 break;
             case UnaryExpressionType.BitwiseNot:
-                result = "~";
+                result.Append('~');
                 break;
         }
 
-        result += EncapsulateNoValue(expression.Expression);
-        return result;
+        result.Append(EncapsulateNoValue(expression.Expression));
+        return result.ToString();
     }
 
     public string Visit(ValueExpression expression)
     {
-        return expression.Type switch
+        var result = new StringBuilder();
+
+        switch (expression.Type)
         {
-            ValueType.Boolean or ValueType.Integer => $"{expression.Value} ",
-            ValueType.DateTime or ValueType.TimeSpan => $"#{expression.Value}# ",
-            ValueType.Float => $"{decimal.Parse(expression.Value?.ToString() ?? string.Empty).ToString(_numberFormatInfo)} ",
-            ValueType.String or ValueType.Char => $"'{expression.Value}' ",
-            _ => "",
-        };
+            case ValueType.Boolean:
+                result.Append(expression.Value).Append(' ');
+                break;
+            case ValueType.DateTime or ValueType.TimeSpan:
+                result.Append('#').Append(expression.Value).Append('#').Append(' ');
+                break;
+            case ValueType.Float:
+                result.Append(decimal.Parse(expression.Value?.ToString() ?? string.Empty).ToString(_numberFormatInfo))
+                    .Append(' ');
+                break;
+            case ValueType.Integer:
+                result.Append(expression.Value).Append(' ');
+                break;
+            case ValueType.String or ValueType.Char:
+                result.Append('\'').Append(expression.Value).Append('\'').Append(' ');
+                break;
+        }
+
+        return result.ToString();
     }
 
     public string Visit(Function function)
@@ -165,7 +183,9 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public string Visit(Identifier identifier)
     {
-        return $"[{identifier.Name}] ";
+        var result = new StringBuilder();
+        result.Append('[').Append(identifier.Name).Append("] ");
+        return result.ToString();
     }
 
     public string Visit(LogicalExpressionList list)
@@ -191,7 +211,15 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             return valueExpression.Accept(this);
         }
 
-        string result = expression.Accept(this);
-        return $"({result.TrimEnd(' ')}) ";
+        var result = new StringBuilder();
+        result.Append('(');
+        result.Append(expression.Accept(this));
+
+        // trim spaces before adding a closing paren
+        while (result[^1] == ' ')
+            result.Remove(result.Length - 1, 1);
+
+        result.Append(") ");
+        return result.ToString();
     }
 }
