@@ -94,7 +94,7 @@ public static class TypeHelper
     }
 
     /// <summary>
-    /// Gets the the most precise number type.
+    /// Gets the most precise number type.
     /// </summary>
     /// <param name="a">Type a.</param>
     /// <param name="b">Type b.</param>

@@ -1,6 +1,4 @@
-﻿#nullable disable
-
-using System.Collections.Frozen;
+﻿using System.Collections.Frozen;
 
 namespace NCalc.Helpers;
 
@@ -8,7 +6,7 @@ public static class MathFunctionHelper
 {
     private static MathMethodInfo GetMathMethodInfo(string method, int argCount) => new()
     {
-        MethodInfo = typeof(Math).GetMethod(method, Enumerable.Repeat(typeof(double), argCount).ToArray()),
+        MethodInfo = typeof(Math).GetMethod(method, Enumerable.Repeat(typeof(double), argCount).ToArray())!,
         ArgumentCount = argCount
     };
 
@@ -41,7 +39,7 @@ public static class MathFunctionHelper
                 "ROUND", new MathMethodInfo
                 {
                     MethodInfo = typeof(Math).GetMethod(nameof(Math.Round),
-                        [typeof(double), typeof(int), typeof(MidpointRounding)]),
+                        [typeof(double), typeof(int), typeof(MidpointRounding)])!,
                     ArgumentCount = 2
                 }
             }

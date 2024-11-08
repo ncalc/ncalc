@@ -1,4 +1,3 @@
-#nullable disable
 using System.Reflection;
 
 namespace NCalc.Helpers;

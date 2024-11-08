@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using NCalc.Cache;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Logging;
@@ -35,8 +34,6 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
     public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
     {
         var parserContext = new LogicalExpressionParserContext(expression, options);
-        var logicalExpression = LogicalExpressionParser.Parse(parserContext);
-
-        return logicalExpression;
+        return LogicalExpressionParser.Parse(parserContext);
     }
 }
