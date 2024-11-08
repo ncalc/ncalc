@@ -1,7 +1,6 @@
-﻿#nullable disable
-
-using System.Reflection;
+﻿using System.Reflection;
 using NCalc.Domain;
+using NCalc.Exceptions;
 using NCalc.Helpers;
 using NCalc.Reflection;
 using Linq = System.Linq.Expressions;
@@ -12,8 +11,8 @@ namespace NCalc.Visitors;
 
 public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpression>
 {
-    private readonly IDictionary<string, object> _parameters;
-    private readonly LinqExpression _context;
+    private readonly IDictionary<string, object?>? _parameters;
+    private readonly LinqExpression? _context;
     private readonly ExpressionOptions _options;
     private readonly bool _ordinalStringComparer;
     private readonly bool _caseInsensitiveStringComparer;
@@ -27,7 +26,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         _caseInsensitiveStringComparer = _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
     }
 
-    public LambdaExpressionVisitor(IDictionary<string, object> parameters, ExpressionOptions options) : this(options)
+    public LambdaExpressionVisitor(IDictionary<string, object?> parameters, ExpressionOptions options) : this(options)
     {
         _parameters = parameters;
     }
@@ -124,12 +123,12 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             var items = LinqExpression.NewArrayInit(args[0].Type,
                 new ArraySegment<LinqExpression>(args, 1, args.Length - 1));
             var smi = typeof(Array).GetRuntimeMethod("IndexOf", [typeof(Array), typeof(object)]);
-            var r = LinqExpression.Call(smi, LinqExpression.Convert(items, typeof(Array)),
+            var r = LinqExpression.Call(smi!, LinqExpression.Convert(items, typeof(Array)),
                 LinqExpression.Convert(args[0], typeof(object)));
             return LinqExpression.GreaterThanOrEqual(r, LinqExpression.Constant(0));
         }
 
-        //Context methods take precedence over built-in functions because they're user-customisable.
+        //Context methods take precedence over built-in functions because they're user-customizable.
         var mi = FindMethod(function.Identifier.Name, args);
         if (mi != null)
         {
@@ -194,14 +193,19 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         }
     }
 
-    public LinqExpression Visit(Identifier function)
+    public LinqExpression Visit(Identifier identifier)
     {
+        var identifierName = identifier.Name;
+
         if (_context == null)
         {
-            return LinqExpression.Constant(_parameters[function.Name]);
+            if (_parameters != null && _parameters.TryGetValue(identifierName, out var param))
+                return LinqExpression.Constant(param);
+
+            throw new NCalcParameterNotDefinedException(identifierName);
         }
 
-        return LinqExpression.PropertyOrField(_context, function.Name);
+        return LinqExpression.PropertyOrField(_context, identifierName);
     }
 
     public LinqExpression Visit(LogicalExpressionList list)
@@ -209,49 +213,55 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         throw new NotSupportedException("Collections are not supported for Lambda expressions yet. Please open a issue at https://www.github.com/ncalc/ncalc if you want this support.");
     }
 
-    private ExtendedMethodInfo FindMethod(string methodName, LinqExpression[] methodArgs)
+    private ExtendedMethodInfo? FindMethod(string methodName, LinqExpression[] methodArgs)
     {
         if (_context == null)
             return null;
 
         var contextTypeInfo = _context.Type.GetTypeInfo();
         var objectTypeInfo = typeof(object).GetTypeInfo();
+
         do
         {
             var methods = contextTypeInfo.DeclaredMethods.Where(m =>
                 m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase) && m.IsPublic && !m.IsStatic);
+
             var candidates = new List<ExtendedMethodInfo>();
+
             foreach (var potentialMethod in methods)
             {
                 var methodParams = potentialMethod.GetParameters();
                 var preparedArguments = LinqUtils.PrepareMethodArgumentsIfValid(methodParams, methodArgs);
 
-                if (preparedArguments == null)
-                    continue;
-
-                var candidate = new ExtendedMethodInfo
+                if (preparedArguments != null)
                 {
-                    MethodInfo = potentialMethod,
-                    PreparedArguments = preparedArguments.Item2,
-                    Score = preparedArguments.Item1
-                };
+                    var candidate = new ExtendedMethodInfo
+                    {
+                        MethodInfo = potentialMethod,
+                        PreparedArguments = preparedArguments.Item2,
+                        Score = preparedArguments.Item1
+                    };
 
-                if (candidate.Score == 0)
-                    return candidate;
-                candidates.Add(candidate);
+                    if (candidate.Score == 0)
+                        return candidate;
+
+                    candidates.Add(candidate);
+                }
             }
 
             if (candidates.Count != 0)
                 return candidates.OrderBy(method => method.Score).First();
-            contextTypeInfo = contextTypeInfo.BaseType.GetTypeInfo();
-        } while (contextTypeInfo != objectTypeInfo);
+
+            contextTypeInfo = contextTypeInfo.BaseType?.GetTypeInfo();
+        }
+        while (contextTypeInfo != null && contextTypeInfo != objectTypeInfo);
 
         return null;
     }
 
     private LinqExpression WithCommonNumericType(LinqExpression left, LinqExpression right,
         Func<LinqExpression, LinqExpression, LinqExpression> action,
-        BinaryExpressionType expressiontype = BinaryExpressionType.Unknown)
+        BinaryExpressionType expressionType = BinaryExpressionType.Unknown)
     {
         left = LinqUtils.UnwrapNullable(left);
         right = LinqUtils.UnwrapNullable(right);
@@ -290,44 +300,46 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 _ordinalStringComparer ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase");
         }
         else
+        {
             comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
+        }
 
         if (typeof(string) != left.Type && typeof(string) != right.Type)
             return action(left, right);
 
-        switch (expressiontype)
+        switch (expressionType)
         {
             case BinaryExpressionType.Equal:
                 return LinqExpression.Call(comparer,
-                    typeof(StringComparer).GetRuntimeMethod("Equals", [typeof(string), typeof(string)]),
+                    typeof(StringComparer).GetRuntimeMethod("Equals", [typeof(string), typeof(string)])!,
                     [left, right]);
             case BinaryExpressionType.NotEqual:
                 return LinqExpression.Not(LinqExpression.Call(comparer,
-                    typeof(StringComparer).GetRuntimeMethod("Equals", [typeof(string), typeof(string)]),
+                    typeof(StringComparer).GetRuntimeMethod("Equals", [typeof(string), typeof(string)])!,
                     [left, right]));
             case BinaryExpressionType.GreaterOrEqual:
                 return LinqExpression.GreaterThanOrEqual(
                     LinqExpression.Call(comparer,
                         typeof(StringComparer).GetRuntimeMethod("Compare",
-                            [typeof(string), typeof(string)]), [left, right]),
+                            [typeof(string), typeof(string)])!, [left, right]),
                     LinqExpression.Constant(0));
             case BinaryExpressionType.LesserOrEqual:
                 return LinqExpression.LessThanOrEqual(
                     LinqExpression.Call(comparer,
                         typeof(StringComparer).GetRuntimeMethod("Compare",
-                            [typeof(string), typeof(string)]), [left, right]),
+                            [typeof(string), typeof(string)])!, [left, right]),
                     LinqExpression.Constant(0));
             case BinaryExpressionType.Greater:
                 return LinqExpression.GreaterThan(
                     LinqExpression.Call(comparer,
                         typeof(StringComparer).GetRuntimeMethod("Compare",
-                            [typeof(string), typeof(string)]), [left, right]),
+                            [typeof(string), typeof(string)])!, [left, right]),
                     LinqExpression.Constant(0));
             case BinaryExpressionType.Lesser:
                 return LinqExpression.LessThan(
                     LinqExpression.Call(comparer,
                         typeof(StringComparer).GetRuntimeMethod("Compare",
-                            [typeof(string), typeof(string)]), [left, right]),
+                            [typeof(string), typeof(string)])!, [left, right]),
                     LinqExpression.Constant(0));
         }
 
