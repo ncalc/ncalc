@@ -139,9 +139,6 @@ public static class MathHelper
 
     public static object? Max(object? a, object? b, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
-
         if (a == null && b == null)
         {
             return null;
@@ -157,7 +154,10 @@ public static class MathHelper
             return a;
         }
 
-        TypeCode typeCode = ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+
+        var typeCode = ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
 
         return typeCode switch
         {
@@ -185,9 +185,6 @@ public static class MathHelper
     {
         var cultureInfo = options.CultureInfo;
 
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
-
         if (a == null && b == null)
         {
             return null;
@@ -202,6 +199,9 @@ public static class MathHelper
         {
             return a;
         }
+
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
 
         var typeCode = ConvertToHighestPrecision(ref a, ref b, cultureInfo);
 
@@ -281,163 +281,131 @@ public static class MathHelper
 
     public static object Abs(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-
         if (options.DecimalAsDefault)
-            return Math.Abs(Convert.ToDecimal(a));
+            return Math.Abs(ConvertToDecimal(a, options));
 
-        return Math.Abs(Convert.ToDouble(a));
+        return Math.Abs(ConvertToDouble(a, options));
     }
 
     public static object Acos(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        return Math.Acos(Convert.ToDouble(a));
+        return Math.Acos(ConvertToDouble(a, options));
     }
 
     public static object Asin(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        return Math.Asin(Convert.ToDouble(a));
+        return Math.Asin(ConvertToDouble(a, options));
     }
 
     public static object Atan(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-
-        return Math.Atan(Convert.ToDouble(a));
+        return Math.Atan(ConvertToDouble(a, options));
     }
 
     public static object Atan2(object? a, object? b, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
-        return Math.Atan2(Convert.ToDouble(a), Convert.ToDouble(b));
+        return Math.Atan2(ConvertToDouble(a, options), ConvertToDouble(b, options));
     }
 
     public static object Ceiling(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-
         if (options.DecimalAsDefault)
-            return Math.Ceiling(Convert.ToDecimal(a));
+            return Math.Ceiling(ConvertToDecimal(a, options));
 
-        return Math.Ceiling(Convert.ToDouble(a));
+        return Math.Ceiling(ConvertToDouble(a, options));
     }
 
     public static object Cos(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        return Math.Cos(Convert.ToDouble(a));
+        return Math.Cos(ConvertToDouble(a, options));
     }
 
     public static object Exp(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        return Math.Exp(Convert.ToDouble(a));
+        return Math.Exp(ConvertToDouble(a, options));
     }
 
     public static object Floor(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-
         if (options.DecimalAsDefault)
-            return Math.Floor(Convert.ToDecimal(a));
+            return Math.Floor(ConvertToDecimal(a, options));
 
-        return Math.Floor(Convert.ToDouble(a));
+        return Math.Floor(ConvertToDouble(a, options));
     }
 
     // ReSharper disable once InconsistentNaming
     public static object IEEERemainder(object? a, object? b, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
-        return Math.IEEERemainder(Convert.ToDouble(a), Convert.ToDouble(b));
+        return Math.IEEERemainder(ConvertToDouble(a, options), ConvertToDouble(b, options));
     }
 
     public static object Ln(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        return Math.Log(Convert.ToDouble(a));
+        return Math.Log(ConvertToDouble(a, options));
     }
 
     public static object Log(object? a, object? b, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
-        return Math.Log(Convert.ToDouble(a), Convert.ToDouble(b));
+        return Math.Log(ConvertToDouble(a, options), ConvertToDouble(b, options));
     }
 
     public static object Log10(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        return Math.Log10(Convert.ToDouble(a));
+        return Math.Log10(ConvertToDouble(a, options));
     }
 
     public static object Pow(object? a, object? b, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
-
         if (options.DecimalAsDefault)
         {
-            BigDecimal @base = new BigDecimal(Convert.ToDecimal(a));
-            BigInteger exponent = new BigInteger(Convert.ToDecimal(b));
+            var @base = new BigDecimal(ConvertToDecimal(a, options));
+            var exponent = new BigInteger(ConvertToDecimal(b, options));
 
             return (decimal)BigDecimal.Pow(@base, exponent);
         }
 
-        return Math.Pow(Convert.ToDouble(a), Convert.ToDouble(b));
+        return Math.Pow(ConvertToDouble(a, options), ConvertToDouble(b, options));
     }
 
     public static object Round(object? a, object? b, MidpointRounding rounding, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
         if (options.DecimalAsDefault)
-            return Math.Round(Convert.ToDecimal(a), Convert.ToInt16(b), rounding);
+            return Math.Round(ConvertToDecimal(a, options), Convert.ToInt16(b), rounding);
 
-        return Math.Round(Convert.ToDouble(a), Convert.ToInt16(b), rounding);
+        return Math.Round(ConvertToDouble(a, options), Convert.ToInt16(b), rounding);
     }
 
     public static object Sign(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-
         if (options.DecimalAsDefault)
-            return Math.Sign(Convert.ToDecimal(a));
+            return Math.Sign(ConvertToDecimal(a, options));
 
-        return Math.Sign(Convert.ToDouble(a));
+        return Math.Sign(ConvertToDouble(a, options));
     }
 
     public static object Sin(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        return Math.Sin(Convert.ToDouble(a));
+        return Math.Sin(ConvertToDouble(a, options));
     }
 
     public static object Sqrt(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-        return Math.Sqrt(Convert.ToDouble(a));
+        return Math.Sqrt(ConvertToDouble(a, options));
     }
 
     public static object Tan(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-
-        return Math.Tan(Convert.ToDouble(a));
+        return Math.Tan(ConvertToDouble(a, options));
     }
 
     public static object Truncate(object? a, MathHelperOptions options)
     {
-        a = ConvertIfNeeded(a, options);
-
         if (options.DecimalAsDefault)
-            return Math.Truncate(Convert.ToDecimal(a));
+            return Math.Truncate(ConvertToDecimal(a, options));
 
-        return Math.Truncate(Convert.ToDouble(a));
+        return Math.Truncate(ConvertToDouble(a, options));
     }
 
     private static object? ConvertIfNeeded(object? value, MathHelperOptions options)
@@ -450,6 +418,26 @@ public static class MathHelper
             string => double.Parse(value.ToString()!, options.CultureInfo),
             bool boolean when options.AllowBooleanCalculation => boolean ? 1 : 0,
             _ => value
+        };
+    }
+
+    private static double ConvertToDouble(object? value, MathHelperOptions options)
+    {
+        return value switch
+        {
+            char => Convert.ToDouble(value.ToString(), options.CultureInfo),
+            double => (double)value,
+            _ => Convert.ToDouble(value, options.CultureInfo)
+        };
+    }
+
+    private static decimal ConvertToDecimal(object? value, MathHelperOptions options)
+    {
+        return value switch
+        {
+            char => Convert.ToDecimal(value?.ToString()!, options.CultureInfo),
+            decimal => (decimal)value,
+            _ => Convert.ToDecimal(value, options.CultureInfo)
         };
     }
 
