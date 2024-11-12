@@ -159,12 +159,12 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
 
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
-                arg1 = LinqExpression.Convert(args[0], typeof(double));
+                arg1 = LinqExpression.Convert(args[1], typeof(double));
 
                 if (_options == ExpressionOptions.DecimalAsDefault)
                 {
-                    var @base = LinqExpression.Convert(args[0], typeof(BigDecimal));
-                    var exponent = LinqExpression.Convert(args[1], typeof(BigInteger));
+                    var @base = LinqExpression.Convert(arg0, typeof(BigDecimal));
+                    var exponent = LinqExpression.Convert(arg1, typeof(BigInteger));
 
                     var methodInfo = typeof(BigDecimal).GetMethod("Pow", [typeof(BigDecimal), typeof(BigInteger)]);
                     if (methodInfo != null)
