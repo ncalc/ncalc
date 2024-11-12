@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Numerics;
+using System.Reflection;
+using ExtendedNumerics;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Helpers;
@@ -155,8 +157,23 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 return LinqExpression.Condition(LinqExpression.LessThan(arg0, arg1), arg0, arg1);
             case "POW":
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
+
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
-                arg1 = LinqExpression.Convert(args[1], typeof(double));
+                arg1 = LinqExpression.Convert(args[0], typeof(double));
+
+                if (_options == ExpressionOptions.DecimalAsDefault)
+                {
+                    var @base = LinqExpression.Convert(args[0], typeof(BigDecimal));
+                    var exponent = LinqExpression.Convert(args[1], typeof(BigInteger));
+
+                    var methodInfo = typeof(BigDecimal).GetMethod("Pow", [typeof(BigDecimal), typeof(BigInteger)]);
+                    if (methodInfo != null)
+                    {
+                        var result = LinqExpression.Call(methodInfo, @base, exponent);
+                        return LinqExpression.Convert(result, typeof(double));
+                    }
+                }
+
                 return LinqExpression.Power(arg0, arg1);
             case "ROUND":
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);

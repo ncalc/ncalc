@@ -33,7 +33,7 @@
   </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ExtendedNumerics.BigDecimal" Version="3000.0.0.280" />
+        <PackageReference Include="ExtendedNumerics.BigDecimal" Version="3000.0.1.312" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
         <PackageReference Include="Microsoft.Extensions.Logging.TraceSource" Version="8.0.1" />
