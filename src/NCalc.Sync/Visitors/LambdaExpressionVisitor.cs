@@ -170,7 +170,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                     if (methodInfo != null)
                     {
                         var result = LinqExpression.Call(methodInfo, @base, exponent);
-                        return LinqExpression.Convert(result, typeof(double));
+                        return LinqExpression.Convert(result, typeof(decimal));
                     }
                 }
 
