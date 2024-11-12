@@ -642,5 +642,13 @@ public class LambdaTests
 
         Assert.Throws<OverflowException>(() => lambda());
     }
+
+    [Fact]
+    public void ShouldAllowPowWithDecimals()
+    {
+        var e = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
+        var lambda = e.ToLambda<decimal>();
+        Assert.Equal(9.61m, lambda());
+    }
 }
 #endif
