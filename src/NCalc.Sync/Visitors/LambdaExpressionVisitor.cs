@@ -140,8 +140,6 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         Linq.UnaryExpression arg0;
         Linq.UnaryExpression arg1;
 
-        var actualNumArgs = function.Parameters.Count;
-
         switch (functionName)
         {
             // Exceptional handling
@@ -180,19 +178,40 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 return LinqExpression.Power(arg0, arg1);
             case "ROUND":
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
-                arg0 = LinqExpression.Convert(args[0], typeof(double));
+
+                if (_options == ExpressionOptions.DecimalAsDefault)
+                    arg0 = LinqExpression.Convert(args[0], typeof(decimal));
+                else
+                    arg0 = LinqExpression.Convert(args[0], typeof(double));
+
                 arg1 = LinqExpression.Convert(args[1], typeof(int));
+
                 var rounding = (_options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero
                     ? MidpointRounding.AwayFromZero
                     : MidpointRounding.ToEven;
-                return LinqExpression.Call(MathFunctionHelper.Functions["ROUND"].MethodInfo, arg0, arg1,
+                return LinqExpression.Call(MathFunctionHelper.Functions["ROUND"].First().MethodInfo, arg0, arg1,
                     LinqExpression.Constant(rounding));
 
             default:
                 // Regular handling
-                if (MathFunctionHelper.Functions.TryGetValue(functionName, out var func))
+                if (MathFunctionHelper.Functions.TryGetValue(functionName, out var f))
                 {
-                    return MakeMathCallExpression(func, actualNumArgs);
+                    MathMethodInfo func;
+
+                    if (_options == ExpressionOptions.DecimalAsDefault && f.Any(_ => _.DecimalSupport))
+                        func = f.First(_ => _.DecimalSupport);
+                    else
+                        func = f.First(_ => !_.DecimalSupport);
+
+                    CheckArgumentsLengthForFunction(functionName, args.Length, func.ArgumentCount);
+
+                    var arguments = new List<LinqExpression>();
+
+                    var parameters = func.MethodInfo.GetParameters();
+                    for (int i = 0; i < parameters.Length; i++)
+                        arguments.Add(LinqExpression.Convert(args[i], parameters[i].ParameterType));
+
+                    return LinqExpression.Call(func.MethodInfo, arguments.ToArray());
                 }
 
                 throw new MissingMethodException($"method not found: {functionName}");
@@ -202,14 +221,6 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         {
             if (argsNum != argsNeed)
                 throw new ArgumentException($"{funcStr} takes exactly {argsNeed} argument");
-        }
-
-        LinqExpression MakeMathCallExpression(MathMethodInfo mathMethod, int argsNumActual)
-        {
-            CheckArgumentsLengthForFunction(mathMethod.MethodInfo.Name, argsNumActual, mathMethod.ArgumentCount);
-
-            return LinqExpression.Call(mathMethod.MethodInfo,
-                Enumerable.Range(0, argsNumActual).Select(i => LinqExpression.Convert(args[i], typeof(double))));
         }
     }
 
