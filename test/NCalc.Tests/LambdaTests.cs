@@ -650,5 +650,55 @@ public class LambdaTests
         var lambda = e.ToLambda<decimal>();
         Assert.Equal(9.61m, lambda());
     }
+
+    [Fact]
+    public void ShouldUseDecimalsWithDecimalAsDefault()
+    {
+        decimal val = 3.1m;
+
+        // Arrange
+        var expressionAbs = new Expression("Abs(x)", ExpressionOptions.DecimalAsDefault);
+        expressionAbs.Parameters["x"] = val;
+        var lambdaAbs = expressionAbs.ToLambda<decimal>();
+
+        var expressionCeiling = new Expression("Ceiling(x)", ExpressionOptions.DecimalAsDefault);
+        expressionCeiling.Parameters["x"] = val;
+        var lambdaCeiling = expressionCeiling.ToLambda<decimal>();
+
+        var expressionFloor = new Expression("Floor(x)", ExpressionOptions.DecimalAsDefault);
+        expressionFloor.Parameters["x"] = val;
+        var lambdaFloor = expressionFloor.ToLambda<decimal>();
+
+        var expressionSign = new Expression("Sign(x)", ExpressionOptions.DecimalAsDefault);
+        expressionSign.Parameters["x"] = val;
+        var lambdaSign = expressionSign.ToLambda<decimal>();
+
+        var expressionTruncate = new Expression("Truncate(x)", ExpressionOptions.DecimalAsDefault);
+        expressionTruncate.Parameters["x"] = val;
+        var lambdaTruncate = expressionTruncate.ToLambda<decimal>();
+
+        // Act
+        var actualAbs = lambdaAbs();
+        var expectedAbs = Math.Abs(val);
+
+        var actualCeiling = lambdaCeiling();
+        var expectedCeiling = Math.Ceiling(val);
+
+        var actualFloor = lambdaFloor();
+        var expectedFloor = Math.Floor(val);
+
+        var actualSign = lambdaSign();
+        var expectedSign = Math.Sign(val);
+
+        var actualTruncate = lambdaTruncate();
+        var expectedTruncate = Math.Truncate(val);
+
+        // Assert
+        Assert.Equal(expectedAbs, actualAbs);
+        Assert.Equal(expectedCeiling, actualCeiling);
+        Assert.Equal(expectedFloor, actualFloor);
+        Assert.Equal(expectedSign, actualSign);
+        Assert.Equal(expectedTruncate, actualTruncate);
+    }
 }
 #endif
