@@ -369,12 +369,10 @@ public static class MathHelper
 
     public static object Round(object? a, object? b, MidpointRounding rounding, MathHelperOptions options)
     {
-        b = ConvertIfNeeded(b, options);
-
         if (options.DecimalAsDefault)
-            return Math.Round(ConvertToDecimal(a, options), Convert.ToInt16(b), rounding);
+            return Math.Round(ConvertToDecimal(a, options), ConvertToInt(b, options), rounding);
 
-        return Math.Round(ConvertToDouble(a, options), Convert.ToInt16(b), rounding);
+        return Math.Round(ConvertToDouble(a, options), ConvertToInt(b, options), rounding);
     }
 
     public static object Sign(object? a, MathHelperOptions options)
@@ -425,8 +423,8 @@ public static class MathHelper
     {
         return value switch
         {
-            char => Convert.ToDouble(value.ToString(), options.CultureInfo),
             double => (double)value,
+            char => Convert.ToDouble(value.ToString(), options.CultureInfo),
             _ => Convert.ToDouble(value, options.CultureInfo)
         };
     }
@@ -435,9 +433,19 @@ public static class MathHelper
     {
         return value switch
         {
-            char => Convert.ToDecimal(value?.ToString()!, options.CultureInfo),
             decimal => (decimal)value,
+            char => Convert.ToDecimal(value?.ToString()!, options.CultureInfo),
             _ => Convert.ToDecimal(value, options.CultureInfo)
+        };
+    }
+
+    private static int ConvertToInt(object? value, MathHelperOptions options)
+    {
+        return value switch
+        {
+            int => (int)value,
+            char => Convert.ToInt32(value?.ToString()!, options.CultureInfo),
+            _ => Convert.ToInt32(value, options.CultureInfo)
         };
     }
 
