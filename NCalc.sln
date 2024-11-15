@@ -33,9 +33,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Antlr", "src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj", "{78E2D7EB-6FC3-4668-9F23-95967A301CC3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Tests and Examples", "3. Tests and Examples", "{C6FBA292-F491-45A2-BE21-2F4A2B4B689F}"
-	ProjectSection(SolutionItems) = preProject
-		test\Directory.Build.Props = test\Directory.Build.Props
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Docs", "1. Docs", "{A65E42B9-EEE8-49E5-B6FF-5A1214E19580}"
 	ProjectSection(SolutionItems) = preProject
@@ -53,6 +50,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI", "CI", "{6506CCD3-9348-
 		.github\workflows\publish-nuget.yml = .github\workflows\publish-nuget.yml
 		.github\workflows\benchmarks.yml = .github\workflows\benchmarks.yml
 		.github\workflows\build-test.yml = .github\workflows\build-test.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{93F59050-498F-4546-A5AB-57F9A45C1B2A}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
 	EndProjectSection
 EndProject
 Global
@@ -135,6 +137,7 @@ Global
 		{1201E3C1-1973-49DF-8D67-7763DD6DA570} = {EA9E75C0-E2D9-40FC-8642-407A327561D1}
 		{247B97B7-9A1D-40ED-8A79-ED4ED8761695} = {C6FBA292-F491-45A2-BE21-2F4A2B4B689F}
 		{6506CCD3-9348-4FFA-9E50-FDB3CCB0B40D} = {C27AD8D7-BE62-4A13-8857-368B555D3385}
+		{93F59050-498F-4546-A5AB-57F9A45C1B2A} = {C27AD8D7-BE62-4A13-8857-368B555D3385}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27068E02-1682-44D7-819A-74759A261167}
