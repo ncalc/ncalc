@@ -8,13 +8,6 @@ public sealed class Function(Identifier identifier, LogicalExpressionList parame
 
     public LogicalExpressionList Parameters { get; set; } = parameters;
 
-    [Obsolete("Please use Parameters property.")]
-    public LogicalExpression[] Expressions
-    {
-        get => Parameters.ToArray();
-        set => Parameters = new LogicalExpressionList(value);
-    }
-
     public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
     {
         return visitor.Visit(this);
