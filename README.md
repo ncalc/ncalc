@@ -1,38 +1,63 @@
-# NCalc
+<div style="text-align:center">
+    <img src="NCalc.png" alt="NCalc" style="width:100px;"/>
+    <h1>NCalc</h1>
+    <a href="https://github.com/ncalc/ncalc/actions/workflows/build-test.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/ncalc/ncalc/build-test.yml" alt="GitHub Actions Workflow Status" />
+    </a>
+    <a href="https://codecov.io/gh/ncalc/ncalc">
+      <img src="https://img.shields.io/codecov/c/github/ncalc/ncalc.svg" alt="Coverage" />
+    </a>
+    <a href="https://nuget.org/packages/NCalcSync.signed">
+      <img src="https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget&color=004880" alt="NuGet" />
+    </a>
+    <a href="https://nuget.org/packages/NCalcSync.signed">
+      <img src="https://img.shields.io/nuget/dt/NCalcSync.svg?color=004880" alt="NuGet Downloads" />
+    </a>
+    <a href="https://discord.gg/TeJkmXbqFk">
+      <img src="https://img.shields.io/discord/1237181265426387005?color=5b62ef&label=discord" alt="Discord" />
+    </a>
+</div>
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ncalc/ncalc/build-test.yml)
-[![Coverage](https://img.shields.io/codecov/c/github/ncalc/ncalc.svg)](https://codecov.io/gh/ncalc/ncalc)
-[![NuGet](https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget&color=004880
-)](https://nuget.org/packages/NCalcSync.signed)
-![NuGet Downloads](https://img.shields.io/nuget/dt/NCalcSync.svg?color=004880)
-[![Discord](https://img.shields.io/discord/1237181265426387005?color=5b62ef&label=discord
-)](https://discord.gg/TeJkmXbqFk)
 
-NCalc is a fast and lightweight expression evaluator library for .NET, designed for flexibility and high performance. It supports a wide range of mathematical and logical operations. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions. NCalc targets .NET 8, .NET Standard 2.0 and NET Framework 4.8.
+
+
+NCalc is a fast and lightweight expression evaluator library for .NET, designed for flexibility and high performance. It
+supports a wide range of mathematical and logical operations. NCalc can parse any expression and evaluate the result,
+including static or dynamic parameters and custom functions. NCalc targets .NET 8, .NET Standard 2.0 and NET Framework
+4.8.
 
 ## Docs
-Need help or want to learn more? [Check our docs.](https://ncalc.github.io/ncalc)
 
+Need help or want to learn more? [Check our docs.](https://ncalc.github.io/ncalc)
 
 ## Learn more
 
-For additional information on the technique we used to create this framework please read [this article.](https://www.codeproject.com/Articles/18880/State-of-the-Art-Expression-Evaluation)
+For additional information on the technique we used to create this framework please
+read [this article.](https://www.codeproject.com/Articles/18880/State-of-the-Art-Expression-Evaluation)
 
 ## Help
+
 > [!IMPORTANT]
-> If you need help, [please open an issue](https://github.com/ncalc/ncalc/issues/new/choose) and include the expression to help us better understand the problem. 
+> If you need help, [please open an issue](https://github.com/ncalc/ncalc/issues/new/choose) and include the expression
+> to help us better understand the problem.
 > Providing this information will aid in resolving the issue effectively.
 
 ## Getting Started
+
 If you want to evaluate simple expressions:
+
 ```
 dotnet add package NCalcSync 
 ```
+
 Want `async` support at your functions and parameters?
+
 ```
 dotnet add package NCalcAsync 
 ```
+
 Dependency Injection? We got you covered:
+
 ```
 dotnet add package NCalc.DependencyInjection
 ```
@@ -105,6 +130,7 @@ Debug.Assert(117.07 == expression.Evaluate());
 This example uses [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/).
 
 Serializing
+
 ```c#
 var parsedExpression = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
 var serialized = JsonConvert.SerializeObject(parsedExpression, new JsonSerializerSettings
@@ -114,6 +140,7 @@ var serialized = JsonConvert.SerializeObject(parsedExpression, new JsonSerialize
 ```
 
 Deserializing
+
 ```c#
 var deserialized = JsonConvert.DeserializeObject<LogicalExpression>(serialized, new JsonSerializerSettings
 {
@@ -129,21 +156,23 @@ expression.Parameters = new Dictionary<string, object> {
 
 var result = expression.Evaluate();
 ```
+
 You can also use our [Memory Cache plugin.](https://ncalc.github.io/ncalc/articles/plugins/memory_cache.html)
 
 **Lambda Expressions**
+
 ```cs
 var expression = new Expression("1 + 2");
 Func<int> function = expression.ToLambda<int>();
 Debug.Assert(function()); //3
 ```
 
-
 ## Related projects
 
 ### [Parlot](https://github.com/sebastienros/parlot)
 
-Fast and lightweight parser creation tools by [Sébastien Ros](https://github.com/sebastienros) that NCalc uses at its parser.
+Fast and lightweight parser creation tools by [Sébastien Ros](https://github.com/sebastienros) that NCalc uses at its
+parser.
 
 ### [PanoramicData.NCalcExtensions](https://github.com/panoramicdata/PanoramicData.NCalcExtensions)
 
@@ -162,30 +191,20 @@ A TypeScript/JavaScript port of NCalc.
 
 ### [NCalc101](https://ncalc101.magicsuite.net)
 
-NCalc 101 is a simple web application that allows you to try out the NCalc expression evaluator, developed by [Panoramic Data](https://github.com/panoramicdata).
+NCalc 101 is a simple web application that allows you to try out the NCalc expression evaluator, developed
+by [Panoramic Data](https://github.com/panoramicdata).
 
 ### [JJMasterData](https://github.com/JJConsulting/JJMasterData/)
 
-JJMasterData is a runtime form generator from database metadata. It uses NCalc to evaluate expressions used in field visibility and other dynamic behaviors.
+JJMasterData is a runtime form generator from database metadata. It uses NCalc to evaluate expressions used in field
+visibility and other dynamic behaviors.
 
 # NCalc versioning
 
 The project uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) tool to manage versions.  
 Each library build can be traced back to the original git commit.
-
-## Preparing and publishing a new release
-
-1. Make sure that `nbgv` dotnet CLI tool is installed and is up-to-date
-2. Run `nbgv prepare-release` to create a stable branch for the upcoming release, i.e. release/v1.0
-3. Switch to the release branch: `git checkout release/v1.0`
-4. Execute unit tests, update the README, release notes in csproj file, etc. Commit and push your changes.
-5. Run `dotnet pack -c Release` and check that it builds Nuget packages with the right version number.
-6. Run `nbgv tag release/v1.0` to tag the last commit on the release branch with your current version number, i.e. v1.0.7.
-7. Push tags as suggested by nbgv tool: `git push origin v1.0.7`
-8. Go to GitHub project page and create a release out of the last tag v1.0.7.
-9. Verify that github workflow for publishing the nuget package has completed.
-10. Switch back to master and merge the release branch.
-
+Read more about [versioning here.](https://ncalc.github.io/ncalc/articles/new_release.html)
 ## Discord Server
 
-If you want to talk with us, get support or just get the latest NCalc news, [come to our discord server](https://discord.gg/TeJkmXbqFk).
+If you want to talk with us, get support or just get the latest NCalc
+news, [come to our discord server](https://discord.gg/TeJkmXbqFk).
