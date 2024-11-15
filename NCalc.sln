@@ -33,6 +33,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCalc.Antlr", "src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj", "{78E2D7EB-6FC3-4668-9F23-95967A301CC3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Tests and Examples", "3. Tests and Examples", "{C6FBA292-F491-45A2-BE21-2F4A2B4B689F}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.Props = test\Directory.Build.Props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Docs", "1. Docs", "{A65E42B9-EEE8-49E5-B6FF-5A1214E19580}"
 	ProjectSection(SolutionItems) = preProject
