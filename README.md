@@ -100,36 +100,31 @@ expression.DynamicParameters["Pi"] = _ => {
 Debug.Assert(117.07 == expression.Evaluate());
 ```
 
-**Caching and Serializing**
+**JSON Serialization**
 
-This example uses [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/).
+At .NET 8+, NCalc have built-in support to polymorphic JSON serialization using [System.Text.Json](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json).
 
-Serializing
 ```c#
-var parsedExpression = LogicalExpressionFactory.Create(expression, ExpressionOptions.NoCache);
-var serialized = JsonConvert.SerializeObject(parsedExpression, new JsonSerializerSettings
-{
-    TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
-});
-```
+const string expressionString = "{waterLevel} > 4.0";
 
-Deserializing
-```c#
-var deserialized = JsonConvert.DeserializeObject<LogicalExpression>(serialized, new JsonSerializerSettings
-{
-    TypeNameHandling = TypeNameHandling.All
-});
+var logicalExpression = LogicalExpressionFactory.Create(expressionString, ExpressionOptions.NoCache); //Created a BinaryExpression object.
 
-Expression.CacheEnabled = false; // We cannot use NCalc's built in cache at the same time.
+var jsonExpression = JsonSerializer.Serialize(parsedExpression);
 
-var expression = new Expression(deserialized);
+var deserializedLogicalExpression = JsonSerializer.Deserialize<LogicalExpression>(jsonExpression); //The object is still a BinaryExpression.
+
+var expression = new Expression(deserializedLogicalExpression);
+
 expression.Parameters = new Dictionary<string, object> {
-    {"waterlevel", inputValue}
+    {"waterLevel", 4.0}
 };
 
 var result = expression.Evaluate();
 ```
-You can also use our [Memory Cache plugin.](https://ncalc.github.io/ncalc/articles/plugins/memory_cache.html)
+
+**Caching**
+NCalc automatically cache the parsing of strings using a [`ConcurrentDictionary`](https://learn.microsoft.com/pt-br/dotnet/api/system.collections.concurrent.concurrentdictionary-2).
+You can also use our [Memory Cache plugin](https://ncalc.github.io/ncalc/articles/plugins/memory_cache.html).
 
 **Lambda Expressions**
 ```cs
