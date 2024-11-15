@@ -52,6 +52,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI", "CI", "{6506CCD3-9348-
 		.github\workflows\build-test.yml = .github\workflows\build-test.yml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{93F59050-498F-4546-A5AB-57F9A45C1B2A}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -132,6 +137,7 @@ Global
 		{1201E3C1-1973-49DF-8D67-7763DD6DA570} = {EA9E75C0-E2D9-40FC-8642-407A327561D1}
 		{247B97B7-9A1D-40ED-8A79-ED4ED8761695} = {C6FBA292-F491-45A2-BE21-2F4A2B4B689F}
 		{6506CCD3-9348-4FFA-9E50-FDB3CCB0B40D} = {C27AD8D7-BE62-4A13-8857-368B555D3385}
+		{93F59050-498F-4546-A5AB-57F9A45C1B2A} = {C27AD8D7-BE62-4A13-8857-368B555D3385}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27068E02-1682-44D7-819A-74759A261167}

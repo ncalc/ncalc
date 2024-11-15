@@ -9,7 +9,7 @@ internal sealed class LogicalExpressionMemoryCache(
     IMemoryCache memoryCache,
     IOptions<LogicalExpressionMemoryCacheOptions> optionsSnapshot) : ILogicalExpressionCache
 {
-    public bool TryGetValue(string expression, out LogicalExpression logicalExpression)
+    public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)
     {
         return memoryCache.TryGetValue(expression, out logicalExpression);
     }
