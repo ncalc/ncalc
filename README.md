@@ -1,4 +1,4 @@
-<div style="text-align:center">
+<div align="center">
     <img src="NCalc.png" alt="NCalc" style="width:100px;"/>
     <h1>NCalc</h1>
     <a href="https://github.com/ncalc/ncalc/actions/workflows/build-test.yml">
@@ -17,7 +17,7 @@
       <img src="https://img.shields.io/discord/1237181265426387005?color=5b62ef&label=discord" alt="Discord" />
     </a>
 </div>
-
+<br>
 
 
 
