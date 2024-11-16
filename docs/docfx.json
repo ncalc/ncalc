@@ -39,7 +39,7 @@
       {
         "files": [
           "media/**",
-          "logo.png",
+          "NCalc.png",
           "favicon.ico"
         ]
       }
@@ -63,13 +63,14 @@
       },
       "_gitUrlPattern": "github",
       "_disableSideFilter":true,
-      "_appLogoPath": "logo.png"
+      "_appLogoPath": "NCalc.png"
     },
     "globalMetadataFiles": [],
     "fileMetadataFiles": [],
     "template": [
       "default",
-      "modern"
+      "modern",
+      "ncalc"
     ],
     "postProcessors": [ "ExtractSearchIndex" ],
     "noLangKeyword": false,
