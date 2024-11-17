@@ -191,7 +191,7 @@ by [Panoramic Data](https://github.com/panoramicdata).
 JJMasterData is a runtime form generator from database metadata. It uses NCalc to evaluate expressions used in field
 visibility and other dynamic behaviors.
 
-# NCalc versioning
+## NCalc versioning
 
 The project uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) tool to manage versions.  
 Each library build can be traced back to the original git commit.
@@ -200,3 +200,13 @@ Read more about [versioning here.](https://ncalc.github.io/ncalc/articles/new_re
 
 If you want to talk with us, get support or just get the latest NCalc
 news, [come to our discord server](https://discord.gg/TeJkmXbqFk).
+
+## Star History
+
+<a href="https://star-history.com/#ncalc/ncalc&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ncalc/ncalc&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ncalc/ncalc&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ncalc/ncalc&type=Date" />
+ </picture>
+</a>
