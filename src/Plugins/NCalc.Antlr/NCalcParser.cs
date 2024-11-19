@@ -22,17 +22,16 @@ namespace NCalc.Antlr;
 // Ambiguous reference in cref attribute
 #pragma warning disable 419
 
-using System.Globalization;
-using NCalc.Domain;
-
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Collections.Generic;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Atn;
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
+using NCalc.Domain;
 using DFA = Antlr4.Runtime.Dfa.DFA;
 
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.13.1")]

@@ -10,7 +10,7 @@ public static class MathFunctionHelper
 
         if (supportDecimal)
         {
-            methodInfo.Add(new MathMethodInfo()
+            methodInfo.Add(new MathMethodInfo
             {
                 MethodInfo = typeof(Math).GetMethod(method, Enumerable.Repeat(typeof(decimal), argCount).ToArray())!,
                 ArgumentCount = argCount,
@@ -18,7 +18,7 @@ public static class MathFunctionHelper
             });
         }
 
-        methodInfo.Add(new MathMethodInfo()
+        methodInfo.Add(new MathMethodInfo
         {
             MethodInfo = typeof(Math).GetMethod(method, Enumerable.Repeat(typeof(double), argCount).ToArray())!,
             ArgumentCount = argCount,
@@ -54,16 +54,16 @@ public static class MathFunctionHelper
 
             // Exceptional handling
             {
-                "ROUND", new List<MathMethodInfo>()
-                {
-                    new MathMethodInfo()
+                "ROUND",
+                [
+                    new MathMethodInfo
                     {
                         MethodInfo = typeof(Math).GetMethod(nameof(Math.Round),
                             [typeof(double), typeof(int), typeof(MidpointRounding)])!,
                         ArgumentCount = 2,
                         DecimalSupport = false
                     }
-                }
+                ]
             }
         }.ToFrozenDictionary();
 }

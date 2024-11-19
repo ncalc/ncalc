@@ -131,24 +131,22 @@ public partial class Expression : ExpressionBase<ExpressionContext>
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
-        if (size != null)
+        if (size == null)
+            return EvaluationService.Evaluate(LogicalExpression, Context);
+
+        var results = new List<object?>();
+
+        for (int i = 0; i < size; i++)
         {
-            var results = new List<object?>();
-
-            for (int i = 0; i < size; i++)
+            foreach (var kvp in parameterEnumerators)
             {
-                foreach (var kvp in parameterEnumerators)
-                {
-                    kvp.Value.MoveNext();
-                    Parameters[kvp.Key] = kvp.Value.Current;
-                }
-
-                results.Add(EvaluationService.Evaluate(LogicalExpression!, Context));
+                kvp.Value.MoveNext();
+                Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            return results;
+            results.Add(EvaluationService.Evaluate(LogicalExpression, Context));
         }
 
-        return EvaluationService.Evaluate(LogicalExpression!, Context);
+        return results;
     }
 }

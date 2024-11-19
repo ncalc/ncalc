@@ -21,22 +21,22 @@ public static class ParametersHelper
 
         foreach (var parameter in parameters)
         {
-            if (parameter.Value is IEnumerable enumerable)
+            if (parameter.Value is not IEnumerable enumerable)
+                continue;
+
+            var list = enumerable as List<object> ?? enumerable.Cast<object>().ToList();
+            parameterEnumerators.Add(parameter.Key, list.GetEnumerator());
+
+            var localSize = list.Count;
+
+            if (size == null)
             {
-                var list = enumerable as List<object> ?? enumerable.Cast<object>().ToList();
-                parameterEnumerators.Add(parameter.Key, list.GetEnumerator());
-
-                var localSize = list.Count;
-
-                if (size == null)
-                {
-                    size = localSize;
-                }
-                else if (localSize != size)
-                {
-                    throw new NCalcException(
-                        "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
-                }
+                size = localSize;
+            }
+            else if (localSize != size)
+            {
+                throw new NCalcException(
+                    "When IterateParameters option is used, IEnumerable parameters must have the same number of items");
             }
         }
 
