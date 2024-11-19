@@ -7,7 +7,7 @@ namespace NCalc;
 
 public partial class Expression
 {
-    private struct Void;
+    private readonly struct Void;
     protected record struct LinqExpressionWithParameter(LinqExpression Expression, LinqParameterExpression? Parameter);
 
     private LinqExpressionWithParameter ToLinqExpressionInternal<TContext, TResult>()

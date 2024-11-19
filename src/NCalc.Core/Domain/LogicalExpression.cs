@@ -1,7 +1,7 @@
-using System.Diagnostics.Contracts;
 #if NET
 using System.Text.Json.Serialization;
 #endif
+using System.Diagnostics.Contracts;
 using NCalc.Visitors;
 
 namespace NCalc.Domain;

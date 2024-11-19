@@ -30,7 +30,7 @@ public sealed class ValueExpression : LogicalExpression
         Value = value;
     }
 
-    public ValueExpression(string value)
+    public ValueExpression(string? value)
     {
         Value = value;
         Type = ValueType.String;

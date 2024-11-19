@@ -51,7 +51,7 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var exponentNumberPart =
-            Literals.Text("e", true).SkipAnd(Literals.Integer(NumberOptions.AllowLeadingSign))
+            Literals.Text("e", true).SkipAnd(Literals.Integer())
                 .ThenElse<long?>(x => x, null);
 
         // [integral_value]['.'decimal_value}]['e'exponent_value]
@@ -69,7 +69,7 @@ public static class LogicalExpressionParser
                             }))
                         .And(exponentNumberPart)
                         .Then(x => (0L, x.Item1.Item1, x.Item1.Item2, x.Item2)),
-                    Literals.Integer(NumberOptions.AllowLeadingSign)
+                    Literals.Integer()
                         .And(Literals.Char('.')
                             .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0))
                             .And(ZeroOrOne(Literals.Integer(NumberOptions.None)))
@@ -173,7 +173,7 @@ public static class LogicalExpressionParser
                         return new ValueExpression(value.Span[0]);
                     }
 
-                    return new ValueExpression(value.ToString()!);
+                    return new ValueExpression(value.ToString());
                 });
 
         var doubleQuotesStringValue =
@@ -246,17 +246,19 @@ public static class LogicalExpressionParser
 
         var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
 
+        var isHexDigit =Character.IsHexDigit;
+
         var eightHexSequence = Terms
-            .Pattern(Character.IsHexDigit, 8, 8);
+            .Pattern(isHexDigit, 8, 8);
 
         var fourHexSequence = Terms
-            .Pattern(Character.IsHexDigit, 4, 4);
+            .Pattern(isHexDigit, 4, 4);
 
         var twelveHexSequence = Terms
-            .Pattern(Character.IsHexDigit, 12, 12);
+            .Pattern(isHexDigit, 12, 12);
 
         var thirtyTwoHexSequence = Terms
-            .Pattern(Character.IsHexDigit, 32, 32);
+            .Pattern(isHexDigit, 32, 32);
 
         var guidWithHyphens = eightHexSequence
                 .AndSkip(minus)
@@ -296,23 +298,25 @@ public static class LogicalExpressionParser
             {
                 LogicalExpression result = null!;
 
-                if (x.Item2.Count == 0)
+                switch (x.Item2.Count)
                 {
-                    result = x.Item1;
-                }
-                else if (x.Item2.Count == 1)
-                {
-                    result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, x.Item2[0].Item2);
-                }
-                else
-                {
-                    for (int i = x.Item2.Count - 1; i > 0; i--)
+                    case 0:
+                        result = x.Item1;
+                        break;
+                    case 1:
+                        result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, x.Item2[0].Item2);
+                        break;
+                    default:
                     {
-                        result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item2[i - 1].Item2,
-                            x.Item2[i].Item2);
-                    }
+                        for (int i = x.Item2.Count - 1; i > 0; i--)
+                        {
+                            result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item2[i - 1].Item2,
+                                x.Item2[i].Item2);
+                        }
 
-                    result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, result);
+                        result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, result);
+                        break;
+                    }
                 }
 
                 return result;

@@ -423,7 +423,7 @@ public static class MathHelper
     {
         return value switch
         {
-            double => (double)value,
+            double @double => @double,
             char => Convert.ToDouble(value.ToString(), options.CultureInfo),
             _ => Convert.ToDouble(value, options.CultureInfo)
         };
@@ -433,8 +433,8 @@ public static class MathHelper
     {
         return value switch
         {
-            decimal => (decimal)value,
-            char => Convert.ToDecimal(value?.ToString()!, options.CultureInfo),
+            decimal @decimal => @decimal,
+            char => Convert.ToDecimal(value.ToString(), options.CultureInfo),
             _ => Convert.ToDecimal(value, options.CultureInfo)
         };
     }
@@ -443,8 +443,8 @@ public static class MathHelper
     {
         return value switch
         {
-            int => (int)value,
-            char => Convert.ToInt32(value?.ToString()!, options.CultureInfo),
+            int i => i,
+            char => Convert.ToInt32(value.ToString(), options.CultureInfo),
             _ => Convert.ToInt32(value, options.CultureInfo)
         };
     }
@@ -640,7 +640,6 @@ public static class MathHelper
         switch (value)
         {
             case double doubleVal when double.IsInfinity(doubleVal):
-                throw new OverflowException("Arithmetic operation resulted in an overflow");
             case float floatValue when float.IsInfinity(floatValue):
                 throw new OverflowException("Arithmetic operation resulted in an overflow");
         }

@@ -93,7 +93,7 @@ public static class LinqUtils
             return false;
         }
 
-        argument = LinqExpression.Convert(argument!, to);
+        argument = LinqExpression.Convert(argument, to);
         return true;
     }
 
