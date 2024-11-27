@@ -148,6 +148,7 @@ var result = expression.Evaluate();
 ```
 
 **Caching**
+
 NCalc automatically cache the parsing of strings using a [`ConcurrentDictionary`](https://learn.microsoft.com/pt-br/dotnet/api/system.collections.concurrent.concurrentdictionary-2).
 You can also use our [Memory Cache plugin](https://ncalc.github.io/ncalc/articles/plugins/memory_cache.html).
 
