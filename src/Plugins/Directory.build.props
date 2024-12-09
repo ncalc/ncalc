@@ -1,5 +1,5 @@
 <Project>
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../../'))" />
+    <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
     
     <PropertyGroup>
         <PackageReadmeFile>README.md</PackageReadmeFile>
