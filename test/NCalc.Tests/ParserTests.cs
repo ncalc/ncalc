@@ -1,5 +1,6 @@
 ﻿using NCalc.Domain;
 using NCalc.Factories;
+using NCalc.Parser;
 
 namespace NCalc.Tests;
 
@@ -140,5 +141,36 @@ public class ParserTests
     public void OperatorPriorityIssue337()
     {
         Assert.True((bool)new Expression("true or true and false").Evaluate()!);
+    }
+
+    [Fact]
+    public void ShouldNotFailIssue372()
+    {
+        var chars = new List<string>();
+        for (var c = 'a'; c < 'z'; ++c)
+        {
+            chars.Add(c.ToString());
+        }
+
+        for (var c = 'A'; c < 'Z'; ++c)
+        {
+            chars.Add(c.ToString());
+        }
+
+        var failed = new List<string>();
+        foreach (var c in chars)
+        {
+            try
+            {
+                var context = new LogicalExpressionParserContext(c, ExpressionOptions.None);
+                LogicalExpressionParser.Parse(context);
+            }
+            catch (Exception)
+            {
+                failed.Add(c);
+            }
+        }
+
+        Assert.Empty(failed);
     }
 }
