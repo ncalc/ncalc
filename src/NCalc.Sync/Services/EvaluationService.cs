@@ -8,7 +8,6 @@ public class EvaluationService : IEvaluationService
 {
     public object? Evaluate(LogicalExpression? expression, ExpressionContext context)
     {
-        var visitor = new EvaluationVisitor(context);
-        return expression?.Accept(visitor);
+        return expression?.Accept(new EvaluationVisitor(context));
     }
 }

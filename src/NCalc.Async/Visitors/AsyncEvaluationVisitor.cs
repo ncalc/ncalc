@@ -185,7 +185,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
         if (context.Functions.TryGetValue(functionName, out var expressionFunction))
         {
-            return await expressionFunction(new(function.Identifier.Id, args, context));
+            return await expressionFunction(new AsyncExpressionFunctionData(function.Identifier.Id, args, context));
         }
 
         return await AsyncBuiltInFunctionHelper.EvaluateAsync(functionName, args, context);
@@ -226,7 +226,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
-            return await dynamicParameter(new(identifier.Id, context));
+            return await dynamicParameter(new AsyncExpressionParameterData(identifier.Id, context));
         }
 
         throw new NCalcParameterNotDefinedException(identifierName);
