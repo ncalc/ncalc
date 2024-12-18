@@ -1,3 +1,10 @@
+# 5.3.1
+* Small code quality improvements by @gumbarros in https://github.com/ncalc/ncalc/pull/365
+* Fix Directory.Build.props inheritance by @sebastienros in https://github.com/ncalc/ncalc/pull/373
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/366
+* Small code quality improvements by @gumbarros in https://github.com/ncalc/ncalc/pull/376
+* Added issue #372 unit test by @gumbarros in https://github.com/ncalc/ncalc/pull/377
+
 # 5.3.0
 * Improve SerializationVisitor performance by @Bykiev in https://github.com/ncalc/ncalc/pull/353
 * Remove nullable disable by @Bykiev in https://github.com/ncalc/ncalc/pull/355
