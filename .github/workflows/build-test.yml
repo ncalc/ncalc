@@ -35,7 +35,7 @@ jobs:
       - name: Generate Code Coverage Report
         run: reportgenerator -reports:./TestResults/**/*.xml -targetdir:./TestResults/CoverageReport -reporttypes:Html
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: ./TestResults/CoverageReport

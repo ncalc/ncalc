@@ -34,7 +34,7 @@ jobs:
         run: dotnet run --project test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release --artifacts ./Benchmarks/
 
       - name: Upload Benchmark Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
           path: ./Benchmarks/
