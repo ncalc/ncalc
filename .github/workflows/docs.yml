@@ -34,7 +34,7 @@ jobs:
           docfx build
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
           path: 'docs/_site'
       - name: Deploy to GitHub Pages
