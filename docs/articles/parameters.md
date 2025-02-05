@@ -7,7 +7,7 @@ These parameters can be accessed using the <xref:NCalc.Expression.Parameters> pr
 instance.
 
 ```c#
-  var expression = new Expression("2 * [x] ^ 2 + 5 * [y]");
+  var expression = new Expression("2 * [x] ** 2 + 5 * [y]");
   expression.Parameters["x"] = 5;
   expression.Parameters["y"] = 1;
 
@@ -69,7 +69,7 @@ When parameters are `IEnumerable` and the <xref:NCalc.ExpressionOptions.IterateP
 used, the result is a `List<object?>` made of the evaluation of each value in the parameter.
 
 ```c#
- var expression = new Expression("(a * b) ^ c", ExpressionOptions.IterateParameters);
+ var expression = new Expression("(a * b) ** c", ExpressionOptions.IterateParameters);
  expression.Parameters["a"] = new int[] { 1, 2, 3, 4, 5 };
  expression.Parameters["b"] = new int[] { 6, 7, 8, 9, 0 };
  expression.Parameters["c"] = 3;
