@@ -139,4 +139,25 @@ public class DecimalsTests
         var e2 = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault);
         Assert.Equal(9.61m, e2.Evaluate());
     }
+
+    [Fact]
+    public void ShouldResolveHexadecimal()
+    {
+        Assert.Equal(0x2f, new Expression("0x17 + 0x18").Evaluate());
+    }
+
+    
+    [Fact]
+    public void ShouldResolveOctal()
+    {
+        Assert.Equal(29, new Expression("0o16 + 0o17").Evaluate());
+    }
+    
+    [Fact]
+    public void ShouldResolveBinary()
+    {
+        Assert.Equal(255, new Expression("0b00001111 + 0b11110000").Evaluate());
+        Assert.Equal(0UL, new Expression("0b00001111 & 0b11110000").Evaluate());
+        Assert.Equal(255UL, new Expression("0b00001111 | 0b11110000").Evaluate());
+    }
 }

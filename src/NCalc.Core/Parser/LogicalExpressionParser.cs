@@ -69,6 +69,18 @@ public static class LogicalExpressionParser
                             }))
                         .And(exponentNumberPart)
                         .Then(x => (0L, x.Item1.Item1, x.Item1.Item2, x.Item2)),
+                    Literals.Text("0x")
+                        .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
+                        .Then(x => Convert.ToInt64(x.ToString(), 16))
+                        .Then<(long, int, long?, long?)>(x => (x, 0, null, null)),
+                    Literals.Text("0b")
+                        .SkipAnd(Terms.Pattern(c => c == '0' || c == '1'))
+                        .Then(x => Convert.ToInt64(x.ToString(), 2))
+                        .Then<(long, int, long?, long?)>(x => (x, 0, null, null)),
+                    Literals.Text("0o")
+                        .SkipAnd(Terms.Pattern(c => "01234567".Contains(c)))
+                        .Then(x => Convert.ToInt64(x.ToString(), 8))
+                        .Then<(long, int, long?, long?)>(x => (x, 0, null, null)),
                     Literals.Integer()
                         .And(Literals.Char('.')
                             .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0))
