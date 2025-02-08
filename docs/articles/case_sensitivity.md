@@ -36,11 +36,11 @@ var expression = new Expression("aBs(-1)", ExpressionOptions.IgnoreCaseAtBuiltIn
 You can also change the comparison of string values using <xref:NCalc.ExpressionOptions.CaseInsensitiveStringComparer>.
 
 ```c#
- var expression = new Expression("{PageState} == 'list'");
- expression.Parameters["PageState"] = "List";
- Debug.Assert(false, expression.Evaluate());
- 
- expression = new Expression("{PageState} == 'list'", ExpressionOptions.CaseInsensitiveStringComparer);
- expression.Parameters["PageState"] = "List";
- Debug.Assert(true, expression.Evaluate());
+var expression = new Expression("{PageState} == 'list'");
+expression.Parameters["PageState"] = "List";
+Debug.Assert(false, expression.Evaluate());
+
+expression = new Expression("{PageState} == 'list'", ExpressionOptions.CaseInsensitiveStringComparer);
+expression.Parameters["PageState"] = "List";
+Debug.Assert(true, expression.Evaluate());
 ```

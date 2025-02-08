@@ -5,7 +5,7 @@ When the expression has a syntax error, the evaluation will throw a <xref:NCalc.
 ```c#
 try
 {
- new Expression("(3 + 2").Evaluate();
+    new Expression("(3 + 2").Evaluate();
 }
 catch (NCalcParserException ex)
 {
@@ -17,12 +17,12 @@ catch (NCalcEvaluationException ex)
 }
 ```
 
-Though, you can also detect syntax errors before the evaluation by using the <xref:NCalc.Expression.HasErrors> method.
+Though, you can also detect syntax errors before the evaluation by using the <xref:NCalc.ExpressionBase`1.HasErrors> method.
 
 ```c#
- var expression = new Expression("a + b * (");
- if(expression.HasErrors())
- {
-     Console.WriteLine(expression.Error);
- }
+var expression = new Expression("a + b * (");
+if(expression.HasErrors())
+{
+    Console.WriteLine(expression.Error);
+}
 ```
