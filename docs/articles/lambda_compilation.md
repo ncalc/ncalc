@@ -22,13 +22,13 @@ Debug.Assert(function()); //3
 ```c#
 class Context
 {
-  public int Param1 { get; set; }
-  public string Param2 { get; set; }
+    public int Param1 { get; set; }
+    public string Param2 { get; set; }
   
-  public int Foo(int a, int b)
-  {
-    return a + b;
-  }
+    public int Foo(int a, int b)
+    {
+        return a + b;
+    }
 }
 
 var expression = new Expression("Foo([Param1], 2) = 4 && [Param2] = 'test'");
@@ -39,5 +39,5 @@ Debug.Assert(function(context)); //true
 ```
 
 ## Performance
-You should cache the result of <xref:NCalc.Expression.ToLambda`1>. The evaluation is indeed faster, but the compilation of the lambda is very slow.
+You should cache the result of <xref:NCalc.Expression.ToLambda``1>. The evaluation is indeed faster, but the compilation of the lambda is very slow.
 See [benchmarks](benchmarks.md) for more info.

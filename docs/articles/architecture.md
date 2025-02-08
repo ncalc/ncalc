@@ -40,10 +40,10 @@ The method <xref:NCalc.Expression.Evaluate> returns the actual value of its <xre
 Example:
 
 ```c#
-  var expression = new Expression("2 * 3");
-  var result = expression.Evaluate();
+var expression = new Expression("2 * 3");
+var result = expression.Evaluate();
   
-  Console.WriteLine(result);
+Console.WriteLine(result);
 ```
 
 This example above first creates an instance of <xref:NCalc.Expression> using a valued constructor. This constructor

@@ -83,7 +83,7 @@ greeting("Chers")
 You can escape special characters using \\, \', \n, \r, \t.
 
 ## Chars
-If you use <xref:ExpressionOptions.AllowCharValues>, single quoted strings are interpreted as <xref:System.Char>
+If you use <xref:NCalc.ExpressionOptions.AllowCharValues>, single quoted strings are interpreted as <xref:System.Char>
 ```
 var expression = new Expression("'g'", ExpressionOptions.AllowCharValues);
 var result = expression.Evalutate();
@@ -102,7 +102,7 @@ getUser(78b1941f4e7941c9bef656fad7326538)
 A function is made of a name followed by braces, containing optionally any value as arguments.
 
 ```
-  Abs(1)
+Abs(1)
 ```
 
 ```
@@ -116,7 +116,7 @@ Please read the [functions page](functions.md) for details.
 A parameter as a name, and can be optionally contained inside brackets or double quotes.
 
 ```
-  2 + x, 2 + [x]
+2 + x, 2 + [x]
 ```
 
 Please read the [parameters page](parameters.md) for details.

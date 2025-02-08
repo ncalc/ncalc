@@ -5,16 +5,16 @@ When <xref:NCalc.Expression.Evaluate> is called on an expression, it is parsed o
 Moreover, each parsed expression is cached internally, which means you don't even have to care about reusing an <xref:NCalc.Expression> instance, the framework will do it for you.
 The cache is automatically cleaned like the GC does when an Expression is no more used, or memory is needed (i.e. using [WeakReference<LogicalExpression>](https://learn.microsoft.com/en-us/dotnet/api/system.weakreference-1?view=net-8.0)).
 
-You can disable this behavior at the framework level by adding <xref:NCalc.Core.ExpressionOptions.NoCache> at your [global expression context](expression_context.md).
+You can disable this behavior at the framework level by adding <xref:NCalc.ExpressionOptions.NoCache> at your [global expression context](expression_context.md).
 
 ```c#
- MyContext.Value.Options = ExpressionOptions.NoCache;
+MyContext.Value.Options = ExpressionOptions.NoCache;
 ```
 
 You can also tell a specific <xref:NCalc.Expression> instance not to be taken from the cache.
 
 ```c#
- var expression = new Expression("1 + 1", ExpressionOptions.NoCache);
+var expression = new Expression("1 + 1", ExpressionOptions.NoCache);
 ```
 
 You can customize the cache implementation using [Dependency Injection](dependency_injection.md).
