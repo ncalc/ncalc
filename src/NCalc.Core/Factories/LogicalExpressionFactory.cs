@@ -11,12 +11,14 @@ namespace NCalc.Factories;
 /// </summary>
 public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> logger) : ILogicalExpressionFactory
 {
-    private static LogicalExpressionFactory? _instance;
+    private static readonly LogicalExpressionFactory Instance;
 
-    public static LogicalExpressionFactory GetInstance()
+    static LogicalExpressionFactory()
     {
-        return _instance ??= new LogicalExpressionFactory(DefaultLoggerFactory.Value.CreateLogger<LogicalExpressionFactory>());
+        Instance = new LogicalExpressionFactory(DefaultLoggerFactory.Value.CreateLogger<LogicalExpressionFactory>());
     }
+
+    public static LogicalExpressionFactory GetInstance() => Instance;
 
     LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options)
     {

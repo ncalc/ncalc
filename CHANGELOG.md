@@ -1,3 +1,24 @@
+# 5.3.1
+* Small code quality improvements by @gumbarros in https://github.com/ncalc/ncalc/pull/365
+* Fix Directory.Build.props inheritance by @sebastienros in https://github.com/ncalc/ncalc/pull/373
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/366
+* Small code quality improvements by @gumbarros in https://github.com/ncalc/ncalc/pull/376
+* Added issue #372 unit test by @gumbarros in https://github.com/ncalc/ncalc/pull/377
+
+# 5.3.0
+* Improve SerializationVisitor performance by @Bykiev in https://github.com/ncalc/ncalc/pull/353
+* Remove nullable disable by @Bykiev in https://github.com/ncalc/ncalc/pull/355
+* Improve performance of math functions by @Bykiev in https://github.com/ncalc/ncalc/pull/356
+* Lambdas - use BigDecimal in Pow function by @Bykiev in https://github.com/ncalc/ncalc/pull/357
+* Round - use int32 as digits parameter type by @Bykiev in https://github.com/ncalc/ncalc/pull/359
+* Lambdas - add support for DecimalAsDefault by @Bykiev in https://github.com/ncalc/ncalc/pull/358
+* Update to .NET 9, C# 13 and update all external dependencies to latest version. by @gumbarros in https://github.com/ncalc/ncalc/pull/361
+* Update NCalc logo by @gumbarros in https://github.com/ncalc/ncalc/pull/363
+* Added JSON polymorphism support by @gumbarros in https://github.com/ncalc/ncalc/pull/364
+
+## Breaking Changes
+* Remove obsolete `Expressions` property from `Function` class by @gumbarros in https://github.com/ncalc/ncalc/pull/362
+
 # 5.2.11
 * Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/346
 * Fix culture support with NoStringTypeCoercion by @Bykiev in https://github.com/ncalc/ncalc/pull/347
@@ -54,8 +75,6 @@
 * Update Parlot (1.0.2) by @Bykiev in https://github.com/ncalc/ncalc/pull/300
 * Add `ValueType.Guid` by @gumbarros in https://github.com/ncalc/ncalc/pull/301
 * Breaking Change: Use `ValueTask` instead of `Task` at `NCalc.Async` by @gumbarros in https://github.com/ncalc/ncalc/pull/302
-
-**Full Changelog**: https://github.com/ncalc/ncalc/compare/v5.1.0...v5.2.0
 
 # 5.1.0
 * Fix typo in MathHelper by @Bykiev in https://github.com/ncalc/ncalc/pull/273

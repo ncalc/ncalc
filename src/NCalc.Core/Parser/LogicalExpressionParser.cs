@@ -69,6 +69,18 @@ public static class LogicalExpressionParser
                             }))
                         .And(exponentNumberPart)
                         .Then(x => (0L, x.Item1.Item1, x.Item1.Item2, x.Item2)),
+                    Literals.Text("0x")
+                        .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
+                        .Then(x => Convert.ToInt64(x.ToString(), 16))
+                        .Then<(long, int, long?, long?)>(x => (x, 0, null, null)),
+                    Literals.Text("0b")
+                        .SkipAnd(Terms.Pattern(c => c == '0' || c == '1'))
+                        .Then(x => Convert.ToInt64(x.ToString(), 2))
+                        .Then<(long, int, long?, long?)>(x => (x, 0, null, null)),
+                    Literals.Text("0o")
+                        .SkipAnd(Terms.Pattern(c => "01234567".Contains(c)))
+                        .Then(x => Convert.ToInt64(x.ToString(), 8))
+                        .Then<(long, int, long?, long?)>(x => (x, 0, null, null)),
                     Literals.Integer()
                         .And(Literals.Char('.')
                             .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0))
@@ -155,7 +167,7 @@ public static class LogicalExpressionParser
 
         var function = identifier
             .And(list)
-            .Then<LogicalExpression>(x =>
+            .Then<LogicalExpression>(static x =>
                 new Function(new Identifier(x.Item1.ToString()!), (LogicalExpressionList)x.Item2));
 
         var booleanTrue = Terms.Text("true", true)
@@ -165,7 +177,7 @@ public static class LogicalExpressionParser
 
         var singleQuotesStringValue =
             Terms.String(quotes: StringLiteralQuotes.Single)
-                .Then<LogicalExpression>((ctx, value) =>
+                .Then<LogicalExpression>(static (ctx, value) =>
                 {
                     if (value.Length == 1 &&
                         ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
@@ -192,7 +204,7 @@ public static class LogicalExpressionParser
             .And(charIsNumber);
 
         // date => number/number/number
-        var date = dateDefinition.Then<LogicalExpression>(date =>
+        var date = dateDefinition.Then<LogicalExpression>(static date =>
         {
             if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
             {
@@ -209,7 +221,7 @@ public static class LogicalExpressionParser
             .AndSkip(colon)
             .And(charIsNumber);
 
-        var time = timeDefinition.Then<LogicalExpression>(time =>
+        var time = timeDefinition.Then<LogicalExpression>(static time =>
         {
             if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
             {
@@ -221,7 +233,7 @@ public static class LogicalExpressionParser
 
         // dateAndTime => number/number/number number:number:number
         var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
-            dateTime =>
+            static dateTime =>
             {
                 if (DateTime.TryParse(
                         $"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}",
@@ -240,13 +252,13 @@ public static class LogicalExpressionParser
             .AndSkip(Literals.Char('#'));
 
         var decimalNumber = Terms.Number<decimal>()
-            .Then<LogicalExpression>(d => new ValueExpression(d));
+            .Then<LogicalExpression>(static d => new ValueExpression(d));
         var doubleNumber = Terms.Number<double>(NumberOptions.Float)
-            .Then<LogicalExpression>(d => new ValueExpression(d));
+            .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
 
-        var isHexDigit =Character.IsHexDigit;
+        var isHexDigit = Character.IsHexDigit;
 
         var eightHexSequence = Terms
             .Pattern(isHexDigit, 8, 8);
@@ -269,12 +281,12 @@ public static class LogicalExpressionParser
                 .And(fourHexSequence)
                 .AndSkip(minus)
                 .And(twelveHexSequence)
-            .Then<LogicalExpression>(g =>
+            .Then<LogicalExpression>(static g =>
                     new ValueExpression(Guid.Parse(g.Item1.ToString() + g.Item2 + g.Item3 + g.Item4 + g.Item5)));
 
         var guidWithoutHyphens = thirtyTwoHexSequence
             .AndSkip(Not(decimalOrDoubleNumber))
-            .Then<LogicalExpression>(g => new ValueExpression(Guid.Parse(g.ToString()!)));
+            .Then<LogicalExpression>(static g => new ValueExpression(Guid.Parse(g.ToString()!)));
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
 
@@ -324,9 +336,9 @@ public static class LogicalExpressionParser
 
         // ( "-" | "not" ) unary | primary;
         var unary = exponential.Unary(
-            (not, value => new UnaryExpression(UnaryExpressionType.Not, value)),
-            (minus, value => new UnaryExpression(UnaryExpressionType.Negate, value)),
-            (bitwiseNot, value => new UnaryExpression(UnaryExpressionType.BitwiseNot, value))
+            (not, static value => new UnaryExpression(UnaryExpressionType.Not, value)),
+            (minus, static value => new UnaryExpression(UnaryExpressionType.Negate, value)),
+            (bitwiseNot, static value => new UnaryExpression(UnaryExpressionType.BitwiseNot, value))
         );
 
         // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
@@ -389,7 +401,7 @@ public static class LogicalExpressionParser
 
         // ternary => logical("?" logical ":" logical) ?
         var ternary = logical.And(ZeroOrOne(questionMark.SkipAnd(logical).AndSkip(colon).And(logical)))
-            .Then(x => x.Item2.Item1 == null
+            .Then(static x => x.Item2.Item1 == null
                 ? x.Item1
                 : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2))
             .Or(logical);

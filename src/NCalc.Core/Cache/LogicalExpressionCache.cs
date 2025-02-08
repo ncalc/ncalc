@@ -8,12 +8,14 @@ public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logge
 {
     private readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
 
-    private static LogicalExpressionCache? _instance;
+    private static readonly LogicalExpressionCache Instance;
 
-    public static LogicalExpressionCache GetInstance()
+    static LogicalExpressionCache()
     {
-        return _instance ??= new LogicalExpressionCache(DefaultLoggerFactory.Value.CreateLogger<LogicalExpressionCache>());
+        Instance = new LogicalExpressionCache(DefaultLoggerFactory.Value.CreateLogger<LogicalExpressionCache>());
     }
+
+    public static LogicalExpressionCache GetInstance() => Instance;
 
     public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)
     {
