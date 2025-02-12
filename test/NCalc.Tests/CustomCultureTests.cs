@@ -9,7 +9,7 @@ public class CustomCultureTests
         var cultureDot = (CultureInfo)CultureInfo.InvariantCulture.Clone();
         cultureDot.NumberFormat.NumberGroupSeparator = " ";
         var cultureComma = (CultureInfo)CultureInfo.InvariantCulture.Clone();
-        cultureComma.NumberFormat.CurrencyDecimalSeparator = ",";
+        cultureComma.NumberFormat.NumberDecimalSeparator = ",";
         cultureComma.NumberFormat.NumberGroupSeparator = " ";
 
         //use 1*[A] to avoid evaluating expression parameters as string - force numeric conversion
@@ -37,8 +37,8 @@ public class CustomCultureTests
             {
                 Parameters =
                 {
-                    {"A","2.0"},
-                    {"B","0.5"}
+                    {"A","2,0"},
+                    {"B","0,5"}
                 }
             }.Evaluate());
 
