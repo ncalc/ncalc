@@ -95,4 +95,27 @@ public class CustomCultureTests
             Thread.CurrentThread.CurrentCulture = originalCulture;
         }
     }
+    [Fact]
+    public void ShouldConvertToStringUsingCultureInfo()
+    {
+        var originalCulture = (CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
+        try
+        {
+            var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+            culture.NumberFormat.NumberDecimalSeparator = ",";
+            Thread.CurrentThread.CurrentCulture = culture;
+            var context = new ExpressionContext(
+                ExpressionOptions.StringConcat,
+                CultureInfo.InvariantCulture);
+            var expr = new Expression("[a] + 2.5", context)
+            {
+                Parameters = { ["a"] = 1.7 }
+            };
+            Assert.Equal("1.72.5", expr.Evaluate());
+        }
+        finally
+        {
+            Thread.CurrentThread.CurrentCulture = originalCulture;
+        }
+    }
 }

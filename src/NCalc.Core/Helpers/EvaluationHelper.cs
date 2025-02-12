@@ -19,7 +19,9 @@ public static class EvaluationHelper
     public static object? Plus(object? leftValue, object? rightValue, ExpressionContextBase context)
     {
         if (context.Options.HasFlag(ExpressionOptions.StringConcat))
-            return string.Concat(leftValue, rightValue);
+            return string.Concat(
+                Convert.ToString(leftValue, context.CultureInfo),
+                Convert.ToString(rightValue, context.CultureInfo));
 
         if (context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion) &&
             (leftValue is string || rightValue is string))
@@ -33,7 +35,9 @@ public static class EvaluationHelper
         }
         catch (FormatException) when (leftValue is string && rightValue is string)
         {
-            return string.Concat(leftValue, rightValue);
+            return string.Concat(
+                Convert.ToString(leftValue, context.CultureInfo),
+                Convert.ToString(rightValue, context.CultureInfo));
         }
     }
 
