@@ -1,4 +1,5 @@
-﻿using NCalc.Domain;
+﻿using System.Diagnostics.CodeAnalysis;
+using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
@@ -9,10 +10,9 @@ namespace NCalc.Visitors;
 /// <summary>
 /// Class responsible to evaluating <see cref="LogicalExpression"/> objects into CLR objects.
 /// </summary>
-/// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
 public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor<object?>
 {
-    public object? Visit(TernaryExpression expression)
+    public virtual object? Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
         var left = Convert.ToBoolean(expression.LeftExpression.Accept(this), context.CultureInfo);
@@ -25,7 +25,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         return expression.RightExpression.Accept(this);
     }
 
-    public object? Visit(BinaryExpression expression)
+    public virtual object? Visit(BinaryExpression expression)
     {
         var left = new Lazy<object?>(() => Evaluate(expression.LeftExpression), LazyThreadSafetyMode.None);
         var right = new Lazy<object?>(() => Evaluate(expression.RightExpression), LazyThreadSafetyMode.None);
@@ -135,13 +135,12 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
                 return !EvaluationHelper.Like(leftValue, rightValue, context);
             }
-
         }
 
         return null;
     }
 
-    public object? Visit(UnaryExpression expression)
+    public virtual object? Visit(UnaryExpression expression)
     {
         // Recursively evaluates the underlying expression
         var result = expression.Expression.Accept(this);
@@ -149,9 +148,9 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         return EvaluationHelper.Unary(expression, result, context);
     }
 
-    public object? Visit(ValueExpression expression) => expression.Value;
+    public virtual object? Visit(ValueExpression expression) => expression.Value;
 
-    public object? Visit(Function function)
+    public virtual object? Visit(Function function)
     {
         var argsCount = function.Parameters.Count;
         var args = new Expression[argsCount];
@@ -180,7 +179,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         return BuiltInFunctionHelper.Evaluate(functionName, args, context);
     }
 
-    public object? Visit(Identifier identifier)
+    public virtual object? Visit(Identifier identifier)
     {
         var identifierName = identifier.Name;
 
@@ -221,7 +220,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    public object Visit(LogicalExpressionList list)
+    public virtual object Visit(LogicalExpressionList list)
     {
         List<object?> result = [];
 
@@ -259,7 +258,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         context.EvaluateParameterHandler?.Invoke(name, args);
     }
 
-    private object? Evaluate(LogicalExpression expression)
+    protected object? Evaluate(LogicalExpression expression)
     {
         return expression.Accept(this);
     }

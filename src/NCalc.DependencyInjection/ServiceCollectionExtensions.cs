@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NCalc.Cache;
 using NCalc.Factories;
-using NCalc.Services;
+using NCalc.Visitors;
 
 namespace NCalc.DependencyInjection;
 
@@ -27,8 +27,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddLogging();
 
-        services.AddVisitors();
-
         services.AddFactories();
 
         services.AddCache();
@@ -44,14 +42,10 @@ public static class ServiceCollectionExtensions
     private static void AddFactories(this IServiceCollection services)
     {
         services.AddScoped<IExpressionFactory, ExpressionFactory>();
+        services.AddScoped<IEvaluationVisitorFactory, EvaluationVisitorFactory>();
+        services.AddScoped<IAsyncEvaluationVisitorFactory, AsyncEvaluationVisitorFactory>();
         services.AddScoped<IAsyncExpressionFactory, AsyncExpressionFactory>();
 
         services.AddSingleton<ILogicalExpressionFactory>(_ => LogicalExpressionFactory.GetInstance());
-    }
-
-    private static void AddVisitors(this IServiceCollection services)
-    {
-        services.AddTransient<IEvaluationService, EvaluationService>();
-        services.AddTransient<IAsyncEvaluationService, AsyncEvaluationService>();
     }
 }

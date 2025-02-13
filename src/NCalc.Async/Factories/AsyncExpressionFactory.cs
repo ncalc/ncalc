@@ -1,6 +1,5 @@
 ﻿using NCalc.Cache;
 using NCalc.Domain;
-using NCalc.Services;
 
 namespace NCalc.Factories;
 
@@ -10,16 +9,16 @@ namespace NCalc.Factories;
 public sealed class AsyncExpressionFactory(
     ILogicalExpressionFactory logicalExpressionFactory,
     ILogicalExpressionCache cache,
-    IAsyncEvaluationService evaluationService
+    IAsyncEvaluationVisitorFactory evaluationVisitorFactory
 ) : IAsyncExpressionFactory
 {
     public AsyncExpression Create(string expression, AsyncExpressionContext? expressionContext = null)
     {
-        return new AsyncExpression(expression, expressionContext ?? new(), logicalExpressionFactory, cache, evaluationService);
+        return new AsyncExpression(expression, expressionContext ?? new(), logicalExpressionFactory, cache, evaluationVisitorFactory);
     }
 
     public AsyncExpression Create(LogicalExpression logicalExpression, AsyncExpressionContext? expressionContext = null)
     {
-        return new AsyncExpression(logicalExpression, expressionContext ?? new(), logicalExpressionFactory, cache, evaluationService);
+        return new AsyncExpression(logicalExpression, expressionContext ?? new(), logicalExpressionFactory, cache, evaluationVisitorFactory);
     }
 }
