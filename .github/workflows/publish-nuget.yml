@@ -26,7 +26,7 @@ jobs:
     - name: Build
       run: dotnet build -c Release --no-restore 
     - name: Test
-      run: dotnet test -c Release --no-build --verbosity normal
+      run: dotnet test -c Release --no-build --verbosity detailed
     - name: Pack unsigned
       run: dotnet pack -c Release --no-build -p:PublicRelease=true
     - name: Pack signed
