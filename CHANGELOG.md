@@ -1,3 +1,6 @@
+# 5.4.1
+* Update Parlot version by @gumbarros in https://github.com/ncalc/ncalc/pull/397
+
 # 5.4.0
 * Update NCalc.Core.csproj by @sebastienros in https://github.com/ncalc/ncalc/pull/381
 * Update GH actions to latest by @sebastienros in https://github.com/ncalc/ncalc/pull/382
