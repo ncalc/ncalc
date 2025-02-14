@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning">
-      <Version>3.6.146</Version>
+      <Version>3.7.115</Version>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="PolySharp" Version="1.15.0">
@@ -18,9 +18,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="Roslynator.Analyzers" Version="4.12.9" PrivateAssets="all"/>
-    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.9" PrivateAssets="all"/>
-    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.9" PrivateAssets="all"/>
+    <PackageReference Include="Roslynator.Analyzers" Version="4.13.0" PrivateAssets="all"/>
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.13.0" PrivateAssets="all"/>
+    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.13.0" PrivateAssets="all"/>
   </ItemGroup>
   <ItemGroup>
     <Using Include="System" />
