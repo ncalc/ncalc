@@ -4,7 +4,6 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
-using NCalc.Services;
 
 namespace NCalc;
 
@@ -45,11 +44,11 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         remove => Context.AsyncEvaluateParameterHandler -= value;
     }
 
-    protected IAsyncEvaluationService EvaluationService { get; }
+    protected IAsyncEvaluationVisitorFactory EvaluationVisitorFactory { get; }
 
     private AsyncExpression(AsyncExpressionContext? context = null) : base(context ?? new AsyncExpressionContext())
     {
-        EvaluationService = new AsyncEvaluationService();
+        EvaluationVisitorFactory = new AsyncEvaluationVisitorFactory();
     }
 
     public AsyncExpression(
@@ -57,9 +56,9 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         AsyncExpressionContext context,
         ILogicalExpressionFactory factory,
         ILogicalExpressionCache cache,
-        IAsyncEvaluationService evaluationService) : base(expression, context, factory, cache)
+        IAsyncEvaluationVisitorFactory evaluationVisitorFactory) : base(expression, context, factory, cache)
     {
-        EvaluationService = evaluationService;
+        EvaluationVisitorFactory = evaluationVisitorFactory;
     }
 
     public AsyncExpression(
@@ -67,9 +66,9 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         AsyncExpressionContext context,
         ILogicalExpressionFactory factory,
         ILogicalExpressionCache cache,
-        IAsyncEvaluationService evaluationService) : base(logicalExpression, context, factory, cache)
+        IAsyncEvaluationVisitorFactory evaluationVisitorFactory) : base(logicalExpression, context, factory, cache)
     {
-        EvaluationService = evaluationService;
+        EvaluationVisitorFactory = evaluationVisitorFactory;
     }
 
     public AsyncExpression(string expression, AsyncExpressionContext? context = null) : this(context)
@@ -124,19 +123,29 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
             return IterateParametersAsync();
 
-        return EvaluationService.EvaluateAsync(LogicalExpression!, Context);
+        var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+
+        if (LogicalExpression is null)
+            return new ValueTask<object?>();
+
+        return LogicalExpression.Accept(evaluationVisitor);
     }
 
     private async ValueTask<object?> IterateParametersAsync()
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
+        var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+
+        if (LogicalExpression is null)
+            return null;
+
         if (size == null)
-            return await EvaluationService.EvaluateAsync(LogicalExpression!, Context);
+            return await LogicalExpression.Accept(evaluationVisitor);
 
         var results = new List<object?>();
 
-        for (int i = 0; i < size; i++)
+        for (var i = 0; i < size; i++)
         {
             foreach (var kvp in parameterEnumerators)
             {
@@ -144,7 +153,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
                 Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            results.Add(await EvaluationService.EvaluateAsync(LogicalExpression!, Context));
+            results.Add(await LogicalExpression.Accept(evaluationVisitor));
         }
 
         return results;

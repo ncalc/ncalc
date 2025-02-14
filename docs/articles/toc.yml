@@ -30,6 +30,8 @@
   href: lambda_compilation.md
 - name: Dependency Injection
   href: dependency_injection.md
+- name: Overriding Evaluation Behavior
+  href: overriding_evaluation.md
 - name: Plugins
   items:
     - name: ANTLR

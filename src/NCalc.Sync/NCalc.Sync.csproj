@@ -45,6 +45,11 @@
         <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj"/>
     </ItemGroup>
 
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="NCalc.DependencyInjection" />
+    </ItemGroup>
+
     <PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
         <AssemblyName>NCalc.Sync.signed</AssemblyName>
         <PackageId>NCalcSync.signed</PackageId>

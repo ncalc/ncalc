@@ -4,7 +4,6 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
-using NCalc.Services;
 
 namespace NCalc;
 
@@ -45,11 +44,11 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         set => Context.Functions = value;
     }
 
-    protected IEvaluationService EvaluationService { get; }
+    protected IEvaluationVisitorFactory EvaluationVisitorFactory { get; }
 
     private Expression(ExpressionContext? context = null) : base(context ?? new ExpressionContext())
     {
-        EvaluationService = new EvaluationService();
+        EvaluationVisitorFactory = new EvaluationVisitorFactory();
     }
 
     public Expression(
@@ -57,9 +56,9 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         ExpressionContext context,
         ILogicalExpressionFactory factory,
         ILogicalExpressionCache cache,
-        IEvaluationService evaluationService) : base(expression, context, factory, cache)
+        IEvaluationVisitorFactory evaluationVisitorFactory) : base(expression, context, factory, cache)
     {
-        EvaluationService = evaluationService;
+        EvaluationVisitorFactory = evaluationVisitorFactory;
     }
 
     public Expression(
@@ -67,9 +66,9 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         ExpressionContext context,
         ILogicalExpressionFactory factory,
         ILogicalExpressionCache cache,
-        IEvaluationService evaluationService) : base(logicalExpression, context, factory, cache)
+        IEvaluationVisitorFactory evaluationVisitorFactory) : base(logicalExpression, context, factory, cache)
     {
-        EvaluationService = evaluationService;
+        EvaluationVisitorFactory = evaluationVisitorFactory;
     }
 
     public Expression(string? expression, ExpressionContext? context = null) : this(context)
@@ -124,15 +123,18 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
             return IterateParameters();
 
-        return EvaluationService.Evaluate(LogicalExpression, Context);
+        var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+        return LogicalExpression?.Accept(evaluationVisitor);
     }
 
     private object? IterateParameters()
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
+        var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+
         if (size == null)
-            return EvaluationService.Evaluate(LogicalExpression, Context);
+            return LogicalExpression?.Accept(evaluationVisitor);
 
         var results = new List<object?>();
 
@@ -144,7 +146,7 @@ public partial class Expression : ExpressionBase<ExpressionContext>
                 Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            results.Add(EvaluationService.Evaluate(LogicalExpression, Context));
+            results.Add(LogicalExpression?.Accept(evaluationVisitor));
         }
 
         return results;

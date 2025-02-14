@@ -25,4 +25,8 @@
       <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="NCalc.DependencyInjection" />
+    </ItemGroup>
+    
 </Project>
