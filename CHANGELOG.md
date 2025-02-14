@@ -1,3 +1,17 @@
+# 5.4.0
+* Update NCalc.Core.csproj by @sebastienros in https://github.com/ncalc/ncalc/pull/381
+* Update GH actions to latest by @sebastienros in https://github.com/ncalc/ncalc/pull/382
+* Add binary, octal and hexadecimal number support. by @slobber in https://github.com/ncalc/ncalc/pull/388
+* Update parameters.md by @gmkado in https://github.com/ncalc/ncalc/pull/385
+* Documentation - Broken Links & Formatting by @Jason-Barratt in https://github.com/ncalc/ncalc/pull/389
+* Use CultureInfo in string concatenation by @ridago in https://github.com/ncalc/ncalc/pull/392
+* Fix culture info test by @ridago in https://github.com/ncalc/ncalc/pull/393
+* Added `IEvaluationVisitorFactory` for more granular control over evaluation. by @gumbarros in https://github.com/ncalc/ncalc/pull/395
+* Update 3rd party dependencies by @gumbarros in https://github.com/ncalc/ncalc/pull/396
+
+## Breaking Changes
+* Removed `IEvaluationService`, please use `IEvaluationVisitorFactory`. Check [this article](https://ncalc.github.io/ncalc/articles/overriding_evaluation.html) for more info.
+
 # 5.3.1
 * Small code quality improvements by @gumbarros in https://github.com/ncalc/ncalc/pull/365
 * Fix Directory.Build.props inheritance by @sebastienros in https://github.com/ncalc/ncalc/pull/373
