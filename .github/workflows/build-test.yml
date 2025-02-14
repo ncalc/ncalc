@@ -26,16 +26,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      - name: Install ReportGenerator
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
       - name: Build
         run: dotnet build
       - name: Test
-        run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
-      - name: Generate Code Coverage Report
-        run: reportgenerator -reports:./TestResults/**/*.xml -targetdir:./TestResults/CoverageReport -reporttypes:Html
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage-report
-          path: ./TestResults/CoverageReport
+        run: dotnet test
