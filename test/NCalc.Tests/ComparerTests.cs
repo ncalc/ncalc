@@ -100,4 +100,15 @@ public class ComparerTests
         var ex = Assert.Throws<NCalcParameterNotDefinedException>(() => e.Evaluate());
         Assert.Contains("not defined", ex.Message);
     }
+
+    [Theory]
+    [InlineData("(10/null)<0")]
+    [InlineData("(10/null)>0")]
+    public void CompareWithNullShouldReturnFalse(string expression)
+    {
+        var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
+        e.Parameters["x"] = null;
+
+        Assert.False((bool)e.Evaluate());
+    }
 }

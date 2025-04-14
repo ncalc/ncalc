@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using NCalc.Domain;
+﻿using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
@@ -232,6 +231,9 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     protected bool Compare(object? a, object? b, ComparisonType comparisonType)
     {
         if (context.Options.HasFlag(ExpressionOptions.StrictTypeMatching) && a?.GetType() != b?.GetType())
+            return false;
+
+        if ((a == null || b == null) && !(a == null && b == null))
             return false;
 
         var result = CompareUsingMostPreciseType(a, b, context);

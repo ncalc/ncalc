@@ -251,6 +251,9 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         if (context.Options.HasFlag(ExpressionOptions.StrictTypeMatching) && a?.GetType() != b?.GetType())
             return false;
 
+        if ((a == null || b == null) && !(a == null && b == null))
+            return false;
+
         var result = CompareUsingMostPreciseType(a, b, context);
 
         return comparisonType switch
