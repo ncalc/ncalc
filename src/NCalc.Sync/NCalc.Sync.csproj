@@ -34,15 +34,15 @@
 
     <!-- Other Item Groups and Package References -->
     <ItemGroup>
-        <Compile Remove="Properties\ExcludeFromCodeCoverageAttribute35.cs"/>
+        <Compile Remove="Properties\ExcludeFromCodeCoverageAttribute35.cs" />
     </ItemGroup>
 
     <!-- Common Build Configurations -->
     <ItemGroup>
-        <None Include="..\..\README.md" Pack="true" PackagePath=""/>
+        <None Include="..\..\README.md" Pack="true" PackagePath="" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj"/>
+        <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
