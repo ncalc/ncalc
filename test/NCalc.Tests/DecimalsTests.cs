@@ -160,4 +160,16 @@ public class DecimalsTests
         Assert.Equal(0UL, new Expression("0b00001111 & 0b11110000").Evaluate());
         Assert.Equal(255UL, new Expression("0b00001111 | 0b11110000").Evaluate());
     }
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("1+2")]
+    [InlineData("4-3")]
+    [InlineData("1*2")]
+    public void ShouldNotTreatIntegersAsDecimals(string expr)
+    {
+        var expression = new Expression(expr, ExpressionOptions.DecimalAsDefault);
+        var res = expression.Evaluate();
+        Assert.Equal(typeof(int), res.GetType());
+    }
 }

@@ -430,6 +430,9 @@ public static class LogicalExpressionParser
         long? decimalPart = number.Item3;
         long? exponentPart = number.Item4;
 
+        if (decimalPart == null && exponentPart == null)
+            return new ValueExpression(integralValue);
+
         if (((LogicalExpressionParserContext)context).Options.HasFlag(ExpressionOptions.DecimalAsDefault))
         {
             decimal result1 = integralValue;
@@ -442,7 +445,9 @@ public static class LogicalExpressionParser
             }
 
             // exponent part?
-            if (exponentPart == null) return new ValueExpression(result1);
+            if (exponentPart == null)
+                return new ValueExpression(result1);
+
             var left = new BigDecimal(result1);
             var right = BigDecimal.Pow(10, exponentPart.Value);
 
