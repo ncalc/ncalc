@@ -34,7 +34,7 @@ Need help or want to learn more? [Check our docs.](https://ncalc.github.io/ncalc
 
 For additional information on the technique we used to create this framework please check these articles;
 - [How to execute mathematical expressions in a string in .NET](https://www.jjconsulting.com.br/en-us/blog/programming/ncalc)
-- [State of the Art Expression Evaluation](https://www.codeproject.com/Articles/18880/State-of-the-Art-Expression-Evaluation).
+- [State of the Art Expression Evaluation](https://www.codeproject.com/Articles/18880/State-of-the-Art-Expression-Evaluation)
 
 ## Help
 
