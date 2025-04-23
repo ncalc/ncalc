@@ -1,4 +1,5 @@
-﻿using NCalc.Exceptions;
+﻿using FastExpressionCompiler;
+using NCalc.Exceptions;
 using NCalc.Visitors;
 using LinqExpression = System.Linq.Expressions.Expression;
 using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
@@ -7,6 +8,13 @@ namespace NCalc;
 
 public partial class Expression
 {
+    internal static readonly bool UseSystemLynqCompiler;
+
+    static Expression()
+    {
+        UseSystemLynqCompiler = AppContext.TryGetSwitch("NCalc.UseSystemLynqCompiler", out var enabled) && enabled;
+    }
+
     private readonly struct Void;
     protected record struct LinqExpressionWithParameter(LinqExpression Expression, LinqParameterExpression? Parameter);
 
@@ -52,7 +60,11 @@ public partial class Expression
     {
         var body = ToLinqExpression<TResult>();
         var lambda = LinqExpression.Lambda<Func<TResult>>(body);
-        return lambda.Compile();
+
+        if (UseSystemLynqCompiler)
+            return lambda.Compile();
+
+        return lambda.CompileFast();
     }
 
     public Func<TContext, TResult> ToLambda<TContext, TResult>()
@@ -61,7 +73,11 @@ public partial class Expression
         if (linqExp.Parameter != null)
         {
             var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter);
-            return lambda.Compile();
+
+            if (UseSystemLynqCompiler)
+                return lambda.Compile();
+
+            return lambda.CompileFast();
         }
 
         throw new NCalcException("Linq expression parameter cannot be null");
