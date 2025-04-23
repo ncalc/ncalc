@@ -5,13 +5,13 @@ using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Helpers;
 using NCalc.Reflection;
-using Linq = System.Linq.Expressions;
-using LinqExpression = System.Linq.Expressions.Expression;
-using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
+using Linq = FastExpressionCompiler.LightExpression;
+using LinqExpression = FastExpressionCompiler.LightExpression.Expression;
+using LinqParameterExpression = FastExpressionCompiler.LightExpression.ParameterExpression;
 
 namespace NCalc.Visitors;
 
-public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpression>
+public sealed class LambdaFastExpressionVisitor : ILogicalExpressionVisitor<LinqExpression>
 {
     private readonly IDictionary<string, object?>? _parameters;
     private readonly LinqExpression? _context;
@@ -20,7 +20,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
     private readonly bool _caseInsensitiveStringComparer;
     private readonly bool _checked;
 
-    private LambdaExpressionVisitor(ExpressionOptions options)
+    private LambdaFastExpressionVisitor(ExpressionOptions options)
     {
         _options = options;
         _ordinalStringComparer = _options.HasFlag(ExpressionOptions.OrdinalStringComparer);
@@ -28,12 +28,12 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         _caseInsensitiveStringComparer = _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
     }
 
-    public LambdaExpressionVisitor(IDictionary<string, object?> parameters, ExpressionOptions options) : this(options)
+    public LambdaFastExpressionVisitor(IDictionary<string, object?> parameters, ExpressionOptions options) : this(options)
     {
         _parameters = parameters;
     }
 
-    public LambdaExpressionVisitor(LinqParameterExpression context, ExpressionOptions options) : this(options)
+    public LambdaFastExpressionVisitor(LinqParameterExpression context, ExpressionOptions options) : this(options)
     {
         _context = context;
     }
@@ -134,7 +134,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         var mi = FindMethod(function.Identifier.Name, args);
         if (mi != null)
         {
-            return LinqExpression.Call(_context, mi.MethodInfo, mi.PreparedArguments);
+            return LinqExpression.Call(
+                instance: _context,
+                method: mi.MethodInfo,
+                arguments: mi.PreparedArguments.ToArray() // если это Expression[] или IReadOnlyList<Expression>
+            );
         }
 
         Linq.UnaryExpression arg0;
@@ -262,7 +266,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             foreach (var potentialMethod in methods)
             {
                 var methodParams = potentialMethod.GetParameters();
-                var preparedArguments = LinqUtils.PrepareMethodArgumentsIfValid(methodParams, methodArgs);
+                var preparedArguments = LinqFastUtils.PrepareMethodArgumentsIfValid(methodParams, methodArgs);
 
                 if (preparedArguments != null)
                 {
@@ -294,8 +298,8 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         Func<LinqExpression, LinqExpression, LinqExpression> action,
         BinaryExpressionType expressionType = BinaryExpressionType.Unknown)
     {
-        left = LinqUtils.UnwrapNullable(left);
-        right = LinqUtils.UnwrapNullable(right);
+        left = LinqFastUtils.UnwrapNullable(left);
+        right = LinqFastUtils.UnwrapNullable(right);
 
         if (_options.HasFlag(ExpressionOptions.AllowBooleanCalculation))
         {
@@ -330,12 +334,15 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         LinqExpression comparer;
         if (_caseInsensitiveStringComparer)
         {
-            comparer = LinqExpression.Property(null, typeof(StringComparer),
-                _ordinalStringComparer ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase");
+            var propertyName = _ordinalStringComparer ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase";
+            var propertyInfo = typeof(StringComparer).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
+
+            comparer = LinqExpression.Property(null, propertyInfo);
         }
         else
         {
-            comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
+            var propertyInfo = typeof(StringComparer).GetProperty("Ordinal", BindingFlags.Public | BindingFlags.Static);
+            comparer = LinqExpression.Property(null, propertyInfo);
         }
 
         switch (expressionType)
