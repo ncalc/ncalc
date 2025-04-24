@@ -43,7 +43,6 @@
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="FastExpressionCompiler" Version="5.1.1" />
-      <PackageReference Include="FastExpressionCompiler.LightExpression" Version="5.1.1" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj" />

@@ -1,8 +1,8 @@
 ﻿using FastExpressionCompiler;
 using NCalc.Exceptions;
 using NCalc.Visitors;
-using LinqExpression = FastExpressionCompiler.LightExpression.Expression;
-using LinqParameterExpression = FastExpressionCompiler.LightExpression.ParameterExpression;
+using LinqExpression = System.Linq.Expressions.Expression;
+using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
 namespace NCalc;
 
@@ -25,7 +25,7 @@ public partial class Expression
         if (LogicalExpression is null)
             throw Error!;
 
-        LambdaFastExpressionVisitor visitor;
+        LambdaExpressionVisitor visitor;
         LinqParameterExpression? parameter = null;
         if (typeof(TContext) != typeof(Void))
         {
@@ -59,7 +59,7 @@ public partial class Expression
     public Func<TResult> ToLambda<TResult>()
     {
         var body = ToLinqExpression<TResult>();
-        var lambda = LinqExpression.Lambda<Func<TResult>>(body).ToLambdaExpression();
+        var lambda = LinqExpression.Lambda<Func<TResult>>(body);
 
         if (UseSystemLynqCompiler)
             return lambda.Compile();
@@ -72,8 +72,7 @@ public partial class Expression
         var linqExp = ToLinqExpression<TContext, TResult>();
         if (linqExp.Parameter != null)
         {
-            var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter)
-                .ToLambdaExpression();
+            var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter);
 
             if (UseSystemLynqCompiler)
                 return lambda.Compile();

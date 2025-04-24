@@ -244,7 +244,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         throw new NotSupportedException("Collections are not supported for Lambda expressions yet. Please open a issue at https://www.github.com/ncalc/ncalc if you want this support.");
     }
 
-    private ExtendedMethodInfo<LinqExpression>? FindMethod(string methodName, LinqExpression[] methodArgs)
+    private ExtendedMethodInfo? FindMethod(string methodName, LinqExpression[] methodArgs)
     {
         if (_context == null)
             return null;
@@ -257,7 +257,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             var methods = contextTypeInfo.DeclaredMethods.Where(m =>
                 m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase) && m.IsPublic && !m.IsStatic);
 
-            var candidates = new List<ExtendedMethodInfo<LinqExpression>>();
+            var candidates = new List<ExtendedMethodInfo>();
 
             foreach (var potentialMethod in methods)
             {
@@ -266,7 +266,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
                 if (preparedArguments != null)
                 {
-                    var candidate = new ExtendedMethodInfo<LinqExpression>
+                    var candidate = new ExtendedMethodInfo
                     {
                         MethodInfo = potentialMethod,
                         PreparedArguments = preparedArguments.Item2,
@@ -324,9 +324,6 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             }
         }
 
-        if (typeof(string) != left.Type && typeof(string) != right.Type)
-            return action(left, right);
-
         LinqExpression comparer;
         if (_caseInsensitiveStringComparer)
         {
@@ -337,6 +334,9 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         {
             comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
         }
+
+        if (typeof(string) != left.Type && typeof(string) != right.Type)
+            return action(left, right);
 
         switch (expressionType)
         {
