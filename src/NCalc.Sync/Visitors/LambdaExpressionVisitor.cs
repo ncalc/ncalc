@@ -20,6 +20,12 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
     private readonly bool _caseInsensitiveStringComparer;
     private readonly bool _checked;
 
+    private static readonly MethodInfo StringComparerEqualsMethod =
+        typeof(StringComparer).GetRuntimeMethod("Equals", [typeof(string), typeof(string)])!;
+
+    private static readonly MethodInfo StringComparerCompareMethod =
+        typeof(StringComparer).GetRuntimeMethod("Compare", [typeof(string), typeof(string)])!;
+
     private LambdaExpressionVisitor(ExpressionOptions options)
     {
         _options = options;
@@ -324,6 +330,9 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             }
         }
 
+        if (typeof(string) != left.Type && typeof(string) != right.Type)
+            return action(left, right);
+
         LinqExpression comparer;
         if (_caseInsensitiveStringComparer)
         {
@@ -335,42 +344,28 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
         }
 
-        if (typeof(string) != left.Type && typeof(string) != right.Type)
-            return action(left, right);
-
         switch (expressionType)
         {
             case BinaryExpressionType.Equal:
-                return LinqExpression.Call(comparer,
-                    typeof(StringComparer).GetRuntimeMethod("Equals", [typeof(string), typeof(string)])!,
-                    [left, right]);
+                return LinqExpression.Call(comparer, StringComparerEqualsMethod, [left, right]);
             case BinaryExpressionType.NotEqual:
-                return LinqExpression.Not(LinqExpression.Call(comparer,
-                    typeof(StringComparer).GetRuntimeMethod("Equals", [typeof(string), typeof(string)])!,
-                    [left, right]));
+                return LinqExpression.Not(
+                    LinqExpression.Call(comparer, StringComparerEqualsMethod, [left, right]));
             case BinaryExpressionType.GreaterOrEqual:
                 return LinqExpression.GreaterThanOrEqual(
-                    LinqExpression.Call(comparer,
-                        typeof(StringComparer).GetRuntimeMethod("Compare",
-                            [typeof(string), typeof(string)])!, [left, right]),
+                    LinqExpression.Call(comparer, StringComparerCompareMethod, [left, right]),
                     LinqExpression.Constant(0));
             case BinaryExpressionType.LesserOrEqual:
                 return LinqExpression.LessThanOrEqual(
-                    LinqExpression.Call(comparer,
-                        typeof(StringComparer).GetRuntimeMethod("Compare",
-                            [typeof(string), typeof(string)])!, [left, right]),
+                    LinqExpression.Call(comparer, StringComparerCompareMethod, [left, right]),
                     LinqExpression.Constant(0));
             case BinaryExpressionType.Greater:
                 return LinqExpression.GreaterThan(
-                    LinqExpression.Call(comparer,
-                        typeof(StringComparer).GetRuntimeMethod("Compare",
-                            [typeof(string), typeof(string)])!, [left, right]),
+                    LinqExpression.Call(comparer, StringComparerCompareMethod, [left, right]),
                     LinqExpression.Constant(0));
             case BinaryExpressionType.Lesser:
                 return LinqExpression.LessThan(
-                    LinqExpression.Call(comparer,
-                        typeof(StringComparer).GetRuntimeMethod("Compare",
-                            [typeof(string), typeof(string)])!, [left, right]),
+                    LinqExpression.Call(comparer, StringComparerCompareMethod, [left, right]),
                     LinqExpression.Constant(0));
         }
 
