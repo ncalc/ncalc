@@ -1,4 +1,5 @@
-﻿using FastExpressionCompiler;
+﻿using System.Runtime.CompilerServices;
+using FastExpressionCompiler;
 using NCalc.Exceptions;
 using NCalc.Visitors;
 using LinqExpression = System.Linq.Expressions.Expression;
@@ -27,18 +28,18 @@ public partial class Expression
 
         LambdaExpressionVisitor visitor;
         LinqParameterExpression? parameter = null;
-        if (typeof(TContext) != typeof(Void))
+        if (IsVoidType<TContext>())
+        {
+            visitor = new(Parameters, Options);
+        }
+        else
         {
             parameter = LinqExpression.Parameter(typeof(TContext), "ctx");
             visitor = new(parameter, Options);
         }
-        else
-        {
-            visitor = new(Parameters, Options);
-        }
 
         var body = LogicalExpression.Accept(visitor);
-        if (body.Type != typeof(TResult))
+        if (!IsSameType(body, typeof(TResult)))
         {
             body = LinqExpression.Convert(body, typeof(TResult));
         }
@@ -82,4 +83,10 @@ public partial class Expression
 
         throw new NCalcException("Linq expression parameter cannot be null");
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsVoidType<TContext>() => typeof(TContext) == typeof(Void);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsSameType(LinqExpression expression, Type targetType) => expression.Type == targetType;
 }
