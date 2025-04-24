@@ -1,6 +1,4 @@
-﻿using System;
-using FastExpressionCompiler;
-using FastExpressionCompiler.LightExpression;
+﻿using FastExpressionCompiler;
 using NCalc.Exceptions;
 using NCalc.Visitors;
 using LinqExpression = FastExpressionCompiler.LightExpression.Expression;
@@ -61,7 +59,10 @@ public partial class Expression
     public Func<TResult> ToLambda<TResult>()
     {
         var body = ToLinqExpression<TResult>();
-        var lambda = LinqExpression.Lambda<Func<TResult>>(body);
+        var lambda = LinqExpression.Lambda<Func<TResult>>(body).ToLambdaExpression();
+
+        if (UseSystemLynqCompiler)
+            return lambda.Compile();
 
         return lambda.CompileFast();
     }
@@ -71,7 +72,12 @@ public partial class Expression
         var linqExp = ToLinqExpression<TContext, TResult>();
         if (linqExp.Parameter != null)
         {
-            var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter);
+            var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter)
+                .ToLambdaExpression();
+
+            if (UseSystemLynqCompiler)
+                return lambda.Compile();
+
             return lambda.CompileFast();
         }
 
