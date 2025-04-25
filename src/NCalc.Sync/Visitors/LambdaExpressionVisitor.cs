@@ -289,7 +289,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             if (candidates.Count != 0)
                 return candidates.OrderBy(method => method.Score).First();
 
-            contextType = contextType.BaseType?.GetTypeInfo();
+            contextType = contextType.BaseType;
         }
         while (contextType != null && contextType != objectType);
 
