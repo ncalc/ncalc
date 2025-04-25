@@ -255,13 +255,13 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         if (_context == null)
             return null;
 
-        var contextTypeInfo = _context.Type.GetTypeInfo();
-        var objectTypeInfo = typeof(object).GetTypeInfo();
+        var contextType = _context.Type;
+        var objectType = typeof(object);
 
         do
         {
-            var methods = contextTypeInfo.DeclaredMethods.Where(m =>
-                m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase) && m.IsPublic && !m.IsStatic);
+            var methods = contextType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(m => m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase));
 
             var candidates = new List<ExtendedMethodInfo>();
 
@@ -289,9 +289,9 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             if (candidates.Count != 0)
                 return candidates.OrderBy(method => method.Score).First();
 
-            contextTypeInfo = contextTypeInfo.BaseType?.GetTypeInfo();
+            contextType = contextType.BaseType?.GetTypeInfo();
         }
-        while (contextTypeInfo != null && contextTypeInfo != objectTypeInfo);
+        while (contextType != null && contextType != objectType);
 
         return null;
     }
