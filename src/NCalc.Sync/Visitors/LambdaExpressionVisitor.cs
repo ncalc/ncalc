@@ -217,7 +217,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                     for (int i = 0; i < parameters.Length; i++)
                         arguments.Add(LinqExpression.Convert(args[i], parameters[i].ParameterType));
 
-                    return LinqExpression.Call(func.MethodInfo, arguments.ToArray());
+                    return LinqExpression.Call(func.MethodInfo, arguments);
                 }
 
                 throw new MissingMethodException($"method not found: {functionName}");
