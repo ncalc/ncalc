@@ -9,11 +9,13 @@
     <Platforms>AnyCPU</Platforms>
     <IsPackable>false</IsPackable>
     <Optimize>true</Optimize>
+    <TieredCompilation>false</TieredCompilation>
+
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
-    <PackageReference Include="FastExpressionCompiler" Version="5.1.1" />
+    <PackageReference Include="FastExpressionCompiler" Version="5.2.0-preview-02" />
   </ItemGroup>
 
   <ItemGroup>

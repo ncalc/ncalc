@@ -57,9 +57,17 @@ public class EvaluateVsLambdaBenchmark
 
         Expression = expression;
         LambdaExpression = expression.ToLambdaExpression<bool>();
+#if DEBUG
+        TestTools.AllowPrintCS = true;
+        TestTools.AllowPrintIL = true;
+#endif
+        LambdaExpression.PrintCSharp();
 
         LambdaCompiled = LambdaExpression.Compile();
+        LambdaCompiled.PrintIL("system");
+
         LambdaCompiledFast = LambdaExpression.CompileFast();
+        LambdaCompiledFast.PrintIL("fec");
     }
 
     [Benchmark(Baseline = true)]
@@ -132,14 +140,14 @@ public class InvokeCompiledBenchmark
     }
 
     [Benchmark(Baseline = true)]
-    public bool Compiled()
-    {
-        return LambdaCompiled();
-    }
-
-    [Benchmark]
     public bool CompiledFast()
     {
         return LambdaCompiledFast();
+    }
+
+    [Benchmark]
+    public bool Compiled()
+    {
+        return LambdaCompiled();
     }
 }
