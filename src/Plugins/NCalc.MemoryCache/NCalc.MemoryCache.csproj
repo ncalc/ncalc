@@ -18,7 +18,6 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
     </ItemGroup>
 
 </Project>
