@@ -1,5 +1,4 @@
 # 5.4.2
-
 * Fix comparing values with `null` by @Bykiev in https://github.com/ncalc/ncalc/pull/404
 * Do not treat integers as decimals when DecimalAsDefault specified by @Bykiev in https://github.com/ncalc/ncalc/pull/405
 * Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/406
