@@ -2,7 +2,7 @@
 * Fix comparing values with `null` by @Bykiev in https://github.com/ncalc/ncalc/pull/404
 * Do not treat integers as decimals when DecimalAsDefault specified by @Bykiev in https://github.com/ncalc/ncalc/pull/405
 * Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/406
-* Refactor SerializationVisitor to remove ObjectPool dependency. by @gumbarros in https://github.com/ncalc/ncalc/pull/409
+* Refactor `SerializationVisitor` to remove ObjectPool dependency by @gumbarros in https://github.com/ncalc/ncalc/pull/409
 
 # 5.4.1
 * Update Parlot version by @gumbarros in https://github.com/ncalc/ncalc/pull/397
