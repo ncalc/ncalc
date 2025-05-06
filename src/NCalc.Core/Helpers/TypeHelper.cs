@@ -39,6 +39,10 @@ public static class TypeHelper
         typeof(sbyte)
     ];
 
+    private static readonly FrozenDictionary<Type, int> NumbersPrecedenceIndex = NumbersPrecedence
+        .Select((type, index) => new { type, index })
+        .ToFrozenDictionary(x => x.type, x => x.index);
+
     public static readonly FrozenDictionary<Type, Type[]> ImplicitPrimitiveConversionTable =
         new Dictionary<Type, Type[]>
         {
@@ -101,11 +105,10 @@ public static class TypeHelper
     /// <returns></returns>
     public static Type? GetMostPreciseNumberType(Type a, Type b)
     {
-        var l = Array.IndexOf(NumbersPrecedence, a);
-        var r = Array.IndexOf(NumbersPrecedence, b);
-
-        if (l >= 0 && r >= 0)
+        if (NumbersPrecedenceIndex.TryGetValue(a, out var l) && NumbersPrecedenceIndex.TryGetValue(b, out var r))
+        {
             return NumbersPrecedence[Math.Min(l, r)];
+        }
 
         return null;
     }

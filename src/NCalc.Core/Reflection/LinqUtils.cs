@@ -99,13 +99,13 @@ public static class LinqUtils
 
     public static LinqExpression UnwrapNullable(LinqExpression expression)
     {
-        var ti = expression.Type.GetTypeInfo();
-        if (ti.IsGenericType && ti.GetGenericTypeDefinition() == typeof(Nullable<>))
+        var type = expression.Type;
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
             return LinqExpression.Condition(
                 LinqExpression.Property(expression, "HasValue"),
                 LinqExpression.Property(expression, "Value"),
-                LinqExpression.Default(ti.GenericTypeArguments[0]));
+                LinqExpression.Default(type.GenericTypeArguments[0]));
         }
 
         return expression;
