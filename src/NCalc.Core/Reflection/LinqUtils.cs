@@ -102,11 +102,10 @@ public static class LinqUtils
         var type = expression.Type;
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            var underlyingType = type.GenericTypeArguments[0];
             return LinqExpression.Condition(
                 LinqExpression.Property(expression, "HasValue"),
                 LinqExpression.Property(expression, "Value"),
-                LinqExpression.Default(underlyingType));
+                LinqExpression.Default(type.GenericTypeArguments[0]));
         }
 
         return expression;
