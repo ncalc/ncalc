@@ -21,10 +21,10 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
     private readonly bool _checked;
 
     private static readonly MethodInfo StringComparerEqualsMethod =
-        typeof(StringComparer).GetRuntimeMethod("Equals", [typeof(string), typeof(string)])!;
+        typeof(StringComparer).GetMethod("Equals", [typeof(string), typeof(string)])!;
 
     private static readonly MethodInfo StringComparerCompareMethod =
-        typeof(StringComparer).GetRuntimeMethod("Compare", [typeof(string), typeof(string)])!;
+        typeof(StringComparer).GetMethod("Compare", [typeof(string), typeof(string)])!;
 
     private LambdaExpressionVisitor(ExpressionOptions options)
     {
@@ -336,13 +336,13 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         LinqExpression comparer;
         if (_caseInsensitiveStringComparer)
         {
-            comparer = LinqExpression.Property(null, typeof(StringComparer),
-                _ordinalStringComparer ? "OrdinalIgnoreCase" : "CurrentCultureIgnoreCase");
+            if (_ordinalStringComparer)
+                comparer = LinqExpression.Constant(StringComparer.OrdinalIgnoreCase);
+            else
+                comparer = LinqExpression.Constant(StringComparer.CurrentCultureIgnoreCase);
         }
         else
-        {
-            comparer = LinqExpression.Property(null, typeof(StringComparer), "Ordinal");
-        }
+            comparer = LinqExpression.Constant(StringComparer.Ordinal);
 
         switch (expressionType)
         {
