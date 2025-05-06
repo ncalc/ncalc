@@ -130,7 +130,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         {
             var items = LinqExpression.NewArrayInit(args[0].Type,
                 new ArraySegment<LinqExpression>(args, 1, args.Length - 1));
-            var smi = typeof(Array).GetRuntimeMethod("IndexOf", [typeof(Array), typeof(object)]);
+            var smi = typeof(Array).GetMethod("IndexOf", [typeof(Array), typeof(object)]);
             var r = LinqExpression.Call(smi!, LinqExpression.Convert(items, typeof(Array)),
                 LinqExpression.Convert(args[0], typeof(object)));
             return LinqExpression.GreaterThanOrEqual(r, LinqExpression.Constant(0));
