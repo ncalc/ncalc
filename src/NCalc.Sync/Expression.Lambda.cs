@@ -1,4 +1,5 @@
-﻿using NCalc.Exceptions;
+﻿using System.Linq.Expressions;
+using NCalc.Exceptions;
 using NCalc.Visitors;
 using LinqExpression = System.Linq.Expressions.Expression;
 using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
@@ -46,6 +47,13 @@ public partial class Expression
     protected virtual LinqExpressionWithParameter ToLinqExpression<TContext, TResult>()
     {
         return ToLinqExpressionInternal<TContext, TResult>();
+    }
+
+    // todo: @wip added for the benchmark
+    public Expression<Func<TResult>> ToLambdaExpression<TResult>()
+    {
+        var body = ToLinqExpression<TResult>();
+        return LinqExpression.Lambda<Func<TResult>>(body);
     }
 
     public Func<TResult> ToLambda<TResult>()
