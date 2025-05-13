@@ -59,7 +59,7 @@ public static class LogicalExpressionParser
             SkipWhiteSpace(OneOf(
                     Literals.Char('.')
                         .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0)
-                            .And(ZeroOrOne(Terms.Decimal(NumberOptions.None)).ThenElse(x => x, 0))
+                            .And(ZeroOrOne(Terms.Decimal(NumberOptions.None)).ThenElse(x => x, 0)))
                             .Then(x =>
                             {
                                 if (x is { Item1: 0, Item2: 0 })
@@ -74,7 +74,7 @@ public static class LogicalExpressionParser
                                 return (0L, "0", x.Item2);
 
                             return (0L, new string('0', x.Item1.Item1) + x.Item1.Item2.ToString(), x.Item2);
-                        })),
+                        }),
                     Literals.Text("0x")
                         .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
                         .Then(x => Convert.ToInt64(x.ToString(), 16))
