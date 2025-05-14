@@ -42,8 +42,8 @@ Debug.Assert(function(context)); //true
 Since v5.5 by default NCalc using a [FastExpressionCompiler](https://github.com/dadhi/FastExpressionCompiler)
  to improve the compilation performance (which is 10-40x times faster than .Compile()). But if you faced some issues, you can switch back to built-in System.Linq.Expressions .Compile() method by using AppContext switch:
 
-`AppContext.SetSwitch("NCalc.UseSystemLynqCompiler", true)` 
+`AppContext.SetSwitch("NCalc.UseSystemLinqCompiler", true)` 
 
 ## Performance
-You should cache the result of <xref:NCalc.Expression.ToLambda``1>. The evaluation is indeed faster, but the compilation of the lambda is very slow.
+You should cache the result of <xref:NCalc.Expression.ToLambda``1>. The evaluation is indeed faster, but the compilation of the lambda is slow.
 See [benchmarks](benchmarks.md) for more info.

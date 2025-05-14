@@ -9,11 +9,11 @@ namespace NCalc;
 
 public partial class Expression
 {
-    internal static readonly bool UseSystemLynqCompiler;
+    internal static readonly bool UseSystemLinqCompiler;
 
     static Expression()
     {
-        UseSystemLynqCompiler = AppContext.TryGetSwitch("NCalc.UseSystemLynqCompiler", out var enabled) && enabled;
+        UseSystemLinqCompiler = AppContext.TryGetSwitch("NCalc.UseSystemLinqCompiler", out var enabled) && enabled;
     }
 
     private readonly struct Void;
@@ -62,7 +62,7 @@ public partial class Expression
         var body = ToLinqExpression<TResult>();
         var lambda = LinqExpression.Lambda<Func<TResult>>(body);
 
-        if (UseSystemLynqCompiler)
+        if (UseSystemLinqCompiler)
             return lambda.Compile();
 
         return lambda.CompileFast();
@@ -75,7 +75,7 @@ public partial class Expression
         {
             var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter);
 
-            if (UseSystemLynqCompiler)
+            if (UseSystemLinqCompiler)
                 return lambda.Compile();
 
             return lambda.CompileFast();
