@@ -173,4 +173,23 @@ public class ParserTests
 
         Assert.Empty(failed);
     }
+
+    [Fact]
+    public void ShouldNotFailIssue399()
+    {
+        bool exceptionThrown = false;
+
+        try
+        {
+            var expressionOptions = ExpressionOptions.DecimalAsDefault | ExpressionOptions.NoCache;
+            var expression = new Expression("0.3333333333333333333333 + 1.6666666666666666666667", expressionOptions, CultureInfo.InvariantCulture);
+            var result = expression.Evaluate();
+        }
+        catch
+        {
+            exceptionThrown = true;
+        }
+
+        Assert.False(exceptionThrown);
+    }
 }
