@@ -284,7 +284,7 @@ public static class LogicalExpressionParser
                     return new ValueExpression((decimal)val);
                 }
 
-                return new ValueExpression((double)val);
+                return new ValueExpression(val);
             });
 
          var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
