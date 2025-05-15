@@ -18,6 +18,9 @@ public static class LogicalExpressionParser
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
+    private static readonly double MinDecDouble = (double)decimal.MinValue;
+    private static readonly double MaxDecDouble = (double)decimal.MaxValue;
+
     private const string InvalidTokenMessage = "Invalid token in expression";
 
     static LogicalExpressionParser()
@@ -272,15 +275,13 @@ public static class LogicalExpressionParser
                 bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
                 if (useDecimal)
                 {
-                    var res = new BigDecimal(val);
-
-                    if (res > decimal.MaxValue)
+                    if (val > MaxDecDouble)
                         return new ValueExpression(double.PositiveInfinity);
 
-                    if (res < decimal.MinValue)
+                    if (val < MinDecDouble)
                         return new ValueExpression(double.NegativeInfinity);
 
-                    return new ValueExpression((decimal)res);
+                    return new ValueExpression((decimal)val);
                 }
 
                 return new ValueExpression((double)val);
