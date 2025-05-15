@@ -63,7 +63,7 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(d => new ValueExpression(d));
 
         var binaryNumber = Literals.Text("0b")
-                .SkipAnd(Terms.Pattern(c => c == '0' || c == '1'))
+            .SkipAnd(Terms.Pattern(c => c == '0' || c == '1'))
             .Then(x => Convert.ToInt64(x.ToString(), 2))
             .Then<LogicalExpression>(d => new ValueExpression(d));
 
