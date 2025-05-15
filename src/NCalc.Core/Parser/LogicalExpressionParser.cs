@@ -1,4 +1,3 @@
-using ExtendedNumerics;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using Parlot;
@@ -53,46 +52,56 @@ public static class LogicalExpressionParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-        var exponentNumberPart =
-            Literals.Text("e", true).SkipAnd(Literals.Integer())
-                .ThenElse<long?>(x => x, null);
+        var hexNumber = Literals.Text("0x")
+            .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
+            .Then(x => Convert.ToInt64(x.ToString(), 16))
+            .Then<LogicalExpression>(d => new ValueExpression(d));
 
-        // [integral_value]['.'decimal_value}]['e'exponent_value]
-        var number =
-            SkipWhiteSpace(OneOf(
-                    Literals.Char('.')
-                        .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0)
-                            .And(ZeroOrOne(Literals.Integer(NumberOptions.None)).ThenElse<long?>(x => x, 0))
-                            .Then(x =>
-                            {
-                                if (x is { Item1: 0, Item2: 0 })
-                                    throw new NCalcParserException(InvalidTokenMessage);
+        var octalNumber = Literals.Text("0o")
+            .SkipAnd(Terms.Pattern(c => "01234567".Contains(c)))
+            .Then(x => Convert.ToInt64(x.ToString(), 8))
+            .Then<LogicalExpression>(d => new ValueExpression(d));
 
-                                return (x.Item1, x.Item2);
-                            }))
-                        .And(exponentNumberPart)
-                        .Then(x => (0L, x.Item1.Item1, x.Item1.Item2, x.Item2)),
-                    Literals.Text("0x")
-                        .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
-                        .Then(x => Convert.ToInt64(x.ToString(), 16))
-                        .Then<(long, int, long?, long?)>(x => (x, 0, null, null)),
-                    Literals.Text("0b")
-                        .SkipAnd(Terms.Pattern(c => c == '0' || c == '1'))
-                        .Then(x => Convert.ToInt64(x.ToString(), 2))
-                        .Then<(long, int, long?, long?)>(x => (x, 0, null, null)),
-                    Literals.Text("0o")
-                        .SkipAnd(Terms.Pattern(c => "01234567".Contains(c)))
-                        .Then(x => Convert.ToInt64(x.ToString(), 8))
-                        .Then<(long, int, long?, long?)>(x => (x, 0, null, null)),
-                    Literals.Integer()
-                        .And(Literals.Char('.')
-                            .SkipAnd(ZeroOrMany(Literals.Char('0')).ThenElse(x => x.Count, 0))
-                            .And(ZeroOrOne(Literals.Integer(NumberOptions.None)))
-                            .ThenElse<(int, long?)>(x => (x.Item1, x.Item2), (0, null)))
-                        .And(exponentNumberPart)
-                        .Then(x => (x.Item1, x.Item2.Item1, x.Item2.Item2, x.Item3))
-                ))
-                .Then(ParseNumber);
+        var binaryNumber = Literals.Text("0b")
+                .SkipAnd(Terms.Pattern(c => c == '0' || c == '1'))
+            .Then(x => Convert.ToInt64(x.ToString(), 2))
+            .Then<LogicalExpression>(d => new ValueExpression(d));
+
+        var longNumber = Terms.Number<long>(NumberOptions.Integer)
+            .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
+            .Then<LogicalExpression>(d => new ValueExpression(d));
+
+        var hexOctBinNumber = SkipWhiteSpace(OneOf(hexNumber, octalNumber, binaryNumber));
+
+        var decimalNumber = Terms.Number<decimal>(NumberOptions.Float)
+            .Then<LogicalExpression>(static (ctx, val) =>
+            {
+                bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
+                if (useDecimal)
+                    return new ValueExpression(val);
+
+                return new ValueExpression((double)val);
+            });
+
+        var doubleNumber = Terms.Number<double>(NumberOptions.Float)
+            .Then<LogicalExpression>(static (ctx, val) =>
+            {
+                bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
+                if (useDecimal)
+                {
+                    if (val > MaxDecDouble)
+                        return new ValueExpression(double.PositiveInfinity);
+
+                    if (val < MinDecDouble)
+                        return new ValueExpression(double.NegativeInfinity);
+
+                    return new ValueExpression((decimal)val);
+                }
+
+                return new ValueExpression(val);
+            });
+
+        var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
 
         var comma = Terms.Char(',');
         var divided = Terms.Text("/");
@@ -254,41 +263,6 @@ public static class LogicalExpressionParser
             .SkipAnd(OneOf(dateAndTime, date, time))
             .AndSkip(Literals.Char('#'));
 
-        var longNumber = Terms.Number<long>(NumberOptions.Integer)
-            .AndSkip(Not(
-                OneOf(Terms.Text("."), Terms.Text("E", true), Terms.Text("x"), Terms.Text("b"), Terms.Text("o"))))
-            .Then<LogicalExpression>(d => new ValueExpression(d));
-
-        var decimalNumber = Terms.Number<decimal>(NumberOptions.Float)
-            .AndSkip(Not(OneOf(Terms.Text("x"), Terms.Text("b"), Terms.Text("o"))))
-            .Then<LogicalExpression>(static (ctx, val) => {
-                bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
-                if (useDecimal)
-                    return new ValueExpression(val);
-
-                return new ValueExpression((double)val);
-            });
-
-        var doubleNumber = Terms.Number<double>(NumberOptions.Float)
-            .AndSkip(Not(OneOf(Terms.Text("x"), Terms.Text("b"), Terms.Text("o"))))
-            .Then<LogicalExpression>(static (ctx, val) => {
-                bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
-                if (useDecimal)
-                {
-                    if (val > MaxDecDouble)
-                        return new ValueExpression(double.PositiveInfinity);
-
-                    if (val < MinDecDouble)
-                        return new ValueExpression(double.NegativeInfinity);
-
-                    return new ValueExpression((decimal)val);
-                }
-
-                return new ValueExpression(val);
-            });
-
-         var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
-
         var isHexDigit = Character.IsHexDigit;
 
         var eightHexSequence = Terms
@@ -324,9 +298,9 @@ public static class LogicalExpressionParser
         // primary => GUID | NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
             guid,
+            hexOctBinNumber,
             longNumber,
             decimalOrDoubleNumber,
-            number,
             booleanTrue,
             booleanFalse,
             dateTime,
@@ -453,82 +427,6 @@ public static class LogicalExpressionParser
         AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
 
         Parser = enableParserCompilation ? expressionParser.Compile() : expressionParser;
-    }
-
-    private static LogicalExpression ParseNumber(ParseContext context, (long, int, long?, long?) number)
-    {
-        long integralValue = number.Item1;
-        int zeroCount = number.Item2;
-        long? decimalPart = number.Item3;
-        long? exponentPart = number.Item4;
-
-        if (decimalPart == null && exponentPart == null)
-            return new ValueExpression(integralValue);
-
-        if (((LogicalExpressionParserContext)context).Options.HasFlag(ExpressionOptions.DecimalAsDefault))
-        {
-            decimal result1 = integralValue;
-
-            // decimal part?
-            if (decimalPart != null && decimalPart.Value != 0)
-            {
-                var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
-                result1 += decimalPart.Value / (decimal)Math.Pow(10, digits);
-            }
-
-            // exponent part?
-            if (exponentPart == null)
-                return new ValueExpression(result1);
-
-            var left = new BigDecimal(result1);
-            var right = BigDecimal.Pow(10, exponentPart.Value);
-
-            var res = BigDecimal.Multiply(left, right);
-
-            if (res > decimal.MaxValue)
-                // There is no decimal.PositiveInfinity
-                return new ValueExpression(double.PositiveInfinity);
-
-            if (res < decimal.MinValue)
-                // There is no decimal.NegativeInfinity
-                return new ValueExpression(double.NegativeInfinity);
-
-            result1 = (decimal)res;
-
-            return new ValueExpression(result1);
-        }
-
-        double result = integralValue;
-
-        // decimal part?
-        if (decimalPart != null && decimalPart.Value != 0)
-        {
-            var digits = Math.Floor(Math.Log10(decimalPart.Value) + 1) + zeroCount;
-            result += decimalPart.Value / Math.Pow(10, digits);
-        }
-
-        // exponent part?
-        if (exponentPart != null)
-        {
-            var left = BigDecimal.Parse(result);
-            var right = BigDecimal.Pow(10, exponentPart.Value);
-
-            var res = BigDecimal.Multiply(left, right);
-
-            if (res > double.MaxValue)
-                result = double.PositiveInfinity;
-            else if (res < double.MinValue)
-                result = double.NegativeInfinity;
-            else
-                result = (double)res;
-        }
-
-        if (decimalPart != null || exponentPart != null)
-        {
-            return new ValueExpression(result);
-        }
-
-        return new ValueExpression(integralValue);
     }
 
     private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
