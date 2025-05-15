@@ -67,11 +67,11 @@ public static class LogicalExpressionParser
             .Then(x => Convert.ToInt64(x.ToString(), 2))
             .Then<LogicalExpression>(d => new ValueExpression(d));
 
+        var hexOctBinNumber = SkipWhiteSpace(OneOf(hexNumber, octalNumber, binaryNumber));
+
         var longNumber = Terms.Number<long>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
             .Then<LogicalExpression>(d => new ValueExpression(d));
-
-        var hexOctBinNumber = SkipWhiteSpace(OneOf(hexNumber, octalNumber, binaryNumber));
 
         var decimalNumber = Terms.Number<decimal>(NumberOptions.Float)
             .Then<LogicalExpression>(static (ctx, val) =>
