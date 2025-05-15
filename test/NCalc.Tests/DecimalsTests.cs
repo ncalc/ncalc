@@ -172,4 +172,12 @@ public class DecimalsTests
         var res = expression.Evaluate();
         Assert.Equal(typeof(int), res.GetType());
     }
+
+    [Fact]
+    public void ShouldParseBigNumbersAsDecimals()
+    {
+        var expr = new Expression("25343463636363454545454544563464.12", ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
+        var res = expr.Evaluate();
+        Assert.Equal(double.PositiveInfinity, res);
+    }
 }

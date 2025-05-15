@@ -310,7 +310,7 @@ public class MathsTests
     public void Overflow_Issue_190()
     {
         const decimal minValue = decimal.MinValue;
-        var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
         Assert.Equal(minValue, expr.Evaluate());
     }
 

@@ -18,6 +18,9 @@ public static class LogicalExpressionParser
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
+    private static readonly double MinDecDouble = (double)decimal.MinValue;
+    private static readonly double MaxDecDouble = (double)decimal.MaxValue;
+
     private const string InvalidTokenMessage = "Invalid token in expression";
 
     static LogicalExpressionParser()
@@ -251,12 +254,40 @@ public static class LogicalExpressionParser
             .SkipAnd(OneOf(dateAndTime, date, time))
             .AndSkip(Literals.Char('#'));
 
-        var decimalNumber = Terms.Number<decimal>()
-            .Then<LogicalExpression>(static d => new ValueExpression(d));
-        var doubleNumber = Terms.Number<double>(NumberOptions.Float)
-            .Then<LogicalExpression>(static d => new ValueExpression(d));
+        var longNumber = Terms.Number<long>(NumberOptions.Integer)
+            .AndSkip(Not(
+                OneOf(Terms.Text("."), Terms.Text("E", true), Terms.Text("x"), Terms.Text("b"), Terms.Text("o"))))
+            .Then<LogicalExpression>(d => new ValueExpression(d));
 
-        var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
+        var decimalNumber = Terms.Number<decimal>(NumberOptions.Float)
+            .AndSkip(Not(OneOf(Terms.Text("x"), Terms.Text("b"), Terms.Text("o"))))
+            .Then<LogicalExpression>(static (ctx, val) => {
+                bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
+                if (useDecimal)
+                    return new ValueExpression(val);
+
+                return new ValueExpression((double)val);
+            });
+
+        var doubleNumber = Terms.Number<double>(NumberOptions.Float)
+            .AndSkip(Not(OneOf(Terms.Text("x"), Terms.Text("b"), Terms.Text("o"))))
+            .Then<LogicalExpression>(static (ctx, val) => {
+                bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
+                if (useDecimal)
+                {
+                    if (val > MaxDecDouble)
+                        return new ValueExpression(double.PositiveInfinity);
+
+                    if (val < MinDecDouble)
+                        return new ValueExpression(double.NegativeInfinity);
+
+                    return new ValueExpression((decimal)val);
+                }
+
+                return new ValueExpression(val);
+            });
+
+         var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
 
         var isHexDigit = Character.IsHexDigit;
 
@@ -293,8 +324,9 @@ public static class LogicalExpressionParser
         // primary => GUID | NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
             guid,
-            number,
+            longNumber,
             decimalOrDoubleNumber,
+            number,
             booleanTrue,
             booleanFalse,
             dateTime,
