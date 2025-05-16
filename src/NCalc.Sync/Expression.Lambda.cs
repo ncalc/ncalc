@@ -1,4 +1,6 @@
-﻿using NCalc.Exceptions;
+﻿using System.Runtime.CompilerServices;
+using FastExpressionCompiler;
+using NCalc.Exceptions;
 using NCalc.Visitors;
 using LinqExpression = System.Linq.Expressions.Expression;
 using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
@@ -7,6 +9,13 @@ namespace NCalc;
 
 public partial class Expression
 {
+    internal static readonly bool UseSystemLinqCompiler;
+
+    static Expression()
+    {
+        UseSystemLinqCompiler = AppContext.TryGetSwitch("NCalc.UseSystemLinqCompiler", out var enabled) && enabled;
+    }
+
     private readonly struct Void;
     protected record struct LinqExpressionWithParameter(LinqExpression Expression, LinqParameterExpression? Parameter);
 
@@ -19,18 +28,18 @@ public partial class Expression
 
         LambdaExpressionVisitor visitor;
         LinqParameterExpression? parameter = null;
-        if (typeof(TContext) != typeof(Void))
+        if (IsVoidType<TContext>())
+        {
+            visitor = new(Parameters, Options);
+        }
+        else
         {
             parameter = LinqExpression.Parameter(typeof(TContext), "ctx");
             visitor = new(parameter, Options);
         }
-        else
-        {
-            visitor = new(Parameters, Options);
-        }
 
         var body = LogicalExpression.Accept(visitor);
-        if (body.Type != typeof(TResult))
+        if (!IsSameType(body, typeof(TResult)))
         {
             body = LinqExpression.Convert(body, typeof(TResult));
         }
@@ -52,7 +61,11 @@ public partial class Expression
     {
         var body = ToLinqExpression<TResult>();
         var lambda = LinqExpression.Lambda<Func<TResult>>(body);
-        return lambda.Compile();
+
+        if (UseSystemLinqCompiler)
+            return lambda.Compile();
+
+        return lambda.CompileFast();
     }
 
     public Func<TContext, TResult> ToLambda<TContext, TResult>()
@@ -61,9 +74,19 @@ public partial class Expression
         if (linqExp.Parameter != null)
         {
             var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter);
-            return lambda.Compile();
+
+            if (UseSystemLinqCompiler)
+                return lambda.Compile();
+
+            return lambda.CompileFast();
         }
 
         throw new NCalcException("Linq expression parameter cannot be null");
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsVoidType<TContext>() => typeof(TContext) == typeof(Void);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsSameType(LinqExpression expression, Type targetType) => expression.Type == targetType;
 }

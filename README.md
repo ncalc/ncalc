@@ -168,6 +168,10 @@ Debug.Assert(function()); //3
 Fast and lightweight parser creation tools by [Sébastien Ros](https://github.com/sebastienros) that NCalc uses at its
 parser.
 
+### [FastExpressionCompiler](https://github.com/dadhi/FastExpressionCompiler)
+
+Fast Compiler for C# Expression Trees. Developed by [Maksim Volkov](https://github.com/dadhi)
+
 ### [PanoramicData.NCalcExtensions](https://github.com/panoramicdata/PanoramicData.NCalcExtensions)
 
 Extension functions for NCalc to handle many general functions,  
