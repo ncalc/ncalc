@@ -13,7 +13,8 @@ namespace NCalc.Benchmarks
         public void Setup() => AppContext.SetSwitch("NCalc.EnableParlotParserCompilation", false);
 
         [Benchmark]
-        public LogicalExpression Parse() => LogicalExpressionParser.Parse(new LogicalExpressionParserContext(Expression, ExpressionOptions.None));
+        public LogicalExpression ParseWithoutCompilation() =>
+            LogicalExpressionParser.Parse(new LogicalExpressionParserContext(Expression, ExpressionOptions.None));
     }
 
     [MemoryDiagnoser]
@@ -25,6 +26,7 @@ namespace NCalc.Benchmarks
         public void Setup() => AppContext.SetSwitch("NCalc.EnableParlotParserCompilation", true);
 
         [Benchmark]
-        public LogicalExpression Parse() => LogicalExpressionParser.Parse(new LogicalExpressionParserContext(Expression, ExpressionOptions.None));
+        public LogicalExpression ParseWithCompilation() =>
+            LogicalExpressionParser.Parse(new LogicalExpressionParserContext(Expression, ExpressionOptions.None));
     }
 }
