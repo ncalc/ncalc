@@ -50,15 +50,7 @@ public sealed class ValueExpression : LogicalExpression
 
     public ValueExpression(long value)
     {
-        if (value is > int.MaxValue or < int.MinValue)
-        {
-            Value = value;
-        }
-        else
-        {
-            Value = (int)value;
-        }
-
+        Value = value;
         Type = ValueType.Integer;
     }
 
