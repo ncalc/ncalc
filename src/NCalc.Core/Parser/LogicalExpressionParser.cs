@@ -54,20 +54,28 @@ public static class LogicalExpressionParser
 
         var hexNumber = Literals.Text("0x")
             .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
-            .Then(x => Convert.ToInt64(x.ToString(), 16))
-            .Then<LogicalExpression>(d => new ValueExpression(d));
+            .Then(x => Convert.ToInt64(x.ToString(), 16));
 
         var octalNumber = Literals.Text("0o")
             .SkipAnd(Terms.Pattern(c => "01234567".Contains(c)))
-            .Then(x => Convert.ToInt64(x.ToString(), 8))
-            .Then<LogicalExpression>(d => new ValueExpression(d));
+            .Then(x => Convert.ToInt64(x.ToString(), 8));
 
         var binaryNumber = Literals.Text("0b")
             .SkipAnd(Terms.Pattern(c => c == '0' || c == '1'))
-            .Then(x => Convert.ToInt64(x.ToString(), 2))
-            .Then<LogicalExpression>(d => new ValueExpression(d));
+            .Then(x => Convert.ToInt64(x.ToString(), 2));
 
-        var hexOctBinNumber = SkipWhiteSpace(OneOf(hexNumber, octalNumber, binaryNumber));
+        var hexOctBinNumber = SkipWhiteSpace(OneOf(hexNumber, octalNumber, binaryNumber)
+            .Then<LogicalExpression>(d =>
+            {
+                if (d is > int.MaxValue or < int.MinValue)
+                    return new ValueExpression(d);
+
+                return new ValueExpression((int)d);
+            }));
+
+        var intNumber = Terms.Number<int>(NumberOptions.Integer)
+            .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
+            .Then<LogicalExpression>(d => new ValueExpression(d));
 
         var longNumber = Terms.Number<long>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
@@ -299,6 +307,7 @@ public static class LogicalExpressionParser
         var primary = OneOf(
             guid,
             hexOctBinNumber,
+            intNumber,
             longNumber,
             decimalOrDoubleNumber,
             booleanTrue,
