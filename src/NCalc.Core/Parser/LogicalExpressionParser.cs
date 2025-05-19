@@ -69,6 +69,10 @@ public static class LogicalExpressionParser
 
         var hexOctBinNumber = SkipWhiteSpace(OneOf(hexNumber, octalNumber, binaryNumber));
 
+        var intNumber = Terms.Number<int>(NumberOptions.Integer)
+            .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
+            .Then<LogicalExpression>(d => new ValueExpression(d));
+
         var longNumber = Terms.Number<long>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
             .Then<LogicalExpression>(d => new ValueExpression(d));
@@ -299,6 +303,7 @@ public static class LogicalExpressionParser
         var primary = OneOf(
             guid,
             hexOctBinNumber,
+            intNumber,
             longNumber,
             decimalOrDoubleNumber,
             booleanTrue,
