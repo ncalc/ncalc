@@ -145,6 +145,9 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
 
+        var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
+        var timeSeparator = CultureInfo.CurrentCulture.DateTimeFormat.TimeSeparator;
+
         var identifier = Terms.Identifier();
 
         var not = OneOf(
@@ -218,15 +221,15 @@ public static class LogicalExpressionParser
         var charIsNumber = Literals.Pattern(char.IsNumber);
 
         var dateDefinition = charIsNumber
-            .AndSkip(divided)
+            .AndSkip(Literals.Text(dateSeparator))
             .And(charIsNumber)
-            .AndSkip(divided)
+            .AndSkip(Literals.Text(dateSeparator))
             .And(charIsNumber);
 
         // date => number/number/number
-        var date = dateDefinition.Then<LogicalExpression>(static date =>
+        var date = dateDefinition.Then<LogicalExpression>(date =>
         {
-            if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
+            if (DateTime.TryParse($"{date.Item1}{dateSeparator}{date.Item2}{dateSeparator}{date.Item3}", out var result))
             {
                 return new ValueExpression(result);
             }
@@ -236,14 +239,14 @@ public static class LogicalExpressionParser
 
         // time => number:number:number
         var timeDefinition = charIsNumber
-            .AndSkip(colon)
+            .AndSkip(Literals.Text(timeSeparator))
             .And(charIsNumber)
-            .AndSkip(colon)
+            .AndSkip(Literals.Text(timeSeparator))
             .And(charIsNumber);
 
-        var time = timeDefinition.Then<LogicalExpression>(static time =>
+        var time = timeDefinition.Then<LogicalExpression>(time =>
         {
-            if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
+            if (TimeSpan.TryParse($"{time.Item1}{timeSeparator}{time.Item2}{timeSeparator}{time.Item3}", out var result))
             {
                 return new ValueExpression(result);
             }
@@ -253,10 +256,10 @@ public static class LogicalExpressionParser
 
         // dateAndTime => number/number/number number:number:number
         var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
-            static dateTime =>
+            dateTime =>
             {
                 if (DateTime.TryParse(
-                        $"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}",
+                        $"{dateTime.Item1}{dateSeparator}{dateTime.Item2}{dateSeparator}{dateTime.Item3} {dateTime.Item4.Item1}{timeSeparator}{dateTime.Item4.Item2}{timeSeparator}{dateTime.Item4.Item3}",
                         out var result))
                 {
                     return new ValueExpression(result);
