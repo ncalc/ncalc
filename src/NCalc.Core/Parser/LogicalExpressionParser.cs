@@ -145,9 +145,6 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
 
-        var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
-        var timeSeparator = CultureInfo.CurrentCulture.DateTimeFormat.TimeSeparator;
-
         var identifier = Terms.Identifier();
 
         var not = OneOf(
@@ -219,6 +216,9 @@ public static class LogicalExpressionParser
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
 
         var charIsNumber = Literals.Pattern(char.IsNumber);
+
+        var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
+        var timeSeparator = CultureInfo.CurrentCulture.DateTimeFormat.TimeSeparator;
 
         var dateDefinition = charIsNumber
             .AndSkip(Literals.Text(dateSeparator))
