@@ -9,12 +9,7 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
 {
     public List<string> Visit(Identifier identifier)
     {
-        var parameters = new List<string>();
-        if (!parameters.Contains(identifier.Name))
-        {
-            parameters.Add(identifier.Name);
-        }
-        return parameters;
+        return [identifier.Name];
     }
 
     public List<string> Visit(LogicalExpressionList list)

@@ -52,26 +52,26 @@ public static class LogicalExpressionParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-        var hexNumber = Literals.Text("0x")
+        var hexNumber = Terms.Text("0x")
             .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
             .Then(x => Convert.ToInt64(x.ToString(), 16));
 
-        var octalNumber = Literals.Text("0o")
+        var octalNumber = Terms.Text("0o")
             .SkipAnd(Terms.Pattern(c => "01234567".Contains(c)))
             .Then(x => Convert.ToInt64(x.ToString(), 8));
 
-        var binaryNumber = Literals.Text("0b")
+        var binaryNumber = Terms.Text("0b")
             .SkipAnd(Terms.Pattern(c => c == '0' || c == '1'))
             .Then(x => Convert.ToInt64(x.ToString(), 2));
 
-        var hexOctBinNumber = SkipWhiteSpace(OneOf(hexNumber, octalNumber, binaryNumber)
+        var hexOctBinNumber = OneOf(hexNumber, octalNumber, binaryNumber)
             .Then<LogicalExpression>(d =>
             {
                 if (d is > int.MaxValue or < int.MinValue)
                     return new ValueExpression(d);
 
                 return new ValueExpression((int)d);
-            }));
+            });
 
         var intNumber = Terms.Number<int>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
