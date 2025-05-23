@@ -74,7 +74,9 @@ public class ExceptionsTests
     {
         Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#t -chers"));
 
-        var invalidDateException = Assert.Throws<FormatException>(() => LogicalExpressionFactory.Create("#13/13/2222#"));
+        var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
+        string dateStr = $"#13{dateSeparator}13{dateSeparator}2222#";
+        var invalidDateException = Assert.Throws<FormatException>(() => LogicalExpressionFactory.Create(dateStr));
         Assert.IsType<FormatException>(invalidDateException);
 
         //At v4, DateTime is better handled, and this should no longer cause errors.
