@@ -28,7 +28,7 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
         catch (Exception exception)
         {
-            logger.LogErrorCreatingLogicalExpression(exception,expression);
+            logger.LogErrorCreatingLogicalExpression(exception, expression);
             throw new NCalcParserException("Error parsing the expression.", exception);
         }
     }

@@ -7,15 +7,7 @@ namespace NCalc.Visitors;
 /// </summary>
 public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<string>>
 {
-    public List<string> Visit(Identifier identifier)
-    {
-        var parameters = new List<string>();
-        if (!parameters.Contains(identifier.Name))
-        {
-            parameters.Add(identifier.Name);
-        }
-        return parameters;
-    }
+    public List<string> Visit(Identifier identifier) => [identifier.Name];
 
     public List<string> Visit(LogicalExpressionList list)
     {

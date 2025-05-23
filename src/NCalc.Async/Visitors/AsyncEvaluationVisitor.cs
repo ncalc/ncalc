@@ -50,6 +50,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                     : MathHelper.Divide(Convert.ToDouble(await left.Value, context.CultureInfo),
                         await right.Value,
                         context);
+
             case BinaryExpressionType.Equal:
                 return Compare(await left.Value, await right.Value, ComparisonType.Equal);
 
@@ -70,15 +71,13 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
             case BinaryExpressionType.Minus:
                 return MathHelper.Subtract(await left.Value, await right.Value, context);
+
             case BinaryExpressionType.Modulo:
                 return MathHelper.Modulo(await left.Value, await right.Value, context);
-            case BinaryExpressionType.Plus:
-            {
-                var leftValue = await left.Value;
-                var rightValue = await right.Value;
 
-                return EvaluationHelper.Plus(leftValue, rightValue, context);
-            }
+            case BinaryExpressionType.Plus:
+                return EvaluationHelper.Plus(await left.Value, await right.Value, context);
+
             case BinaryExpressionType.Times:
                 return MathHelper.Multiply(await left.Value, await right.Value, context);
 
@@ -103,25 +102,14 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                        Convert.ToInt32(await right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Exponentiation:
-            {
-                var rightValue = await right.Value;
-                var leftValue = await left.Value;
-                return MathHelper.Pow(leftValue, rightValue, context);
-            }
+                return MathHelper.Pow(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.In:
-            {
-                var rightValue = await right.Value;
-                var leftValue = await left.Value;
-                return EvaluationHelper.In(rightValue, leftValue, context);
-            }
+                return EvaluationHelper.In(await right.Value, await left.Value, context);
 
             case BinaryExpressionType.NotIn:
-            {
-                var rightValue = await right.Value;
-                var leftValue = await left.Value;
-                return !EvaluationHelper.In(rightValue, leftValue, context);
-            }
+                return !EvaluationHelper.In(await right.Value, await left.Value, context);
+
             case BinaryExpressionType.Like:
             {
                 var rightValue = (await right.Value)?.ToString();
