@@ -24,12 +24,31 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     }
 
     /// <summary>
+    /// Extended Options for the expression evaluation.
+    /// </summary>
+    public ExtendedExpressionOptions? ExtendedOptions
+    {
+        get => Context.ExtendedOptions;
+        set
+        {
+            Context.ExtendedOptions = value;
+            if (Context.ExtendedOptions != null)
+                Context.ExtendedOptions.CultureInfo = CultureInfo;
+        }
+    }
+
+    /// <summary>
     /// Culture information for the expression evaluation.
     /// </summary>
     public CultureInfo CultureInfo
     {
         get => Context.CultureInfo;
-        set => Context.CultureInfo = value;
+        set
+        {
+            Context.CultureInfo = value;
+            if (Context.ExtendedOptions != null)
+                Context.ExtendedOptions.CultureInfo = value;
+        }
     }
 
     /// <summary>
@@ -147,7 +166,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
 
         try
         {
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context.Options, ExtendedOptions);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }

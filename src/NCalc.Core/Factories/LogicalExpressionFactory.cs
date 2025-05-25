@@ -20,11 +20,11 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
 
     public static LogicalExpressionFactory GetInstance() => Instance;
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options)
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options, ExtendedExpressionOptions? extendedOptions)
     {
         try
         {
-            return Create(expression, options);
+            return Create(expression, options, extendedOptions);
         }
         catch (Exception exception)
         {
@@ -33,9 +33,11 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
     }
 
-    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, ExtendedExpressionOptions? extOptions = null)
     {
         var parserContext = new LogicalExpressionParserContext(expression, options);
+        if (extOptions is not null)
+            parserContext.ExtendedOptions = extOptions;
         return LogicalExpressionParser.Parse(parserContext);
     }
 }

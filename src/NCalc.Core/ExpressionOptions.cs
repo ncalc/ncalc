@@ -84,5 +84,22 @@ public enum ExpressionOptions
     /// <summary>
     /// Enables strict type matching, where comparisons between objects of different types will return false.
     /// </summary>
-    StrictTypeMatching = 1 << 15
+    StrictTypeMatching = 1 << 15,
+
+    /// <summary>
+    /// When extended options are used, disables the use of the '/' character during parsing of dates.
+    /// When the flag is not set and extended options are used, both the '/' and the date separator specified in the extended options ('.', usually) is used.
+    /// </summary>
+    SkipBuiltInDateSeparator = 1 << 16,
+
+    /// <summary>
+    /// When extended options are used, disables the use of the ':' character during parsing of times.
+    /// When the flag is not set and extended options are used, both the ':' and the time separator specified in the extended options' CultureInfo is used.
+    /// </summary>
+    SkipBuiltInTimeSeparator = 1 << 17,
+
+    /// <summary>
+    /// When set, recognizes and skips underscore characters in numbers
+    /// </summary>
+    AcceptUnderscoresInNumbers = 1 << 18,
 }
