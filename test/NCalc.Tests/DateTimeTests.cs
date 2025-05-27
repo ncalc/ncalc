@@ -42,4 +42,56 @@ public class DateTimeTests
         string exprStr = $"#2022{dateSeparator}12{dateSeparator}31 08{timeSeparator}00{timeSeparator}00#";
         Assert.Throws<NCalcParserException>(() => new Expression(exprStr).Evaluate());
     }
+
+    [Fact]
+    public void ShouldHandleRuntimeCultureChange()
+    {
+        var oldCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+        try
+        {
+            var expr = new Expression("#05/27/2025 12:00:00#", ExpressionOptions.None);
+            var res = expr.Evaluate();
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
+            var expr2 = new Expression("#27.05.2025 12:00:00#");
+            var res2 = expr.Evaluate();
+
+            var dt = new DateTime(2025, 05, 27, 12, 0, 0);
+
+            Assert.Equal(dt, res);
+            Assert.Equal(dt, res2);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = oldCulture;
+        }
+    }
+
+    [Fact]
+    public void ShouldHandleSpecifiedExpressionCulture()
+    {
+        var oldCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+        try
+        {
+            var expr = new Expression("#05/27/2025 12:00:00#", ExpressionOptions.None);
+            var res = expr.Evaluate();
+
+            var ruCulture = CultureInfo.GetCultureInfo("ru-RU");
+            var expr2 = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None, ruCulture);
+            var res2 = expr.Evaluate();
+
+            var dt = new DateTime(2025, 05, 27, 12, 0, 0);
+
+            Assert.Equal(dt, res);
+            Assert.Equal(dt, res2);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = oldCulture;
+        }
+    }
 }

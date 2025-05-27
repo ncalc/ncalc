@@ -12,7 +12,7 @@ namespace NCalc.Parser;
 /// </summary>
 public static class LogicalExpressionParser
 {
-    private static readonly Parser<LogicalExpression> Parser;
+    private static readonly ConcurrentDictionary<CultureInfo, Parser<LogicalExpression>> Parsers = new();
 
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
@@ -22,7 +22,7 @@ public static class LogicalExpressionParser
 
     private const string InvalidTokenMessage = "Invalid token in expression";
 
-    static LogicalExpressionParser()
+    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo)
     {
         /*
          * Grammar:
@@ -217,8 +217,8 @@ public static class LogicalExpressionParser
 
         var charIsNumber = Literals.Pattern(char.IsNumber);
 
-        var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
-        var timeSeparator = CultureInfo.CurrentCulture.DateTimeFormat.TimeSeparator;
+        var dateSeparator = cultureInfo.DateTimeFormat.DateSeparator;
+        var timeSeparator = cultureInfo.DateTimeFormat.TimeSeparator;
 
         var dateDefinition = charIsNumber
             .AndSkip(Literals.Text(dateSeparator))
@@ -260,6 +260,8 @@ public static class LogicalExpressionParser
             {
                 if (DateTime.TryParse(
                         $"{dateTime.Item1}{dateSeparator}{dateTime.Item2}{dateSeparator}{dateTime.Item3} {dateTime.Item4.Item1}{timeSeparator}{dateTime.Item4.Item2}{timeSeparator}{dateTime.Item4.Item3}",
+                        cultureInfo,
+                        DateTimeStyles.None,
                         out var result))
                 {
                     return new ValueExpression(result);
@@ -438,7 +440,18 @@ public static class LogicalExpressionParser
 
         AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
 
-        Parser = enableParserCompilation ? expressionParser.Compile() : expressionParser;
+        return enableParserCompilation ? expressionParser.Compile() : expressionParser;
+    }
+
+    private static Parser<LogicalExpression> GetOrCreateExpressionParser(CultureInfo cultureInfo)
+    {
+        if (Parsers.TryGetValue(cultureInfo, out var parser))
+            return parser;
+
+        var newParser = CreateExpressionParser(cultureInfo);
+        Parsers.TryAdd(cultureInfo, newParser);
+
+        return newParser;
     }
 
     private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
@@ -455,7 +468,9 @@ public static class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        if (Parser.TryParse(context, out var result, out var error))
+        var parser = GetOrCreateExpressionParser(context.CultureInfo);
+
+        if (parser.TryParse(context, out var result, out var error))
             return result;
 
         string message;
