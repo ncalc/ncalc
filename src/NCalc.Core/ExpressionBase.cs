@@ -90,7 +90,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     public List<string> GetParameterNames()
     {
         var parameterExtractionVisitor = new ParameterExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
         return LogicalExpression.Accept(parameterExtractionVisitor);
     }
 
@@ -100,7 +100,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     public List<string> GetFunctionNames()
     {
         var functionExtractionVisitor = new FunctionExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
         return LogicalExpression.Accept(functionExtractionVisitor);
     }
 
@@ -114,7 +114,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     {
         try
         {
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -147,7 +147,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
 
         try
         {
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context.Options);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }

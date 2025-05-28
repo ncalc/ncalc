@@ -12,7 +12,7 @@ namespace NCalc.Parser;
 /// </summary>
 public static class LogicalExpressionParser
 {
-    private static readonly Parser<LogicalExpression> Parser;
+    private static readonly ConcurrentDictionary<CultureInfo, Parser<LogicalExpression>> Parsers = new();
 
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
@@ -22,7 +22,7 @@ public static class LogicalExpressionParser
 
     private const string InvalidTokenMessage = "Invalid token in expression";
 
-    static LogicalExpressionParser()
+    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo)
     {
         /*
          * Grammar:
@@ -217,16 +217,20 @@ public static class LogicalExpressionParser
 
         var charIsNumber = Literals.Pattern(char.IsNumber);
 
+        var dateSeparator = cultureInfo.DateTimeFormat.DateSeparator;
+        var timeSeparator = cultureInfo.DateTimeFormat.TimeSeparator;
+
         var dateDefinition = charIsNumber
-            .AndSkip(divided)
+            .AndSkip(Literals.Text(dateSeparator))
             .And(charIsNumber)
-            .AndSkip(divided)
+            .AndSkip(Literals.Text(dateSeparator))
             .And(charIsNumber);
 
         // date => number/number/number
-        var date = dateDefinition.Then<LogicalExpression>(static date =>
+        var date = dateDefinition.Then<LogicalExpression>(date =>
         {
-            if (DateTime.TryParse($"{date.Item1}/{date.Item2}/{date.Item3}", out var result))
+            if (DateTime.TryParse($"{date.Item1}{dateSeparator}{date.Item2}{dateSeparator}{date.Item3}",
+                    cultureInfo, DateTimeStyles.None, out var result))
             {
                 return new ValueExpression(result);
             }
@@ -236,14 +240,14 @@ public static class LogicalExpressionParser
 
         // time => number:number:number
         var timeDefinition = charIsNumber
-            .AndSkip(colon)
+            .AndSkip(Literals.Text(timeSeparator))
             .And(charIsNumber)
-            .AndSkip(colon)
+            .AndSkip(Literals.Text(timeSeparator))
             .And(charIsNumber);
 
-        var time = timeDefinition.Then<LogicalExpression>(static time =>
+        var time = timeDefinition.Then<LogicalExpression>(time =>
         {
-            if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
+            if (TimeSpan.TryParse($"{time.Item1}{timeSeparator}{time.Item2}{timeSeparator}{time.Item3}", cultureInfo, out var result))
             {
                 return new ValueExpression(result);
             }
@@ -253,11 +257,11 @@ public static class LogicalExpressionParser
 
         // dateAndTime => number/number/number number:number:number
         var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
-            static dateTime =>
+            dateTime =>
             {
                 if (DateTime.TryParse(
-                        $"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}",
-                        out var result))
+                        $"{dateTime.Item1}{dateSeparator}{dateTime.Item2}{dateSeparator}{dateTime.Item3} {dateTime.Item4.Item1}{timeSeparator}{dateTime.Item4.Item2}{timeSeparator}{dateTime.Item4.Item3}",
+                        cultureInfo, DateTimeStyles.None, out var result))
                 {
                     return new ValueExpression(result);
                 }
@@ -435,7 +439,18 @@ public static class LogicalExpressionParser
 
         AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
 
-        Parser = enableParserCompilation ? expressionParser.Compile() : expressionParser;
+        return enableParserCompilation ? expressionParser.Compile() : expressionParser;
+    }
+
+    private static Parser<LogicalExpression> GetOrCreateExpressionParser(CultureInfo cultureInfo)
+    {
+        if (Parsers.TryGetValue(cultureInfo, out var parser))
+            return parser;
+
+        var newParser = CreateExpressionParser(cultureInfo);
+        Parsers.TryAdd(cultureInfo, newParser);
+
+        return newParser;
     }
 
     private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
@@ -452,7 +467,9 @@ public static class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        if (Parser.TryParse(context, out var result, out var error))
+        var parser = GetOrCreateExpressionParser(context.CultureInfo);
+
+        if (parser.TryParse(context, out var result, out var error))
             return result;
 
         string message;
