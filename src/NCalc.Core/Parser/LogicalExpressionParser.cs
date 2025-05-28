@@ -229,7 +229,8 @@ public static class LogicalExpressionParser
         // date => number/number/number
         var date = dateDefinition.Then<LogicalExpression>(date =>
         {
-            if (DateTime.TryParse($"{date.Item1}{dateSeparator}{date.Item2}{dateSeparator}{date.Item3}", out var result))
+            if (DateTime.TryParse($"{date.Item1}{dateSeparator}{date.Item2}{dateSeparator}{date.Item3}",
+                    cultureInfo, DateTimeStyles.None, out var result))
             {
                 return new ValueExpression(result);
             }
@@ -246,7 +247,7 @@ public static class LogicalExpressionParser
 
         var time = timeDefinition.Then<LogicalExpression>(time =>
         {
-            if (TimeSpan.TryParse($"{time.Item1}{timeSeparator}{time.Item2}{timeSeparator}{time.Item3}", out var result))
+            if (TimeSpan.TryParse($"{time.Item1}{timeSeparator}{time.Item2}{timeSeparator}{time.Item3}", cultureInfo, out var result))
             {
                 return new ValueExpression(result);
             }
@@ -260,9 +261,7 @@ public static class LogicalExpressionParser
             {
                 if (DateTime.TryParse(
                         $"{dateTime.Item1}{dateSeparator}{dateTime.Item2}{dateSeparator}{dateTime.Item3} {dateTime.Item4.Item1}{timeSeparator}{dateTime.Item4.Item2}{timeSeparator}{dateTime.Item4.Item3}",
-                        cultureInfo,
-                        DateTimeStyles.None,
-                        out var result))
+                        cultureInfo, DateTimeStyles.None, out var result))
                 {
                     return new ValueExpression(result);
                 }
