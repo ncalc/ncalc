@@ -24,6 +24,7 @@ public sealed class ValueExpression : LogicalExpression
             decimal or double or float => ValueType.Float,
             byte or sbyte or short or int or long or ushort or uint or ulong => ValueType.Integer,
             string => ValueType.String,
+            Percent => ValueType.Percent,
             _ => throw new NCalcException("This value could not be handled: " + value)
         };
 
@@ -88,6 +89,12 @@ public sealed class ValueExpression : LogicalExpression
     {
         Value = value;
         Type = ValueType.Guid;
+    }
+
+    public ValueExpression(Percent value)
+    {
+        Value = value;
+        Type = ValueType.Percent;
     }
 
     public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)

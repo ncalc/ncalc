@@ -73,6 +73,8 @@ namespace NCalc
             }
         }
 
+        public static ExtendedExpressionOptions DefaultOptions = new();
+
         public ExtendedExpressionOptions() : this(CultureInfo.CurrentCulture)
         {
         }
@@ -117,7 +119,7 @@ namespace NCalc
                 _dateSeparator = "/";
             _decimalSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
             if (string.IsNullOrEmpty(_decimalSeparator))
-                _decimalSeparator = ".";
+                _decimalSeparator = Parlot.Fluent.NumberLiterals.DefaultDecimalSeparator.ToString();
             _numberGroupSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberGroupSeparator;
         }
 
@@ -157,7 +159,7 @@ namespace NCalc
             switch (DecimalSeparatorType)
             {
                 case SeparatorType.BuiltIn:
-                    separatorString = ".";
+                    separatorString = Parlot.Fluent.NumberLiterals.DefaultDecimalSeparator.ToString();
                     break;
                 case SeparatorType.CurrentCulture:
                     separatorString = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.NumberDecimalSeparator;
@@ -178,7 +180,7 @@ namespace NCalc
             switch (NumberGroupSeparatorType)
             {
                 case SeparatorType.BuiltIn:
-                    separatorString = ",";
+                    separatorString = Parlot.Fluent.NumberLiterals.DefaultGroupSeparator.ToString();
                     break;
                 case SeparatorType.CurrentCulture:
                     separatorString = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.NumberGroupSeparator;

@@ -2,6 +2,7 @@
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
+
 using static NCalc.Helpers.TypeHelper;
 
 namespace NCalc.Visitors;
@@ -140,6 +141,12 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var result = expression.Expression.Accept(this);
 
         return EvaluationHelper.Unary(expression, result, context);
+    }
+
+    public virtual object? Visit(PercentExpression expression)
+    {
+        // Recursively evaluates the underlying expression
+        return expression.Expression.Accept(this);
     }
 
     public virtual object? Visit(ValueExpression expression) => expression.Value;

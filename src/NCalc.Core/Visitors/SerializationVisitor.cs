@@ -79,6 +79,11 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return resultBuilder.ToString();
     }
 
+    public string Visit(PercentExpression expression)
+    {
+        return EncapsulateNoValue(expression.Expression) + "%";
+    }
+
     public string Visit(ValueExpression expression)
     {
         var resultBuilder = new StringBuilder();

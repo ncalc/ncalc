@@ -58,30 +58,45 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         var left = expression.LeftExpression.Accept(this);
         var right = expression.RightExpression.Accept(this);
 
-        return expression.Type switch
+        if (expression.RightExpression is PercentExpression)
         {
-            BinaryExpressionType.And => LinqExpression.AndAlso(left, right),
-            BinaryExpressionType.Or => LinqExpression.OrElse(left, right),
-            BinaryExpressionType.NotEqual => WithCommonNumericType(left, right, LinqExpression.NotEqual, expression.Type),
-            BinaryExpressionType.LesserOrEqual => WithCommonNumericType(left, right, LinqExpression.LessThanOrEqual, expression.Type),
-            BinaryExpressionType.GreaterOrEqual => WithCommonNumericType(left, right, LinqExpression.GreaterThanOrEqual, expression.Type),
-            BinaryExpressionType.Lesser => WithCommonNumericType(left, right, LinqExpression.LessThan, expression.Type),
-            BinaryExpressionType.Greater => WithCommonNumericType(left, right, LinqExpression.GreaterThan, expression.Type),
-            BinaryExpressionType.Equal => WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type),
-            BinaryExpressionType.Minus => _checked ? WithCommonNumericType(left, right, LinqExpression.SubtractChecked) : WithCommonNumericType(left, right, LinqExpression.Subtract),
-            BinaryExpressionType.Plus => _checked ? WithCommonNumericType(left, right, LinqExpression.AddChecked) : WithCommonNumericType(left, right, LinqExpression.Add),
-            BinaryExpressionType.Modulo => WithCommonNumericType(left, right, LinqExpression.Modulo),
-            BinaryExpressionType.Div => WithCommonNumericType(left, right, LinqExpression.Divide),
-            BinaryExpressionType.Times => _checked ? WithCommonNumericType(left, right, LinqExpression.MultiplyChecked) : WithCommonNumericType(left, right, LinqExpression.Multiply),
-            BinaryExpressionType.BitwiseOr => LinqExpression.Or(left, right),
-            BinaryExpressionType.BitwiseAnd => LinqExpression.And(left, right),
-            BinaryExpressionType.BitwiseXOr => LinqExpression.ExclusiveOr(left, right),
-            BinaryExpressionType.LeftShift => LinqExpression.LeftShift(left, right),
-            BinaryExpressionType.RightShift => LinqExpression.RightShift(left, right),
-            BinaryExpressionType.Exponentiation => LinqExpression.Power(left, right),
-            BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
-            _ => throw new ArgumentOutOfRangeException()
-        };
+            return expression.Type switch
+            {
+                BinaryExpressionType.Minus => _checked ? WithPercent(left, right, LinqExpression.SubtractChecked, expression.Type) : WithPercent(left, right, LinqExpression.Subtract, expression.Type),
+                BinaryExpressionType.Plus => _checked ? WithPercent(left, right, LinqExpression.AddChecked, expression.Type) : WithPercent(left, right, LinqExpression.Add, expression.Type),
+                BinaryExpressionType.Div => WithPercent(left, right, LinqExpression.Divide, expression.Type),
+                BinaryExpressionType.Times => _checked ? WithPercent(left, right, LinqExpression.MultiplyChecked, expression.Type) : WithPercent(left, right, LinqExpression.Multiply, expression.Type),
+                BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+        else
+        {
+            return expression.Type switch
+            {
+                BinaryExpressionType.And => LinqExpression.AndAlso(left, right),
+                BinaryExpressionType.Or => LinqExpression.OrElse(left, right),
+                BinaryExpressionType.NotEqual => WithCommonNumericType(left, right, LinqExpression.NotEqual, expression.Type),
+                BinaryExpressionType.LesserOrEqual => WithCommonNumericType(left, right, LinqExpression.LessThanOrEqual, expression.Type),
+                BinaryExpressionType.GreaterOrEqual => WithCommonNumericType(left, right, LinqExpression.GreaterThanOrEqual, expression.Type),
+                BinaryExpressionType.Lesser => WithCommonNumericType(left, right, LinqExpression.LessThan, expression.Type),
+                BinaryExpressionType.Greater => WithCommonNumericType(left, right, LinqExpression.GreaterThan, expression.Type),
+                BinaryExpressionType.Equal => WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type),
+                BinaryExpressionType.Minus => _checked ? WithCommonNumericType(left, right, LinqExpression.SubtractChecked) : WithCommonNumericType(left, right, LinqExpression.Subtract),
+                BinaryExpressionType.Plus => _checked ? WithCommonNumericType(left, right, LinqExpression.AddChecked) : WithCommonNumericType(left, right, LinqExpression.Add),
+                BinaryExpressionType.Modulo => WithCommonNumericType(left, right, LinqExpression.Modulo),
+                BinaryExpressionType.Div => WithCommonNumericType(left, right, LinqExpression.Divide),
+                BinaryExpressionType.Times => _checked ? WithCommonNumericType(left, right, LinqExpression.MultiplyChecked) : WithCommonNumericType(left, right, LinqExpression.Multiply),
+                BinaryExpressionType.BitwiseOr => LinqExpression.Or(left, right),
+                BinaryExpressionType.BitwiseAnd => LinqExpression.And(left, right),
+                BinaryExpressionType.BitwiseXOr => LinqExpression.ExclusiveOr(left, right),
+                BinaryExpressionType.LeftShift => LinqExpression.LeftShift(left, right),
+                BinaryExpressionType.RightShift => LinqExpression.RightShift(left, right),
+                BinaryExpressionType.Exponentiation => LinqExpression.Power(left, right),
+                BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
     }
 
     public LinqExpression Visit(UnaryExpression expression)
@@ -96,6 +111,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             UnaryExpressionType.Positive => operand,
             _ => throw new ArgumentOutOfRangeException()
         };
+    }
+
+    public LinqExpression Visit(PercentExpression expression)
+    {
+        return expression.Expression.Accept(this);
     }
 
     public LinqExpression Visit(ValueExpression expression)
@@ -370,5 +390,54 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         }
 
         return action(left, right);
+    }
+
+    private LinqExpression WithPercent(LinqExpression left, LinqExpression right,
+        Func<LinqExpression, LinqExpression, LinqExpression> action,
+        BinaryExpressionType expressionType = BinaryExpressionType.Unknown)
+    {
+        left = LinqUtils.UnwrapNullable(left);
+        right = LinqUtils.UnwrapNullable(right);
+
+        var type = TypeHelper.GetMostPreciseNumberType(left.Type, right.Type);
+        if (type != null)
+        {
+            if (left.Type != type)
+            {
+                left = LinqExpression.Convert(left, type);
+            }
+
+            if (right.Type != type)
+            {
+                right = LinqExpression.Convert(right, type);
+            }
+        }
+
+        if (typeof(string) != left.Type && typeof(string) != right.Type)
+        {
+            switch (expressionType)
+            {
+                case BinaryExpressionType.Times:
+                    return LinqExpression.IfThenElse(
+                        LinqExpression.GreaterThanOrEqual(left, LinqExpression.Constant(100000)),
+                        action(left, LinqExpression.Divide(right, LinqExpression.Constant(100))),
+                        LinqExpression.Divide(action(left, right), LinqExpression.Constant(100)));
+                        /*
+                        return action(left, LinqExpression.Divide(right, LinqExpression.Constant(100)));
+                    else
+                        return LinqExpression.Divide(action(left, right), LinqExpression.Constant(100));
+                        */
+                case BinaryExpressionType.Div:
+                    return LinqExpression.Divide(action(left, right), LinqExpression.Constant(100));
+
+                case BinaryExpressionType.Plus:
+                case BinaryExpressionType.Minus:
+                    LinqExpression multiplyResult = LinqExpression.Divide(_checked ? LinqExpression.MultiplyChecked(left, right) : LinqExpression.Multiply(left, right), LinqExpression.Constant(100));
+                    return action(left, multiplyResult);
+            }
+            return action(left, right);
+        }
+
+        return LinqExpression.Constant(0);
     }
 }

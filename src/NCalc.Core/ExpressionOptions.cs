@@ -102,4 +102,9 @@ public enum ExpressionOptions
     /// When set, recognizes and skips underscore characters in numbers
     /// </summary>
     AcceptUnderscoresInNumbers = 1 << 18,
+
+    /// <summary>
+    /// When set, the % character (per cent) is used to calculate percent rather than modulo (default in ncalc)
+    /// </summary>
+    CalculatePercent = 1 << 19,
 }
