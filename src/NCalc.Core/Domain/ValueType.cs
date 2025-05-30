@@ -9,6 +9,5 @@ public enum ValueType
     Boolean,
     TimeSpan,
     Char,
-    Guid,
-    Percent
+    Guid
 }

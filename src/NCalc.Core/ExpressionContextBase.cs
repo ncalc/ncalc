@@ -5,7 +5,7 @@ namespace NCalc;
 public abstract record ExpressionContextBase
 {
     public ExpressionOptions Options { get; set; } = ExpressionOptions.None;
-    public ExtendedExpressionOptions? ExtendedOptions { get; set; } = null;
+    public AdvancedExpressionOptions? AdvancedOptions { get; set; } = null;
     public CultureInfo CultureInfo { get; set; } = CultureInfo.CurrentCulture;
     public IDictionary<string, object?> StaticParameters { get; set; } = new Dictionary<string, object?>();
 

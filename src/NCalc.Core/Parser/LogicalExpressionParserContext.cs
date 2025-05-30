@@ -8,5 +8,5 @@ public sealed class LogicalExpressionParserContext(string text, ExpressionOption
 {
     public ExpressionOptions Options { get; } = options;
 
-    public ExtendedExpressionOptions? ExtendedOptions { get; set; }
+    public AdvancedExpressionOptions? AdvancedOptions { get; set; }
 }

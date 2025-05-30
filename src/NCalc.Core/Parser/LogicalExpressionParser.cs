@@ -45,7 +45,7 @@ public static class LogicalExpressionParser
     static LogicalExpressionParser()
     {
         // InternalInit sets Parser (as before), and then we set it again here to satisfy the compiler's requirements
-        Parser = InternalInit(ExpressionOptions.None, ExtendedExpressionOptions.DefaultOptions);
+        Parser = InternalInit(ExpressionOptions.None, AdvancedExpressionOptions.DefaultOptions);
     }
 
     /// <summary>
@@ -62,10 +62,10 @@ public static class LogicalExpressionParser
     /// <returns>An instance of the newly created parser</returns>
     private static Parser<LogicalExpression> InternalInit()
     {
-        return InternalInit(ExpressionOptions.None, ExtendedExpressionOptions.DefaultOptions);
+        return InternalInit(ExpressionOptions.None, AdvancedExpressionOptions.DefaultOptions);
     }
 
-    private static Parser<LogicalExpression> InternalInit(ExpressionOptions options, ExtendedExpressionOptions extOptions)
+    private static Parser<LogicalExpression> InternalInit(ExpressionOptions options, AdvancedExpressionOptions extOptions)
     {
         /*
          * Grammar:
@@ -97,7 +97,7 @@ public static class LogicalExpressionParser
 
         Parser<long> hexNumber;
 
-        if (options.HasFlag(ExpressionOptions.AcceptUnderscoresInNumbers))
+        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers))
         {
             hexNumber = Terms.Text("0x")
             .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF_".Contains(c)))
@@ -111,7 +111,7 @@ public static class LogicalExpressionParser
         }
 
         Parser<long> octalNumber;
-        if (options.HasFlag(ExpressionOptions.AcceptUnderscoresInNumbers))
+        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers))
         {
             octalNumber = Terms.Text("0o")
                 .SkipAnd(Terms.Pattern(c => "01234567_".Contains(c)))
@@ -124,8 +124,23 @@ public static class LogicalExpressionParser
                 .Then(x => Convert.ToInt64(x.ToString(), 8));
         }
 
+        Parser<long> octalNumberCStyle;
+
+        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers))
+        {
+            octalNumberCStyle = Terms.Text("0")//. And(Terms.AnyOf("01234567_"))
+                .And(Terms.Pattern(c => "01234567_".Contains(c)))
+                .Then(x => Convert.ToInt64(x.Item2.ToString()?.Replace("_", ""), 8));
+        }
+        else
+        {
+            octalNumberCStyle = Terms.Text("0")
+                .And(Terms.Pattern(c => "01234567".Contains(c)))
+                .Then(x => Convert.ToInt64(x.Item2.ToString(), 8));
+        }
+
         Parser<long> binaryNumber;
-        if (options.HasFlag(ExpressionOptions.AcceptUnderscoresInNumbers))
+        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers))
         {
             binaryNumber = Terms.Text("0b")
                 .SkipAnd(Terms.Pattern(c => c == '0' || c == '1' || c == '_'))
@@ -138,21 +153,27 @@ public static class LogicalExpressionParser
                 .Then(x => Convert.ToInt64(x.ToString(), 2));
         }
 
-        var hexOctBinNumber = OneOf(hexNumber, octalNumber, binaryNumber)
-                .Then<LogicalExpression>(d =>
-                {
-                    if (d is > int.MaxValue or < int.MinValue)
-                        return new ValueExpression(d);
+        Parser<long> hexOctBinNumberParser;
 
-                    return new ValueExpression((int)d);
-                });
+        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptCStyleOctals))
+            hexOctBinNumberParser = OneOf(octalNumberCStyle, hexNumber, octalNumber, binaryNumber);
+        else
+            hexOctBinNumberParser = OneOf(hexNumber, octalNumber, binaryNumber);
+
+        var hexOctBinNumber = hexOctBinNumberParser.Then<LogicalExpression>(d =>
+            {
+                if (d is > int.MaxValue or < int.MinValue)
+                    return new ValueExpression(d);
+
+                return new ValueExpression((int)d);
+            });
 
         char decimalSeparator = extOptions.GetDecimalSeparatorChar(); // this method will return the default separator, if needed
         char numGroupSeparator = extOptions.GetNumberGroupSeparatorChar(); // this method will return the default separator, if needed
 
         var intNumber = Terms.Number<int>(NumberOptions.Integer
 #if UNDERSCORE_IN_DECIMALS
-            | (options.HasFlag(ExpressionOptions.AcceptUnderscoresInNumbers) ? NumberOptions.AllowUnderscore : 0)
+            | (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers) ? NumberOptions.AllowUnderscore : 0)
 #endif
             , decimalSeparator, numGroupSeparator)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
@@ -160,7 +181,7 @@ public static class LogicalExpressionParser
 
         var longNumber = Terms.Number<long>(NumberOptions.Integer
 #if UNDERSCORE_IN_DECIMALS
-            | (options.HasFlag(ExpressionOptions.AcceptUnderscoresInNumbers) ? NumberOptions.AllowUnderscore : 0)
+            | (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers) ? NumberOptions.AllowUnderscore : 0)
 #endif
             , decimalSeparator, numGroupSeparator)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
@@ -168,7 +189,7 @@ public static class LogicalExpressionParser
 
         var decimalNumber = Terms.Number<decimal>(NumberOptions.Float
 #if UNDERSCORE_IN_DECIMALS
-            | (options.HasFlag(ExpressionOptions.AcceptUnderscoresInNumbers) ? NumberOptions.AllowUnderscore : 0)
+            | (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers) ? NumberOptions.AllowUnderscore : 0)
 #endif
             , decimalSeparator, numGroupSeparator)
             .Then<LogicalExpression>(static (ctx, val) =>
@@ -182,7 +203,7 @@ public static class LogicalExpressionParser
 
         var doubleNumber = Terms.Number<double>(NumberOptions.Float
 #if UNDERSCORE_IN_DECIMALS
-            | (options.HasFlag(ExpressionOptions.AcceptUnderscoresInNumbers) ? NumberOptions.AllowUnderscore : 0)
+            | (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers) ? NumberOptions.AllowUnderscore : 0)
 #endif
             , decimalSeparator, numGroupSeparator)
             .Then<LogicalExpression>(static (ctx, val) =>
@@ -208,21 +229,23 @@ public static class LogicalExpressionParser
 
         Parser<LogicalExpression>? numberPercent = null;
 
-        if (options.HasFlag(ExpressionOptions.CalculatePercent))
+        if (extOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent))
         {
-            numberPercent = OneOf(intNumber, longNumber, decimalNumber, doubleNumber)
-                .And(percent)
-                .Then<LogicalExpression>(static (ctx, val) =>
-                {
-                    //todo: write a rule for percent properly
-                    return new PercentExpression(val.Item1);
-                });
+            //numberPercent = OneOf(intNumber, longNumber, decimalNumber, doubleNumber)
+            numberPercent = decimalNumber
+            .AndSkip(percent)
+            .Then<LogicalExpression>(static (ctx, val) =>
+            {
+                return new PercentExpression(val);
+            });
         }
+        else
+            numberPercent = Terms.Text("\0\0").Then<LogicalExpression>(x => new ValueExpression() );
 
         var comma = Terms.Char(',');
         var divided = Terms.Text("/");
         var times = Terms.Text("*");
-        var modulo = options.HasFlag(ExpressionOptions.CalculatePercent) ? Terms.Text("mod", true) : Terms.Text("%");
+        var modulo = extOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent) ? Terms.Text("mod", true) : Terms.Text("%");
         var minus = Terms.Text("-");
         var plus = Terms.Text("+");
 
@@ -332,9 +355,15 @@ public static class LogicalExpressionParser
 
         Parser<LogicalExpression> date;
 
+        // The following block prepares the masks for the approach to parsing used by ncalc by default -
+        // parsing of "x/y/z" in dates with the current culture info (which will likely not work in some locales).
+        // So, these masks below fix the format to be "x/y/z" in the order used by the current culture.
         string[] ncalcDateMasks = new string[2];
         string[] ncalcDateTimeMasks = new string[2];
         string[] ncalcDateShortTimeMasks = new string[2];
+        string[] ncalcDateTime12Masks = new string[4];
+        string[] ncalcDateShortTime12Masks = new string[4];
+
         CultureInfo culture = CultureInfo.CurrentCulture;
 
         string datePattern = culture.DateTimeFormat.ShortDatePattern;
@@ -364,19 +393,20 @@ public static class LogicalExpressionParser
                     break;
             }
 
-        ncalcDateTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "h:m:s");
-        ncalcDateTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "h:m:s");
-        ncalcDateShortTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "h:m");
-        ncalcDateShortTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "h:m");
+        // Define some masks for date-time values with both long and short time
+        ncalcDateTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "H:m:s");
+        ncalcDateTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "H:m:s");
+        ncalcDateShortTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "H:m");
+        ncalcDateShortTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "H:m");
 
         bool useSecondDate = false;
         bool onlyCustomDateTranslation = false;
         string customDateSep = "/";
 
-        if (extOptions != null && extOptions.DateSeparatorType != ExtendedExpressionOptions.SeparatorType.BuiltIn)
+        if (extOptions != null && extOptions.DateSeparatorType != AdvancedExpressionOptions.SeparatorType.BuiltIn)
         {
             customDateSep = extOptions.GetDateSeparator();
-            if (customDateSep != "/" && !options.HasFlag(ExpressionOptions.SkipBuiltInDateSeparator))
+            if (customDateSep != "/" && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInDateSeparator))
                 useSecondDate = true; // we use the second date separator when both custom separator and the default slash are enabled
             else
             if (customDateSep == "/")
@@ -449,14 +479,26 @@ public static class LogicalExpressionParser
         Parser<String>? amTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.AMDesignator, true) : null;
         Parser<String>? pmTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.PMDesignator, true) : null;
 
+        if (use12HourTime)
+        {
+            ncalcDateTime12Masks[0] = string.Join(" ", ncalcDateMasks[0], "h:m:s t");
+            ncalcDateTime12Masks[1] = string.Join(" ", ncalcDateMasks[1], "h:m:s t");
+            ncalcDateTime12Masks[2] = string.Join(" ", ncalcDateMasks[0], "h:m:s tt");
+            ncalcDateTime12Masks[3] = string.Join(" ", ncalcDateMasks[1], "h:m:s tt");
+            ncalcDateShortTime12Masks[0] = string.Join(" ", ncalcDateMasks[0], "h:m t");
+            ncalcDateShortTime12Masks[1] = string.Join(" ", ncalcDateMasks[1], "h:m t");
+            ncalcDateShortTime12Masks[2] = string.Join(" ", ncalcDateMasks[0], "h:m tt");
+            ncalcDateShortTime12Masks[3] = string.Join(" ", ncalcDateMasks[1], "h:m tt");
+        }
+
         bool useSecondTime = false;
         bool onlyCustomTimeTranslation = false;
         string customTimeSep = ":";
 
-        if (extOptions != null && extOptions.TimeSeparatorType != ExtendedExpressionOptions.SeparatorType.BuiltIn)
+        if (extOptions != null && extOptions.TimeSeparatorType != AdvancedExpressionOptions.SeparatorType.BuiltIn)
         {
             customTimeSep = extOptions.TimeSeparator;
-            if (customTimeSep != ":" && !options.HasFlag(ExpressionOptions.SkipBuiltInTimeSeparator))
+            if (customTimeSep != ":" && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInTimeSeparator))
                 useSecondTime = true; // we use the second date separator when both custom separator and the default slash are enabled
             else
             if (customTimeSep == ":")
@@ -597,7 +639,7 @@ public static class LogicalExpressionParser
         if (use12HourTime)
         {
             string amSpacer = "";
-            if (dateTimeFormat.ShortTimePattern.Contains(" tt"))
+            if (dateTimeFormat.ShortTimePattern.Contains(" t"))
                 amSpacer = " ";
 
             time12 = time12Definition!.Then<LogicalExpression>(time =>
@@ -733,8 +775,9 @@ public static class LogicalExpressionParser
 
         if (use12HourTime)
         {
+            // if there is a space expected before A/P or am/pm, we need to add it to the expression
             string amSpacer = "";
-            if (dateTimeFormat.ShortTimePattern.Contains(" tt"))
+            if (dateTimeFormat.ShortTimePattern.Contains(" t"))
                 amSpacer = " ";
 
             dateAndTime12 = dateDefinition.AndSkip(Literals.WhiteSpace()).And(time12Definition!).Then<LogicalExpression>(
@@ -770,7 +813,7 @@ public static class LogicalExpressionParser
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
                             // Use the existing approach
-                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}{amSpacer}{dateTime.Item4.Item4}", out var result))
+                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3} {dateTime.Item4.Item4}", ncalcDateTime12Masks, new NCalcFormatProvider(), DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -813,7 +856,7 @@ public static class LogicalExpressionParser
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
                             // Use the existing approach
-                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}{amSpacer}{dateTime.Item4.Item3}", out var result))
+                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2} {dateTime.Item4.Item3}", ncalcDateShortTime12Masks, new NCalcFormatProvider(), DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -877,6 +920,7 @@ public static class LogicalExpressionParser
 
         var primary = OneOf(
             guid,
+            numberPercent,
             hexOctBinNumber,
             intNumber,
             longNumber,
@@ -1025,8 +1069,8 @@ public static class LogicalExpressionParser
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
         Parser<LogicalExpression> parserToUse;
-        if (context.ExtendedOptions is not null)
-            parserToUse = InternalInit(context.Options, context.ExtendedOptions);
+        if (context.AdvancedOptions is not null)
+            parserToUse = InternalInit(context.Options, context.AdvancedOptions);
         else
             parserToUse = Parser;
 

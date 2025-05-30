@@ -1,7 +1,38 @@
 ﻿
 namespace NCalc
 {
-    public class ExtendedExpressionOptions : IFormatProvider
+    [Flags]
+    public enum AdvExpressionOptions
+    {
+        /// <summary>
+        /// When extended options are used, disables the use of the '/' character during parsing of dates.
+        /// When the flag is not set and extended options are used, both the '/' and the date separator specified in the extended options ('.', usually) is used.
+        /// </summary>
+        SkipBuiltInDateSeparator = 1 << 0,
+
+        /// <summary>
+        /// When extended options are used, disables the use of the ':' character during parsing of times.
+        /// When the flag is not set and extended options are used, both the ':' and the time separator specified in the extended options' CultureInfo is used.
+        /// </summary>
+        SkipBuiltInTimeSeparator = 1 << 1,
+
+        /// <summary>
+        /// When set, recognizes and skips underscore characters in numbers
+        /// </summary>
+        AcceptUnderscoresInNumbers = 1 << 2,
+
+        /// <summary>
+        /// When set, recognizes 0{digits} numeric literals as octals like C programming language does
+        /// </summary>
+        AcceptCStyleOctals = 1 << 3,
+
+        /// <summary>
+        /// When set, the % character (per cent) is used to calculate percent rather than modulo (default in ncalc)
+        /// </summary>
+        CalculatePercent = 1 << 4,
+    }
+
+    public class AdvancedExpressionOptions : IFormatProvider
     {
         public enum SeparatorType
         {
@@ -23,6 +54,8 @@ namespace NCalc
         string _numberGroupSeparator = "";
 
         CultureInfo? _cultureInfo;
+
+        public AdvExpressionOptions Flags { get; set; }
 
         public SeparatorType DateSeparatorType { get; set; }
         public SeparatorType TimeSeparatorType { get; set; }
@@ -73,13 +106,23 @@ namespace NCalc
             }
         }
 
-        public static ExtendedExpressionOptions DefaultOptions = new();
+        public static AdvancedExpressionOptions DefaultOptions = new();
 
-        public ExtendedExpressionOptions() : this(CultureInfo.CurrentCulture)
+        public AdvancedExpressionOptions() : this(CultureInfo.CurrentCulture)
         {
         }
 
-        public ExtendedExpressionOptions(CultureInfo cultureInfo)
+        public AdvancedExpressionOptions(AdvExpressionOptions advOptions) : this(CultureInfo.CurrentCulture, advOptions)
+        {
+        }
+
+        public AdvancedExpressionOptions(CultureInfo cultureInfo)
+        {
+            _cultureInfo = cultureInfo;
+            InitFieldsFromCulture();
+        }
+
+        public AdvancedExpressionOptions(CultureInfo cultureInfo, AdvExpressionOptions advOptions)
         {
             _cultureInfo = cultureInfo;
             InitFieldsFromCulture();

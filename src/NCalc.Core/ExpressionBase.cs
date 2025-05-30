@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+
 using NCalc.Cache;
 using NCalc.Domain;
 using NCalc.Exceptions;
@@ -26,14 +27,14 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     /// <summary>
     /// Extended Options for the expression evaluation.
     /// </summary>
-    public ExtendedExpressionOptions? ExtendedOptions
+    public AdvancedExpressionOptions? AdvancedOptions
     {
-        get => Context.ExtendedOptions;
+        get => Context.AdvancedOptions;
         set
         {
-            Context.ExtendedOptions = value;
-            if (Context.ExtendedOptions != null)
-                Context.ExtendedOptions.CultureInfo = CultureInfo;
+            Context.AdvancedOptions = value;
+            if (Context.AdvancedOptions != null)
+                Context.AdvancedOptions.CultureInfo = CultureInfo;
         }
     }
 
@@ -46,8 +47,8 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         set
         {
             Context.CultureInfo = value;
-            if (Context.ExtendedOptions != null)
-                Context.ExtendedOptions.CultureInfo = value;
+            if (Context.AdvancedOptions != null)
+                Context.AdvancedOptions.CultureInfo = value;
         }
     }
 
@@ -166,7 +167,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
 
         try
         {
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context.Options, ExtendedOptions);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, Context.Options, AdvancedOptions);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
