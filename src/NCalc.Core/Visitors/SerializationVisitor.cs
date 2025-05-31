@@ -1,4 +1,5 @@
 ﻿using NCalc.Domain;
+
 using ValueType = NCalc.Domain.ValueType;
 
 namespace NCalc.Visitors;
@@ -81,7 +82,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public string Visit(PercentExpression expression)
     {
-        return EncapsulateNoValue(expression.Expression) + "%";
+        return EncapsulateNoValue(expression.Expression).TrimEnd() + "%";
     }
 
     public string Visit(ValueExpression expression)

@@ -276,6 +276,8 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
 
+        var resultRefChar = Terms.Char('@');
+
         var identifier = Terms.Identifier();
 
         var not = OneOf(
@@ -299,6 +301,10 @@ public static class LogicalExpressionParser
             openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true, failOnEof: true)
                 .ElseError("Brace not closed."));
 
+        var resultReference = resultRefChar
+            .Then<LogicalExpression>(static x =>
+                new Function(new Identifier(x.ToString()!), new LogicalExpressionList()));
+
         // ("[" | "{") identifier ("]" | "}")
         var identifierExpression = OneOf(
                 braceIdentifier,
@@ -321,8 +327,15 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(static x =>
                 new Function(new Identifier(x.Item1.ToString()!), (LogicalExpressionList)x.Item2));
 
+        Parser<LogicalExpression> functionOrResultRef;
+
+        if (extOptions.Flags.HasFlag(AdvExpressionOptions.UseResultReference))
+            functionOrResultRef = OneOf(resultReference, function);
+        else
+            functionOrResultRef = function;
+
         var booleanTrue = Terms.Text("true", true)
-            .Then<LogicalExpression>(True);
+                .Then<LogicalExpression>(True);
         var booleanFalse = Terms.Text("false", true)
             .Then<LogicalExpression>(False);
 
@@ -474,13 +487,35 @@ public static class LogicalExpressionParser
         Sequence<TextSpan, TextSpan, string>? shortTime12Definition = null;
         Sequence<TextSpan, TextSpan> shortTimeDefinition;
 
-        bool use12HourTime = dateTimeFormat.ShortTimePattern.Contains("tt");
+        bool use12HourTime = dateTimeFormat.ShortTimePattern.Contains("t");
 
-        Parser<String>? amTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.AMDesignator, true) : null;
-        Parser<String>? pmTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.PMDesignator, true) : null;
+        Parser<string>? amTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.AMDesignator, true) : null;
+        Parser<string>? pmTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.PMDesignator, true) : null;
+
+        Parser<string>? amTimeIndicatorFirstChar = null;
+        Parser<string>? pmTimeIndicatorFirstChar = null;
+
+        string amTimeFirstChar = string.Empty;
+        string pmTimeFirstChar = string.Empty;
+        string amTimeFirstCharLower = string.Empty;
+        string pmTimeFirstCharLower = string.Empty;
 
         if (use12HourTime)
         {
+            if (!string.IsNullOrEmpty(dateTimeFormat.AMDesignator))
+            {
+                amTimeFirstChar = dateTimeFormat.AMDesignator.Substring(0, 1);
+                amTimeFirstCharLower = dateTimeFormat.AMDesignator.Substring(0, 1).ToLower();
+
+                amTimeIndicatorFirstChar = Terms.Text(amTimeFirstChar, true);
+            }
+            if (!string.IsNullOrEmpty(dateTimeFormat.PMDesignator))
+            {
+                pmTimeFirstChar = dateTimeFormat.PMDesignator.Substring(0, 1);
+                pmTimeFirstCharLower = dateTimeFormat.PMDesignator.Substring(0, 1).ToLower();
+                pmTimeIndicatorFirstChar = Terms.Text(pmTimeFirstChar, true);
+            }
+
             ncalcDateTime12Masks[0] = string.Join(" ", ncalcDateMasks[0], "h:m:s t");
             ncalcDateTime12Masks[1] = string.Join(" ", ncalcDateMasks[1], "h:m:s t");
             ncalcDateTime12Masks[2] = string.Join(" ", ncalcDateMasks[0], "h:m:s tt");
@@ -510,11 +545,11 @@ public static class LogicalExpressionParser
         var secondTimeSep = Terms.Text(customTimeSep); // this may be a custom separator or ":"
         if (useSecondTime)
         {
-            if (customDateSep.Contains(' '))
+            if (customTimeSep.Contains(' '))
             {
                 // If the time separator by chance contains spaces, we need to let people enter both "10:10:00" and "10: 10: 00"
                 // And for this, we use a third separator - a trimmed version of the one we have from the culture info.
-                var thirdTimeSep = Terms.Text(customDateSep.Trim());
+                var thirdTimeSep = Terms.Text(customTimeSep.Trim());
                 if (use12HourTime)
                 {
                     time12Definition = charIsNumber
@@ -522,11 +557,11 @@ public static class LogicalExpressionParser
                         .And(charIsNumber)
                         .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
                         .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!));
+                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
                     shortTime12Definition = charIsNumber
                         .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
                         .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!));
+                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
                 }
 
                 timeDefinition = charIsNumber
@@ -547,11 +582,11 @@ public static class LogicalExpressionParser
                         .And(charIsNumber)
                         .AndSkip(OneOf(divided, secondTimeSep))
                         .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!));
+                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
                     shortTime12Definition = charIsNumber
                         .AndSkip(OneOf(divided, secondTimeSep))
                         .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!));
+                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
                 }
 
                 timeDefinition = charIsNumber
@@ -574,11 +609,11 @@ public static class LogicalExpressionParser
                     .And(charIsNumber)
                     .AndSkip(secondTimeSep)
                     .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                    .And(OneOf(amTimeIndicator!, pmTimeIndicator!));
+                    .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
                 shortTime12Definition = charIsNumber
                     .AndSkip(secondTimeSep)
                     .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                    .And(OneOf(amTimeIndicator!, pmTimeIndicator!));
+                    .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
             }
 
             // time => number:number:number
@@ -602,7 +637,7 @@ public static class LogicalExpressionParser
             {
                 if (DateTime.TryParse($"{time.Item1}{customTimeSep}{time.Item2}{customTimeSep}{time.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
                 {
-                    return new ValueExpression(result);
+                    return new ValueExpression(result.TimeOfDay);
                 }
             }
             if (useSecondTime || !onlyCustomTimeTranslation)
@@ -622,7 +657,7 @@ public static class LogicalExpressionParser
             {
                 if (DateTime.TryParse($"{time.Item1}{customTimeSep}{time.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
                 {
-                    return new ValueExpression(result);
+                    return new ValueExpression(result.TimeOfDay);
                 }
             }
             if (useSecondTime || !onlyCustomTimeTranslation)
@@ -644,16 +679,23 @@ public static class LogicalExpressionParser
 
             time12 = time12Definition!.Then<LogicalExpression>(time =>
             {
+                string amPMValue = time.Item4;
+                if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
+                    amPMValue = dateTimeFormat.AMDesignator;
+                else
+                if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
+                    amPMValue = dateTimeFormat.PMDesignator;
+
                 if (useSecondTime || onlyCustomTimeTranslation)
                 {
-                    if (DateTime.TryParse($"{time.Item1}{customTimeSep}{time.Item2}{customTimeSep}{time.Item3}{amSpacer}{time.Item4}", dateTimeFormat, DateTimeStyles.None, out var result))
+                    if (DateTime.TryParse($"{time.Item1}{customTimeSep}{time.Item2}{customTimeSep}{time.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                     {
-                        return new ValueExpression(result);
+                        return new ValueExpression(result.TimeOfDay);
                     }
                 }
                 if (useSecondTime || !onlyCustomTimeTranslation)
                 {
-                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}{amSpacer}{time.Item4}", out var result))
+                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}{amSpacer}{amPMValue}", out var result))
                     {
                         return new ValueExpression(result);
                     }
@@ -664,16 +706,23 @@ public static class LogicalExpressionParser
 
             shortTime12 = shortTime12Definition!.Then<LogicalExpression>(time =>
             {
+                string amPMValue = time.Item3;
+                if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
+                    amPMValue = dateTimeFormat.AMDesignator;
+                else
+                if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
+                    amPMValue = dateTimeFormat.PMDesignator;
+
                 if (useSecondTime || onlyCustomTimeTranslation)
                 {
-                    if (DateTime.TryParse($"{time.Item1}{customTimeSep}{time.Item2}{amSpacer}{time.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
+                    if (DateTime.TryParse($"{time.Item1}{customTimeSep}{time.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                     {
-                        return new ValueExpression(result);
+                        return new ValueExpression(result.TimeOfDay);
                     }
                 }
                 if (useSecondTime || !onlyCustomTimeTranslation)
                 {
-                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}{amSpacer}{time.Item3}", out var result))
+                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}{amSpacer}{amPMValue}", out var result))
                     {
                         return new ValueExpression(result);
                     }
@@ -783,18 +832,25 @@ public static class LogicalExpressionParser
             dateAndTime12 = dateDefinition.AndSkip(Literals.WhiteSpace()).And(time12Definition!).Then<LogicalExpression>(
                 dateTime =>
                 {
+                    string amPMValue = dateTime.Item4.Item4;
+                    if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
+                        amPMValue = dateTimeFormat.AMDesignator;
+                    else
+                    if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
+                        amPMValue = dateTimeFormat.PMDesignator;
+
                     if (useSecondDate || onlyCustomDateTranslation)
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSep}{dateTime.Item2}{customDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSep}{dateTime.Item4.Item2}{customTimeSep}{dateTime.Item4.Item3}{amSpacer}{dateTime.Item4.Item4}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSep}{dateTime.Item2}{customDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSep}{dateTime.Item4.Item2}{customTimeSep}{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
                         }
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSep}{dateTime.Item2}{customDateSep}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}{amSpacer}{dateTime.Item4.Item4}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSep}{dateTime.Item2}{customDateSep}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -804,7 +860,7 @@ public static class LogicalExpressionParser
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSep}{dateTime.Item4.Item2}{customTimeSep}{dateTime.Item4.Item3}{amSpacer}{dateTime.Item4.Item4}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSep}{dateTime.Item4.Item2}{customTimeSep}{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -813,7 +869,7 @@ public static class LogicalExpressionParser
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
                             // Use the existing approach
-                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3} {dateTime.Item4.Item4}", ncalcDateTime12Masks, new NCalcFormatProvider(), DateTimeStyles.None, out var result))
+                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3} {amPMValue}", ncalcDateTime12Masks, new NCalcFormatProvider(), DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -826,18 +882,25 @@ public static class LogicalExpressionParser
             dateAndShortTime12 = dateDefinition.AndSkip(Literals.WhiteSpace()).And(shortTime12Definition!).Then<LogicalExpression>(
                 dateTime =>
                 {
+                    string amPMValue = dateTime.Item4.Item3;
+                    if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
+                        amPMValue = dateTimeFormat.AMDesignator;
+                    else
+                    if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
+                        amPMValue = dateTimeFormat.PMDesignator;
+
                     if (useSecondDate || onlyCustomDateTranslation)
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSep}{dateTime.Item2}{customDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSep}{dateTime.Item4.Item2}{amSpacer}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSep}{dateTime.Item2}{customDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSep}{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
                         }
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSep}{dateTime.Item2}{customDateSep}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}{amSpacer}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSep}{dateTime.Item2}{customDateSep}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -847,7 +910,7 @@ public static class LogicalExpressionParser
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSep}{dateTime.Item4.Item2}{amSpacer}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSep}{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -856,7 +919,7 @@ public static class LogicalExpressionParser
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
                             // Use the existing approach
-                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2} {dateTime.Item4.Item3}", ncalcDateShortTime12Masks, new NCalcFormatProvider(), DateTimeStyles.None, out var result))
+                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2} {amPMValue}", ncalcDateShortTime12Masks, new NCalcFormatProvider(), DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -873,7 +936,7 @@ public static class LogicalExpressionParser
         {
             dateTime = Terms
             .Char('#')
-            .SkipAnd(OneOf(dateAndTime12!, dateAndShortTime12!, dateAndTime, dateAndShortTime, date, time, shortTime))
+            .SkipAnd(OneOf(dateAndTime12!, dateAndShortTime12!, dateAndTime, dateAndShortTime, date, time12!, shortTime12!, time, shortTime))
             .AndSkip(Literals.Char('#'));
         }
         else
@@ -916,7 +979,7 @@ public static class LogicalExpressionParser
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
 
-        // primary => GUID | NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
+        // primary => GUID | Percent | NUMBER | identifier| DateTime | string | resultReference | function | boolean | groupExpression | identifier | list ;
 
         var primary = OneOf(
             guid,
@@ -929,7 +992,7 @@ public static class LogicalExpressionParser
             booleanFalse,
             dateTime,
             stringValue,
-            function,
+            functionOrResultRef,
             groupExpression,
             identifierExpression,
             list);

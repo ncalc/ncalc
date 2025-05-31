@@ -4,6 +4,8 @@ namespace NCalc
     [Flags]
     public enum AdvExpressionOptions
     {
+        None = 0,
+
         /// <summary>
         /// When extended options are used, disables the use of the '/' character during parsing of dates.
         /// When the flag is not set and extended options are used, both the '/' and the date separator specified in the extended options ('.', usually) is used.
@@ -27,9 +29,14 @@ namespace NCalc
         AcceptCStyleOctals = 1 << 3,
 
         /// <summary>
-        /// When set, the % character (per cent) is used to calculate percent rather than modulo (default in ncalc)
+        /// When set, the `%` character (per cent) is used to calculate percent rather than modulo (default in ncalc)
         /// </summary>
         CalculatePercent = 1 << 4,
+
+        /// <summary>
+        /// When set, the `@` character (at) is used to reference a previous evaluation's result. For this, the EvaluateFunction event is fired with `@` as the function name.
+        /// </summary>
+        UseResultReference = 1 << 5,
     }
 
     public class AdvancedExpressionOptions : IFormatProvider
@@ -37,7 +44,7 @@ namespace NCalc
         public enum SeparatorType
         {
             BuiltIn,
-            CurrentCulture,
+            FromCulture,
             Custom
         }
 
@@ -75,7 +82,8 @@ namespace NCalc
             get => _dateSeparator;
             set
             {
-                _dateSeparator = value;
+                if (!string.IsNullOrEmpty(value))
+                    _dateSeparator = value;
             }
         }
 
@@ -84,7 +92,8 @@ namespace NCalc
             get => _timeSeparator;
             set
             {
-                _timeSeparator = value;
+                if (!string.IsNullOrEmpty(value))
+                    _timeSeparator = value;
             }
         }
 
@@ -93,7 +102,8 @@ namespace NCalc
             get => _decimalSeparator;
             set
             {
-                _decimalSeparator = value;
+                if (!string.IsNullOrEmpty(value))
+                    _decimalSeparator = value;
             }
         }
 
@@ -116,7 +126,7 @@ namespace NCalc
         {
         }
 
-        public AdvancedExpressionOptions(CultureInfo cultureInfo)
+        public AdvancedExpressionOptions(CultureInfo cultureInfo) : this (cultureInfo, AdvExpressionOptions.SkipBuiltInDateSeparator | AdvExpressionOptions.SkipBuiltInTimeSeparator)
         {
             _cultureInfo = cultureInfo;
             InitFieldsFromCulture();
@@ -125,6 +135,7 @@ namespace NCalc
         public AdvancedExpressionOptions(CultureInfo cultureInfo, AdvExpressionOptions advOptions)
         {
             _cultureInfo = cultureInfo;
+            Flags = advOptions;
             InitFieldsFromCulture();
         }
 
@@ -172,7 +183,7 @@ namespace NCalc
             {
                 case SeparatorType.BuiltIn:
                     return "/";
-                case SeparatorType.CurrentCulture:
+                case SeparatorType.FromCulture:
                     return ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).DateTimeFormat.DateSeparator;
                 case SeparatorType.Custom:
                     return _dateSeparator;
@@ -187,7 +198,7 @@ namespace NCalc
             {
                 case SeparatorType.BuiltIn:
                     return ":";
-                case SeparatorType.CurrentCulture:
+                case SeparatorType.FromCulture:
                     return ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).DateTimeFormat.TimeSeparator;
                 case SeparatorType.Custom:
                     return _timeSeparator;
@@ -204,7 +215,7 @@ namespace NCalc
                 case SeparatorType.BuiltIn:
                     separatorString = Parlot.Fluent.NumberLiterals.DefaultDecimalSeparator.ToString();
                     break;
-                case SeparatorType.CurrentCulture:
+                case SeparatorType.FromCulture:
                     separatorString = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.NumberDecimalSeparator;
                     break;
                 case SeparatorType.Custom:
@@ -225,7 +236,7 @@ namespace NCalc
                 case SeparatorType.BuiltIn:
                     separatorString = Parlot.Fluent.NumberLiterals.DefaultGroupSeparator.ToString();
                     break;
-                case SeparatorType.CurrentCulture:
+                case SeparatorType.FromCulture:
                     separatorString = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.NumberGroupSeparator;
                     break;
                 case SeparatorType.Custom:
@@ -247,57 +258,87 @@ namespace NCalc
         {
             if (formatType == typeof(DateTimeFormatInfo))
             {
-                if (DateSeparatorType == SeparatorType.BuiltIn)
+                if (DateSeparatorType == TimeSeparatorType)
                 {
-                    return CultureInfo.CurrentCulture.DateTimeFormat.Clone() as DateTimeFormatInfo; // The parser will just use built-in values, so this line never gets executed. But we need to have it just in case.
-                }
-                if (DateSeparatorType == SeparatorType.CurrentCulture)
-                {
-                    if (_cultureInfo != null)
-                        return _cultureInfo.DateTimeFormat;
+                    if (DateSeparatorType == SeparatorType.BuiltIn)
+                    {
+                        return CultureInfo.CurrentCulture.DateTimeFormat.Clone() as DateTimeFormatInfo; // The parser will just use built-in values, so this line never gets executed. But we need to have it just in case.
+                    }
+                    if (DateSeparatorType == SeparatorType.FromCulture)
+                    {
+                        return (_cultureInfo is not null) ? _cultureInfo.DateTimeFormat : CultureInfo.CurrentCulture.DateTimeFormat;
+                    }
                     else
-                        return CultureInfo.CurrentCulture.DateTimeFormat;
+                    if (DateSeparatorType == SeparatorType.Custom)
+                    {
+                        return CombineDateTimeFormat();
+                    }
                 }
                 else
-                if (DateSeparatorType == SeparatorType.Custom)
+                    return CombineDateTimeFormat();
+            }
+            return null;
+        }
+
+        private DateTimeFormatInfo? CombineDateTimeFormat()
+        {
+            DateTimeFormatInfo? result = null;
+            if (DateSeparatorType == SeparatorType.BuiltIn)
+            {
+                result = CultureInfo.CurrentCulture.DateTimeFormat.Clone() as DateTimeFormatInfo; // The parser will just use built-in values, so this line never gets executed. But we need to have it just in case.
+            }
+            if (DateSeparatorType == SeparatorType.FromCulture)
+            {
+                result = (_cultureInfo is not null) ? _cultureInfo.DateTimeFormat : CultureInfo.CurrentCulture.DateTimeFormat;
+            }
+            else
+            if (DateSeparatorType == SeparatorType.Custom)
+            {
+                switch (DateOrder)
                 {
-                    DateTimeFormatInfo? result = null;
-                    switch (DateOrder)
-                    {
-                        case DateOrderKind.DMY:
-                            result = CultureInfo.GetCultureInfo("de-DE").DateTimeFormat.Clone() as DateTimeFormatInfo;
-                            if (result is not null)
-                                result.DateSeparator = _dateSeparator;
-                            break;
-                        case DateOrderKind.MDY:
-                            result = CultureInfo.GetCultureInfo("en-US").DateTimeFormat.Clone() as DateTimeFormatInfo;
-                            if (result is not null)
-                                result.DateSeparator = _dateSeparator;
-                            break;
-                        case DateOrderKind.YMD:
-                            result = CultureInfo.CurrentCulture.DateTimeFormat.Clone() as DateTimeFormatInfo;
-                            if (result is not null && result.DateSeparator != _dateSeparator)
-                            {
-                                result.FullDateTimePattern = result.FullDateTimePattern.Replace(result.DateSeparator, _dateSeparator);
-                                result.LongDatePattern = result.LongDatePattern.Replace(result.DateSeparator, _dateSeparator);
-                                result.ShortDatePattern = string.Join(_dateSeparator, "yyyy", "M", "d");
-                                result.MonthDayPattern = string.Join(_dateSeparator, "M", "d");
-                                result.YearMonthPattern = string.Join(_dateSeparator, "yyyy", "M");
+                    case DateOrderKind.DMY:
+                        result = CultureInfo.GetCultureInfo("de-DE").DateTimeFormat.Clone() as DateTimeFormatInfo;
+                        if (result is not null)
+                            result.DateSeparator = _dateSeparator;
+                        break;
+                    case DateOrderKind.MDY:
+                        result = CultureInfo.GetCultureInfo("en-US").DateTimeFormat.Clone() as DateTimeFormatInfo;
+                        if (result is not null)
+                            result.DateSeparator = _dateSeparator;
+                        break;
+                    case DateOrderKind.YMD:
+                        result = CultureInfo.CurrentCulture.DateTimeFormat.Clone() as DateTimeFormatInfo;
+                        if (result is not null && result.DateSeparator != _dateSeparator)
+                        {
+                            result.FullDateTimePattern = result.FullDateTimePattern.Replace(result.DateSeparator, _dateSeparator);
+                            result.LongDatePattern = result.LongDatePattern.Replace(result.DateSeparator, _dateSeparator);
+                            result.ShortDatePattern = string.Join(_dateSeparator, "yyyy", "M", "d");
+                            result.MonthDayPattern = string.Join(_dateSeparator, "M", "d");
+                            result.YearMonthPattern = string.Join(_dateSeparator, "yyyy", "M");
 
-                                result.DateSeparator = _dateSeparator;
-                            }
-                            break;
-
-                    }
-                    if (result is not null)
-                    {
-                        return result;
-                    }
-                    else
-                        return null;
+                            result.DateSeparator = _dateSeparator;
+                        }
+                        break;
                 }
             }
-            throw new NotImplementedException();
+
+            if (result == null)
+                return result;
+
+            DateTimeFormatInfo timeInfo = ((TimeSeparatorType == SeparatorType.FromCulture) && _cultureInfo is not null) ? _cultureInfo.DateTimeFormat : CultureInfo.CurrentCulture.DateTimeFormat;
+
+            result.AMDesignator = timeInfo.AMDesignator;
+            result.PMDesignator = timeInfo.PMDesignator;
+            result.LongTimePattern = timeInfo.LongTimePattern;
+            result.ShortTimePattern = timeInfo.ShortTimePattern;
+            result.TimeSeparator = timeInfo.TimeSeparator;
+
+            if (TimeSeparatorType == SeparatorType.Custom)
+            {
+                result.TimeSeparator = _timeSeparator;
+            }
+
+            return result;
         }
     }
 }
