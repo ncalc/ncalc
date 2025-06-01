@@ -37,6 +37,11 @@ namespace NCalc
         /// When set, the `@` character (at) is used to reference a previous evaluation's result. For this, the EvaluateFunction event is fired with `@` as the function name.
         /// </summary>
         UseResultReference = 1 << 5,
+
+        /// <summary>
+        /// When set, the current locale's currency symbol is accepted to indicate a decimal number (the symbol itself is skipped).
+        /// </summary>
+        AcceptCurrencySymbol = 1 << 6,
     }
 
     public class AdvancedExpressionOptions : IFormatProvider
@@ -44,6 +49,21 @@ namespace NCalc
         public enum SeparatorType
         {
             BuiltIn,
+            FromCulture,
+            Custom
+        }
+
+        public enum HoursFormatKind
+        {
+            BuiltIn, // From current culture
+            FromCulture, // from specified culture or current culture if nothing is specified
+            Always12Hour, // use 12-hour format
+            Always24Hour  // use 24-hour format
+        }
+
+        public enum CurrencySymbolType
+        {
+            CurrentCulture,
             FromCulture,
             Custom
         }
@@ -59,6 +79,10 @@ namespace NCalc
         string _timeSeparator = ":";
         string _decimalSeparator = ".";
         string _numberGroupSeparator = "";
+        string _currencyDecimalSeparator = ".";
+        string _currencyNumberGroupSeparator = "";
+        string _currencySymbol = "";
+        string _currencySymbol2 = "";
 
         CultureInfo? _cultureInfo;
 
@@ -68,8 +92,12 @@ namespace NCalc
         public SeparatorType TimeSeparatorType { get; set; }
         public SeparatorType DecimalSeparatorType { get; set; }
         public SeparatorType NumberGroupSeparatorType { get; set; }
+        public SeparatorType CurrencyDecimalSeparatorType { get; set; }
+        public SeparatorType CurrencyNumberGroupSeparatorType { get; set; }
+        public CurrencySymbolType CurrencySymbolsType { get; set; }
 
         public DateOrderKind DateOrder { get; set; }
+        public HoursFormatKind HoursFormat { get; set; }
 
         public CultureInfo? CultureInfo
         {
@@ -116,6 +144,43 @@ namespace NCalc
             }
         }
 
+        public string CurrencyDecimalSeparator
+        {
+            get => _currencyDecimalSeparator;
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                    _currencyDecimalSeparator = value;
+            }
+        }
+
+        public string CurrencyNumberGroupSeparator
+        {
+            get => _currencyNumberGroupSeparator;
+            set
+            {
+                _currencyNumberGroupSeparator = value;
+            }
+        }
+
+        public string CurrencySymbol
+        {
+            get => _currencySymbol;
+            set
+            {
+                _currencySymbol = value;
+            }
+        }
+
+        public string CurrencySymbol2
+        {
+            get => _currencySymbol2;
+            set
+            {
+                _currencySymbol2 = value;
+            }
+        }
+
         public static AdvancedExpressionOptions DefaultOptions = new();
 
         public AdvancedExpressionOptions() : this(CultureInfo.CurrentCulture)
@@ -126,7 +191,7 @@ namespace NCalc
         {
         }
 
-        public AdvancedExpressionOptions(CultureInfo cultureInfo) : this (cultureInfo, AdvExpressionOptions.SkipBuiltInDateSeparator | AdvExpressionOptions.SkipBuiltInTimeSeparator)
+        public AdvancedExpressionOptions(CultureInfo cultureInfo) : this (cultureInfo, AdvExpressionOptions.None)
         {
             _cultureInfo = cultureInfo;
             InitFieldsFromCulture();
@@ -228,6 +293,27 @@ namespace NCalc
                 return separatorString[0];
         }
 
+        internal char GetCurrencyDecimalSeparatorChar()
+        {
+            string? separatorString = "";
+            switch (CurrencyDecimalSeparatorType)
+            {
+                case SeparatorType.BuiltIn:
+                    separatorString = Parlot.Fluent.NumberLiterals.DefaultDecimalSeparator.ToString();
+                    break;
+                case SeparatorType.FromCulture:
+                    separatorString = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.CurrencyDecimalSeparator;
+                    break;
+                case SeparatorType.Custom:
+                    separatorString = _currencyDecimalSeparator;
+                    break;
+            }
+            if (string.IsNullOrEmpty(separatorString))
+                return '\0';
+            else
+                return separatorString[0];
+        }
+
         internal char GetNumberGroupSeparatorChar()
         {
             string? separatorString = "";
@@ -247,6 +333,69 @@ namespace NCalc
                 return '\0';
             else
                 return separatorString[0];
+        }
+
+        internal char GetCurrencyNumberGroupSeparatorChar()
+        {
+            string? separatorString = "";
+            switch (CurrencyNumberGroupSeparatorType)
+            {
+                case SeparatorType.BuiltIn:
+                    separatorString = Parlot.Fluent.NumberLiterals.DefaultGroupSeparator.ToString();
+                    break;
+                case SeparatorType.FromCulture:
+                    separatorString = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.CurrencyGroupSeparator;
+                    break;
+                case SeparatorType.Custom:
+                    separatorString = _currencyNumberGroupSeparator;
+                    break;
+            }
+            if (string.IsNullOrEmpty(separatorString))
+                return '\0';
+            else
+                return separatorString[0];
+        }
+
+        internal void GetCurrencySymbols(out string currencySymbol, out string currencySymbol2)
+        {
+            currencySymbol = string.Empty;
+            currencySymbol2 = string.Empty;
+            if (CurrencySymbolsType == CurrencySymbolType.CurrentCulture)
+            {
+                currencySymbol = CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol;
+                if ((currencySymbol.Length > 0) && (currencySymbol[0] == '\x20ac')) // Euro character
+                    currencySymbol2 = "EUR";
+            }
+            else
+            if (CurrencySymbolsType == CurrencySymbolType.FromCulture)
+            {
+                currencySymbol = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.CurrencySymbol;
+                if ((currencySymbol.Length > 0) && (currencySymbol[0] == '\x20ac')) // Euro character
+                    currencySymbol2 = "EUR";
+            }
+            else
+                if (CurrencySymbolsType == CurrencySymbolType.Custom)
+            {
+                currencySymbol = _currencySymbol;
+                currencySymbol2 = _currencySymbol2;
+            }
+        }
+
+        internal bool Use12HourTime()
+        {
+            switch (HoursFormat)
+            {
+                case HoursFormatKind.BuiltIn:
+                    return CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.Contains("t");
+                case HoursFormatKind.FromCulture:
+                    return ((_cultureInfo is not null) ? _cultureInfo.DateTimeFormat : CultureInfo.CurrentCulture.DateTimeFormat).ShortTimePattern.Contains("t");
+                case HoursFormatKind.Always12Hour:
+                    return true;
+                case HoursFormatKind.Always24Hour:
+                    return false;
+                default:
+                    return CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.Contains("t");
+            }
         }
 
         internal IFormatProvider GetDateFormatProvider()
@@ -289,7 +438,7 @@ namespace NCalc
             }
             if (DateSeparatorType == SeparatorType.FromCulture)
             {
-                result = (_cultureInfo is not null) ? _cultureInfo.DateTimeFormat : CultureInfo.CurrentCulture.DateTimeFormat;
+                result = ((_cultureInfo is not null) ? _cultureInfo.DateTimeFormat : CultureInfo.CurrentCulture.DateTimeFormat).Clone() as DateTimeFormatInfo;
             }
             else
             if (DateSeparatorType == SeparatorType.Custom)

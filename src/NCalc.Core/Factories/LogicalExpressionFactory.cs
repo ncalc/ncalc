@@ -37,8 +37,7 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
     public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, AdvancedExpressionOptions? advancedOptions = null)
     {
         var parserContext = new LogicalExpressionParserContext(expression, options);
-        if (advancedOptions is not null)
-            parserContext.AdvancedOptions = advancedOptions;
+        parserContext.AdvancedOptions = advancedOptions;
         return LogicalExpressionParser.Parse(parserContext);
     }
 }

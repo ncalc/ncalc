@@ -1,10 +1,11 @@
 ﻿# Advanced Value Formats and Operations
 
-Some of the behavior and support for advanced parisng features is controlled by the advanced options. This includes
+Some of the behavior and support for advanced parsing features is controlled by the advanced options. This includes
 
 * Advanced date and time parsing
-* Underscores in numbers
-* Custom decimal and number group separators
+* Currency support
+* Underscores in numbers and currency
+* Custom decimal and group separators in numbers and currency
 * C-Style octal literals
 * Result Reference character
 * Percent calculations
@@ -21,6 +22,7 @@ expression.AdvancedOptions. ... = ...;
 When advanced options are used, an expression is evaluated using a new parser, which is created each time. This means that options are applied during the evaluation and may be changed between evaluations.
 
 ## Advanced Date and Time Parsing
+
 This version of NCalc supports flexible culture-sensitive parsing of date and time literals as well as parsing short times (hours and minutes with seconds assumed to be 00). The goal is to provide natural ways for people to enter date and time values in different formats at the same time which don't necessarily align with the system date and time formats. 
 
 The information about Date and Time formats below is also applicable to compound date-time values.
@@ -48,7 +50,6 @@ When `DateSeparatorType` is set to `FromCulture`, the order of day, month, and y
 
 **NOTE:** if a `Custom` format or a `FromCulture` format with a custom culture is used and it has a different year-month-day order than the system-current culture format, the parser will likely recognize the date as the one matching a custom format first and will not try the built-in format, which can lead to unexpected results. So, it is recommended that the `SkipBuiltInDateSeparator` flag is set when you use a format type different from `BuiltIn`. To put it simply, don't mix the regular and US formats in one configuration.
 
-
 ### Time Formats
 
 AdvancedExpressionOptions let one specify, which format to use for parsing times. 
@@ -61,9 +62,37 @@ The `TimeSeparatorType` property lets you choose between
 When `TimeSeparatorType` is set to `CurrentCulture` or `Custom`, the parser will try to parse the value using the corresponding format and optionally try the built-in format. Whether the built-in format is tried or skipped in this case, is defined by the `SkipBuiltInTimeSeparator` flag. To skip the built-in format, include the `SkipBuiltInTimeSeparator` flag to the `Flags` property of an instance of the `AdvancedExpressionOptions` class.
 
 #### 12-hour and 24-hour times
-The parser will detect the presence of a am/pm format specifier, which is `t`, and will try to parse the provided time as a 12-hour value. When doing this, the parser will try the values with and without a space before the am/pm value. This algorithm applies to all types of date formats including the built-in parsing.
 
-## Underscores in numbers
+AdvancedExpressionOptions let one specify, whether to use 12-hour time format.
+
+The `HoursFormat` property lets you choose between 
+* `BuiltIn` : The ShortTimeFormat property of the CultureInfo.CurrentCulture's date/time information is used to determine if 12-hour format is to be used. 
+* `CurrentCulture` : The ShortTimeFormat property of the  date/time information of either the custom culture or CultureInfo.CurrentCulture is used to determine if 12-hour format is to be used. 
+* `Always12Hour` : use 12-hour format
+* `Always24Hour` : use 24-hour format
+
+When handling the 12-hour format, the parser will try values with and without a space before the am/pm value and with short (a/p) and normal (am/pm forms). This algorithm applies to all types of date formats including the built-in parsing.
+
+## Currency support 
+
+This version of NCalc supports parsing of currency values (i.e., the numbers accompanied by the currency symbol or, in the case of Euro, by "EUR"). 
+To enable currency support, include the `AcceptCurrencySymbol ` flag to the `Flags` property of an instance of the `AdvancedExpressionOptions` class:
+
+```c#
+var expression = new NCalc.Expression("$10000000 / 2");
+expression.AdvancedOptions = new NCalc.AdvancedExpressionOptions();
+expression.AdvancedOptions.Flags |= NCalc.AdvExpressionOptions.AcceptCurrencySymbol;
+```
+
+The parser supports two currency symbols (used for a currency symbol and a currency name).
+
+The `CurrencySymbolsType` type property lets you choose between 
+* `CurrentCulture` : The symbol defined in CultureInfo.CurrentCulture is used. If the symbol is for Euro, "EUR" is used as a secondary symbol.
+* `FromCulture` : The symbol defined in the current culture (which is either CultureInfo.CurrentCulture or a custom culture that you specify in the constructor or the `CultureInfo` property) is used. If the symbol is for Euro, "EUR" is used as a secondary symbol.
+* `Custom` : Two symbols can be set via the `CurrencySymbol` and `CurrencySymbol2`.
+
+## Underscores in numbers and currency
+
 This version of NCalc supports underscore characters (`_`) in numeric literals. Such characters are treated as whitespace and are stripped when the value is converted into a number. Modern programming languages support this notation for better readability of large numbers.
 
 **NOTE:** Support for underscores requires [a custom version of the Parlot parser as provided by Allied Bits Ltd](https://github.com/Allied-Bits-Ltd/parlot).
@@ -76,19 +105,19 @@ expression.AdvancedOptions = new NCalc.AdvancedExpressionOptions();
 expression.AdvancedOptions.Flags |= NCalc.AdvExpressionOptions.AcceptUnderscoresInNumbers;
 ```
 
-## Custom Decimal and Number Group Separators
+## Custom Decimal and Group Separators in Numbers and Currency
 
-AdvancedExpressionOptions let one specify, which character to use for a decimal separator and a number group separator when parsing numbers. 
+AdvancedExpressionOptions let one specify, which character to use for a decimal separator and a number group separator when parsing numbers or currency values. 
 
-The `DecimalSeparatorType` property lets you choose between 
+The `DecimalSeparatorType` and `CurrencyDecimalSeparatorType` properties lets you choose between 
 * `BuiltIn` : the separator defined in the default parser (Parlot), which is a dot (`.`)
 * `CurrentCulture` : the separator defined in the current culture (which is either CultureInfo.CurrentCulture or a custom culture that you specify in the constructor or the `CultureInfo` property) 
-* `Custom` : the separator defined in the `DecimalSeparator` property
+* `Custom` : the separator defined in the `DecimalSeparator` and `CurrencyDecimalSeparator` property respectively
 
-The `NumberGroupSeparatorType` property lets you choose between 
+The `NumberGroupSeparatorType` and `CurrencyNumberGroupSeparatorType` property lets you choose between 
 * `BuiltIn` : the separator defined in the default parser (Parlot), which is a comma (`,`)
 * `CurrentCulture` : the separator defined in the current culture (which is either CultureInfo.CurrentCulture or a custom culture that you specify in the constructor or the `CultureInfo` property) 
-* `Custom` : the separator defined in the `NumberGroupSeparator` property
+* `Custom` : the separator defined in the `NumberGroupSeparator` and `CurrencyNumberGroupSeparator` property respectively
 
 A number group separator may be empty.
 
