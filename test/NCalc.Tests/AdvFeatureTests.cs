@@ -12,7 +12,7 @@ public class AdvFeatureTests
     [InlineData("#2025.06.01#", ".", AdvancedExpressionOptions.DateOrderKind.YMD, new int[] { 2025, 6, 1 })]
     public void ShouldParseDatesCustom(string input, string separator, AdvancedExpressionOptions.DateOrderKind dateOrder, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.DateSeparator = separator;
@@ -35,7 +35,7 @@ public class AdvFeatureTests
     [InlineData("#2025/06/01#", ".", AdvancedExpressionOptions.DateOrderKind.YMD, new int[] { 2025, 6, 1 })]
     public void ShouldParseDatesCustomWithDefault(string input, string separator, AdvancedExpressionOptions.DateOrderKind dateOrder, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.Flags = AdvExpressionOptions.None;
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
@@ -55,7 +55,7 @@ public class AdvFeatureTests
     [InlineData("#2025/06/01#", "ja-JP", new int[] { 2025, 6, 1 })]
     public void ShouldParseDatesCulture(string input, string cultureName, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
         expression.CultureInfo = new CultureInfo(cultureName);
@@ -72,7 +72,7 @@ public class AdvFeatureTests
     [InlineData("#1/12/2025#", new int[] { 2025, 12, 1 })]
     public void ShouldParseDatesBuiltin(string input, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.BuiltIn;
 
@@ -102,7 +102,7 @@ public class AdvFeatureTests
 
     public void ShouldParseTimesCustom24hr(string input, string separator, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.TimeSeparator = separator;
@@ -129,7 +129,7 @@ public class AdvFeatureTests
 
     public void ShouldParseTimesCustom12hr(string input, string separator, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.TimeSeparator = separator;
@@ -156,7 +156,7 @@ public class AdvFeatureTests
 
     public void ShouldParseTimesCustom12HrCulture(string input, string separator, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.TimeSeparator = separator;
@@ -184,7 +184,7 @@ public class AdvFeatureTests
 
     public void ShouldParseTimesCustom24hrCulture(string input, string separator, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.TimeSeparator = separator;
@@ -220,7 +220,7 @@ public class AdvFeatureTests
 
     public void ShouldParseTimesCulture(string input, string cultureName, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
         expression.AdvancedOptions.HoursFormat = AdvancedExpressionOptions.HoursFormatKind.FromCulture;
@@ -242,7 +242,7 @@ public class AdvFeatureTests
 
     public void ShouldParseTimesBuiltIn(string input, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
 
         var result = expression.Evaluate();
 
@@ -263,7 +263,7 @@ public class AdvFeatureTests
 
     public void ShouldParseDatesBuiltinTimesBuiltIn(string input, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.BuiltIn;
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.BuiltIn;
@@ -330,7 +330,7 @@ public class AdvFeatureTests
     [InlineData("#1/12/2025 10:11 pm#", "en-US", new int[] { 2025, 12, 1, 22, 11, 0})]
     public void ShouldParseDatesBuiltinTimesCulture(string input, string cultureName, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.BuiltIn;
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
@@ -363,7 +363,7 @@ public class AdvFeatureTests
     [InlineData("#1/12/2025 22@01#", "@", new int[] { 2025, 12, 1, 22, 1, 00 })]
     public void ShouldParseDatesBuiltinTimesCustom(string input, string separator, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.BuiltIn;
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
@@ -400,7 +400,7 @@ public class AdvFeatureTests
     [InlineData("#2025/06/01 22:11:12#", "ja-JP", new int[] { 2025, 6, 1, 22, 11, 12 })]
     public void ShouldParseDatesCultureTimesBuiltIn(string input, string cultureName, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.BuiltIn;
@@ -480,7 +480,7 @@ public class AdvFeatureTests
     [InlineData("#1/12/2025 10:11 pm#", "en-US", new int[] { 2025, 1, 12, 22, 11, 0 })]
     public void ShouldParseDatesCultureTimesCulture(string input, string cultureName, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
         expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
@@ -508,7 +508,7 @@ public class AdvFeatureTests
     [InlineData("#2025/06/01 22@11@12#", "ja-JP", "@", new int[] { 2025, 6, 1, 22, 11, 12 })]
     public void ShouldParseDatesCultureTimesCustom(string input, string cultureName, string timeSeparator, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
         expression.AdvancedOptions.CultureInfo = new CultureInfo(cultureName);
@@ -540,7 +540,7 @@ public class AdvFeatureTests
     [InlineData("#2025.06.01 1:12#", ".", AdvancedExpressionOptions.DateOrderKind.YMD, new int[] { 2025, 6, 1, 1, 12, 00 })]
     public void ShouldParseDatesCustomTimesBuiltin(string input, string dateSeparator, AdvancedExpressionOptions.DateOrderKind dateOrder, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.DateSeparator = dateSeparator;
@@ -571,7 +571,7 @@ public class AdvFeatureTests
     [InlineData("#2025.06.01 1:12#", ".", AdvancedExpressionOptions.DateOrderKind.YMD, "de-DE", new int[] { 2025, 6, 1, 1, 12, 00 })]
     public void ShouldParseDatesCustomTimesCulture(string input, string dateSeparator, AdvancedExpressionOptions.DateOrderKind dateOrder, string cultureName, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.DateSeparator = dateSeparator;
@@ -599,7 +599,7 @@ public class AdvFeatureTests
     [InlineData("#2025$6$1 10@11@12pm#", "$", AdvancedExpressionOptions.DateOrderKind.MDY, "@", true, new int[] { 2025, 6, 1, 22, 11, 12 })]
     public void ShouldParseDatesCustomTimesCustom(string input, string dateSeparator, AdvancedExpressionOptions.DateOrderKind dateOrder, string timeSeparator, bool use12Hours, int[] expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.DateSeparator = dateSeparator;
@@ -650,7 +650,7 @@ public class AdvFeatureTests
 
     public void ShouldHandleDecimalSeparatorCustom(string input, string separator, double expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DecimalSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.DecimalSeparator = separator;
@@ -667,7 +667,7 @@ public class AdvFeatureTests
 
     public void ShouldHandleDecimalSeparatorCulture(string input, string cultureName, double expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.DecimalSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
         expression.AdvancedOptions.CultureInfo = new CultureInfo(cultureName);
@@ -683,7 +683,7 @@ public class AdvFeatureTests
 
     public void ShouldHandleNumberGroupSeparatorCustom(string input, string separator, double expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.NumberGroupSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
         expression.AdvancedOptions.NumberGroupSeparator = separator;
@@ -699,7 +699,7 @@ public class AdvFeatureTests
 
     public void ShouldHandleNumberGroupSeparatorCulture(string input, string cultureName, double expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.NumberGroupSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
         expression.AdvancedOptions.CultureInfo = new CultureInfo(cultureName);
@@ -714,7 +714,7 @@ public class AdvFeatureTests
     [InlineData("1+@*2", 2, 5)]
     public void ShouldHandleResultReference(string input, int previousResult, double expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.Flags |= AdvExpressionOptions.UseResultReference;
         expression.EvaluateFunction += (string name, Handlers.FunctionArgs args) => { if (name.Equals("@")) args.Result = previousResult; };
@@ -732,7 +732,7 @@ public class AdvFeatureTests
     [InlineData("100-5%", 95)]
     public void ShouldCalculatePercentAsNumber(string input, double expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
 
@@ -749,13 +749,46 @@ public class AdvFeatureTests
     [InlineData("10%/2", "5%")]
     public void ShouldCalculatePercentAsPercent(string input, string expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
 
         var result = expression.Evaluate();
 
         Assert.Equal(expectedValue, result?.ToString());
+    }
+
+    [Theory]
+    [InlineData("20*5%", 1)]
+    [InlineData("20*2.5%", 0.5)]
+    [InlineData("20/5%", 400)]
+    [InlineData("20/2.5%", 800)]
+    [InlineData("100+5%", 105)]
+    [InlineData("100-5%", 95)]
+    public void ShouldCalculatePercentAsNumberLambda(string input, double expectedValue)
+    {
+        var expression = new Expression(input, ExpressionOptions.NoCache);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
+
+        var sut = expression.ToLambda<double>();
+        Assert.Equal(expectedValue, sut());
+    }
+
+    [Theory]
+    [InlineData("5%+2%", "7%")]
+    [InlineData("3.5% + 2.5%", "6%")]
+    [InlineData("5%-2%", "3%")]
+    [InlineData("5%*2", "10%")]
+    [InlineData("10%/2", "5%")]
+    public void ShouldCalculatePercentAsPercentLambda(string input, string expectedValue)
+    {
+        var expression = new Expression(input, ExpressionOptions.NoCache);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
+
+        var sut = expression.ToLambda<string>();
+        Assert.Equal(expectedValue, sut());
     }
 
     [Theory]
@@ -778,7 +811,7 @@ public class AdvFeatureTests
             case 2: input = sym + ' ' + input; break;
             case 3: input = input + ' ' + sym; break;
         }
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.Flags |= AdvExpressionOptions.AcceptCurrencySymbol;
         expression.AdvancedOptions.CurrencySymbolsType = AdvancedExpressionOptions.CurrencySymbolType.FromCulture;
@@ -809,7 +842,7 @@ public class AdvFeatureTests
             case 2: input = sym + ' ' + input; break;
             case 3: input = input + ' ' + sym; break;
         }
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.Flags |= AdvExpressionOptions.AcceptCurrencySymbol;
         expression.AdvancedOptions.CurrencySymbolsType = AdvancedExpressionOptions.CurrencySymbolType.Custom;
@@ -828,7 +861,7 @@ public class AdvFeatureTests
     [InlineData("500 EUR", 500)]
     public void ShouldAcceptCurrencyEUR(string input, double expectedValue)
     {
-        var expression = new Expression(input);
+        var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.Flags |= AdvExpressionOptions.AcceptCurrencySymbol;
         expression.AdvancedOptions.CurrencySymbolsType = AdvancedExpressionOptions.CurrencySymbolType.Custom;

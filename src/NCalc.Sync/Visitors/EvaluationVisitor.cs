@@ -30,11 +30,10 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var left = new Lazy<object?>(() => Evaluate(expression.LeftExpression), LazyThreadSafetyMode.None);
         var right = new Lazy<object?>(() => Evaluate(expression.RightExpression), LazyThreadSafetyMode.None);
 
-        if (expression.LeftExpression.GetType() == typeof(PercentExpression) && expression.RightExpression.GetType() == typeof(PercentExpression))
+        if (expression.LeftExpression is PercentExpression && expression.RightExpression is PercentExpression)
         {
             switch (expression.Type)
             {
-                // todo: implement
                 case BinaryExpressionType.Minus:
                     return new PercentExpression(new ValueExpression(MathHelper.Subtract(left.Value, right.Value, context) ?? 0));
                 case BinaryExpressionType.Plus:
@@ -42,7 +41,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             }
         }
         else
-        if (expression.LeftExpression.GetType() == typeof(PercentExpression))
+        if (expression.LeftExpression is PercentExpression)
         {
             switch (expression.Type)
             {
@@ -53,7 +52,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             }
         }
         else
-        if (expression.RightExpression.GetType() == typeof(PercentExpression))
+        if (expression.RightExpression is PercentExpression)
         {
             switch (expression.Type)
             {

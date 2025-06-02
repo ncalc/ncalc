@@ -36,11 +36,10 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         var right = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression),
             LazyThreadSafetyMode.None);
 
-        if (expression.LeftExpression.GetType() == typeof(PercentExpression) && expression.RightExpression.GetType() == typeof(PercentExpression))
+        if (expression.LeftExpression is PercentExpression && expression.RightExpression is PercentExpression)
         {
             switch (expression.Type)
             {
-                // todo: implement
                 case BinaryExpressionType.Minus:
                     return new PercentExpression(new ValueExpression(MathHelper.Subtract(await left.Value, await right.Value, context) ?? 0));
                 case BinaryExpressionType.Plus:
@@ -48,7 +47,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             }
         }
         else
-        if (expression.LeftExpression.GetType() == typeof(PercentExpression))
+        if (expression.LeftExpression is PercentExpression)
         {
             switch (expression.Type)
             {
@@ -59,7 +58,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             }
         }
         else
-        if (expression.RightExpression.GetType() == typeof(PercentExpression))
+        if (expression.RightExpression is PercentExpression)
         {
             switch (expression.Type)
             {
