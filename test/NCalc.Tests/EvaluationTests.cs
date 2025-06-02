@@ -134,8 +134,9 @@ public class EvaluationTests
     [Fact]
     public void ShouldCompareDates()
     {
-        Assert.Equal(true, new Expression("#1/1/2009#==#1/1/2009#").Evaluate());
-        Assert.Equal(false, new Expression("#2/1/2009#==#1/1/2009#").Evaluate());
+        var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
+        Assert.Equal(true, new Expression($"#1{dateSeparator}1{dateSeparator}2009#==#1{dateSeparator}1{dateSeparator}2009#").Evaluate());
+        Assert.Equal(false, new Expression($"#2{dateSeparator}1{dateSeparator}2009#==#1{dateSeparator}1{dateSeparator}2009#").Evaluate());
     }
 
     [Fact]
