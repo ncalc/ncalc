@@ -36,7 +36,7 @@ The `DateSeparatorType` property lets you choose between
 * `FromCulture` : the separator defined in the current culture (which is either CultureInfo.CurrentCulture or a custom culture that you specify in the constructor or the `CultureInfo` property) is used.
 * `Custom` : the separator defined in the `DateSeparator` property
 
-When `DateSeparatorType` is set to `` or `Custom`, the parser will try to parse the value using the corresponding format and optionally try the built-in format. Whether the built-in format is tried or skipped in this case, is defined by the `SkipBuiltInDateSeparator` flag. To skip the built-in format, include the `SkipBuiltInDateSeparator` flag to the `Flags` property of an instance of the `AdvancedExpressionOptions` class.
+When `DateSeparatorType` is set to `FromCulture` or `Custom`, the parser will try to parse the value using the corresponding format and optionally try the built-in format. Whether the built-in format is tried or skipped in this case, is defined by the `SkipBuiltInDateSeparator` flag. To skip the built-in format, include the `SkipBuiltInDateSeparator` flag to the `Flags` property of an instance of the `AdvancedExpressionOptions` class.
 
 ```c#
 var expression = new NCalc.Expression("10 * 2%");
@@ -138,12 +138,13 @@ expression.AdvancedOptions.Flags |= NCalc.AdvExpressionOptions.AcceptCStyleOctal
 A Result Reference is a handy way for a user to refernce the result of the previous calculation, when it needs to be included into an expression multiple times.
 The reference is inserted as a `@` character. A calling code should handle the EvaluateFunction event of an expression and provide an appropriate value when the function name is `@`.
 
-To enable the result reference, include the `UseResultReference` flag to the `Flags` property of an instance of the `AdvancedExpressionOptions` class:
+To enable the result reference, include the `UseResultReference` flag to the `Flags` property of an instance of the `AdvancedExpressionOptions` class and handle the `EvaluateFunction` event of the `Expression` class:
 
 ```c#
 var expression = new NCalc.Expression("@");
-expression.AdvancedOptions = new NCalc.AdvancedExpressionOptions();
-expression.AdvancedOptions.Flags |= NCalc.AdvExpressionOptions.UseResultReference;
+expression.AdvancedOptions = new AdvancedExpressionOptions();
+expression.AdvancedOptions.Flags |= AdvExpressionOptions.UseResultReference;
+expression.EvaluateFunction += (string name, NCalc.Handlers.FunctionArgs args) => { if (name.Equals("@")) args.Result = 42; };
 ```
 
 ## Percent calculations
