@@ -376,6 +376,8 @@ namespace NCalc
                 currencySymbol = CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol;
                 var ri = new RegionInfo(CultureInfo.CurrentCulture.LCID);
                 currencySymbol2 = ri.ISOCurrencySymbol;
+                if ((currencySymbol.Length > 0) && (currencySymbol[0] == '\x20ac') && !"EUR".Equals(currencySymbol2)) // Euro character
+                    currencySymbol3 = "EUR";
             }
             else
             if (CurrencySymbolsType == CurrencySymbolType.FromCulture)
@@ -384,9 +386,11 @@ namespace NCalc
                 currencySymbol = culture.NumberFormat.CurrencySymbol;
                 var ri = new RegionInfo(culture.LCID);
                 currencySymbol2 = ri.ISOCurrencySymbol;
+                if ((currencySymbol.Length > 0) && (currencySymbol[0] == '\x20ac') && !"EUR".Equals(currencySymbol2)) // Euro character
+                    currencySymbol3 = "EUR";
             }
             else
-                if (CurrencySymbolsType == CurrencySymbolType.Custom)
+            if (CurrencySymbolsType == CurrencySymbolType.Custom)
             {
                 currencySymbol = _currencySymbol;
                 currencySymbol2 = _currencySymbol2;

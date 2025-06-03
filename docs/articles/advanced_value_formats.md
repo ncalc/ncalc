@@ -84,12 +84,12 @@ expression.AdvancedOptions = new NCalc.AdvancedExpressionOptions();
 expression.AdvancedOptions.Flags |= NCalc.AdvExpressionOptions.AcceptCurrencySymbol;
 ```
 
-The parser supports two currency symbols (used for a currency symbol and a currency name).
+The parser supports three currency symbols (used for a currency symbol, a currency name, and optionally, for a currency name with a dot).
 
 The `CurrencySymbolsType` type property lets you choose between 
-* `CurrentCulture` : The symbol defined in CultureInfo.CurrentCulture is used. If the symbol is for Euro, "EUR" is used as a secondary symbol.
-* `FromCulture` : The symbol defined in the current culture (which is either CultureInfo.CurrentCulture or a custom culture that you specify in the constructor or the `CultureInfo` property) is used. If the symbol is for Euro, "EUR" is used as a secondary symbol.
-* `Custom` : Two symbols can be set via the `CurrencySymbol` and `CurrencySymbol2`.
+* `CurrentCulture` : The symbol defined in CultureInfo.CurrentCulture is used. If the symbol is for Euro and EUR is not detected as a second symbol, "EUR" is used as a third symbol.
+* `FromCulture` : The symbol defined in the current culture (which is either CultureInfo.CurrentCulture or a custom culture that you specify in the constructor or the `CultureInfo` property) is used. If the symbol is for Euro and EUR is not detected as a second symbol, "EUR" is used as a third symbol.
+* `Custom` : Two symbols can be set via the `CurrencySymbol`, `CurrencySymbol2`, and `CurrencySymbol3`.
 
 ## Underscores in numbers and currency
 
