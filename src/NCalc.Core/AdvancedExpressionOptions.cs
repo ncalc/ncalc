@@ -83,6 +83,7 @@ namespace NCalc
         string _currencyNumberGroupSeparator = "";
         string _currencySymbol = "";
         string _currencySymbol2 = "";
+        string _currencySymbol3 = "";
 
         CultureInfo? _cultureInfo;
 
@@ -178,6 +179,15 @@ namespace NCalc
             set
             {
                 _currencySymbol2 = value;
+            }
+        }
+
+        public string CurrencySymbol3
+        {
+            get => _currencySymbol3;
+            set
+            {
+                _currencySymbol3 = value;
             }
         }
 
@@ -356,28 +366,31 @@ namespace NCalc
                 return separatorString[0];
         }
 
-        internal void GetCurrencySymbols(out string currencySymbol, out string currencySymbol2)
+        internal void GetCurrencySymbols(out string currencySymbol, out string currencySymbol2, out string currencySymbol3)
         {
             currencySymbol = string.Empty;
             currencySymbol2 = string.Empty;
+            currencySymbol3 = string.Empty;
             if (CurrencySymbolsType == CurrencySymbolType.CurrentCulture)
             {
                 currencySymbol = CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol;
-                if ((currencySymbol.Length > 0) && (currencySymbol[0] == '\x20ac')) // Euro character
-                    currencySymbol2 = "EUR";
+                var ri = new RegionInfo(CultureInfo.CurrentCulture.LCID);
+                currencySymbol2 = ri.ISOCurrencySymbol;
             }
             else
             if (CurrencySymbolsType == CurrencySymbolType.FromCulture)
             {
-                currencySymbol = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.CurrencySymbol;
-                if ((currencySymbol.Length > 0) && (currencySymbol[0] == '\x20ac')) // Euro character
-                    currencySymbol2 = "EUR";
+                var culture = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture);
+                currencySymbol = culture.NumberFormat.CurrencySymbol;
+                var ri = new RegionInfo(culture.LCID);
+                currencySymbol2 = ri.ISOCurrencySymbol;
             }
             else
                 if (CurrencySymbolsType == CurrencySymbolType.Custom)
             {
                 currencySymbol = _currencySymbol;
                 currencySymbol2 = _currencySymbol2;
+                currencySymbol3 = _currencySymbol3;
             }
         }
 

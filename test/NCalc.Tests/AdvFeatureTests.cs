@@ -618,13 +618,28 @@ public class AdvFeatureTests
     }
 
     [Theory]
-#if UNDERSCORE_IN_DECIMALS
+
     [InlineData("12_3", 123.0)]
     [InlineData("1234.5_6", 1234.56)]
-#endif
-    [InlineData("0x10_00", 4096.0)]
-    [InlineData("0o0_100", 64.0)]
-    public void ShouldHandleUnderscores(string formula, double expectedValue)
+    public void ShouldHandleUnderscoresInDecimal(string formula, double expectedValue)
+    {
+        // Support of underscores in decimal literals requires a patch in Parlot,
+        // currently available in https://github.com/Allied-Bits-Ltd/parlot
+        // and offered to the main project as a pull request https://github.com/sebastienros/parlot/pull/221
+        if (Enum.GetNames(typeof(Parlot.Fluent.NumberOptions)).Contains("AllowUnderscore"))
+        {
+            var expression = new Expression(formula, CultureInfo.InvariantCulture);
+            expression.AdvancedOptions = new AdvancedExpressionOptions();
+            expression.AdvancedOptions.Flags |= AdvExpressionOptions.AcceptUnderscoresInNumbers;
+            var result = expression.Evaluate();
+            Assert.Equal(expectedValue, result);
+        }
+    }
+
+    [Theory]
+    [InlineData("0x10_00", 4096)]
+    [InlineData("0o_0_100", 64)]
+    public void ShouldHandleUnderscoresInHexOct(string formula, object expectedValue)
     {
         var expression = new Expression(formula, CultureInfo.InvariantCulture);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -859,6 +874,7 @@ public class AdvFeatureTests
     [InlineData("500EUR", 500)]
     [InlineData("500\x20ac", 500)] // \x20ac stands for the euro symbol
     [InlineData("500 EUR", 500)]
+    [InlineData("500 EUR.", 500)]
     public void ShouldAcceptCurrencyEUR(string input, double expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
@@ -867,6 +883,7 @@ public class AdvFeatureTests
         expression.AdvancedOptions.CurrencySymbolsType = AdvancedExpressionOptions.CurrencySymbolType.Custom;
         expression.AdvancedOptions.CurrencySymbol = "EUR";
         expression.AdvancedOptions.CurrencySymbol2 = "\x20ac";
+        expression.AdvancedOptions.CurrencySymbol3 = "EUR.";
         var result = expression.Evaluate();
 
         Assert.Equal(expectedValue, result);

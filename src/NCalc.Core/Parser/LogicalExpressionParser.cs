@@ -1,4 +1,3 @@
-#define UNDERSCORE_IN_DECIMALS
 
 using NCalc.Domain;
 using NCalc.Exceptions;
@@ -26,6 +25,12 @@ public static class LogicalExpressionParser
     private static readonly double MaxDecDouble = (double)decimal.MaxValue;
 
     private const string InvalidTokenMessage = "Invalid token in expression";
+
+    // Support of underscores in decimal literals requires a patch in Parlot,
+    // currently available in https://github.com/Allied-Bits-Ltd/parlot
+    // and offered to the main project as a pull request https://github.com/sebastienros/parlot/pull/221
+
+    private static readonly bool _hasAllowUnderscore = Enum.GetNames(typeof(NumberOptions)).Contains("AllowUnderscore");
 
     class CurrentCultureDateTimeFormatProvider : IFormatProvider
     {
@@ -174,12 +179,7 @@ public static class LogicalExpressionParser
         char numGroupSeparator = extOptions.GetNumberGroupSeparatorChar(); // this method will return the default separator, if needed
 
         NumberOptions useNumberGroupSeparatorFlag = (numGroupSeparator != '\0') ? NumberOptions.AllowGroupSeparators : NumberOptions.None;
-        NumberOptions useUnderscoreFlag =
-#if UNDERSCORE_IN_DECIMALS
-            (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers) ? NumberOptions.AllowUnderscore : NumberOptions.None);
-#else
-            NumberOptions.None;
-#endif
+        NumberOptions useUnderscoreFlag = (_hasAllowUnderscore && extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers)) ? (NumberOptions) 16 : NumberOptions.None;
 
         var intNumber = Terms.Number<int>(NumberOptions.Integer | useNumberGroupSeparatorFlag | useUnderscoreFlag, decimalSeparator, numGroupSeparator)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
@@ -217,89 +217,90 @@ public static class LogicalExpressionParser
                 return new ValueExpression(val);
             });
 
-        Parser<LogicalExpression>? decimalOrDoubleNumber;
+        var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
 
         // Add currency support
 
-        string currencySymbol = string.Empty;
-        string currencySymbol2 = string.Empty;
+        Parser<LogicalExpression>? currency = null;
 
         if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptCurrencySymbol))
         {
-            extOptions.GetCurrencySymbols(out currencySymbol, out currencySymbol2);
-        }
+            string currencySymbol = string.Empty;
+            string currencySymbol2 = string.Empty;
+            string currencySymbol3 = string.Empty;
 
-        if (currencySymbol.Length > 0)
-        {
-            char currencyDecimalSeparator = extOptions.GetCurrencyDecimalSeparatorChar(); // this method will return the default separator, if needed
-            char currencyNumGroupSeparator = extOptions.GetCurrencyNumberGroupSeparatorChar(); // this method will return the default separator, if needed
+            extOptions.GetCurrencySymbols(out currencySymbol, out currencySymbol2, out currencySymbol3);
 
-            Parser<string> currencyChar = Terms.Text(currencySymbol, true);
-            Parser<string>? currencyChar2 = null;
-
-            if (currencySymbol2.Length > 0)
-                currencyChar2 = Terms.Text(currencySymbol2, true);
-
-            Parser<LogicalExpression>? currency1 = null;
-            Parser<LogicalExpression>? currency2 = null;
-            Parser<LogicalExpression>? currency3 = null;
-            Parser<LogicalExpression>? currency4 = null;
-
-            Parser<LogicalExpression>? currency = null;
-
-            var decimalCurrencyNumber = Terms.Number<decimal>((NumberOptions.Float & ~NumberOptions.AllowExponent) | useNumberGroupSeparatorFlag | useUnderscoreFlag, currencyDecimalSeparator, currencyNumGroupSeparator)
-            .Then<LogicalExpression>(static (ctx, val) =>
+            if (!string.IsNullOrEmpty(currencySymbol) || !string.IsNullOrEmpty(currencySymbol2) || !string.IsNullOrEmpty(currencySymbol3) )
             {
-                bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
-                if (useDecimal)
-                    return new ValueExpression(val);
+                char currencyDecimalSeparator = extOptions.GetCurrencyDecimalSeparatorChar(); // this method will return the default separator, if needed
+                char currencyNumGroupSeparator = extOptions.GetCurrencyNumberGroupSeparatorChar(); // this method will return the default separator, if needed
 
-                return new ValueExpression((double)val);
-            });
+                //Parser<string> currencyChar;
+                List<Parser<string>> currencyChars = new List<Parser<string>>();
 
-            currency1 = currencyChar.SkipAnd(SkipWhiteSpace(OneOf(decimalCurrencyNumber, intNumber, longNumber)))
+                if (!string.IsNullOrEmpty(currencySymbol)) currencyChars.Add(Terms.Text(currencySymbol, true));
+                if (!string.IsNullOrEmpty(currencySymbol2)) currencyChars.Add(Terms.Text(currencySymbol2, true));
+                if (!string.IsNullOrEmpty(currencySymbol3)) currencyChars.Add(Terms.Text(currencySymbol3, true));
+
+                Parser<string>[] currencyCharsArray = currencyChars.ToArray();
+
+                Parser<LogicalExpression>? currency1 = null;
+                Parser<LogicalExpression>? currency2 = null;
+                /*Parser<LogicalExpression>? currency3 = null;
+                Parser<LogicalExpression>? currency4 = null;
+    */
+                var decimalCurrencyNumber = Terms.Number<decimal>((NumberOptions.Float & ~NumberOptions.AllowExponent) | useNumberGroupSeparatorFlag | useUnderscoreFlag, currencyDecimalSeparator, currencyNumGroupSeparator)
                 .Then<LogicalExpression>(static (ctx, val) =>
                 {
-                    return val;
+                    bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
+                    if (useDecimal)
+                        return new ValueExpression(val);
+
+                    return new ValueExpression((double)val);
                 });
 
-            currency2 = OneOf(decimalCurrencyNumber, intNumber, longNumber).AndSkip(SkipWhiteSpace(currencyChar))
-                .Then<LogicalExpression>(static (ctx, val) =>
-                {
-                    return val;
-                });
-
-            if (currencyChar2 != null)
-            {
-                currency3 = currencyChar2.SkipAnd(SkipWhiteSpace(OneOf(decimalCurrencyNumber, intNumber, longNumber)))
+                currency1 = OneOf(currencyCharsArray).SkipAnd(SkipWhiteSpace(OneOf(decimalCurrencyNumber, intNumber, longNumber)))
                     .Then<LogicalExpression>(static (ctx, val) =>
                     {
                         return val;
                     });
 
-                currency4 = OneOf(decimalCurrencyNumber, intNumber, longNumber).AndSkip(SkipWhiteSpace(currencyChar2))
+                currency2 = OneOf(decimalCurrencyNumber, intNumber, longNumber).AndSkip(SkipWhiteSpace(OneOf(currencyCharsArray)))
                     .Then<LogicalExpression>(static (ctx, val) =>
                     {
                         return val;
                     });
 
-                currency = OneOf(currency3!, currency4!, currency1!, currency2!);
-            }
-            else
+                /*if (currencyChar2 != null)
+                {
+                    currency3 = currencyChar2.SkipAnd(SkipWhiteSpace(OneOf(decimalCurrencyNumber, intNumber, longNumber)))
+                        .Then<LogicalExpression>(static (ctx, val) =>
+                        {
+                            return val;
+                        });
+
+                    currency4 = OneOf(decimalCurrencyNumber, intNumber, longNumber).AndSkip(SkipWhiteSpace(currencyChar2))
+                        .Then<LogicalExpression>(static (ctx, val) =>
+                        {
+                            return val;
+                        });
+
+                    currency = OneOf(currency3!, currency4!, currency1!, currency2!);
+                }
+                else
+                */
                 currency = OneOf(currency1!, currency2!);
-
-            decimalOrDoubleNumber = OneOf(currency, decimalNumber, doubleNumber);
+            }
         }
-        else
-             decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
 
         // Add percent support
-        var percent = Terms.Char('%'); // CultureInfo defines a percent character, but we are yet to see another character than '%'
 
         Parser<LogicalExpression>? numberPercent = null;
 
         if (extOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent))
         {
+            var percent = Terms.Char('%'); // CultureInfo defines a percent character, but we are yet to see another character than '%'
             numberPercent = OneOf(decimalNumber, doubleNumber, intNumber, longNumber)
             .AndSkip(percent)
             .Then<LogicalExpression>(static (ctx, val) =>
@@ -307,8 +308,6 @@ public static class LogicalExpressionParser
                 return new PercentExpression(val);
             });
         }
-        else
-            numberPercent = Terms.Text("\0\0").Then<LogicalExpression>(x => new ValueExpression() );
 
         var comma = Terms.Char(',');
         var divided = Terms.Text("/");
@@ -432,344 +431,293 @@ public static class LogicalExpressionParser
 
         // Add proper date and time support
 
-        DateTimeFormatInfo dateTimeFormat = extOptions?.GetFormat(typeof(DateTimeFormatInfo)) as DateTimeFormatInfo ?? CultureInfo.CurrentCulture.DateTimeFormat;
+        SequenceAndSkip<LogicalExpression, char>? dateTime = null;
 
-        Sequence<TextSpan, TextSpan, TextSpan> dateDefinition;
-
-        Parser<LogicalExpression> date;
-
-        // The following block prepares the masks for the approach to parsing used by ncalc by default -
-        // parsing of "x/y/z" in dates with the current culture info (which will likely not work in some locales).
-        // So, these masks below fix the format to be "x/y/z" in the order used by the current culture.
-        string[] ncalcDateMasks = new string[2];
-        string[] ncalcDateTimeMasks = new string[2];
-        string[] ncalcDateShortTimeMasks = new string[2];
-        string[] ncalcDateTime12Masks = new string[4];
-        string[] ncalcDateShortTime12Masks = new string[4];
-
-        CultureInfo culture = CultureInfo.CurrentCulture;
-
-        string datePattern = culture.DateTimeFormat.ShortDatePattern;
-        if (string.IsNullOrEmpty(datePattern))
+        if (!options.HasFlag(ExpressionOptions.DontParseDates))
         {
-            ncalcDateMasks[0] = "d/M/yyyy";
-            ncalcDateMasks[1] = "d/M/yy";
-        }
-        else
-            switch (datePattern[0])
+            DateTimeFormatInfo dateTimeFormat = extOptions?.GetFormat(typeof(DateTimeFormatInfo)) as DateTimeFormatInfo ?? CultureInfo.CurrentCulture.DateTimeFormat;
+
+            Sequence<TextSpan, TextSpan, TextSpan> dateDefinition;
+
+            Parser<LogicalExpression> date;
+
+            // The following block prepares the masks for the approach to parsing used by ncalc by default -
+            // parsing of "x/y/z" in dates with the current culture info (which will likely not work in some locales).
+            // So, these masks below fix the format to be "x/y/z" in the order used by the current culture.
+            string[] ncalcDateMasks = new string[2];
+            string[] ncalcDateTimeMasks = new string[2];
+            string[] ncalcDateShortTimeMasks = new string[2];
+            string[] ncalcDateTime12Masks = new string[4];
+            string[] ncalcDateShortTime12Masks = new string[4];
+
+            CultureInfo culture = CultureInfo.CurrentCulture;
+
+            string datePattern = culture.DateTimeFormat.ShortDatePattern;
+            if (string.IsNullOrEmpty(datePattern))
             {
-                case 'd':
-                    ncalcDateMasks[0] = "d/M/yyyy";
-                    ncalcDateMasks[1] = "d/M/yy";
-                    break;
-                case 'M':
-                    ncalcDateMasks[0] = "M/d/yyyy";
-                    ncalcDateMasks[1] = "M/d/yy";
-                    break;
-                case 'y':
-                    ncalcDateMasks[0] = "yyyy/M/d";
-                    ncalcDateMasks[1] = "yy/M/d";
-                    break;
-                default:
-                    ncalcDateMasks[0] = "d/M/yyyy";
-                    ncalcDateMasks[1] = "d/M/yy";
-                    break;
-            }
-
-        // Define some masks for date-time values with both long and short time
-        ncalcDateTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "H:m:s");
-        ncalcDateTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "H:m:s");
-        ncalcDateShortTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "H:m");
-        ncalcDateShortTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "H:m");
-
-        bool useSecondDate = false;
-        bool onlyCustomDateTranslation = false;
-        string customDateSep = "/";
-
-        if (extOptions != null && extOptions.DateSeparatorType != AdvancedExpressionOptions.SeparatorType.BuiltIn)
-        {
-            customDateSep = extOptions.GetDateSeparator();
-            if (customDateSep != "/" && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInDateSeparator))
-                useSecondDate = true; // we use the second date separator when both custom separator and the default slash are enabled
-            else
-            if (customDateSep == "/")
-            {
-                onlyCustomDateTranslation = true;
-            }
-        }
-
-        var secondDateSep = Terms.Text(customDateSep); // this may be a custom separator or "/"
-        if (useSecondDate)
-        {
-            if (customDateSep.Contains(' '))
-            {
-                // If the date separator contains spaces (sk-SK, we salute you), we need to let people enter both "12.05.2025" and "12. 05. 2025"
-                // And for this, we use a third separator - a trimmed version of the one we have from the culture info or custom settings.
-                var thirdDateSep = Terms.Text(customDateSep.Trim());
-                dateDefinition = charIsNumber
-                    .AndSkip(OneOf(divided, secondDateSep, thirdDateSep))
-                    .And(charIsNumber)
-                    .AndSkip(OneOf(divided, secondDateSep, thirdDateSep))
-                    .And(charIsNumber);
+                ncalcDateMasks[0] = "d/M/yyyy";
+                ncalcDateMasks[1] = "d/M/yy";
             }
             else
-            {
-                dateDefinition = charIsNumber
-                    .AndSkip(OneOf(divided, secondDateSep))
-                    .And(charIsNumber)
-                    .AndSkip(OneOf(divided, secondDateSep))
-                    .And(charIsNumber);
-            }
-        }
-        else
-        {
-            dateDefinition = charIsNumber
-                .AndSkip(secondDateSep)
-                .And(charIsNumber)
-                .AndSkip(secondDateSep)
-                .And(charIsNumber);
-        }
-
-        // date => number/number/number or custom
-        date = dateDefinition.Then<LogicalExpression>(date =>
-        {
-            string customDateSepForDT = dateTimeFormat.DateSeparator;
-            if (useSecondDate || onlyCustomDateTranslation)
-            {
-                if (DateTime.TryParse($"{date.Item1}{customDateSepForDT}{date.Item2}{customDateSepForDT}{date.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
+                switch (datePattern[0])
                 {
-                    return new ValueExpression(result);
+                    case 'd':
+                        ncalcDateMasks[0] = "d/M/yyyy";
+                        ncalcDateMasks[1] = "d/M/yy";
+                        break;
+                    case 'M':
+                        ncalcDateMasks[0] = "M/d/yyyy";
+                        ncalcDateMasks[1] = "M/d/yy";
+                        break;
+                    case 'y':
+                        ncalcDateMasks[0] = "yyyy/M/d";
+                        ncalcDateMasks[1] = "yy/M/d";
+                        break;
+                    default:
+                        ncalcDateMasks[0] = "d/M/yyyy";
+                        ncalcDateMasks[1] = "d/M/yy";
+                        break;
                 }
-            }
-            if (useSecondDate || !onlyCustomDateTranslation)
+
+            // Define some masks for date-time values with both long and short time
+            ncalcDateTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "H:m:s");
+            ncalcDateTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "H:m:s");
+            ncalcDateShortTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "H:m");
+            ncalcDateShortTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "H:m");
+
+            bool useSecondDate = false;
+            bool onlyCustomDateTranslation = false;
+            string customDateSep = "/";
+
+            if (extOptions != null && extOptions.DateSeparatorType != AdvancedExpressionOptions.SeparatorType.BuiltIn)
             {
-                // Use the existing ncalc approach with the current culture
-                if (DateTime.TryParseExact($"{date.Item1}/{date.Item2}/{date.Item3}", ncalcDateMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                customDateSep = extOptions.GetDateSeparator();
+                if (customDateSep != "/" && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInDateSeparator))
+                    useSecondDate = true; // we use the second date separator when both custom separator and the default slash are enabled
+                else
+                if (customDateSep == "/")
                 {
-                    return new ValueExpression(result);
+                    onlyCustomDateTranslation = true;
                 }
             }
 
-            throw new FormatException("Invalid DateTime format.");
-        });
-
-        Sequence<TextSpan, TextSpan, TextSpan, string>? time12Definition = null;
-        Sequence<TextSpan, TextSpan, TextSpan> timeDefinition;
-        Sequence<TextSpan, TextSpan, string>? shortTime12Definition = null;
-        Sequence<TextSpan, TextSpan> shortTimeDefinition;
-
-        bool use12HourTime = (extOptions == null) ? dateTimeFormat.ShortTimePattern.Contains("t") : extOptions.Use12HourTime();
-
-        Parser<string>? amTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.AMDesignator, true) : null;
-        Parser<string>? pmTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.PMDesignator, true) : null;
-
-        Parser<string>? amTimeIndicatorFirstChar = null;
-        Parser<string>? pmTimeIndicatorFirstChar = null;
-
-        string amTimeFirstChar = string.Empty;
-        string pmTimeFirstChar = string.Empty;
-        string amTimeFirstCharLower = string.Empty;
-        string pmTimeFirstCharLower = string.Empty;
-
-        if (use12HourTime)
-        {
-            if (!string.IsNullOrEmpty(dateTimeFormat.AMDesignator))
+            var secondDateSep = Terms.Text(customDateSep); // this may be a custom separator or "/"
+            if (useSecondDate)
             {
-                amTimeFirstChar = dateTimeFormat.AMDesignator.Substring(0, 1);
-                amTimeFirstCharLower = dateTimeFormat.AMDesignator.Substring(0, 1).ToLower();
-
-                amTimeIndicatorFirstChar = Terms.Text(amTimeFirstChar, true);
-            }
-            if (!string.IsNullOrEmpty(dateTimeFormat.PMDesignator))
-            {
-                pmTimeFirstChar = dateTimeFormat.PMDesignator.Substring(0, 1);
-                pmTimeFirstCharLower = dateTimeFormat.PMDesignator.Substring(0, 1).ToLower();
-                pmTimeIndicatorFirstChar = Terms.Text(pmTimeFirstChar, true);
-            }
-
-            ncalcDateTime12Masks[0] = string.Join(" ", ncalcDateMasks[0], "h:m:s t");
-            ncalcDateTime12Masks[1] = string.Join(" ", ncalcDateMasks[1], "h:m:s t");
-            ncalcDateTime12Masks[2] = string.Join(" ", ncalcDateMasks[0], "h:m:s tt");
-            ncalcDateTime12Masks[3] = string.Join(" ", ncalcDateMasks[1], "h:m:s tt");
-            ncalcDateShortTime12Masks[0] = string.Join(" ", ncalcDateMasks[0], "h:m t");
-            ncalcDateShortTime12Masks[1] = string.Join(" ", ncalcDateMasks[1], "h:m t");
-            ncalcDateShortTime12Masks[2] = string.Join(" ", ncalcDateMasks[0], "h:m tt");
-            ncalcDateShortTime12Masks[3] = string.Join(" ", ncalcDateMasks[1], "h:m tt");
-        }
-
-        bool useSecondTime = false;
-        bool onlyCustomTimeTranslation = false;
-        string customTimeSep = ":";
-
-        if (extOptions != null && extOptions.TimeSeparatorType != AdvancedExpressionOptions.SeparatorType.BuiltIn)
-        {
-            customTimeSep = extOptions.TimeSeparator;
-            if (customTimeSep != ":" && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInTimeSeparator))
-                useSecondTime = true; // we use the second date separator when both custom separator and the default slash are enabled
-            else
-            if (customTimeSep == ":")
-            {
-                onlyCustomTimeTranslation = true;
-            }
-        }
-
-        var secondTimeSep = Terms.Text(customTimeSep); // this may be a custom separator or ":"
-        if (useSecondTime)
-        {
-            if (customTimeSep.Contains(' '))
-            {
-                // If the time separator by chance contains spaces, we need to let people enter both "10:10:00" and "10: 10: 00"
-                // And for this, we use a third separator - a trimmed version of the one we have from the culture info.
-                var thirdTimeSep = Terms.Text(customTimeSep.Trim());
-                if (use12HourTime)
+                if (customDateSep.Contains(' '))
                 {
-                    time12Definition = charIsNumber
-                        .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                    // If the date separator contains spaces (sk-SK, we salute you), we need to let people enter both "12.05.2025" and "12. 05. 2025"
+                    // And for this, we use a third separator - a trimmed version of the one we have from the culture info or custom settings.
+                    var thirdDateSep = Terms.Text(customDateSep.Trim());
+                    dateDefinition = charIsNumber
+                        .AndSkip(OneOf(divided, secondDateSep, thirdDateSep))
                         .And(charIsNumber)
-                        .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
-                        .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
-                    shortTime12Definition = charIsNumber
-                        .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
-                        .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
+                        .AndSkip(OneOf(divided, secondDateSep, thirdDateSep))
+                        .And(charIsNumber);
                 }
-
-                timeDefinition = charIsNumber
-                    .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
-                    .And(charIsNumber)
-                    .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
-                    .And(charIsNumber);
-                shortTimeDefinition = charIsNumber
-                    .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
-                    .And(charIsNumber);
+                else
+                {
+                    dateDefinition = charIsNumber
+                        .AndSkip(OneOf(divided, secondDateSep))
+                        .And(charIsNumber)
+                        .AndSkip(OneOf(divided, secondDateSep))
+                        .And(charIsNumber);
+                }
             }
             else
             {
-                if (use12HourTime)
-                {
-                    time12Definition = charIsNumber
-                        .AndSkip(OneOf(divided, secondTimeSep))
-                        .And(charIsNumber)
-                        .AndSkip(OneOf(divided, secondTimeSep))
-                        .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
-                    shortTime12Definition = charIsNumber
-                        .AndSkip(OneOf(divided, secondTimeSep))
-                        .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
-                }
-
-                timeDefinition = charIsNumber
-                    .AndSkip(OneOf(divided, secondTimeSep))
+                dateDefinition = charIsNumber
+                    .AndSkip(secondDateSep)
                     .And(charIsNumber)
-                    .AndSkip(OneOf(divided, secondTimeSep))
-                    .And(charIsNumber);
-
-                shortTimeDefinition = charIsNumber
-                    .AndSkip(OneOf(divided, secondTimeSep))
+                    .AndSkip(secondDateSep)
                     .And(charIsNumber);
             }
-        }
-        else
-        {
+
+            // date => number/number/number or custom
+            date = dateDefinition.Then<LogicalExpression>(date =>
+            {
+                string customDateSepForDT = dateTimeFormat.DateSeparator;
+                if (useSecondDate || onlyCustomDateTranslation)
+                {
+                    if (DateTime.TryParse($"{date.Item1}{customDateSepForDT}{date.Item2}{customDateSepForDT}{date.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
+                    {
+                        return new ValueExpression(result);
+                    }
+                }
+                if (useSecondDate || !onlyCustomDateTranslation)
+                {
+                    // Use the existing ncalc approach with the current culture
+                    if (DateTime.TryParseExact($"{date.Item1}/{date.Item2}/{date.Item3}", ncalcDateMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                    {
+                        return new ValueExpression(result);
+                    }
+                }
+
+                throw new FormatException("Invalid DateTime format.");
+            });
+
+            Sequence<TextSpan, TextSpan, TextSpan, string>? time12Definition = null;
+            Sequence<TextSpan, TextSpan, TextSpan> timeDefinition;
+            Sequence<TextSpan, TextSpan, string>? shortTime12Definition = null;
+            Sequence<TextSpan, TextSpan> shortTimeDefinition;
+
+            bool use12HourTime = (extOptions == null) ? dateTimeFormat.ShortTimePattern.Contains("t") : extOptions.Use12HourTime();
+
+            Parser<string>? amTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.AMDesignator, true) : null;
+            Parser<string>? pmTimeIndicator = use12HourTime ? Terms.Text(dateTimeFormat.PMDesignator, true) : null;
+
+            Parser<string>? amTimeIndicatorFirstChar = null;
+            Parser<string>? pmTimeIndicatorFirstChar = null;
+
+            string amTimeFirstChar = string.Empty;
+            string pmTimeFirstChar = string.Empty;
+            string amTimeFirstCharLower = string.Empty;
+            string pmTimeFirstCharLower = string.Empty;
+
             if (use12HourTime)
             {
-                time12Definition = charIsNumber
+                if (!string.IsNullOrEmpty(dateTimeFormat.AMDesignator))
+                {
+                    amTimeFirstChar = dateTimeFormat.AMDesignator.Substring(0, 1);
+                    amTimeFirstCharLower = dateTimeFormat.AMDesignator.Substring(0, 1).ToLower();
+
+                    amTimeIndicatorFirstChar = Terms.Text(amTimeFirstChar, true);
+                }
+                if (!string.IsNullOrEmpty(dateTimeFormat.PMDesignator))
+                {
+                    pmTimeFirstChar = dateTimeFormat.PMDesignator.Substring(0, 1);
+                    pmTimeFirstCharLower = dateTimeFormat.PMDesignator.Substring(0, 1).ToLower();
+                    pmTimeIndicatorFirstChar = Terms.Text(pmTimeFirstChar, true);
+                }
+
+                ncalcDateTime12Masks[0] = string.Join(" ", ncalcDateMasks[0], "h:m:s t");
+                ncalcDateTime12Masks[1] = string.Join(" ", ncalcDateMasks[1], "h:m:s t");
+                ncalcDateTime12Masks[2] = string.Join(" ", ncalcDateMasks[0], "h:m:s tt");
+                ncalcDateTime12Masks[3] = string.Join(" ", ncalcDateMasks[1], "h:m:s tt");
+                ncalcDateShortTime12Masks[0] = string.Join(" ", ncalcDateMasks[0], "h:m t");
+                ncalcDateShortTime12Masks[1] = string.Join(" ", ncalcDateMasks[1], "h:m t");
+                ncalcDateShortTime12Masks[2] = string.Join(" ", ncalcDateMasks[0], "h:m tt");
+                ncalcDateShortTime12Masks[3] = string.Join(" ", ncalcDateMasks[1], "h:m tt");
+            }
+
+            bool useSecondTime = false;
+            bool onlyCustomTimeTranslation = false;
+            string customTimeSep = ":";
+
+            if (extOptions != null && extOptions.TimeSeparatorType != AdvancedExpressionOptions.SeparatorType.BuiltIn)
+            {
+                customTimeSep = extOptions.TimeSeparator;
+                if (customTimeSep != ":" && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInTimeSeparator))
+                    useSecondTime = true; // we use the second date separator when both custom separator and the default slash are enabled
+                else
+                if (customTimeSep == ":")
+                {
+                    onlyCustomTimeTranslation = true;
+                }
+            }
+
+            var secondTimeSep = Terms.Text(customTimeSep); // this may be a custom separator or ":"
+            if (useSecondTime)
+            {
+                if (customTimeSep.Contains(' '))
+                {
+                    // If the time separator by chance contains spaces, we need to let people enter both "10:10:00" and "10: 10: 00"
+                    // And for this, we use a third separator - a trimmed version of the one we have from the culture info.
+                    var thirdTimeSep = Terms.Text(customTimeSep.Trim());
+                    if (use12HourTime)
+                    {
+                        time12Definition = charIsNumber
+                            .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                            .And(charIsNumber)
+                            .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                            .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
+                            .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
+                        shortTime12Definition = charIsNumber
+                            .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                            .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
+                            .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
+                    }
+
+                    timeDefinition = charIsNumber
+                        .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                        .And(charIsNumber)
+                        .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                        .And(charIsNumber);
+                    shortTimeDefinition = charIsNumber
+                        .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                        .And(charIsNumber);
+                }
+                else
+                {
+                    if (use12HourTime)
+                    {
+                        time12Definition = charIsNumber
+                            .AndSkip(OneOf(divided, secondTimeSep))
+                            .And(charIsNumber)
+                            .AndSkip(OneOf(divided, secondTimeSep))
+                            .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
+                            .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
+                        shortTime12Definition = charIsNumber
+                            .AndSkip(OneOf(divided, secondTimeSep))
+                            .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
+                            .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
+                    }
+
+                    timeDefinition = charIsNumber
+                        .AndSkip(OneOf(divided, secondTimeSep))
+                        .And(charIsNumber)
+                        .AndSkip(OneOf(divided, secondTimeSep))
+                        .And(charIsNumber);
+
+                    shortTimeDefinition = charIsNumber
+                        .AndSkip(OneOf(divided, secondTimeSep))
+                        .And(charIsNumber);
+                }
+            }
+            else
+            {
+                if (use12HourTime)
+                {
+                    time12Definition = charIsNumber
+                        .AndSkip(secondTimeSep)
+                        .And(charIsNumber)
+                        .AndSkip(secondTimeSep)
+                        .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
+                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
+                    shortTime12Definition = charIsNumber
+                        .AndSkip(secondTimeSep)
+                        .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
+                        .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
+                }
+
+                // time => number:number:number
+                timeDefinition = charIsNumber
                     .AndSkip(secondTimeSep)
                     .And(charIsNumber)
                     .AndSkip(secondTimeSep)
-                    .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                    .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
-                shortTime12Definition = charIsNumber
+                    .And(charIsNumber);
+
+                shortTimeDefinition = charIsNumber
                     .AndSkip(secondTimeSep)
-                    .And(OneOf(charIsNumber, charIsNumberWithWhitespace))
-                    .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
+                    .And(charIsNumber);
             }
 
-            // time => number:number:number
-            timeDefinition = charIsNumber
-                .AndSkip(secondTimeSep)
-                .And(charIsNumber)
-                .AndSkip(secondTimeSep)
-                .And(charIsNumber);
+            Parser<LogicalExpression>? time12 = null;
+            Parser<LogicalExpression>? shortTime12 = null;
 
-            shortTimeDefinition = charIsNumber
-                .AndSkip(secondTimeSep)
-                .And(charIsNumber);
-        }
-
-        Parser<LogicalExpression>? time12 = null;
-        Parser<LogicalExpression>? shortTime12 = null;
-
-        var time = timeDefinition.Then<LogicalExpression>(time =>
-        {
-            string customTimeSepForDT = dateTimeFormat.TimeSeparator;
-            if (useSecondTime || onlyCustomTimeTranslation)
+            var time = timeDefinition.Then<LogicalExpression>(time =>
             {
-                if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}{customTimeSepForDT}{time.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
-                {
-                    return new ValueExpression(result.TimeOfDay);
-                }
-            }
-            if (useSecondTime || !onlyCustomTimeTranslation)
-            {
-                if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
-                {
-                    return new ValueExpression(result);
-                }
-            }
-
-            throw new FormatException("Invalid TimeSpan format.");
-        });
-
-        var shortTime = shortTimeDefinition.Then<LogicalExpression>(time =>
-        {
-            string customTimeSepForDT = dateTimeFormat.TimeSeparator;
-            if (useSecondTime || onlyCustomTimeTranslation)
-            {
-                if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
-                {
-                    return new ValueExpression(result.TimeOfDay);
-                }
-            }
-            if (useSecondTime || !onlyCustomTimeTranslation)
-            {
-                if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}", out var result))
-                {
-                    return new ValueExpression(result);
-                }
-            }
-
-            throw new FormatException("Invalid TimeSpan format.");
-        });
-
-        if (use12HourTime)
-        {
-            string customTimeSepForDT = dateTimeFormat.TimeSeparator;
-            string amSpacer = "";
-            if (dateTimeFormat.ShortTimePattern.Contains(" t"))
-                amSpacer = " ";
-
-            time12 = time12Definition!.Then<LogicalExpression>(time =>
-            {
-                string amPMValue = time.Item4;
-                if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
-                    amPMValue = dateTimeFormat.AMDesignator;
-                else
-                if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
-                    amPMValue = dateTimeFormat.PMDesignator;
-
+                string customTimeSepForDT = dateTimeFormat.TimeSeparator;
                 if (useSecondTime || onlyCustomTimeTranslation)
                 {
-                    if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}{customTimeSepForDT}{time.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                    if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}{customTimeSepForDT}{time.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
                     {
                         return new ValueExpression(result.TimeOfDay);
                     }
                 }
                 if (useSecondTime || !onlyCustomTimeTranslation)
                 {
-                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}{amSpacer}{amPMValue}", out var result))
+                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
                     {
                         return new ValueExpression(result);
                     }
@@ -778,26 +726,19 @@ public static class LogicalExpressionParser
                 throw new FormatException("Invalid TimeSpan format.");
             });
 
-            shortTime12 = shortTime12Definition!.Then<LogicalExpression>(time =>
+            var shortTime = shortTimeDefinition.Then<LogicalExpression>(time =>
             {
                 string customTimeSepForDT = dateTimeFormat.TimeSeparator;
-                string amPMValue = time.Item3;
-                if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
-                    amPMValue = dateTimeFormat.AMDesignator;
-                else
-                if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
-                    amPMValue = dateTimeFormat.PMDesignator;
-
                 if (useSecondTime || onlyCustomTimeTranslation)
                 {
-                    if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                    if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
                     {
                         return new ValueExpression(result.TimeOfDay);
                     }
                 }
                 if (useSecondTime || !onlyCustomTimeTranslation)
                 {
-                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}{amSpacer}{amPMValue}", out var result))
+                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}", out var result))
                     {
                         return new ValueExpression(result);
                     }
@@ -805,133 +746,88 @@ public static class LogicalExpressionParser
 
                 throw new FormatException("Invalid TimeSpan format.");
             });
-        }
 
-        // dateAndTime => number/number/number number:number:number or custom
-        var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
-            dateTime =>
+            if (use12HourTime)
             {
-                string customDateSepForDT = dateTimeFormat.DateSeparator;
                 string customTimeSepForDT = dateTimeFormat.TimeSeparator;
-                if (useSecondDate || onlyCustomDateTranslation)
+                string amSpacer = "";
+                if (dateTimeFormat.ShortTimePattern.Contains(" t"))
+                    amSpacer = " ";
+
+                time12 = time12Definition!.Then<LogicalExpression>(time =>
                 {
-                    if (useSecondTime || onlyCustomTimeTranslation)
-                    {
-                        if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
-                        {
-                            return new ValueExpression(result);
-                        }
-                    }
-                    if (useSecondTime || !onlyCustomTimeTranslation)
-                    {
-                        if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
-                        {
-                            return new ValueExpression(result);
-                        }
-                    }
-                }
-                if (useSecondDate || !onlyCustomDateTranslation)
-                {
-                    if (useSecondTime || onlyCustomTimeTranslation)
-                    {
-                        if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
-                        {
-                            return new ValueExpression(result);
-                        }
-                    }
-
-                    if (useSecondTime || !onlyCustomTimeTranslation)
-                    {
-                        // Use the existing approach
-                        if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", ncalcDateTimeMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
-                        {
-                            return new ValueExpression(result);
-                        }
-                    }
-                }
-
-                throw new FormatException("Invalid DateTime format.");
-            });
-
-        var dateAndShortTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(shortTimeDefinition).Then<LogicalExpression>(
-            dateTime =>
-            {
-                string customDateSepForDT = dateTimeFormat.DateSeparator;
-                string customTimeSepForDT = dateTimeFormat.TimeSeparator;
-                if (useSecondDate || onlyCustomDateTranslation)
-                {
-                    if (useSecondTime || onlyCustomTimeTranslation)
-                    {
-                        if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
-                        {
-                            return new ValueExpression(result);
-                        }
-                    }
-                    if (useSecondTime || !onlyCustomTimeTranslation)
-                    {
-                        if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
-                        {
-                            return new ValueExpression(result);
-                        }
-                    }
-                }
-                if (useSecondDate || !onlyCustomDateTranslation)
-                {
-                    if (useSecondTime || onlyCustomTimeTranslation)
-                    {
-                        if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
-                        {
-                            return new ValueExpression(result);
-                        }
-                    }
-
-                    if (useSecondTime || !onlyCustomTimeTranslation)
-                    {
-                        // Use the existing approach
-                        if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}", ncalcDateShortTimeMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
-                        {
-                            return new ValueExpression(result);
-                        }
-                    }
-                }
-
-                throw new FormatException("Invalid DateTime format.");
-            });
-
-        Parser<LogicalExpression>? dateAndTime12 = null;
-        Parser<LogicalExpression>? dateAndShortTime12 = null;
-
-        if (use12HourTime)
-        {
-            // if there is a space expected before A/P or am/pm, we need to add it to the expression
-            string amSpacer = "";
-            if (dateTimeFormat.ShortTimePattern.Contains(" t"))
-                amSpacer = " ";
-
-            dateAndTime12 = dateDefinition.AndSkip(Literals.WhiteSpace()).And(time12Definition!).Then<LogicalExpression>(
-                dateTime =>
-                {
-                    string customDateSepForDT = dateTimeFormat.DateSeparator;
-                    string customTimeSepForDT = dateTimeFormat.TimeSeparator;
-                    string amPMValue = dateTime.Item4.Item4;
+                    string amPMValue = time.Item4;
                     if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
                         amPMValue = dateTimeFormat.AMDesignator;
                     else
                     if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
                         amPMValue = dateTimeFormat.PMDesignator;
 
+                    if (useSecondTime || onlyCustomTimeTranslation)
+                    {
+                        if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}{customTimeSepForDT}{time.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                        {
+                            return new ValueExpression(result.TimeOfDay);
+                        }
+                    }
+                    if (useSecondTime || !onlyCustomTimeTranslation)
+                    {
+                        if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}{amSpacer}{amPMValue}", out var result))
+                        {
+                            return new ValueExpression(result);
+                        }
+                    }
+
+                    throw new FormatException("Invalid TimeSpan format.");
+                });
+
+                shortTime12 = shortTime12Definition!.Then<LogicalExpression>(time =>
+                {
+                    string customTimeSepForDT = dateTimeFormat.TimeSeparator;
+                    string amPMValue = time.Item3;
+                    if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
+                        amPMValue = dateTimeFormat.AMDesignator;
+                    else
+                    if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
+                        amPMValue = dateTimeFormat.PMDesignator;
+
+                    if (useSecondTime || onlyCustomTimeTranslation)
+                    {
+                        if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                        {
+                            return new ValueExpression(result.TimeOfDay);
+                        }
+                    }
+                    if (useSecondTime || !onlyCustomTimeTranslation)
+                    {
+                        if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}{amSpacer}{amPMValue}", out var result))
+                        {
+                            return new ValueExpression(result);
+                        }
+                    }
+
+                    throw new FormatException("Invalid TimeSpan format.");
+                });
+            }
+
+            // dateAndTime => number/number/number number:number:number or custom
+            var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
+                dateTime =>
+                {
+                    string customDateSepForDT = dateTimeFormat.DateSeparator;
+                    string customTimeSepForDT = dateTimeFormat.TimeSeparator;
                     if (useSecondDate || onlyCustomDateTranslation)
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
                         }
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -941,7 +837,7 @@ public static class LogicalExpressionParser
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -950,7 +846,7 @@ public static class LogicalExpressionParser
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
                             // Use the existing approach
-                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3} {amPMValue}", ncalcDateTime12Masks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", ncalcDateTimeMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -960,30 +856,23 @@ public static class LogicalExpressionParser
                     throw new FormatException("Invalid DateTime format.");
                 });
 
-            dateAndShortTime12 = dateDefinition.AndSkip(Literals.WhiteSpace()).And(shortTime12Definition!).Then<LogicalExpression>(
+            var dateAndShortTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(shortTimeDefinition).Then<LogicalExpression>(
                 dateTime =>
                 {
                     string customDateSepForDT = dateTimeFormat.DateSeparator;
                     string customTimeSepForDT = dateTimeFormat.TimeSeparator;
-                    string amPMValue = dateTime.Item4.Item3;
-                    if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
-                        amPMValue = dateTimeFormat.AMDesignator;
-                    else
-                    if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
-                        amPMValue = dateTimeFormat.PMDesignator;
-
                     if (useSecondDate || onlyCustomDateTranslation)
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
                         }
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -993,7 +882,7 @@ public static class LogicalExpressionParser
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -1002,7 +891,7 @@ public static class LogicalExpressionParser
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
                             // Use the existing approach
-                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2} {amPMValue}", ncalcDateShortTime12Masks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}", ncalcDateShortTimeMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -1011,23 +900,137 @@ public static class LogicalExpressionParser
 
                     throw new FormatException("Invalid DateTime format.");
                 });
-        }
 
-        // datetime => '#' dateAndTime | date | shortTime | time  '#';
-        SequenceAndSkip<LogicalExpression, char> dateTime;
-        if (use12HourTime)
-        {
-            dateTime = Terms
-            .Char('#')
-            .SkipAnd(OneOf(dateAndTime12!, dateAndShortTime12!, dateAndTime, dateAndShortTime, date, time12!, shortTime12!, time, shortTime))
-            .AndSkip(Literals.Char('#'));
-        }
-        else
-        {
-            dateTime = Terms
+            Parser<LogicalExpression>? dateAndTime12 = null;
+            Parser<LogicalExpression>? dateAndShortTime12 = null;
+
+            if (use12HourTime)
+            {
+                // if there is a space expected before A/P or am/pm, we need to add it to the expression
+                string amSpacer = "";
+                if (dateTimeFormat.ShortTimePattern.Contains(" t"))
+                    amSpacer = " ";
+
+                dateAndTime12 = dateDefinition.AndSkip(Literals.WhiteSpace()).And(time12Definition!).Then<LogicalExpression>(
+                    dateTime =>
+                    {
+                        string customDateSepForDT = dateTimeFormat.DateSeparator;
+                        string customTimeSepForDT = dateTimeFormat.TimeSeparator;
+                        string amPMValue = dateTime.Item4.Item4;
+                        if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
+                            amPMValue = dateTimeFormat.AMDesignator;
+                        else
+                        if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
+                            amPMValue = dateTimeFormat.PMDesignator;
+
+                        if (useSecondDate || onlyCustomDateTranslation)
+                        {
+                            if (useSecondTime || onlyCustomTimeTranslation)
+                            {
+                                if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                                {
+                                    return new ValueExpression(result);
+                                }
+                            }
+                            if (useSecondTime || !onlyCustomTimeTranslation)
+                            {
+                                if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                                {
+                                    return new ValueExpression(result);
+                                }
+                            }
+                        }
+                        if (useSecondDate || !onlyCustomDateTranslation)
+                        {
+                            if (useSecondTime || onlyCustomTimeTranslation)
+                            {
+                                if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                                {
+                                    return new ValueExpression(result);
+                                }
+                            }
+
+                            if (useSecondTime || !onlyCustomTimeTranslation)
+                            {
+                                // Use the existing approach
+                                if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3} {amPMValue}", ncalcDateTime12Masks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                                {
+                                    return new ValueExpression(result);
+                                }
+                            }
+                        }
+
+                        throw new FormatException("Invalid DateTime format.");
+                    });
+
+                dateAndShortTime12 = dateDefinition.AndSkip(Literals.WhiteSpace()).And(shortTime12Definition!).Then<LogicalExpression>(
+                    dateTime =>
+                    {
+                        string customDateSepForDT = dateTimeFormat.DateSeparator;
+                        string customTimeSepForDT = dateTimeFormat.TimeSeparator;
+                        string amPMValue = dateTime.Item4.Item3;
+                        if (amPMValue.ToLower().Equals(amTimeFirstCharLower))
+                            amPMValue = dateTimeFormat.AMDesignator;
+                        else
+                        if (amPMValue.ToLower().Equals(pmTimeFirstCharLower))
+                            amPMValue = dateTimeFormat.PMDesignator;
+
+                        if (useSecondDate || onlyCustomDateTranslation)
+                        {
+                            if (useSecondTime || onlyCustomTimeTranslation)
+                            {
+                                if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                                {
+                                    return new ValueExpression(result);
+                                }
+                            }
+                            if (useSecondTime || !onlyCustomTimeTranslation)
+                            {
+                                if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                                {
+                                    return new ValueExpression(result);
+                                }
+                            }
+                        }
+                        if (useSecondDate || !onlyCustomDateTranslation)
+                        {
+                            if (useSecondTime || onlyCustomTimeTranslation)
+                            {
+                                if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                                {
+                                    return new ValueExpression(result);
+                                }
+                            }
+
+                            if (useSecondTime || !onlyCustomTimeTranslation)
+                            {
+                                // Use the existing approach
+                                if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2} {amPMValue}", ncalcDateShortTime12Masks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                                {
+                                    return new ValueExpression(result);
+                                }
+                            }
+                        }
+
+                        throw new FormatException("Invalid DateTime format.");
+                    });
+            }
+
+            // datetime => '#' dateAndTime | date | shortTime | time  '#';
+            if (use12HourTime)
+            {
+                dateTime = Terms
                 .Char('#')
-                .SkipAnd(OneOf(dateAndTime, dateAndShortTime, date, time, shortTime))
+                .SkipAnd(OneOf(dateAndTime12!, dateAndShortTime12!, dateAndTime, dateAndShortTime, date, time12!, shortTime12!, time, shortTime))
                 .AndSkip(Literals.Char('#'));
+            }
+            else
+            {
+                dateTime = Terms
+                    .Char('#')
+                    .SkipAnd(OneOf(dateAndTime, dateAndShortTime, date, time, shortTime))
+                    .AndSkip(Literals.Char('#'));
+            }
         }
 
         var isHexDigit = Character.IsHexDigit;
@@ -1064,21 +1067,29 @@ public static class LogicalExpressionParser
 
         // primary => GUID | Percent | NUMBER | identifier| DateTime | string | resultReference | function | boolean | groupExpression | identifier | list ;
 
-        var primary = OneOf(
-            guid,
-            numberPercent,
-            hexOctBinNumber,
-            decimalOrDoubleNumber,
-            intNumber,
-            longNumber,
-            booleanTrue,
-            booleanFalse,
-            dateTime,
-            stringValue,
-            functionOrResultRef,
-            groupExpression,
-            identifierExpression,
-            list);
+        List<Parser<LogicalExpression>> enabledParsers = new List<Parser<LogicalExpression>>();
+
+        if (!options.HasFlag(ExpressionOptions.DontParseGuids))
+            enabledParsers.Add(guid);
+        if (numberPercent != null)
+            enabledParsers.Add(numberPercent);
+        enabledParsers.Add(hexOctBinNumber);
+        if (currency != null)
+            enabledParsers.Add(currency);
+        enabledParsers.Add(decimalOrDoubleNumber);
+        enabledParsers.Add(intNumber);
+        enabledParsers.Add(longNumber);
+        enabledParsers.Add(booleanTrue);
+        enabledParsers.Add(booleanFalse);
+        if (dateTime != null) // dateTime will be initialized unless options.HasFlag(ExpressionOptions.DontParseDates)
+            enabledParsers.Add(dateTime);
+        enabledParsers.Add(stringValue);
+        enabledParsers.Add(functionOrResultRef);
+        enabledParsers.Add(groupExpression);
+        enabledParsers.Add(identifierExpression);
+        enabledParsers.Add(list);
+
+        var primary = OneOf(enabledParsers.ToArray());
 
         // exponential => unary ( "**" unary )* ;
         var exponential = primary.And(ZeroOrMany(exponent.And(primary)))
