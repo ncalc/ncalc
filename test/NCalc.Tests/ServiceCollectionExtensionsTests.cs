@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+
 using NCalc.Cache;
 using NCalc.DependencyInjection;
 using NCalc.Domain;
@@ -125,7 +126,9 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomLogicalExpressionFactory : ILogicalExpressionFactory
     {
-        public LogicalExpression Create(string expression, ExpressionOptions options) => throw new NCalcException("Stub method intented for testing.");
+        public LogicalExpression Create(string expression, ExpressionOptions options) => throw new NCalcException("Stub method intended for testing.");
+
+        public LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, AdvancedExpressionOptions extendedOptions = null) => throw new NCalcException("Stub method intended for testing.");
     }
 
     private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)

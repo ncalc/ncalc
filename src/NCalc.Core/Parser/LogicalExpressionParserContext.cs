@@ -7,4 +7,6 @@ public sealed class LogicalExpressionParserContext(string text, ExpressionOption
     : ParseContext(new Scanner(text))
 {
     public ExpressionOptions Options { get; } = options;
+
+    public AdvancedExpressionOptions? AdvancedOptions { get; set; }
 }

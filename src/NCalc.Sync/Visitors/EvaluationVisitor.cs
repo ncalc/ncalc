@@ -2,6 +2,7 @@
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
+
 using static NCalc.Helpers.TypeHelper;
 
 namespace NCalc.Visitors;
@@ -29,105 +30,144 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var left = new Lazy<object?>(() => Evaluate(expression.LeftExpression), LazyThreadSafetyMode.None);
         var right = new Lazy<object?>(() => Evaluate(expression.RightExpression), LazyThreadSafetyMode.None);
 
-        switch (expression.Type)
+        if (expression.LeftExpression is PercentExpression && expression.RightExpression is PercentExpression)
         {
-            case BinaryExpressionType.And:
-                return Convert.ToBoolean(left.Value, context.CultureInfo) &&
-                       Convert.ToBoolean(right.Value, context.CultureInfo);
-
-            case BinaryExpressionType.Or:
-                return Convert.ToBoolean(left.Value, context.CultureInfo) ||
-                       Convert.ToBoolean(right.Value, context.CultureInfo);
-
-            case BinaryExpressionType.Div:
-                return IsReal(left.Value) || IsReal(right.Value)
-                    ? MathHelper.Divide(left.Value, right.Value, context)
-                    : MathHelper.Divide(Convert.ToDouble(left.Value, context.CultureInfo), right.Value,
-                        context);
-
-            case BinaryExpressionType.Equal:
-                return Compare(left.Value, right.Value, ComparisonType.Equal);
-
-            case BinaryExpressionType.Greater:
-                return Compare(left.Value, right.Value, ComparisonType.Greater);
-
-            case BinaryExpressionType.GreaterOrEqual:
-                return Compare(left.Value, right.Value, ComparisonType.GreaterOrEqual);
-
-            case BinaryExpressionType.Lesser:
-                return Compare(left.Value, right.Value, ComparisonType.Lesser);
-
-            case BinaryExpressionType.LesserOrEqual:
-                return Compare(left.Value, right.Value, ComparisonType.LesserOrEqual);
-
-            case BinaryExpressionType.NotEqual:
-                return Compare(left.Value, right.Value, ComparisonType.NotEqual);
-
-            case BinaryExpressionType.Minus:
-                return MathHelper.Subtract(left.Value, right.Value, context);
-
-            case BinaryExpressionType.Modulo:
-                return MathHelper.Modulo(left.Value, right.Value, context);
-
-            case BinaryExpressionType.Plus:
-                return EvaluationHelper.Plus(left.Value, right.Value, context);
-
-            case BinaryExpressionType.Times:
-                return MathHelper.Multiply(left.Value, right.Value, context);
-
-            case BinaryExpressionType.BitwiseAnd:
-                return Convert.ToUInt64(left.Value, context.CultureInfo) &
-                       Convert.ToUInt64(right.Value, context.CultureInfo);
-
-            case BinaryExpressionType.BitwiseOr:
-                return Convert.ToUInt64(left.Value, context.CultureInfo) |
-                       Convert.ToUInt64(right.Value, context.CultureInfo);
-
-            case BinaryExpressionType.BitwiseXOr:
-                return Convert.ToUInt64(left.Value, context.CultureInfo) ^
-                       Convert.ToUInt64(right.Value, context.CultureInfo);
-
-            case BinaryExpressionType.LeftShift:
-                return Convert.ToUInt64(left.Value, context.CultureInfo) <<
-                       Convert.ToInt32(right.Value, context.CultureInfo);
-
-            case BinaryExpressionType.RightShift:
-                return Convert.ToUInt64(left.Value, context.CultureInfo) >>
-                       Convert.ToInt32(right.Value, context.CultureInfo);
-
-            case BinaryExpressionType.Exponentiation:
-                return MathHelper.Pow(left.Value, right.Value, context);
-
-            case BinaryExpressionType.In:
-                return EvaluationHelper.In(right.Value, left.Value, context);
-
-            case BinaryExpressionType.NotIn:
-                return !EvaluationHelper.In(right.Value, left.Value, context);
-
-            case BinaryExpressionType.Like:
+            switch (expression.Type)
             {
-                var rightValue = right.Value?.ToString();
-                var leftValue = left.Value?.ToString();
-
-                if (rightValue == null || leftValue == null)
-                {
-                    return false;
-                }
-
-                return EvaluationHelper.Like(leftValue, rightValue, context);
+                case BinaryExpressionType.Minus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Subtract(left.Value, right.Value, context) ?? 0));
+                case BinaryExpressionType.Plus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Add(left.Value, right.Value, context) ?? 0));
             }
-
-            case BinaryExpressionType.NotLike:
+        }
+        else
+        if (expression.LeftExpression is PercentExpression)
+        {
+            switch (expression.Type)
             {
-                var rightValue = right.Value?.ToString();
-                var leftValue = left.Value?.ToString();
+                case BinaryExpressionType.Times:
+                    return new PercentExpression(new ValueExpression(MathHelper.Multiply(left.Value, right.Value, context) ?? 0));
+                case BinaryExpressionType.Div:
+                    return new PercentExpression(new ValueExpression(MathHelper.Divide(left.Value, right.Value, context) ?? 0));
+            }
+        }
+        else
+        if (expression.RightExpression is PercentExpression)
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Minus:
+                    return MathHelper.SubtractPercent(left.Value, right.Value, context);
+                case BinaryExpressionType.Plus:
+                    return MathHelper.AddPercent(left.Value, right.Value, context);
+                case BinaryExpressionType.Times:
+                    return MathHelper.MultiplyPercent(left.Value, right.Value, context);
+                case BinaryExpressionType.Div:
+                    return MathHelper.DividePercent(left.Value, right.Value, context);
+            }
+        }
+        else
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.And:
+                    return Convert.ToBoolean(left.Value, context.CultureInfo) &&
+                           Convert.ToBoolean(right.Value, context.CultureInfo);
 
-                if (rightValue == null || leftValue == null)
+                case BinaryExpressionType.Or:
+                    return Convert.ToBoolean(left.Value, context.CultureInfo) ||
+                           Convert.ToBoolean(right.Value, context.CultureInfo);
+
+                case BinaryExpressionType.Div:
+                    return IsReal(left.Value) || IsReal(right.Value)
+                        ? MathHelper.Divide(left.Value, right.Value, context)
+                        : MathHelper.Divide(Convert.ToDouble(left.Value, context.CultureInfo), right.Value,
+                            context);
+
+                case BinaryExpressionType.Equal:
+                    return Compare(left.Value, right.Value, ComparisonType.Equal);
+
+                case BinaryExpressionType.Greater:
+                    return Compare(left.Value, right.Value, ComparisonType.Greater);
+
+                case BinaryExpressionType.GreaterOrEqual:
+                    return Compare(left.Value, right.Value, ComparisonType.GreaterOrEqual);
+
+                case BinaryExpressionType.Lesser:
+                    return Compare(left.Value, right.Value, ComparisonType.Lesser);
+
+                case BinaryExpressionType.LesserOrEqual:
+                    return Compare(left.Value, right.Value, ComparisonType.LesserOrEqual);
+
+                case BinaryExpressionType.NotEqual:
+                    return Compare(left.Value, right.Value, ComparisonType.NotEqual);
+
+                case BinaryExpressionType.Minus:
+                    return MathHelper.Subtract(left.Value, right.Value, context);
+
+                case BinaryExpressionType.Modulo:
+                    return MathHelper.Modulo(left.Value, right.Value, context);
+
+                case BinaryExpressionType.Plus:
+                    return EvaluationHelper.Plus(left.Value, right.Value, context);
+
+                case BinaryExpressionType.Times:
+                    return MathHelper.Multiply(left.Value, right.Value, context);
+
+                case BinaryExpressionType.BitwiseAnd:
+                    return Convert.ToUInt64(left.Value, context.CultureInfo) &
+                           Convert.ToUInt64(right.Value, context.CultureInfo);
+
+                case BinaryExpressionType.BitwiseOr:
+                    return Convert.ToUInt64(left.Value, context.CultureInfo) |
+                           Convert.ToUInt64(right.Value, context.CultureInfo);
+
+                case BinaryExpressionType.BitwiseXOr:
+                    return Convert.ToUInt64(left.Value, context.CultureInfo) ^
+                           Convert.ToUInt64(right.Value, context.CultureInfo);
+
+                case BinaryExpressionType.LeftShift:
+                    return Convert.ToUInt64(left.Value, context.CultureInfo) <<
+                           Convert.ToInt32(right.Value, context.CultureInfo);
+
+                case BinaryExpressionType.RightShift:
+                    return Convert.ToUInt64(left.Value, context.CultureInfo) >>
+                           Convert.ToInt32(right.Value, context.CultureInfo);
+
+                case BinaryExpressionType.Exponentiation:
+                    return MathHelper.Pow(left.Value, right.Value, context);
+
+                case BinaryExpressionType.In:
+                    return EvaluationHelper.In(right.Value, left.Value, context);
+
+                case BinaryExpressionType.NotIn:
+                    return !EvaluationHelper.In(right.Value, left.Value, context);
+
+                case BinaryExpressionType.Like:
                 {
-                    return false;
+                    var rightValue = right.Value?.ToString();
+                    var leftValue = left.Value?.ToString();
+
+                    if (rightValue == null || leftValue == null)
+                    {
+                        return false;
+                    }
+
+                    return EvaluationHelper.Like(leftValue, rightValue, context);
                 }
 
-                return !EvaluationHelper.Like(leftValue, rightValue, context);
+                case BinaryExpressionType.NotLike:
+                {
+                    var rightValue = right.Value?.ToString();
+                    var leftValue = left.Value?.ToString();
+
+                    if (rightValue == null || leftValue == null)
+                    {
+                        return false;
+                    }
+
+                    return !EvaluationHelper.Like(leftValue, rightValue, context);
+                }
             }
         }
 
@@ -140,6 +180,12 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var result = expression.Expression.Accept(this);
 
         return EvaluationHelper.Unary(expression, result, context);
+    }
+
+    public virtual object? Visit(PercentExpression expression)
+    {
+        // Recursively evaluates the underlying expression
+        return expression.Expression.Accept(this);
     }
 
     public virtual object? Visit(ValueExpression expression) => expression.Value;

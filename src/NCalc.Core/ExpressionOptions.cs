@@ -84,5 +84,15 @@ public enum ExpressionOptions
     /// <summary>
     /// Enables strict type matching, where comparisons between objects of different types will return false.
     /// </summary>
-    StrictTypeMatching = 1 << 15
+    StrictTypeMatching = 1 << 15,
+
+    /// <summary>
+    /// Disables parsing of GUIDs for faster processing
+    /// </summary>
+    DontParseGuids = 1 << 16,
+
+    /// <summary>
+    /// Disables parsing of dates for faster parsing
+    /// </summary>
+    DontParseDates = 1 << 17,
 }

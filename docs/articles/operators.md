@@ -4,11 +4,12 @@ Expressions can be combined using operators, each with a specific precedence pri
 
 1. **Primary**
 2. **Unary**
-3. **Exponential**
-4. **Multiplicative**
-5. **Additive**
-6. **Relational**
-7. **Logical**
+3. **Percent**
+4. **Exponential**
+5. **Multiplicative**
+6. **Additive**
+7. **Relational**
+8. **Logical**
 
 ## Primary
 
@@ -51,6 +52,12 @@ not true
 !(1 != 2)
 ```
 
+## Percent
+
+Percent is a post-operator that alters the way the operand is interpreted. A percent value is marked with a `%` character placed after a numeric value or expression.
+
+Percent calculations must be enabled via the [AdvancedOptions](advanced_value_formats.md) property of the ExpressionBase class. When percent calculations are enabled, the `%` character is used for them, and `mod` is used for modulo division.
+
 ## Exponential
 
 Exponential operators perform exponentiation.
@@ -68,7 +75,8 @@ Multiplicative operators perform multiplication, division, and modulus operation
 
 * `*` : Multiplication
 * `/` : Division
-* `%` : Modulus
+* `%` : Modulus (when percent calculation is disabled)
+* `mod` : Modulus (when percent calculation is enabled in AdvancedOptions)
 
 **Example:**
 ```csharp

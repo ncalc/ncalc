@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime;
+
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
@@ -10,7 +11,12 @@ namespace NCalc.Antlr;
 /// </summary>
 public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
 {
-    public LogicalExpression Create(string expression, ExpressionOptions options)
+    public LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
+    {
+        return Create(expression, options, null);
+    }
+
+    public LogicalExpression Create(string expression, ExpressionOptions options, AdvancedExpressionOptions _)
     {
         LogicalExpression logicalExpression;
         var lexer = new NCalcLexer(new AntlrInputStream(expression));

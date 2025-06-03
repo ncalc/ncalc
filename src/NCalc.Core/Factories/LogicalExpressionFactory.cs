@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Logging;
@@ -20,11 +21,11 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
 
     public static LogicalExpressionFactory GetInstance() => Instance;
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options)
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options, AdvancedExpressionOptions? advancedOptions)
     {
         try
         {
-            return Create(expression, options);
+            return Create(expression, options, advancedOptions);
         }
         catch (Exception exception)
         {
@@ -33,9 +34,10 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
     }
 
-    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, AdvancedExpressionOptions? advancedOptions = null)
     {
         var parserContext = new LogicalExpressionParserContext(expression, options);
+        parserContext.AdvancedOptions = advancedOptions;
         return LogicalExpressionParser.Parse(parserContext);
     }
 }
