@@ -56,4 +56,9 @@ public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
 
         return logicalExpression;
     }
+
+    public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None)
+    {
+        return Create(expression, options);
+    }
 }

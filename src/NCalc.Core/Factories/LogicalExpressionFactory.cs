@@ -28,7 +28,20 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
         catch (Exception exception)
         {
-            logger.LogErrorCreatingLogicalExpression(exception,expression);
+            logger.LogErrorCreatingLogicalExpression(exception, expression);
+            throw new NCalcParserException("Error parsing the expression.", exception);
+        }
+    }
+
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, CultureInfo cultureInfo, ExpressionOptions options)
+    {
+        try
+        {
+            return Create(expression, cultureInfo, options);
+        }
+        catch (Exception exception)
+        {
+            logger.LogErrorCreatingLogicalExpression(exception, expression);
             throw new NCalcParserException("Error parsing the expression.", exception);
         }
     }
@@ -36,6 +49,12 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
     public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
     {
         var parserContext = new LogicalExpressionParserContext(expression, options);
+        return LogicalExpressionParser.Parse(parserContext);
+    }
+
+    public static LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None)
+    {
+        var parserContext = new LogicalExpressionParserContext(expression, options, cultureInfo);
         return LogicalExpressionParser.Parse(parserContext);
     }
 }

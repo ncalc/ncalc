@@ -44,29 +44,33 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                     ? MathHelper.Divide(left.Value, right.Value, context)
                     : MathHelper.Divide(Convert.ToDouble(left.Value, context.CultureInfo), right.Value,
                         context);
+
             case BinaryExpressionType.Equal:
                 return Compare(left.Value, right.Value, ComparisonType.Equal);
+
             case BinaryExpressionType.Greater:
                 return Compare(left.Value, right.Value, ComparisonType.Greater);
+
             case BinaryExpressionType.GreaterOrEqual:
                 return Compare(left.Value, right.Value, ComparisonType.GreaterOrEqual);
+
             case BinaryExpressionType.Lesser:
                 return Compare(left.Value, right.Value, ComparisonType.Lesser);
+
             case BinaryExpressionType.LesserOrEqual:
                 return Compare(left.Value, right.Value, ComparisonType.LesserOrEqual);
+
             case BinaryExpressionType.NotEqual:
                 return Compare(left.Value, right.Value, ComparisonType.NotEqual);
+
             case BinaryExpressionType.Minus:
                 return MathHelper.Subtract(left.Value, right.Value, context);
+
             case BinaryExpressionType.Modulo:
                 return MathHelper.Modulo(left.Value, right.Value, context);
-            case BinaryExpressionType.Plus:
-            {
-                var leftValue = left.Value;
-                var rightValue = right.Value;
 
-                return EvaluationHelper.Plus(leftValue, rightValue, context);
-            }
+            case BinaryExpressionType.Plus:
+                return EvaluationHelper.Plus(left.Value, right.Value, context);
 
             case BinaryExpressionType.Times:
                 return MathHelper.Multiply(left.Value, right.Value, context);
@@ -92,23 +96,14 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                        Convert.ToInt32(right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Exponentiation:
-            {
                 return MathHelper.Pow(left.Value, right.Value, context);
-            }
 
             case BinaryExpressionType.In:
-            {
-                var rightValue = right.Value;
-                var leftValue = left.Value;
-                return EvaluationHelper.In(rightValue, leftValue, context);
-            }
+                return EvaluationHelper.In(right.Value, left.Value, context);
 
             case BinaryExpressionType.NotIn:
-            {
-                var rightValue = right.Value;
-                var leftValue = left.Value;
-                return !EvaluationHelper.In(rightValue, leftValue, context);
-            }
+                return !EvaluationHelper.In(right.Value, left.Value, context);
+
             case BinaryExpressionType.Like:
             {
                 var rightValue = right.Value?.ToString();
