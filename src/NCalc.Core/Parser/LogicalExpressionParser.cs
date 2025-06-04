@@ -180,7 +180,7 @@ public static class LogicalExpressionParser
         char numGroupSeparator = (extOptions != null) ? extOptions.GetNumberGroupSeparatorChar() : Parlot.Fluent.NumberLiterals.DefaultGroupSeparator; // this method will return the default separator, if needed
 
         NumberOptions useNumberGroupSeparatorFlag = ((extOptions != null) && (numGroupSeparator != '\0')) ? NumberOptions.AllowGroupSeparators : NumberOptions.None;
-        NumberOptions useUnderscoreFlag = (_hasAllowUnderscore && extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers)) ? (NumberOptions) 16 : NumberOptions.None;
+        NumberOptions useUnderscoreFlag = (_hasAllowUnderscore && extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers)) ? (NumberOptions)16 : NumberOptions.None;
 
         var intNumber = Terms.Number<int>(NumberOptions.Integer | useNumberGroupSeparatorFlag | useUnderscoreFlag, decimalSeparator, numGroupSeparator)
             .AndSkip(Not(OneOf(Terms.Text(decimalSeparator.ToString()), Terms.Text("E", true))))
@@ -232,7 +232,7 @@ public static class LogicalExpressionParser
 
             extOptions.GetCurrencySymbols(out currencySymbol, out currencySymbol2, out currencySymbol3);
 
-            if (!string.IsNullOrEmpty(currencySymbol) || !string.IsNullOrEmpty(currencySymbol2) || !string.IsNullOrEmpty(currencySymbol3) )
+            if (!string.IsNullOrEmpty(currencySymbol) || !string.IsNullOrEmpty(currencySymbol2) || !string.IsNullOrEmpty(currencySymbol3))
             {
                 char currencyDecimalSeparator = extOptions.GetCurrencyDecimalSeparatorChar(); // this method will return the default separator, if needed
                 char currencyNumGroupSeparator = extOptions.GetCurrencyNumberGroupSeparatorChar(); // this method will return the default separator, if needed
@@ -1020,41 +1020,46 @@ public static class LogicalExpressionParser
 
         var isHexDigit = Character.IsHexDigit;
 
-        var eightHexSequence = Terms
-            .Pattern(isHexDigit, 8, 8);
+        Parser<LogicalExpression>? guid = null;
 
-        var fourHexSequence = Terms
-            .Pattern(isHexDigit, 4, 4);
+        if (!options.HasFlag(ExpressionOptions.DontParseGuids))
+        {
+            var eightHexSequence = Terms
+                .Pattern(isHexDigit, 8, 8);
 
-        var twelveHexSequence = Terms
-            .Pattern(isHexDigit, 12, 12);
+            var fourHexSequence = Terms
+                .Pattern(isHexDigit, 4, 4);
 
-        var thirtyTwoHexSequence = Terms
-            .Pattern(isHexDigit, 32, 32);
+            var twelveHexSequence = Terms
+                .Pattern(isHexDigit, 12, 12);
 
-        var guidWithHyphens = eightHexSequence
-                .AndSkip(minus)
-                .And(fourHexSequence)
-                .AndSkip(minus)
-                .And(fourHexSequence)
-                .AndSkip(minus)
-                .And(fourHexSequence)
-                .AndSkip(minus)
-                .And(twelveHexSequence)
-            .Then<LogicalExpression>(static g =>
-                    new ValueExpression(Guid.Parse(g.Item1.ToString() + g.Item2 + g.Item3 + g.Item4 + g.Item5)));
+            var thirtyTwoHexSequence = Terms
+                .Pattern(isHexDigit, 32, 32);
 
-        var guidWithoutHyphens = thirtyTwoHexSequence
-            .AndSkip(Not(decimalOrDoubleNumber))
-            .Then<LogicalExpression>(static g => new ValueExpression(Guid.Parse(g.ToString()!)));
+            var guidWithHyphens = eightHexSequence
+                    .AndSkip(minus)
+                    .And(fourHexSequence)
+                    .AndSkip(minus)
+                    .And(fourHexSequence)
+                    .AndSkip(minus)
+                    .And(fourHexSequence)
+                    .AndSkip(minus)
+                    .And(twelveHexSequence)
+                .Then<LogicalExpression>(static g =>
+                        new ValueExpression(Guid.Parse(g.Item1.ToString() + g.Item2 + g.Item3 + g.Item4 + g.Item5)));
 
-        var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
+            var guidWithoutHyphens = thirtyTwoHexSequence
+                .AndSkip(Not(decimalOrDoubleNumber))
+                .Then<LogicalExpression>(static g => new ValueExpression(Guid.Parse(g.ToString()!)));
+
+            guid = OneOf(guidWithHyphens, guidWithoutHyphens);
+        }
 
         // primary => GUID | Percent | NUMBER | identifier| DateTime | string | resultReference | function | boolean | groupExpression | identifier | list ;
 
         List<Parser<LogicalExpression>> enabledParsers = new List<Parser<LogicalExpression>>();
 
-        if (!options.HasFlag(ExpressionOptions.DontParseGuids))
+        if (guid != null)
             enabledParsers.Add(guid);
         if (numberPercent != null)
             enabledParsers.Add(numberPercent);

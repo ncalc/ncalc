@@ -25,11 +25,10 @@ namespace NCalc.Domain
         }
     }
 
-    //public sealed class PercentExpression(LogicalExpression expression) : LogicalExpression
     public sealed class PercentExpression : LogicalExpression
     {
-        // public LogicalExpression Expression { get; set; } = expression;
         public LogicalExpression Expression { get; set; }
+
         public PercentExpression(LogicalExpression expression)
         {
             Expression = expression;

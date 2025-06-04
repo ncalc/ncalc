@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 #endif
 using System.Diagnostics.Contracts;
+
 using NCalc.Visitors;
 
 namespace NCalc.Domain;
@@ -17,6 +18,7 @@ namespace NCalc.Domain;
 [JsonDerivedType(typeof(LogicalExpressionList), typeDiscriminator: "list")]
 [JsonDerivedType(typeof(TernaryExpression), typeDiscriminator: "ternary")]
 [JsonDerivedType(typeof(UnaryExpression), typeDiscriminator: "unary")]
+[JsonDerivedType(typeof(PercentExpression), typeDiscriminator: "percent")]
 [JsonDerivedType(typeof(ValueExpression), typeDiscriminator: "value")]
 #endif
 public abstract class LogicalExpression
