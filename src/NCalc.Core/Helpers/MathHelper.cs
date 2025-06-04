@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-
 using ExtendedNumerics;
 
 namespace NCalc.Helpers;

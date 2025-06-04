@@ -1,5 +1,4 @@
 ﻿using Antlr4.Runtime;
-
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
@@ -14,6 +13,11 @@ public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
     public LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
     {
         return Create(expression, options, null);
+    }
+
+    public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options, AdvancedExpressionOptions _)
+    {
+       return Create(expression, options, null); 
     }
 
     public LogicalExpression Create(string expression, ExpressionOptions options, AdvancedExpressionOptions _)
@@ -61,5 +65,10 @@ public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
         }
 
         return logicalExpression;
+    }
+
+    public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None)
+    {
+        return Create(expression, options);
     }
 }

@@ -21,11 +21,24 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
 
     public static LogicalExpressionFactory GetInstance() => Instance;
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options, AdvancedExpressionOptions? advancedOptions)
+    public LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
     {
         try
         {
-            return Create(expression, options, advancedOptions);
+            return Create(expression, CultureInfo.CurrentCulture, options, null);
+        }
+        catch (Exception exception)
+        {
+            logger.LogErrorCreatingLogicalExpression(exception, expression);
+            throw new NCalcParserException("Error parsing the expression.", exception);
+        }
+    }
+
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, CultureInfo cultureInfo, ExpressionOptions options, AdvancedExpressionOptions? advancedOptions)
+    {
+        try
+        {
+            return Create(expression, cultureInfo, options, advancedOptions);
         }
         catch (Exception exception)
         {
@@ -37,6 +50,13 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
     public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, AdvancedExpressionOptions? advancedOptions = null)
     {
         var parserContext = new LogicalExpressionParserContext(expression, options);
+        parserContext.AdvancedOptions = advancedOptions;
+        return LogicalExpressionParser.Parse(parserContext);
+    }
+
+    public static LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, AdvancedExpressionOptions? advancedOptions = null)
+    {
+        var parserContext = new LogicalExpressionParserContext(expression, options, cultureInfo);
         parserContext.AdvancedOptions = advancedOptions;
         return LogicalExpressionParser.Parse(parserContext);
     }

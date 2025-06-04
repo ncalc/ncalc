@@ -53,6 +53,14 @@ namespace NCalc
             Custom
         }
 
+        public enum GroupSeparatorType
+        {
+            Skip,
+            BuiltIn,
+            FromCulture,
+            Custom
+        }
+
         public enum HoursFormatKind
         {
             BuiltIn, // From current culture
@@ -92,9 +100,9 @@ namespace NCalc
         public SeparatorType DateSeparatorType { get; set; }
         public SeparatorType TimeSeparatorType { get; set; }
         public SeparatorType DecimalSeparatorType { get; set; }
-        public SeparatorType NumberGroupSeparatorType { get; set; }
+        public GroupSeparatorType NumberGroupSeparatorType { get; set; }
         public SeparatorType CurrencyDecimalSeparatorType { get; set; }
-        public SeparatorType CurrencyNumberGroupSeparatorType { get; set; }
+        public GroupSeparatorType CurrencyNumberGroupSeparatorType { get; set; }
         public CurrencySymbolType CurrencySymbolsType { get; set; }
 
         public DateOrderKind DateOrder { get; set; }
@@ -218,8 +226,10 @@ namespace NCalc
         {
             DateSeparatorType = SeparatorType.BuiltIn;
             TimeSeparatorType = SeparatorType.BuiltIn;
-            NumberGroupSeparatorType = SeparatorType.BuiltIn;
+            NumberGroupSeparatorType = GroupSeparatorType.Skip;
+            CurrencyNumberGroupSeparatorType = GroupSeparatorType.Skip;
             DecimalSeparatorType = SeparatorType.BuiltIn;
+            CurrencyDecimalSeparatorType = SeparatorType.BuiltIn;
 
             var shortDatePattern = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).DateTimeFormat.ShortDatePattern;
             if (!string.IsNullOrEmpty(shortDatePattern))
@@ -250,6 +260,8 @@ namespace NCalc
             if (string.IsNullOrEmpty(_decimalSeparator))
                 _decimalSeparator = Parlot.Fluent.NumberLiterals.DefaultDecimalSeparator.ToString();
             _numberGroupSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberGroupSeparator;
+            _currencyDecimalSeparator = CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator;
+            _currencyNumberGroupSeparator = CultureInfo.CurrentCulture.NumberFormat.CurrencyGroupSeparator;
         }
 
         internal string GetDateSeparator()
@@ -329,13 +341,15 @@ namespace NCalc
             string? separatorString = "";
             switch (NumberGroupSeparatorType)
             {
-                case SeparatorType.BuiltIn:
+                case GroupSeparatorType.Skip:
+                    return '\0';
+                case GroupSeparatorType.BuiltIn:
                     separatorString = Parlot.Fluent.NumberLiterals.DefaultGroupSeparator.ToString();
                     break;
-                case SeparatorType.FromCulture:
+                case GroupSeparatorType.FromCulture:
                     separatorString = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.NumberGroupSeparator;
                     break;
-                case SeparatorType.Custom:
+                case GroupSeparatorType.Custom:
                     separatorString = _numberGroupSeparator;
                     break;
             }
@@ -350,13 +364,15 @@ namespace NCalc
             string? separatorString = "";
             switch (CurrencyNumberGroupSeparatorType)
             {
-                case SeparatorType.BuiltIn:
+                case GroupSeparatorType.Skip:
+                    return '\0';
+                case GroupSeparatorType.BuiltIn:
                     separatorString = Parlot.Fluent.NumberLiterals.DefaultGroupSeparator.ToString();
                     break;
-                case SeparatorType.FromCulture:
+                case GroupSeparatorType.FromCulture:
                     separatorString = ((_cultureInfo is not null) ? _cultureInfo : CultureInfo.CurrentCulture).NumberFormat.CurrencyGroupSeparator;
                     break;
-                case SeparatorType.Custom:
+                case GroupSeparatorType.Custom:
                     separatorString = _currencyNumberGroupSeparator;
                     break;
             }

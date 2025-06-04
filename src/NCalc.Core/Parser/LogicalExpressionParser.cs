@@ -1,4 +1,3 @@
-
 using NCalc.Domain;
 using NCalc.Exceptions;
 
@@ -16,7 +15,7 @@ namespace NCalc.Parser;
 /// </summary>
 public static class LogicalExpressionParser
 {
-    private static Parser<LogicalExpression> Parser;
+    private static readonly ConcurrentDictionary<CultureInfo, Parser<LogicalExpression>> Parsers = new();
 
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
@@ -52,27 +51,27 @@ public static class LogicalExpressionParser
     static LogicalExpressionParser()
     {
         // InternalInit sets Parser (as before), and then we set it again here to satisfy the compiler's requirements
-        Parser = InternalInit(ExpressionOptions.None, AdvancedExpressionOptions.DefaultOptions);
+        Parsers[CultureInfo.CurrentCulture] = CreateExpressionParser(CultureInfo.CurrentCulture, ExpressionOptions.None, AdvancedExpressionOptions.DefaultOptions);
     }
 
     /// <summary>
     /// Creates the parser with the options that exist at the moment of call
     /// </summary>
-    public static void ReInit()
+    public static void ReInitialize()
     {
-        Parser = InternalInit();
+        Parsers[CultureInfo.CurrentCulture] = CreateExpressionParser();
     }
 
     /// <summary>
     /// Creates the parser with the options that exist at the moment of call
     /// </summary>
     /// <returns>An instance of the newly created parser</returns>
-    private static Parser<LogicalExpression> InternalInit()
+    private static Parser<LogicalExpression> CreateExpressionParser()
     {
-        return InternalInit(ExpressionOptions.None, AdvancedExpressionOptions.DefaultOptions);
+        return CreateExpressionParser(CultureInfo.CurrentCulture, ExpressionOptions.None, AdvancedExpressionOptions.DefaultOptions);
     }
 
-    private static Parser<LogicalExpression> InternalInit(ExpressionOptions options, AdvancedExpressionOptions extOptions)
+    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, ExpressionOptions options, AdvancedExpressionOptions extOptions)
     {
         /*
          * Grammar:
@@ -182,11 +181,11 @@ public static class LogicalExpressionParser
         NumberOptions useUnderscoreFlag = (_hasAllowUnderscore && extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers)) ? (NumberOptions) 16 : NumberOptions.None;
 
         var intNumber = Terms.Number<int>(NumberOptions.Integer | useNumberGroupSeparatorFlag | useUnderscoreFlag, decimalSeparator, numGroupSeparator)
-            .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
+            .AndSkip(Not(OneOf(Terms.Text(decimalSeparator.ToString()), Terms.Text("E", true))))
             .Then<LogicalExpression>(d => new ValueExpression(d));
 
         var longNumber = Terms.Number<long>(NumberOptions.Integer | useNumberGroupSeparatorFlag | useUnderscoreFlag, decimalSeparator, numGroupSeparator)
-            .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
+            .AndSkip(Not(OneOf(Terms.Text(decimalSeparator.ToString()), Terms.Text("E", true))))
             .Then<LogicalExpression>(d => new ValueExpression(d));
 
         var decimalNumber = Terms.Number<decimal>(NumberOptions.Float | useNumberGroupSeparatorFlag | useUnderscoreFlag, decimalSeparator, numGroupSeparator)
@@ -247,9 +246,7 @@ public static class LogicalExpressionParser
 
                 Parser<LogicalExpression>? currency1 = null;
                 Parser<LogicalExpression>? currency2 = null;
-                /*Parser<LogicalExpression>? currency3 = null;
-                Parser<LogicalExpression>? currency4 = null;
-    */
+
                 var decimalCurrencyNumber = Terms.Number<decimal>((NumberOptions.Float & ~NumberOptions.AllowExponent) | useNumberGroupSeparatorFlag | useUnderscoreFlag, currencyDecimalSeparator, currencyNumGroupSeparator)
                 .Then<LogicalExpression>(static (ctx, val) =>
                 {
@@ -272,24 +269,6 @@ public static class LogicalExpressionParser
                         return val;
                     });
 
-                /*if (currencyChar2 != null)
-                {
-                    currency3 = currencyChar2.SkipAnd(SkipWhiteSpace(OneOf(decimalCurrencyNumber, intNumber, longNumber)))
-                        .Then<LogicalExpression>(static (ctx, val) =>
-                        {
-                            return val;
-                        });
-
-                    currency4 = OneOf(decimalCurrencyNumber, intNumber, longNumber).AndSkip(SkipWhiteSpace(currencyChar2))
-                        .Then<LogicalExpression>(static (ctx, val) =>
-                        {
-                            return val;
-                        });
-
-                    currency = OneOf(currency3!, currency4!, currency1!, currency2!);
-                }
-                else
-                */
                 currency = OneOf(currency1!, currency2!);
             }
         }
@@ -450,52 +429,55 @@ public static class LogicalExpressionParser
             string[] ncalcDateTime12Masks = new string[4];
             string[] ncalcDateShortTime12Masks = new string[4];
 
-            CultureInfo culture = CultureInfo.CurrentCulture;
+            CultureInfo culture = cultureInfo ?? CultureInfo.CurrentCulture;
+
+            string builtInDateSep = (cultureInfo ?? CultureInfo.CurrentCulture).DateTimeFormat.DateSeparator;
+            string builtInTimeSep = (cultureInfo ?? CultureInfo.CurrentCulture).DateTimeFormat.TimeSeparator;
 
             string datePattern = culture.DateTimeFormat.ShortDatePattern;
             if (string.IsNullOrEmpty(datePattern))
             {
-                ncalcDateMasks[0] = "d/M/yyyy";
-                ncalcDateMasks[1] = "d/M/yy";
+                ncalcDateMasks[0] = string.Join(builtInDateSep, "d", "M", "yyyy");
+                ncalcDateMasks[1] = string.Join(builtInDateSep, "d", "M", "yy");
             }
             else
                 switch (datePattern[0])
                 {
                     case 'd':
-                        ncalcDateMasks[0] = "d/M/yyyy";
-                        ncalcDateMasks[1] = "d/M/yy";
+                        ncalcDateMasks[0] = string.Join(builtInDateSep, "d", "M", "yyyy");
+                        ncalcDateMasks[1] = string.Join(builtInDateSep, "d", "M", "yy");
                         break;
                     case 'M':
-                        ncalcDateMasks[0] = "M/d/yyyy";
-                        ncalcDateMasks[1] = "M/d/yy";
+                        ncalcDateMasks[0] = string.Join(builtInDateSep, "M", "d", "yyyy");
+                        ncalcDateMasks[1] = string.Join(builtInDateSep, "M", "d", "yy");
                         break;
                     case 'y':
-                        ncalcDateMasks[0] = "yyyy/M/d";
-                        ncalcDateMasks[1] = "yy/M/d";
+                        ncalcDateMasks[0] = string.Join(builtInDateSep, "yyyy", "M", "d");
+                        ncalcDateMasks[1] = string.Join(builtInDateSep, "yy", "M", "d");
                         break;
                     default:
-                        ncalcDateMasks[0] = "d/M/yyyy";
-                        ncalcDateMasks[1] = "d/M/yy";
+                        ncalcDateMasks[0] = string.Join(builtInDateSep, "d", "M", "yyyy");
+                        ncalcDateMasks[1] = string.Join(builtInDateSep, "d", "M", "yy");
                         break;
                 }
 
             // Define some masks for date-time values with both long and short time
-            ncalcDateTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "H:m:s");
-            ncalcDateTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "H:m:s");
-            ncalcDateShortTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], "H:m");
-            ncalcDateShortTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], "H:m");
+            ncalcDateTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], string.Join(builtInTimeSep, "H", "m", "s"));
+            ncalcDateTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], string.Join(builtInTimeSep, "H", "m", "s"));
+            ncalcDateShortTimeMasks[0] = string.Join(" ", ncalcDateMasks[0], string.Join(builtInTimeSep, "H", "m"));
+            ncalcDateShortTimeMasks[1] = string.Join(" ", ncalcDateMasks[1], string.Join(builtInTimeSep, "H", "m"));
 
             bool useSecondDate = false;
             bool onlyCustomDateTranslation = false;
-            string customDateSep = "/";
+            string customDateSep = builtInDateSep;
 
-            if (extOptions != null && extOptions.DateSeparatorType != AdvancedExpressionOptions.SeparatorType.BuiltIn)
+            if (extOptions != null)
             {
                 customDateSep = extOptions.GetDateSeparator();
-                if (customDateSep != "/" && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInDateSeparator))
+                if (customDateSep != builtInDateSep && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInDateSeparator))
                     useSecondDate = true; // we use the second date separator when both custom separator and the default slash are enabled
                 else
-                if (customDateSep == "/")
+                if (customDateSep == builtInDateSep)
                 {
                     onlyCustomDateTranslation = true;
                 }
@@ -547,7 +529,7 @@ public static class LogicalExpressionParser
                 if (useSecondDate || !onlyCustomDateTranslation)
                 {
                     // Use the existing ncalc approach with the current culture
-                    if (DateTime.TryParseExact($"{date.Item1}/{date.Item2}/{date.Item3}", ncalcDateMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                    if (DateTime.TryParseExact($"{date.Item1}{builtInDateSep}{date.Item2}{builtInDateSep}{date.Item3}", ncalcDateMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
                     {
                         return new ValueExpression(result);
                     }
@@ -602,15 +584,15 @@ public static class LogicalExpressionParser
 
             bool useSecondTime = false;
             bool onlyCustomTimeTranslation = false;
-            string customTimeSep = ":";
+            string customTimeSep = builtInTimeSep;
 
-            if (extOptions != null && extOptions.TimeSeparatorType != AdvancedExpressionOptions.SeparatorType.BuiltIn)
+            if (extOptions != null)
             {
                 customTimeSep = extOptions.TimeSeparator;
-                if (customTimeSep != ":" && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInTimeSeparator))
-                    useSecondTime = true; // we use the second date separator when both custom separator and the default slash are enabled
+                if (customTimeSep != builtInTimeSep && !extOptions.Flags.HasFlag(AdvExpressionOptions.SkipBuiltInTimeSeparator))
+                    useSecondTime = true; // we use the second time separator when both custom separator and the default one are enabled and are different
                 else
-                if (customTimeSep == ":")
+                if (customTimeSep == builtInTimeSep)
                 {
                     onlyCustomTimeTranslation = true;
                 }
@@ -717,7 +699,7 @@ public static class LogicalExpressionParser
                 }
                 if (useSecondTime || !onlyCustomTimeTranslation)
                 {
-                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}", out var result))
+                    if (TimeSpan.TryParse($"{time.Item1}{builtInTimeSep}{time.Item2}{builtInTimeSep}{time.Item3}", out var result))
                     {
                         return new ValueExpression(result);
                     }
@@ -738,7 +720,7 @@ public static class LogicalExpressionParser
                 }
                 if (useSecondTime || !onlyCustomTimeTranslation)
                 {
-                    if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}", out var result))
+                    if (TimeSpan.TryParse($"{time.Item1}{builtInTimeSep}{time.Item2}", out var result))
                     {
                         return new ValueExpression(result);
                     }
@@ -772,7 +754,8 @@ public static class LogicalExpressionParser
                     }
                     if (useSecondTime || !onlyCustomTimeTranslation)
                     {
-                        if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}:{time.Item3}{amSpacer}{amPMValue}", out var result))
+                        // Use the existing ncalc approach with the current culture
+                        if (TimeSpan.TryParse($"{time.Item1}{builtInTimeSep}{time.Item2}{builtInTimeSep}{time.Item3}{amSpacer}{amPMValue}", out var result))
                         {
                             return new ValueExpression(result);
                         }
@@ -800,7 +783,7 @@ public static class LogicalExpressionParser
                     }
                     if (useSecondTime || !onlyCustomTimeTranslation)
                     {
-                        if (TimeSpan.TryParse($"{time.Item1}:{time.Item2}{amSpacer}{amPMValue}", out var result))
+                        if (TimeSpan.TryParse($"{time.Item1}{builtInTimeSep}{time.Item2}{amSpacer}{amPMValue}", out var result))
                         {
                             return new ValueExpression(result);
                         }
@@ -827,7 +810,7 @@ public static class LogicalExpressionParser
                         }
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{builtInTimeSep}{dateTime.Item4.Item2}{builtInTimeSep}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -837,7 +820,7 @@ public static class LogicalExpressionParser
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{builtInDateSep}{dateTime.Item2}{builtInDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -846,7 +829,7 @@ public static class LogicalExpressionParser
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
                             // Use the existing approach
-                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3}", ncalcDateTimeMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParseExact($"{dateTime.Item1}{builtInDateSep}{dateTime.Item2}{builtInDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{builtInTimeSep}{dateTime.Item4.Item2}{builtInTimeSep}{dateTime.Item4.Item3}", ncalcDateTimeMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -872,7 +855,7 @@ public static class LogicalExpressionParser
                         }
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{builtInTimeSep}{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -882,7 +865,7 @@ public static class LogicalExpressionParser
                     {
                         if (useSecondTime || onlyCustomTimeTranslation)
                         {
-                            if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParse($"{dateTime.Item1}{builtInDateSep}{dateTime.Item2}{builtInDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -891,7 +874,7 @@ public static class LogicalExpressionParser
                         if (useSecondTime || !onlyCustomTimeTranslation)
                         {
                             // Use the existing approach
-                            if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}", ncalcDateShortTimeMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                            if (DateTime.TryParseExact($"{dateTime.Item1}{builtInDateSep}{dateTime.Item2}{builtInDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{builtInTimeSep}{dateTime.Item4.Item2}", ncalcDateShortTimeMasks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
                             {
                                 return new ValueExpression(result);
                             }
@@ -944,7 +927,7 @@ public static class LogicalExpressionParser
                         {
                             if (useSecondTime || onlyCustomTimeTranslation)
                             {
-                                if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                                if (DateTime.TryParse($"{dateTime.Item1}{builtInDateSep}{dateTime.Item2}{builtInDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{customTimeSepForDT}{dateTime.Item4.Item3}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                                 {
                                     return new ValueExpression(result);
                                 }
@@ -953,7 +936,7 @@ public static class LogicalExpressionParser
                             if (useSecondTime || !onlyCustomTimeTranslation)
                             {
                                 // Use the existing approach
-                                if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}:{dateTime.Item4.Item3} {amPMValue}", ncalcDateTime12Masks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                                if (DateTime.TryParseExact($"{dateTime.Item1}{builtInDateSep}{dateTime.Item2}{builtInDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{builtInTimeSep}{dateTime.Item4.Item2}{builtInTimeSep}{dateTime.Item4.Item3} {amPMValue}", ncalcDateTime12Masks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
                                 {
                                     return new ValueExpression(result);
                                 }
@@ -986,7 +969,7 @@ public static class LogicalExpressionParser
                             }
                             if (useSecondTime || !onlyCustomTimeTranslation)
                             {
-                                if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                                if (DateTime.TryParse($"{dateTime.Item1}{customDateSepForDT}{dateTime.Item2}{customDateSepForDT}{dateTime.Item3} {dateTime.Item4.Item1}{builtInTimeSep}{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                                 {
                                     return new ValueExpression(result);
                                 }
@@ -996,7 +979,7 @@ public static class LogicalExpressionParser
                         {
                             if (useSecondTime || onlyCustomTimeTranslation)
                             {
-                                if (DateTime.TryParse($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
+                                if (DateTime.TryParse($"{dateTime.Item1}{builtInDateSep}{dateTime.Item2}{builtInDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{customTimeSepForDT}{dateTime.Item4.Item2}{amSpacer}{amPMValue}", dateTimeFormat, DateTimeStyles.None, out var result))
                                 {
                                     return new ValueExpression(result);
                                 }
@@ -1005,7 +988,7 @@ public static class LogicalExpressionParser
                             if (useSecondTime || !onlyCustomTimeTranslation)
                             {
                                 // Use the existing approach
-                                if (DateTime.TryParseExact($"{dateTime.Item1}/{dateTime.Item2}/{dateTime.Item3} {dateTime.Item4.Item1}:{dateTime.Item4.Item2} {amPMValue}", ncalcDateShortTime12Masks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
+                                if (DateTime.TryParseExact($"{dateTime.Item1}{builtInDateSep}{dateTime.Item2}{builtInDateSep}{dateTime.Item3} {dateTime.Item4.Item1}{builtInTimeSep}{dateTime.Item4.Item2} {amPMValue}", ncalcDateShortTime12Masks, _currentCultureFormatProvider, DateTimeStyles.None, out var result))
                                 {
                                     return new ValueExpression(result);
                                 }
@@ -1076,9 +1059,9 @@ public static class LogicalExpressionParser
         enabledParsers.Add(hexOctBinNumber);
         if (currency != null)
             enabledParsers.Add(currency);
-        enabledParsers.Add(decimalOrDoubleNumber);
         enabledParsers.Add(intNumber);
         enabledParsers.Add(longNumber);
+        enabledParsers.Add(decimalOrDoubleNumber);
         enabledParsers.Add(booleanTrue);
         enabledParsers.Add(booleanFalse);
         if (dateTime != null) // dateTime will be initialized unless options.HasFlag(ExpressionOptions.DontParseDates)
@@ -1207,8 +1190,23 @@ public static class LogicalExpressionParser
 
         AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
 
-        Parser<LogicalExpression>? result = enableParserCompilation ? expressionParser.Compile() : expressionParser;
-        return result;
+        return enableParserCompilation ? expressionParser.Compile() : expressionParser;
+    }
+
+    private static Parser<LogicalExpression> GetOrCreateExpressionParser(CultureInfo cultureInfo, LogicalExpressionParserContext context)
+    {
+        if (context.Options == ExpressionOptions.None && Parsers.TryGetValue(cultureInfo, out var parser))
+        {
+            return parser;
+        }
+
+        var newParser = CreateExpressionParser(cultureInfo, context.Options, context.AdvancedOptions ?? AdvancedExpressionOptions.DefaultOptions);
+        if (context.Options == ExpressionOptions.None)
+        {
+            Parsers.TryAdd(cultureInfo, newParser);
+        }
+
+        return newParser;
     }
 
     private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
@@ -1227,9 +1225,9 @@ public static class LogicalExpressionParser
     {
         Parser<LogicalExpression> parserToUse;
         if (context.AdvancedOptions is not null)
-            parserToUse = InternalInit(context.Options, context.AdvancedOptions);
+            parserToUse = CreateExpressionParser(context.CultureInfo, context.Options, context.AdvancedOptions);
         else
-            parserToUse = Parser;
+            parserToUse = GetOrCreateExpressionParser(context.CultureInfo, context);
 
         if (parserToUse.TryParse(context, out var result, out var error))
             return result;

@@ -1,13 +1,10 @@
 ﻿using System.Numerics;
 using System.Reflection;
-
 using ExtendedNumerics;
-
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Helpers;
 using NCalc.Reflection;
-
 using Linq = System.Linq.Expressions;
 using LinqExpression = System.Linq.Expressions.Expression;
 using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;

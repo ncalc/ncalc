@@ -1,5 +1,4 @@
 ﻿using NCalc.Domain;
-
 using ValueType = NCalc.Domain.ValueType;
 
 namespace NCalc.Visitors;

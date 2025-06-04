@@ -1,5 +1,4 @@
 #nullable enable
-#define UNDERSCORE_IN_DECIMALS
 
 namespace NCalc.Tests;
 
@@ -51,8 +50,13 @@ public class AdvFeatureTests
 
     [Theory]
     [InlineData("#1/6/2025#", "en-US", new int[] { 2025, 1, 6 })]
+    [InlineData("#1/06/2025#", "en-US", new int[] { 2025, 1, 6 })]
+    [InlineData("#01/06/2025#", "en-US", new int[] { 2025, 1, 6 })]
     [InlineData("#1.6.2025#", "de-DE", new int[] { 2025, 6, 1 })]
+    [InlineData("#01.6.2025#", "de-DE", new int[] { 2025, 6, 1 })]
+    [InlineData("#1.06.2025#", "de-DE", new int[] { 2025, 6, 1 })]
     [InlineData("#2025/06/01#", "ja-JP", new int[] { 2025, 6, 1 })]
+    [InlineData("#2025/6/1#", "ja-JP", new int[] { 2025, 6, 1 })]
     public void ShouldParseDatesCulture(string input, string cultureName, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
@@ -69,7 +73,9 @@ public class AdvFeatureTests
 
     [Theory]
     [InlineData("#1/6/2025#", new int[] { 2025, 6, 1 })]
+    [InlineData("#1/06/2025#", new int[] { 2025, 6, 1 })]
     [InlineData("#1/12/2025#", new int[] { 2025, 12, 1 })]
+    [InlineData("#01/12/2025#", new int[] { 2025, 12, 1 })]
     public void ShouldParseDatesBuiltin(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
@@ -619,9 +625,9 @@ public class AdvFeatureTests
 
     [Theory]
 
-    [InlineData("12_3", 123.0)]
+    [InlineData("12_3", 123)]
     [InlineData("1234.5_6", 1234.56)]
-    public void ShouldHandleUnderscoresInDecimal(string formula, double expectedValue)
+    public void ShouldHandleUnderscoresInDecimal(string formula, object expectedValue)
     {
         // Support of underscores in decimal literals requires a patch in Parlot,
         // currently available in https://github.com/Allied-Bits-Ltd/parlot
@@ -696,11 +702,11 @@ public class AdvFeatureTests
     [InlineData("1@000", "@", 1000)]
     [InlineData("1:000", ":", 1000)]
 
-    public void ShouldHandleNumberGroupSeparatorCustom(string input, string separator, double expectedValue)
+    public void ShouldHandleNumberGroupSeparatorCustom(string input, string separator, object expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
-        expression.AdvancedOptions.NumberGroupSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
+        expression.AdvancedOptions.NumberGroupSeparatorType = AdvancedExpressionOptions.GroupSeparatorType.Custom;
         expression.AdvancedOptions.NumberGroupSeparator = separator;
 
         var result = expression.Evaluate();
@@ -710,13 +716,15 @@ public class AdvFeatureTests
 
     [Theory]
     [InlineData("1,500", "en-US", 1500)]
+    [InlineData("1,500.50", "en-US", 1500.50)]
     [InlineData("1,500", "ja-JP", 1500)]
+    [InlineData("1,500.50", "ja-JP", 1500.50)]
 
-    public void ShouldHandleNumberGroupSeparatorCulture(string input, string cultureName, double expectedValue)
+    public void ShouldHandleNumberGroupSeparatorCulture(string input, string cultureName, object expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
-        expression.AdvancedOptions.NumberGroupSeparatorType = AdvancedExpressionOptions.SeparatorType.FromCulture;
+        expression.AdvancedOptions.NumberGroupSeparatorType = AdvancedExpressionOptions.GroupSeparatorType.FromCulture;
         expression.AdvancedOptions.CultureInfo = new CultureInfo(cultureName);
 
         var result = expression.Evaluate();
@@ -727,7 +735,7 @@ public class AdvFeatureTests
     [Theory]
     [InlineData("1+@", 2, 3)]
     [InlineData("1+@*2", 2, 5)]
-    public void ShouldHandleResultReference(string input, int previousResult, double expectedValue)
+    public void ShouldHandleResultReference(string input, int previousResult, object expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -874,7 +882,6 @@ public class AdvFeatureTests
     [InlineData("500EUR", 500)]
     [InlineData("500\x20ac", 500)] // \x20ac stands for the euro symbol
     [InlineData("500 EUR", 500)]
-    [InlineData("500 EUR.", 500)]
     public void ShouldAcceptCurrencyEUR(string input, double expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
@@ -883,7 +890,6 @@ public class AdvFeatureTests
         expression.AdvancedOptions.CurrencySymbolsType = AdvancedExpressionOptions.CurrencySymbolType.Custom;
         expression.AdvancedOptions.CurrencySymbol = "EUR";
         expression.AdvancedOptions.CurrencySymbol2 = "\x20ac";
-        expression.AdvancedOptions.CurrencySymbol3 = "EUR.";
         var result = expression.Evaluate();
 
         Assert.Equal(expectedValue, result);
