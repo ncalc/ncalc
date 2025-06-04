@@ -51,7 +51,7 @@ public static class LogicalExpressionParser
     static LogicalExpressionParser()
     {
         // InternalInit sets Parser (as before), and then we set it again here to satisfy the compiler's requirements
-        Parsers[CultureInfo.CurrentCulture] = CreateExpressionParser(CultureInfo.CurrentCulture, ExpressionOptions.None, AdvancedExpressionOptions.DefaultOptions);
+        Parsers[CultureInfo.CurrentCulture] = CreateExpressionParser(CultureInfo.CurrentCulture, ExpressionOptions.None, null /*AdvancedExpressionOptions.DefaultOptions*/);
     }
 
     /// <summary>
@@ -68,10 +68,10 @@ public static class LogicalExpressionParser
     /// <returns>An instance of the newly created parser</returns>
     private static Parser<LogicalExpression> CreateExpressionParser()
     {
-        return CreateExpressionParser(CultureInfo.CurrentCulture, ExpressionOptions.None, AdvancedExpressionOptions.DefaultOptions);
+        return CreateExpressionParser(CultureInfo.CurrentCulture, ExpressionOptions.None, null /*AdvancedExpressionOptions.DefaultOptions*/);
     }
 
-    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, ExpressionOptions options, AdvancedExpressionOptions extOptions)
+    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, ExpressionOptions options, AdvancedExpressionOptions? extOptions)
     {
         /*
          * Grammar:
@@ -103,7 +103,9 @@ public static class LogicalExpressionParser
 
         Parser<long> hexNumber;
 
-        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers))
+        bool acceptUnderscores = (extOptions != null) && extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers);
+
+        if (acceptUnderscores)
         {
             hexNumber = Terms.Text("0x")
             .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF_".Contains(c)))
@@ -117,7 +119,7 @@ public static class LogicalExpressionParser
         }
 
         Parser<long> octalNumber;
-        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers))
+        if (acceptUnderscores)
         {
             octalNumber = Terms.Text("0o")
                 .SkipAnd(Terms.Pattern(c => "01234567_".Contains(c)))
@@ -132,7 +134,7 @@ public static class LogicalExpressionParser
 
         Parser<long> octalNumberCStyle;
 
-        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers))
+        if (acceptUnderscores)
         {
             octalNumberCStyle = Terms.Text("0")//. And(Terms.AnyOf("01234567_"))
                 .And(Terms.Pattern(c => "01234567_".Contains(c)))
@@ -146,7 +148,7 @@ public static class LogicalExpressionParser
         }
 
         Parser<long> binaryNumber;
-        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers))
+        if (acceptUnderscores)
         {
             binaryNumber = Terms.Text("0b")
                 .SkipAnd(Terms.Pattern(c => c == '0' || c == '1' || c == '_'))
@@ -161,7 +163,7 @@ public static class LogicalExpressionParser
 
         Parser<long> hexOctBinNumberParser;
 
-        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptCStyleOctals))
+        if (extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptCStyleOctals))
             hexOctBinNumberParser = OneOf(octalNumberCStyle, hexNumber, octalNumber, binaryNumber);
         else
             hexOctBinNumberParser = OneOf(hexNumber, octalNumber, binaryNumber);
@@ -174,11 +176,11 @@ public static class LogicalExpressionParser
                 return new ValueExpression((int)d);
             });
 
-        char decimalSeparator = extOptions.GetDecimalSeparatorChar(); // this method will return the default separator, if needed
-        char numGroupSeparator = extOptions.GetNumberGroupSeparatorChar(); // this method will return the default separator, if needed
+        char decimalSeparator = (extOptions != null) ? extOptions.GetDecimalSeparatorChar() : Parlot.Fluent.NumberLiterals.DefaultDecimalSeparator; // this method will return the default separator, if needed
+        char numGroupSeparator = (extOptions != null) ? extOptions.GetNumberGroupSeparatorChar() : Parlot.Fluent.NumberLiterals.DefaultGroupSeparator; // this method will return the default separator, if needed
 
-        NumberOptions useNumberGroupSeparatorFlag = (numGroupSeparator != '\0') ? NumberOptions.AllowGroupSeparators : NumberOptions.None;
-        NumberOptions useUnderscoreFlag = (_hasAllowUnderscore && extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers)) ? (NumberOptions) 16 : NumberOptions.None;
+        NumberOptions useNumberGroupSeparatorFlag = ((extOptions != null) && (numGroupSeparator != '\0')) ? NumberOptions.AllowGroupSeparators : NumberOptions.None;
+        NumberOptions useUnderscoreFlag = (_hasAllowUnderscore && extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptUnderscoresInNumbers)) ? (NumberOptions) 16 : NumberOptions.None;
 
         var intNumber = Terms.Number<int>(NumberOptions.Integer | useNumberGroupSeparatorFlag | useUnderscoreFlag, decimalSeparator, numGroupSeparator)
             .AndSkip(Not(OneOf(Terms.Text(decimalSeparator.ToString()), Terms.Text("E", true))))
@@ -222,7 +224,7 @@ public static class LogicalExpressionParser
 
         Parser<LogicalExpression>? currency = null;
 
-        if (extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptCurrencySymbol))
+        if (extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.AcceptCurrencySymbol))
         {
             string currencySymbol = string.Empty;
             string currencySymbol2 = string.Empty;
@@ -277,7 +279,7 @@ public static class LogicalExpressionParser
 
         Parser<LogicalExpression>? numberPercent = null;
 
-        if (extOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent))
+        if (extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent))
         {
             var percent = Terms.Char('%'); // CultureInfo defines a percent character, but we are yet to see another character than '%'
             numberPercent = OneOf(decimalNumber, doubleNumber, intNumber, longNumber)
@@ -291,7 +293,7 @@ public static class LogicalExpressionParser
         var comma = Terms.Char(',');
         var divided = Terms.Text("/");
         var times = Terms.Text("*");
-        var modulo = extOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent) ? Terms.Text("mod", true) : Terms.Text("%");
+        var modulo = (extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent)) ? Terms.Text("mod", true) : Terms.Text("%");
         var minus = Terms.Text("-");
         var plus = Terms.Text("+");
 
@@ -375,7 +377,7 @@ public static class LogicalExpressionParser
 
         Parser<LogicalExpression> functionOrResultRef;
 
-        if (extOptions.Flags.HasFlag(AdvExpressionOptions.UseResultReference))
+        if (extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.UseResultReference))
             functionOrResultRef = OneOf(resultReference, function);
         else
             functionOrResultRef = function;
@@ -414,7 +416,7 @@ public static class LogicalExpressionParser
 
         if (!options.HasFlag(ExpressionOptions.DontParseDates))
         {
-            DateTimeFormatInfo dateTimeFormat = extOptions?.GetFormat(typeof(DateTimeFormatInfo)) as DateTimeFormatInfo ?? CultureInfo.CurrentCulture.DateTimeFormat;
+            DateTimeFormatInfo dateTimeFormat = extOptions?.GetFormat(typeof(DateTimeFormatInfo)) as DateTimeFormatInfo ?? cultureInfo?.DateTimeFormat ?? CultureInfo.CurrentCulture.DateTimeFormat;
 
             Sequence<TextSpan, TextSpan, TextSpan> dateDefinition;
 
@@ -1200,7 +1202,7 @@ public static class LogicalExpressionParser
             return parser;
         }
 
-        var newParser = CreateExpressionParser(cultureInfo, context.Options, context.AdvancedOptions ?? AdvancedExpressionOptions.DefaultOptions);
+        var newParser = CreateExpressionParser(cultureInfo, context.Options, context.AdvancedOptions);
         if (context.Options == ExpressionOptions.None)
         {
             Parsers.TryAdd(cultureInfo, newParser);

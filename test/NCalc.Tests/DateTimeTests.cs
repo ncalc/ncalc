@@ -17,7 +17,16 @@ public class DateTimeTests
     public void Should_Parse_Date()
     {
         var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
-        var expr = new Expression($"#01{dateSeparator}01{dateSeparator}2001#");
+        string exprStr = "";
+        switch (CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern[0])
+        {
+            case 'M': exprStr = $"#01{dateSeparator}01{dateSeparator}2001#"; break;
+            case 'd': exprStr = $"#01{dateSeparator}01{dateSeparator}2001#"; break;
+            case 'y': exprStr = $"#2001{dateSeparator}01{dateSeparator}01#"; break;
+        }
+        Assert.False(string.IsNullOrEmpty(exprStr));
+
+        var expr = new Expression(exprStr);
         Assert.Equal(new DateTime(2001, 1, 1), expr.Evaluate());
     }
 
