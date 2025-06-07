@@ -69,5 +69,7 @@ public sealed class FunctionExtractionVisitor : ILogicalExpressionVisitor<List<s
         return functions.Distinct().ToList();
     }
 
+    public List<string> Visit(PercentExpression expression) => expression.Expression.Accept(this);
+
     public List<string> Visit(ValueExpression expression) => [];
 }

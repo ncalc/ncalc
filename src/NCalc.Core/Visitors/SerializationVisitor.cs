@@ -79,6 +79,11 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return resultBuilder.ToString();
     }
 
+    public string Visit(PercentExpression expression)
+    {
+        return EncapsulateNoValue(expression.Expression).TrimEnd() + "%";
+    }
+
     public string Visit(ValueExpression expression)
     {
         var resultBuilder = new StringBuilder();
@@ -148,18 +153,41 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return resultBuilder.ToString();
     }
 
-    protected virtual string EncapsulateNoValue(LogicalExpression expression)
+    protected virtual string EncapsulateNoValue(LogicalExpression expression, bool appendSpace = true)
     {
         if (expression is ValueExpression valueExpression)
-            return valueExpression.Accept(this);
+        {
+            string result = valueExpression.Accept(this);
+            if (!appendSpace)
+                result = result.TrimEnd();
+            return result;
+        }
 
-        var resultBuilder = new StringBuilder().Append('(');
+        var resultBuilder = new StringBuilder();
+
+        bool parensNeeded = true;
+
+        if (expression is PercentExpression)
+            parensNeeded = false;
+
+        if (parensNeeded)
+            resultBuilder.Append('(');
         resultBuilder.Append(expression.Accept(this));
 
         while (resultBuilder[^1] == ' ')
             resultBuilder.Length--;
 
-        resultBuilder.Append(") ");
+        if (parensNeeded)
+        {
+            if (appendSpace)
+                resultBuilder.Append(") ");
+            else
+                resultBuilder.Append(')');
+        }
+        else
+        if (appendSpace)
+            resultBuilder.Append(' ');
+
         return resultBuilder.ToString();
     }
 }

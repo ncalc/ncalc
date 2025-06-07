@@ -29,11 +29,49 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var left = new Lazy<object?>(() => Evaluate(expression.LeftExpression), LazyThreadSafetyMode.None);
         var right = new Lazy<object?>(() => Evaluate(expression.RightExpression), LazyThreadSafetyMode.None);
 
-        switch (expression.Type)
+        if (expression.LeftExpression is PercentExpression && expression.RightExpression is PercentExpression)
         {
-            case BinaryExpressionType.And:
-                return Convert.ToBoolean(left.Value, context.CultureInfo) &&
-                       Convert.ToBoolean(right.Value, context.CultureInfo);
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Minus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Subtract(left.Value, right.Value, context) ?? 0));
+                case BinaryExpressionType.Plus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Add(left.Value, right.Value, context) ?? 0));
+            }
+        }
+        else
+        if (expression.LeftExpression is PercentExpression)
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Times:
+                    return new PercentExpression(new ValueExpression(MathHelper.Multiply(left.Value, right.Value, context) ?? 0));
+                case BinaryExpressionType.Div:
+                    return new PercentExpression(new ValueExpression(MathHelper.Divide(left.Value, right.Value, context) ?? 0));
+            }
+        }
+        else
+        if (expression.RightExpression is PercentExpression)
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Minus:
+                    return MathHelper.SubtractPercent(left.Value, right.Value, context);
+                case BinaryExpressionType.Plus:
+                    return MathHelper.AddPercent(left.Value, right.Value, context);
+                case BinaryExpressionType.Times:
+                    return MathHelper.MultiplyPercent(left.Value, right.Value, context);
+                case BinaryExpressionType.Div:
+                    return MathHelper.DividePercent(left.Value, right.Value, context);
+            }
+        }
+        else
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.And:
+                    return Convert.ToBoolean(left.Value, context.CultureInfo) &&
+                           Convert.ToBoolean(right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Or:
                 return Convert.ToBoolean(left.Value, context.CultureInfo) ||
@@ -130,6 +168,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 return !EvaluationHelper.Like(leftValue, rightValue, context);
             }
         }
+		}
 
         return null;
     }
@@ -140,6 +179,12 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var result = expression.Expression.Accept(this);
 
         return EvaluationHelper.Unary(expression, result, context);
+    }
+
+    public virtual object? Visit(PercentExpression expression)
+    {
+        // Recursively evaluates the underlying expression
+        return expression.Expression.Accept(this);
     }
 
     public virtual object? Visit(ValueExpression expression) => expression.Value;

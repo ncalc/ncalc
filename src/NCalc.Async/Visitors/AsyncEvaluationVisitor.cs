@@ -2,7 +2,9 @@
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
+
 using static NCalc.Helpers.TypeHelper;
+
 using BinaryExpression = NCalc.Domain.BinaryExpression;
 using UnaryExpression = NCalc.Domain.UnaryExpression;
 
@@ -34,6 +36,44 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         var right = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression),
             LazyThreadSafetyMode.None);
 
+        if (expression.LeftExpression is PercentExpression && expression.RightExpression is PercentExpression)
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Minus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Subtract(await left.Value, await right.Value, context) ?? 0));
+                case BinaryExpressionType.Plus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Add(await left.Value, await right.Value, context) ?? 0));
+            }
+        }
+        else
+        if (expression.LeftExpression is PercentExpression)
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Times:
+                    return new PercentExpression(new ValueExpression(MathHelper.Multiply(await left.Value, await right.Value, context) ?? 0));
+                case BinaryExpressionType.Div:
+                    return new PercentExpression(new ValueExpression(MathHelper.Divide(await left.Value, await right.Value, context) ?? 0));
+            }
+        }
+        else
+        if (expression.RightExpression is PercentExpression)
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Minus:
+                    return MathHelper.SubtractPercent(await left.Value, await right.Value, context);
+                case BinaryExpressionType.Plus:
+                    return MathHelper.AddPercent(await left.Value, await right.Value, context);
+                case BinaryExpressionType.Times:
+                    return MathHelper.MultiplyPercent(await left.Value, await right.Value, context);
+                case BinaryExpressionType.Div:
+                    return MathHelper.DividePercent(await left.Value, await right.Value, context);
+            }
+        }
+        else
+        {
         switch (expression.Type)
         {
             case BinaryExpressionType.And:
@@ -136,7 +176,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return !EvaluationHelper.Like(leftValue, rightValue, context);
             }
         }
-
+        }
         return null;
     }
 
@@ -146,6 +186,11 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         var result = await expression.Expression.Accept(this);
 
         return EvaluationHelper.Unary(expression, result, context);
+    }
+
+    public virtual async ValueTask<object?> Visit(PercentExpression expression)
+    {
+        return await expression.Expression.Accept(this);
     }
 
     public virtual async ValueTask<object?> Visit(Function function)
