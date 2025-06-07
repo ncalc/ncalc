@@ -25,7 +25,7 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
     {
         try
         {
-            return Create(expression, CultureInfo.CurrentCulture, options, null /* AdvancedExpressionOptions.DefaultOptions*/);
+            return Create(expression, CultureInfo.CurrentCulture, options, null);
         }
         catch (Exception exception)
         {

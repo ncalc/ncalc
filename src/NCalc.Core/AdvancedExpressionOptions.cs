@@ -6,14 +6,14 @@
         None = 0,
 
         /// <summary>
-        /// When extended options are used, disables the use of the '/' character during parsing of dates.
-        /// When the flag is not set and extended options are used, both the '/' and the date separator specified in the extended options ('.', usually) is used.
+        /// When extended options are used, disables the use of the date separator character of the current culture during parsing of dates.
+        /// When the flag is not set and extended options are used, both the date separator character of the current culture and the date separator specified in the extended options ('.', usually) is used.
         /// </summary>
         SkipBuiltInDateSeparator = 1 << 0,
 
         /// <summary>
-        /// When extended options are used, disables the use of the ':' character during parsing of times.
-        /// When the flag is not set and extended options are used, both the ':' and the time separator specified in the extended options' CultureInfo is used.
+        /// When extended options are used, disables the use of the time separator character of the current culture during parsing of times.
+        /// When the flag is not set and extended options are used, both the time separator character of the current culture and the time separator specified in the extended options is used.
         /// </summary>
         SkipBuiltInTimeSeparator = 1 << 1,
 

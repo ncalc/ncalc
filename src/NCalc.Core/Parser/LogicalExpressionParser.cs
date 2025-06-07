@@ -277,18 +277,7 @@ public static class LogicalExpressionParser
 
         // Add percent support
 
-        Parser<LogicalExpression>? numberPercent = null;
-
-        if (extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent))
-        {
-            var percent = Terms.Char('%'); // CultureInfo defines a percent character, but we are yet to see another character than '%'
-            numberPercent = OneOf(decimalNumber, doubleNumber, intNumber, longNumber)
-            .AndSkip(percent)
-            .Then<LogicalExpression>(static (ctx, val) =>
-            {
-                return new PercentExpression(val);
-            });
-        }
+        var percentChar = Terms.Char('%'); // CultureInfo defines a percent character, but we are yet to see another character than '%'
 
         var comma = Terms.Char(',');
         var divided = Terms.Text("/");
@@ -1061,8 +1050,6 @@ public static class LogicalExpressionParser
 
         if (guid != null)
             enabledParsers.Add(guid);
-        if (numberPercent != null)
-            enabledParsers.Add(numberPercent);
         enabledParsers.Add(hexOctBinNumber);
         if (currency != null)
             enabledParsers.Add(currency);
@@ -1081,8 +1068,27 @@ public static class LogicalExpressionParser
 
         var primary = OneOf(enabledParsers.ToArray());
 
+        Parser<LogicalExpression> primaryOrPercent;
+
+        if (extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent))
+        {
+            Parser<LogicalExpression>? numberPercent = primary.And(ZeroOrOne(percentChar, '\0'))
+                .Then<LogicalExpression>(static x =>
+                {
+                    if (x.Item2 == '\0')
+                    {
+                        // there is just a primary discovered
+                        return x.Item1;
+                    }
+                    return new PercentExpression(x.Item1);
+                });
+            primaryOrPercent = numberPercent;
+        }
+        else
+            primaryOrPercent = primary;
+
         // exponential => unary ( "**" unary )* ;
-        var exponential = primary.And(ZeroOrMany(exponent.And(primary)))
+        var exponential = primaryOrPercent.And(ZeroOrMany(exponent.And(primary)))
             .Then(static x =>
             {
                 LogicalExpression result = null!;
@@ -1111,7 +1117,7 @@ public static class LogicalExpressionParser
                 return result;
             });
 
-        // ( "-" | "not" ) unary | primary;
+        // ( "-" | "not" ) exponential | primary;
         var unary = exponential.Unary(
             (not, static value => new UnaryExpression(UnaryExpressionType.Not, value)),
             (minus, static value => new UnaryExpression(UnaryExpressionType.Negate, value)),

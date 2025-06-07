@@ -14,8 +14,8 @@ public static class MathHelper
     private static readonly Func<dynamic, dynamic, object> MultiplyFunc = (a, b) => a * b;
     private static readonly Func<dynamic, dynamic, object> DivideFunc = (a, b) => a / b;
 
-    private static readonly Func<dynamic, dynamic, object> AddPercentFunc = (a, b) => a + (a * b/100);
-    private static readonly Func<dynamic, dynamic, object> SubtractPercentFunc = (a, b) => a - (a * b / 100);
+    private static readonly Func<dynamic, dynamic, object> AddPercentFunc = (a, b) => a * (100 + b) / 100; // a + (a * b/100);
+    private static readonly Func<dynamic, dynamic, object> SubtractPercentFunc = (a, b) => a * (100 - b) / 100; //a - (a * b / 100);
     private static readonly Func<dynamic, dynamic, object> MultiplyPercentFunc = (a, b) => a * b / 100;
     private static readonly Func<dynamic, dynamic, object> DividePercentFunc = (a, b) => a * 100 / b;
 
@@ -32,7 +32,7 @@ public static class MathHelper
 
     private static readonly Func<dynamic, dynamic, object> AddPercentFuncChecked = (a, b) =>
     {
-        var res = checked(a + (a * b / 100));
+        var res = checked(a * (100 + b) / 100); //checked(a + (a * b / 100));
         CheckOverflow(res);
 
         return res;
@@ -48,7 +48,7 @@ public static class MathHelper
 
     private static readonly Func<dynamic, dynamic, object> SubtractPercentFuncChecked = (a, b) =>
     {
-        var res = checked(a - (a * b / 100));
+        var res = checked(a * (100 - b) / 100); //checked(a + (a * b / 100));
         CheckOverflow(res);
 
         return res;

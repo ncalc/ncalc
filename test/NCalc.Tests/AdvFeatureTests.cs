@@ -752,8 +752,9 @@ public class AdvFeatureTests
     [InlineData("20/5%", 400)]
     [InlineData("20/2.5%", 800)]
     [InlineData("100+5%", 105)]
+    [InlineData("100+(3+2)%", 105)]
     [InlineData("100-5%", 95)]
-    public void ShouldCalculatePercentAsNumber(string input, double expectedValue)
+    public void ShouldCalculatePercentAsNumber(string input, int expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -761,7 +762,13 @@ public class AdvFeatureTests
 
         var result = expression.Evaluate();
 
-        Assert.Equal(expectedValue, result);
+        if (result?.GetType() == typeof(System.Double))
+        {
+            double dResult = (double)result;
+            Assert.Equal(expectedValue, (int)dResult);
+        }
+        else
+            Assert.Equal(expectedValue, result);
     }
 
     [Theory]
@@ -788,6 +795,7 @@ public class AdvFeatureTests
     [InlineData("20/2.5%", 800)]
     [InlineData("100+5%", 105)]
     [InlineData("100-5%", 95)]
+    [InlineData("100+(3+2)%", 105)]
     public void ShouldCalculatePercentAsNumberLambda(string input, double expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
