@@ -2,6 +2,7 @@
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
+
 using static NCalc.Helpers.TypeHelper;
 
 namespace NCalc.Visitors;
@@ -24,19 +25,126 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         return expression.RightExpression.Accept(this);
     }
 
+    private object? UpdateParameter(LogicalExpression leftExpression, object? value)
+    {
+        if (leftExpression is Identifier identifier)
+        {
+            var identifierName = identifier.Name;
+
+            var parameterArgs = new UpdateParameterArgs(identifierName, identifier.Id, value);
+
+            OnUpdateParameter(identifierName, parameterArgs);
+
+            if (!parameterArgs.UpdateParameterLists)
+            {
+                return value;
+            }
+
+            context.StaticParameters[context.Options.HasFlag(ExpressionOptions.LowerCaseIdentifierLookup) ? identifierName.ToLowerInvariant() : identifierName] = value;
+        }
+        return value;
+    }
+
     public virtual object? Visit(BinaryExpression expression)
     {
         var left = new Lazy<object?>(() => Evaluate(expression.LeftExpression), LazyThreadSafetyMode.None);
         var right = new Lazy<object?>(() => Evaluate(expression.RightExpression), LazyThreadSafetyMode.None);
 
-        switch (expression.Type)
+        if (expression.LeftExpression is PercentExpression && expression.RightExpression is PercentExpression)
         {
-            case BinaryExpressionType.And:
-                return Convert.ToBoolean(left.Value, context.CultureInfo) &&
-                       Convert.ToBoolean(right.Value, context.CultureInfo);
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Minus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Subtract(left.Value, right.Value, context) ?? 0));
+                case BinaryExpressionType.Plus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Add(left.Value, right.Value, context) ?? 0));
+            }
+        }
+        else
+        if (expression.LeftExpression is PercentExpression)
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Times:
+                    return new PercentExpression(new ValueExpression(MathHelper.Multiply(left.Value, right.Value, context) ?? 0));
+                case BinaryExpressionType.Div:
+                    return new PercentExpression(new ValueExpression(MathHelper.Divide(left.Value, right.Value, context) ?? 0));
+            }
+        }
+        else
+        if ((expression.RightExpression is PercentExpression) && (expression.Type != BinaryExpressionType.Assignment))
+        {
+            if (expression.Type == BinaryExpressionType.Assignment)
+                return UpdateParameter(expression.LeftExpression, right.Value);
+            else
+                switch (expression.Type)
+                {
+                    case BinaryExpressionType.Minus:
+                        return MathHelper.SubtractPercent(left.Value, right.Value, context);
+                    case BinaryExpressionType.Plus:
+                        return MathHelper.AddPercent(left.Value, right.Value, context);
+                    case BinaryExpressionType.Times:
+                        return MathHelper.MultiplyPercent(left.Value, right.Value, context);
+                    case BinaryExpressionType.Div:
+                        return MathHelper.DividePercent(left.Value, right.Value, context);
+                }
+        }
+        else
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.StatementSequence:
+                    _ = left.Value;
+                    return right.Value;
+
+                case BinaryExpressionType.Assignment:
+                    return UpdateParameter(expression.LeftExpression, right.Value);
+
+                case BinaryExpressionType.PlusAssignment:
+                    return UpdateParameter(expression.LeftExpression, EvaluationHelper.Plus(left.Value, right.Value, context));
+
+                case BinaryExpressionType.MinusAssignment:
+                    return UpdateParameter(expression.LeftExpression, EvaluationHelper.Minus(left.Value, right.Value, context));
+
+                case BinaryExpressionType.MultiplyAssignment:
+                    return UpdateParameter(expression.LeftExpression, MathHelper.Multiply(left.Value, right.Value, context));
+
+                case BinaryExpressionType.DivAssignment:
+                    return UpdateParameter(expression.LeftExpression,
+                        IsReal(left.Value) || IsReal(right.Value)
+                        ? MathHelper.Divide(left.Value, right.Value, context)
+                        : MathHelper.Divide(Convert.ToDouble(left.Value, context.CultureInfo), right.Value,
+                            context)
+                        );
+
+                case BinaryExpressionType.AndAssignment:
+                    return UpdateParameter(expression.LeftExpression,
+                        Convert.ToUInt64(left.Value, context.CultureInfo) &
+                        Convert.ToUInt64(right.Value, context.CultureInfo)
+                        );
+
+                case BinaryExpressionType.OrAssignment:
+                    return UpdateParameter(expression.LeftExpression,
+                        Convert.ToUInt64(left.Value, context.CultureInfo) |
+                        Convert.ToUInt64(right.Value, context.CultureInfo)
+                        );
+
+                case BinaryExpressionType.XOrAssignment:
+                    return UpdateParameter(expression.LeftExpression,
+                        Convert.ToUInt64(left.Value, context.CultureInfo) ^
+                        Convert.ToUInt64(right.Value, context.CultureInfo)
+                        );
+
+                case BinaryExpressionType.And:
+                    return Convert.ToBoolean(left.Value, context.CultureInfo) &&
+                           Convert.ToBoolean(right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Or:
                 return Convert.ToBoolean(left.Value, context.CultureInfo) ||
+                       Convert.ToBoolean(right.Value, context.CultureInfo);
+
+            case BinaryExpressionType.XOr:
+                return Convert.ToBoolean(left.Value, context.CultureInfo) ^
                        Convert.ToBoolean(right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Div:
@@ -54,19 +162,19 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             case BinaryExpressionType.GreaterOrEqual:
                 return Compare(left.Value, right.Value, ComparisonType.GreaterOrEqual);
 
-            case BinaryExpressionType.Lesser:
-                return Compare(left.Value, right.Value, ComparisonType.Lesser);
+            case BinaryExpressionType.Less:
+                return Compare(left.Value, right.Value, ComparisonType.Less);
 
-            case BinaryExpressionType.LesserOrEqual:
-                return Compare(left.Value, right.Value, ComparisonType.LesserOrEqual);
+            case BinaryExpressionType.LessOrEqual:
+                return Compare(left.Value, right.Value, ComparisonType.LessOrEqual);
 
             case BinaryExpressionType.NotEqual:
                 return Compare(left.Value, right.Value, ComparisonType.NotEqual);
 
             case BinaryExpressionType.Minus:
-                return MathHelper.Subtract(left.Value, right.Value, context);
+                return EvaluationHelper.Minus(left.Value, right.Value, context);
 
-            case BinaryExpressionType.Modulo:
+                case BinaryExpressionType.Modulo:
                 return MathHelper.Modulo(left.Value, right.Value, context);
 
             case BinaryExpressionType.Plus:
@@ -97,6 +205,13 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
             case BinaryExpressionType.Exponentiation:
                 return MathHelper.Pow(left.Value, right.Value, context);
+
+            case BinaryExpressionType.Factorial:
+                    if (right.Value == null || left.Value == null)
+                    {
+                        return false;
+                    }
+                    return MathHelper.Factorial(left.Value!, right.Value!, context);
 
             case BinaryExpressionType.In:
                 return EvaluationHelper.In(right.Value, left.Value, context);
@@ -130,6 +245,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 return !EvaluationHelper.Like(leftValue, rightValue, context);
             }
         }
+        }
 
         return null;
     }
@@ -140,6 +256,12 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var result = expression.Expression.Accept(this);
 
         return EvaluationHelper.Unary(expression, result, context);
+    }
+
+    public virtual object? Visit(PercentExpression expression)
+    {
+        // Recursively evaluates the underlying expression
+        return expression.Expression.Accept(this);
     }
 
     public virtual object? Visit(ValueExpression expression) => expression.Value;
@@ -165,7 +287,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         if (functionArgs.HasResult)
             return functionArgs.Result;
 
-        if (context.Functions.TryGetValue(functionName, out var expressionFunction))
+        if (context.Functions.TryGetValue(context.Options.HasFlag(ExpressionOptions.LowerCaseIdentifierLookup) ? functionName.ToLowerInvariant() : functionName, out var expressionFunction))
         {
             return expressionFunction(new ExpressionFunctionData(function.Identifier.Id, args, context));
         }
@@ -186,7 +308,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             return parameterArgs.Result;
         }
 
-        if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
+        if (context.StaticParameters.TryGetValue(context.Options.HasFlag(ExpressionOptions.LowerCaseIdentifierLookup) ? identifierName.ToLowerInvariant() : identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
@@ -199,6 +321,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
                 expression.EvaluateFunction += context.EvaluateFunctionHandler;
                 expression.EvaluateParameter += context.EvaluateParameterHandler;
+                expression.UpdateParameter += context.UpdateParameterHandler;
 
                 return expression.Evaluate();
             }
@@ -206,7 +329,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             return parameter;
         }
 
-        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+        if (context.DynamicParameters.TryGetValue(context.Options.HasFlag(ExpressionOptions.LowerCaseIdentifierLookup) ? identifierName.ToLowerInvariant() : identifierName, out var dynamicParameter))
         {
             return dynamicParameter(new ExpressionParameterData(identifier.Id, context));
         }
@@ -238,8 +361,8 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             ComparisonType.Equal => result == 0,
             ComparisonType.Greater => result > 0,
             ComparisonType.GreaterOrEqual => result >= 0,
-            ComparisonType.Lesser => result < 0,
-            ComparisonType.LesserOrEqual => result <= 0,
+            ComparisonType.Less => result < 0,
+            ComparisonType.LessOrEqual => result <= 0,
             ComparisonType.NotEqual => result != 0,
             _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
         };
@@ -253,6 +376,11 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     protected void OnEvaluateParameter(string name, ParameterArgs args)
     {
         context.EvaluateParameterHandler?.Invoke(name, args);
+    }
+
+    protected void OnUpdateParameter(string name, UpdateParameterArgs args)
+    {
+        context.UpdateParameterHandler?.Invoke(name, args);
     }
 
     protected object? Evaluate(LogicalExpression expression)

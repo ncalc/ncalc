@@ -9,6 +9,7 @@ NCalc is a mathematical expression evaluator in .NET. NCalc can parse any expres
 ## Table of Contents
 - [Operators](operators.md): Available standard operators and structures.
 - [Values](values.md): Authorized values like types and functions.
+- [Advanced Value Formats](advanced_value_formats.md): Advanced Value Formats and Operations
 - [Functions](functions.md):  List of already implemented functions.
 - [Parameters](parameters.md):  How to use parameters expressions.
 - [Handling Errors](handling_errors.md):  How to handle errors.

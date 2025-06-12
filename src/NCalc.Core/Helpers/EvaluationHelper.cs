@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+
 using NCalc.Domain;
 using NCalc.Exceptions;
 
@@ -28,6 +29,19 @@ public static class EvaluationHelper
         {
             return string.Concat(Convert.ToString(leftValue, context.CultureInfo), Convert.ToString(rightValue, context.CultureInfo));
         }
+        else
+        if (context.Options.HasFlag(ExpressionOptions.SupportTimeOperations))
+        {
+            if ((leftValue is DateTime) && (rightValue is TimeSpan))
+            {
+                return ((DateTime)leftValue).Add((TimeSpan)rightValue);
+            }
+            else
+            if ((leftValue is TimeSpan) && (rightValue is TimeSpan))
+            {
+                return ((TimeSpan)leftValue).Add((TimeSpan)rightValue);
+            }
+        }
 
         try
         {
@@ -39,6 +53,35 @@ public static class EvaluationHelper
                 Convert.ToString(leftValue, context.CultureInfo),
                 Convert.ToString(rightValue, context.CultureInfo));
         }
+    }
+
+    /// <summary>
+    /// Subtracts the second value from the first one, with support for datetime and timespans
+    /// </summary>
+    /// <param name="leftValue">The left operand.</param>
+    /// <param name="rightValue">The right operand.</param>
+    /// <param name="context">The evaluation context.</param>
+    /// <returns>The result of the substraction.</returns>
+    public static object? Minus(object? leftValue, object? rightValue, ExpressionContextBase context)
+    {
+        if (context.Options.HasFlag(ExpressionOptions.SupportTimeOperations))
+        {
+            if (leftValue is DateTime && (rightValue is DateTime))
+            {
+                return ((DateTime)leftValue).Subtract((DateTime)rightValue);
+            }
+            else
+            if (leftValue is DateTime && (rightValue is TimeSpan))
+            {
+                return ((DateTime)leftValue).Subtract((TimeSpan)rightValue);
+            }
+            else
+            if ((leftValue is TimeSpan) && (rightValue is TimeSpan))
+            {
+                return ((TimeSpan)leftValue).Subtract((TimeSpan)rightValue);
+            }
+        }
+        return MathHelper.Subtract(leftValue, rightValue, context);
     }
 
     /// <summary>
@@ -115,6 +158,11 @@ public static class EvaluationHelper
             UnaryExpressionType.Not => !Convert.ToBoolean(result, context.CultureInfo),
             UnaryExpressionType.Negate => MathHelper.Subtract(0, result, context),
             UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, context.CultureInfo),
+            UnaryExpressionType.SqRoot => MathHelper.Sqrt(result, context.CultureInfo),
+#if NET8_0_OR_GREATER
+            UnaryExpressionType.CbRoot => MathHelper.Cbrt(result, context.CultureInfo),
+#endif
+            UnaryExpressionType.FourthRoot => MathHelper.Fthrt(result, context.CultureInfo),
             UnaryExpressionType.Positive => result,
             _ => throw new InvalidOperationException("Unknown UnaryExpressionType")
         };

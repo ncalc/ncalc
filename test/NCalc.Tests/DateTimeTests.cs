@@ -17,7 +17,16 @@ public class DateTimeTests
     public void Should_Parse_Date()
     {
         var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
-        var expr = new Expression($"#01{dateSeparator}01{dateSeparator}2001#");
+        string exprStr = "";
+        switch (CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern[0])
+        {
+            case 'M': exprStr = $"#01{dateSeparator}01{dateSeparator}2001#"; break;
+            case 'd': exprStr = $"#01{dateSeparator}01{dateSeparator}2001#"; break;
+            case 'y': exprStr = $"#2001{dateSeparator}01{dateSeparator}01#"; break;
+        }
+        Assert.False(string.IsNullOrEmpty(exprStr));
+
+        var expr = new Expression(exprStr);
         Assert.Equal(new DateTime(2001, 1, 1), expr.Evaluate());
     }
 
@@ -26,7 +35,14 @@ public class DateTimeTests
     {
         var timeSeparator = CultureInfo.CurrentCulture.DateTimeFormat.TimeSeparator;
         var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
-        string exprStr = $"#2022{dateSeparator}12{dateSeparator}31 08{timeSeparator}00{timeSeparator}00#";
+        string exprStr = "";
+        switch (CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern[0])
+        {
+            case 'M': exprStr = $"#12{dateSeparator}31{dateSeparator}2022 08{timeSeparator}00{timeSeparator}00#"; break;
+            case 'd': exprStr = $"#31{dateSeparator}12{dateSeparator}2022 08{timeSeparator}00{timeSeparator}00#"; break;
+            case 'y': exprStr = $"#2022{dateSeparator}12{dateSeparator}31 08{timeSeparator}00{timeSeparator}00#"; break;
+        }
+        Assert.False(string.IsNullOrEmpty(exprStr));
         Assert.Equal(new DateTime(2022, 12, 31, 8, 0, 0), new Expression(exprStr).Evaluate());
     }
 
@@ -39,7 +55,15 @@ public class DateTimeTests
         var timeSeparator = trueTimeSeparator == ":" ? "." : ":";
         var dateSeparator = trueDateSeparator == "." ? "/" : ".";
 
-        string exprStr = $"#2022{dateSeparator}12{dateSeparator}31 08{timeSeparator}00{timeSeparator}00#";
+        string exprStr = "";
+        switch (CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern[0])
+        {
+            case 'M': exprStr = $"#12{dateSeparator}31{dateSeparator}2022 08{timeSeparator}00{timeSeparator}00#"; break;
+            case 'd': exprStr = $"#31{dateSeparator}12{dateSeparator}2022 08{timeSeparator}00{timeSeparator}00#"; break;
+            case 'y': exprStr = $"#2022{dateSeparator}12{dateSeparator}31 08{timeSeparator}00{timeSeparator}00#"; break;
+        }
+        Assert.False(string.IsNullOrEmpty(exprStr));
+
         Assert.Throws<NCalcParserException>(() => new Expression(exprStr).Evaluate());
     }
 

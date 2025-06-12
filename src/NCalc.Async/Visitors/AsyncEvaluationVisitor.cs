@@ -2,7 +2,9 @@
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
+
 using static NCalc.Helpers.TypeHelper;
+
 using BinaryExpression = NCalc.Domain.BinaryExpression;
 using UnaryExpression = NCalc.Domain.UnaryExpression;
 
@@ -27,6 +29,26 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         return await expression.RightExpression.Accept(this);
     }
 
+    private async Task<object?> UpdateParameterAsync(LogicalExpression leftExpression, object? value)
+    {
+        if (leftExpression is Identifier identifier)
+        {
+            var identifierName = identifier.Name;
+
+            var parameterArgs = new AsyncUpdateParameterArgs(identifierName, identifier.Id, value);
+
+            await OnUpdateParameterAsync(identifierName, parameterArgs);
+
+            if (!parameterArgs.UpdateParameterLists)
+            {
+                return value;
+            }
+
+            context.StaticParameters[context.Options.HasFlag(ExpressionOptions.LowerCaseIdentifierLookup) ? identifierName.ToLowerInvariant() : identifierName] = value;
+        }
+        return value;
+    }
+
     public virtual async ValueTask<object?> Visit(BinaryExpression expression)
     {
         var left = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression),
@@ -34,14 +56,98 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         var right = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression),
             LazyThreadSafetyMode.None);
 
-        switch (expression.Type)
+        if (expression.LeftExpression is PercentExpression && expression.RightExpression is PercentExpression)
         {
-            case BinaryExpressionType.And:
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Minus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Subtract(await left.Value, await right.Value, context) ?? 0));
+                case BinaryExpressionType.Plus:
+                    return new PercentExpression(new ValueExpression(MathHelper.Add(await left.Value, await right.Value, context) ?? 0));
+            }
+        }
+        else
+        if (expression.LeftExpression is PercentExpression)
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Times:
+                    return new PercentExpression(new ValueExpression(MathHelper.Multiply(await left.Value, await right.Value, context) ?? 0));
+                case BinaryExpressionType.Div:
+                    return new PercentExpression(new ValueExpression(MathHelper.Divide(await left.Value, await right.Value, context) ?? 0));
+            }
+        }
+        else
+        if ((expression.RightExpression is PercentExpression) && (expression.Type != BinaryExpressionType.Assignment))
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.Minus:
+                    return MathHelper.SubtractPercent(await left.Value, await right.Value, context);
+                case BinaryExpressionType.Plus:
+                    return MathHelper.AddPercent(await left.Value, await right.Value, context);
+                case BinaryExpressionType.Times:
+                    return MathHelper.MultiplyPercent(await left.Value, await right.Value, context);
+                case BinaryExpressionType.Div:
+                    return MathHelper.DividePercent(await left.Value, await right.Value, context);
+            }
+        }
+        else
+        {
+            switch (expression.Type)
+            {
+                case BinaryExpressionType.StatementSequence:
+                    _ = await left.Value;
+                    return await right.Value;
+
+                case BinaryExpressionType.Assignment:
+                    return await UpdateParameterAsync(expression.LeftExpression, await right.Value);
+
+                case BinaryExpressionType.PlusAssignment:
+                    return await UpdateParameterAsync(expression.LeftExpression, EvaluationHelper.Plus(await left.Value, await right.Value, context));
+
+                case BinaryExpressionType.MinusAssignment:
+                    return await UpdateParameterAsync(expression.LeftExpression, EvaluationHelper.Minus(await left.Value, await right.Value, context));
+
+                case BinaryExpressionType.MultiplyAssignment:
+                    return await UpdateParameterAsync(expression.LeftExpression, MathHelper.Multiply(await left.Value, await right.Value, context));
+
+                case BinaryExpressionType.DivAssignment:
+                    return await UpdateParameterAsync(expression.LeftExpression,
+                        IsReal(await left.Value) || IsReal(await right.Value)
+                        ? MathHelper.Divide(await left.Value, await right.Value, context)
+                        : MathHelper.Divide(Convert.ToDouble(await left.Value, context.CultureInfo), await right.Value,
+                            context)
+                        );
+
+                case BinaryExpressionType.AndAssignment:
+                    return await UpdateParameterAsync(expression.LeftExpression,
+                        Convert.ToUInt64(await left.Value, context.CultureInfo) &
+                        Convert.ToUInt64(await right.Value, context.CultureInfo)
+                        );
+
+                case BinaryExpressionType.OrAssignment:
+                    return await UpdateParameterAsync(expression.LeftExpression,
+                        Convert.ToUInt64(await left.Value, context.CultureInfo) |
+                        Convert.ToUInt64(await right.Value, context.CultureInfo)
+                        );
+
+                case BinaryExpressionType.XOrAssignment:
+                    return await UpdateParameterAsync(expression.LeftExpression,
+                        Convert.ToUInt64(await left.Value, context.CultureInfo) ^
+                        Convert.ToUInt64(await right.Value, context.CultureInfo)
+                        );
+
+                case BinaryExpressionType.And:
                 return Convert.ToBoolean(await left.Value, context.CultureInfo) &&
                        Convert.ToBoolean(await right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Or:
                 return Convert.ToBoolean(await left.Value, context.CultureInfo) ||
+                       Convert.ToBoolean(await right.Value, context.CultureInfo);
+
+            case BinaryExpressionType.XOr:
+                return Convert.ToBoolean(await left.Value, context.CultureInfo) ^
                        Convert.ToBoolean(await right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Div:
@@ -60,11 +166,11 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             case BinaryExpressionType.GreaterOrEqual:
                 return Compare(await left.Value, await right.Value, ComparisonType.GreaterOrEqual);
 
-            case BinaryExpressionType.Lesser:
-                return Compare(await left.Value, await right.Value, ComparisonType.Lesser);
+            case BinaryExpressionType.Less:
+                return Compare(await left.Value, await right.Value, ComparisonType.Less);
 
-            case BinaryExpressionType.LesserOrEqual:
-                return Compare(await left.Value, await right.Value, ComparisonType.LesserOrEqual);
+            case BinaryExpressionType.LessOrEqual:
+                return Compare(await left.Value, await right.Value, ComparisonType.LessOrEqual);
 
             case BinaryExpressionType.NotEqual:
                 return Compare(await left.Value, await right.Value, ComparisonType.NotEqual);
@@ -104,6 +210,16 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             case BinaryExpressionType.Exponentiation:
                 return MathHelper.Pow(await left.Value, await right.Value, context);
 
+            case BinaryExpressionType.Factorial:
+                    var rValue = (await right.Value);
+                    var lValue = (await left.Value);
+
+                    if (rValue == null || lValue == null)
+                    {
+                        return false;
+                    }
+                    return MathHelper.Factorial(lValue, rValue, context);
+
             case BinaryExpressionType.In:
                 return EvaluationHelper.In(await right.Value, await left.Value, context);
 
@@ -136,7 +252,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return !EvaluationHelper.Like(leftValue, rightValue, context);
             }
         }
-
+        }
         return null;
     }
 
@@ -148,6 +264,11 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         return EvaluationHelper.Unary(expression, result, context);
     }
 
+    public virtual async ValueTask<object?> Visit(PercentExpression expression)
+    {
+        return await expression.Expression.Accept(this);
+    }
+
     public virtual async ValueTask<object?> Visit(Function function)
     {
         var argsCount = function.Parameters.Count;
@@ -155,7 +276,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
         // Don't call parameters right now, instead let the function do it as needed.
         // Some parameters shouldn't be called, for instance, in a if(), the "not" value might be a division by zero
-        // Evaluating every value could produce unexpected behaviour
+        // Evaluating every value could produce unexpected behavior
         for (var i = 0; i < argsCount; i++)
         {
             args[i] = new AsyncExpression(function.Parameters[i], context);
@@ -171,7 +292,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             return functionArgs.Result;
         }
 
-        if (context.Functions.TryGetValue(functionName, out var expressionFunction))
+        if (context.Functions.TryGetValue(context.Options.HasFlag(ExpressionOptions.LowerCaseIdentifierLookup) ? functionName.ToLowerInvariant() : functionName, out var expressionFunction))
         {
             return await expressionFunction(new AsyncExpressionFunctionData(function.Identifier.Id, args, context));
         }
@@ -192,7 +313,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             return parameterArgs.Result;
         }
 
-        if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
+        if (context.StaticParameters.TryGetValue(context.Options.HasFlag(ExpressionOptions.LowerCaseIdentifierLookup) ? identifierName.ToLowerInvariant() : identifierName, out var parameter))
         {
             if (parameter is AsyncExpression expression)
             {
@@ -212,7 +333,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             return parameter;
         }
 
-        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+        if (context.DynamicParameters.TryGetValue(context.Options.HasFlag(ExpressionOptions.LowerCaseIdentifierLookup) ? identifierName.ToLowerInvariant() : identifierName, out var dynamicParameter))
         {
             return await dynamicParameter(new AsyncExpressionParameterData(identifier.Id, context));
         }
@@ -249,8 +370,8 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             ComparisonType.Equal => result == 0,
             ComparisonType.Greater => result > 0,
             ComparisonType.GreaterOrEqual => result >= 0,
-            ComparisonType.Lesser => result < 0,
-            ComparisonType.LesserOrEqual => result <= 0,
+            ComparisonType.Less => result < 0,
+            ComparisonType.LessOrEqual => result <= 0,
             ComparisonType.NotEqual => result != 0,
             _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
         };
@@ -264,6 +385,10 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
     protected ValueTask OnEvaluateParameterAsync(string name, AsyncParameterArgs args)
     {
         return context.AsyncEvaluateParameterHandler?.Invoke(name, args) ?? default;
+    }
+    protected ValueTask OnUpdateParameterAsync(string name, AsyncUpdateParameterArgs args)
+    {
+        return context.AsyncUpdateParameterHandler?.Invoke(name, args) ?? default;
     }
 
     protected ValueTask<object?> EvaluateAsync(LogicalExpression expression)

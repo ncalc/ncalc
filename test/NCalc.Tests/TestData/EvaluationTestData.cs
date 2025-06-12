@@ -14,6 +14,7 @@ public class EvaluationTestData : TheoryData<string, object>
         Add("false || not (false and true)", true);
         Add("3 > 2 and 1 <= (3-2)", true);
         Add("3 % 2 != 10 % 3", false);
+        Add("2 > (3 + 5)", false);
     }
 }
 

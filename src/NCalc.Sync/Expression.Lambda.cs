@@ -1,7 +1,10 @@
 ﻿using System.Runtime.CompilerServices;
+
 using FastExpressionCompiler;
+
 using NCalc.Exceptions;
 using NCalc.Visitors;
+
 using LinqExpression = System.Linq.Expressions.Expression;
 using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
@@ -30,12 +33,12 @@ public partial class Expression
         LinqParameterExpression? parameter = null;
         if (IsVoidType<TContext>())
         {
-            visitor = new(Parameters, Options);
+            visitor = new(null, this.Context, Parameters, Options);
         }
         else
         {
             parameter = LinqExpression.Parameter(typeof(TContext), "ctx");
-            visitor = new(parameter, Options);
+            visitor = new(parameter, this.Context, null, Options);
         }
 
         var body = LogicalExpression.Accept(visitor);

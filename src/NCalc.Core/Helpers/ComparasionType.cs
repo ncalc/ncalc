@@ -5,7 +5,7 @@ public enum ComparisonType
     Equal,
     Greater,
     GreaterOrEqual,
-    Lesser,
-    LesserOrEqual,
+    Less,
+    LessOrEqual,
     NotEqual
 }

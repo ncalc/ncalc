@@ -10,6 +10,7 @@ public record ExpressionContext : ExpressionContextBase
 
     public EvaluateParameterHandler? EvaluateParameterHandler { get; set; }
     public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
+    public UpdateParameterHandler? UpdateParameterHandler { get; set; }
 
     public ExpressionContext()
     {

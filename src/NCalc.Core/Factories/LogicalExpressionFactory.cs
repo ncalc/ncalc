@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Logging;
@@ -20,11 +21,11 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
 
     public static LogicalExpressionFactory GetInstance() => Instance;
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options)
+    public LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
     {
         try
         {
-            return Create(expression, options);
+            return Create(expression, CultureInfo.CurrentCulture, options, null);
         }
         catch (Exception exception)
         {
@@ -33,11 +34,11 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
     }
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, CultureInfo cultureInfo, ExpressionOptions options)
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, CultureInfo cultureInfo, ExpressionOptions options, AdvancedExpressionOptions? advancedOptions)
     {
         try
         {
-            return Create(expression, cultureInfo, options);
+            return Create(expression, cultureInfo, options, advancedOptions);
         }
         catch (Exception exception)
         {
@@ -46,15 +47,17 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
     }
 
-    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, AdvancedExpressionOptions? advancedOptions = null)
     {
         var parserContext = new LogicalExpressionParserContext(expression, options);
+        parserContext.AdvancedOptions = advancedOptions;
         return LogicalExpressionParser.Parse(parserContext);
     }
 
-    public static LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, AdvancedExpressionOptions? advancedOptions = null)
     {
         var parserContext = new LogicalExpressionParserContext(expression, options, cultureInfo);
+        parserContext.AdvancedOptions = advancedOptions;
         return LogicalExpressionParser.Parse(parserContext);
     }
 }

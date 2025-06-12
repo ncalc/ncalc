@@ -24,12 +24,31 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     }
 
     /// <summary>
+    /// Extended Options for the expression evaluation.
+    /// </summary>
+    public AdvancedExpressionOptions? AdvancedOptions
+    {
+        get => Context.AdvancedOptions;
+        set
+        {
+            Context.AdvancedOptions = value;
+            if (Context.AdvancedOptions != null)
+                Context.AdvancedOptions.CultureInfo = CultureInfo;
+        }
+    }
+
+    /// <summary>
     /// Culture information for the expression evaluation.
     /// </summary>
     public CultureInfo CultureInfo
     {
         get => Context.CultureInfo;
-        set => Context.CultureInfo = value;
+        set
+        {
+            Context.CultureInfo = value;
+            if (Context.AdvancedOptions != null)
+                Context.AdvancedOptions.CultureInfo = value;
+        }
     }
 
     /// <summary>
@@ -90,7 +109,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     public List<string> GetParameterNames()
     {
         var parameterExtractionVisitor = new ParameterExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, Context.AdvancedOptions);
         return LogicalExpression.Accept(parameterExtractionVisitor);
     }
 
@@ -100,7 +119,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     public List<string> GetFunctionNames()
     {
         var functionExtractionVisitor = new FunctionExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, Context.AdvancedOptions);
         return LogicalExpression.Accept(functionExtractionVisitor);
     }
 
@@ -114,7 +133,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     {
         try
         {
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, Context.AdvancedOptions);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -147,7 +166,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
 
         try
         {
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, Context.AdvancedOptions);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }

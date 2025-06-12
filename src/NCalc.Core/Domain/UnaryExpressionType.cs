@@ -5,5 +5,10 @@ public enum UnaryExpressionType
     Not,
     Negate,
     BitwiseNot,
-    Positive
+    Positive,
+    SqRoot,
+#if NET8_0_OR_GREATER
+    CbRoot,
+#endif
+    FourthRoot
 }
