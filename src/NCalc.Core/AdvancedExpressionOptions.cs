@@ -106,6 +106,9 @@
         readonly List<string> _periodSecondIndicators = ["seconds", "second", "secs", "sec", "s"];
         readonly List<string> _periodMSecIndicators = ["msec", "ms"];
 
+        readonly List<string> _periodPastIndicators = ["ago", "before", "earlier"];
+        readonly List<string> _periodFutureIndicators = ["after", "in", "later"];
+
         //
         // Period*Indicators contain the lists of literals recognized as a period indicator for a certain type of period
         // When adding custom / localized indicators to the lists, add them in all lowercase -
@@ -120,6 +123,9 @@
         public List<string> PeriodMinuteIndicators => _periodMinuteIndicators;
         public List<string> PeriodSecondIndicators => _periodSecondIndicators;
         public List<string> PeriodMSecIndicators => _periodMSecIndicators;
+
+        public List<string> PeriodPastIndicators => _periodPastIndicators;
+        public List<string> PeriodFutureIndicators => _periodFutureIndicators;
 
         CultureInfo? _cultureInfo;
 

@@ -34,6 +34,8 @@ public static class LogicalExpressionParser
     const string errFailedToParsePeriodIndicator = "Failed to parse the element '{0}' of a period definition.";
     const string errDuplicatePeriodIndicator = "Period indicator '{0}' has been already used in the period definition";
     const string errUnrecognizedPeriodIndicator = "Unrecognized period indicator '{0}' in the period definition.";
+    const string errUnrecognizedTimeRelationIndicator = "Unrecognized time relation indicator '{0}' in the date/time definition.";
+    const string errDuplicateTimeRelationIndicators = "A date/time may contain only one time relation indicator, but two ('{0}' and '{1}') were specified.";
 
     class CurrentCultureDateTimeFormatProvider : IFormatProvider
     {
@@ -1058,7 +1060,8 @@ public static class LogicalExpressionParser
                     .AndSkip(Not(OneOf(Terms.Text(decimalSeparator.ToString()), Terms.Text("E", true))))
                     .Then<int>(d => d);
 
-                humaneTimeSpan = OneOrMany(intNumberForPeriod.And(alphaText.AndSkip(ZeroOrOne(Terms.Char('.'))))).Then<LogicalExpression>(val =>
+                humaneTimeSpan = ZeroOrOne(alphaText).And(OneOrMany(intNumberForPeriod.And(alphaText.AndSkip(ZeroOrOne(Terms.Char('.')))))).And(ZeroOrOne(alphaText)).Then<LogicalExpression>(val =>
+                //humaneTimeSpan = OneOrMany(intNumberForPeriod.And(alphaText.AndSkip(ZeroOrOne(Terms.Char('.'))))).Then<LogicalExpression>(val =>
                 {
                     string indicator;
                     int elemValue;
@@ -1071,15 +1074,19 @@ public static class LogicalExpressionParser
                     int secondValue = 0;
                     int msecValue = 0;
 
-                    foreach (var entry in val)
+                    string? prefix = val.Item1;
+                    string? suffix = val.Item3;
+
+                    for (int i = 0; i < val.Item2.Count; i++)
                     {
+                        var entry = val.Item2[i];
                         elemValue = entry.Item1;
                         indicator = entry.Item2;
 
                         if (string.IsNullOrEmpty(indicator))
                             throw new Exception(string.Format(errFailedToParsePeriodIndicator, entry.ToString()));
 
-                        indicator = indicator.ToLower();
+                        indicator = indicator.ToLowerInvariant();
                         if (extOptions.PeriodYearIndicators.Contains(indicator))
                         {
                             if (yearValue != 0)
@@ -1138,25 +1145,79 @@ public static class LogicalExpressionParser
                         else
                             throw new FormatException(string.Format(errUnrecognizedPeriodIndicator, entry.Item2.ToString()));
                     }
-                    DateTime current = DateTime.UtcNow;
-                    DateTime dt = current;
-                    if (yearValue != 0)
-                        dt = dt.AddYears(yearValue);
-                    if (monthValue != 0)
-                        dt = dt.AddMonths(monthValue);
-                    if (weekValue != 0)
-                        dt = dt.AddDays(weekValue * 7);
-                    if (dayValue != 0)
-                        dt = dt.AddDays(dayValue);
-                    if (hourValue != 0)
-                        dt = dt.AddHours(hourValue);
-                    if (minuteValue != 0)
-                        dt = dt.AddMinutes(minuteValue);
-                    if (secondValue != 0)
-                        dt = dt.AddSeconds(secondValue);
-                    if (msecValue != 0)
-                        dt = dt.AddMilliseconds(msecValue);
-                    return new ValueExpression(dt - current);
+
+                    if (string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(suffix))
+                    {
+                        DateTime current = DateTime.UtcNow;
+                        DateTime dt = current;
+                        if (yearValue != 0)
+                            dt = dt.AddYears(yearValue);
+                        if (monthValue != 0)
+                            dt = dt.AddMonths(monthValue);
+                        if (weekValue != 0)
+                            dt = dt.AddDays(weekValue * 7);
+                        if (dayValue != 0)
+                            dt = dt.AddDays(dayValue);
+                        if (hourValue != 0)
+                            dt = dt.AddHours(hourValue);
+                        if (minuteValue != 0)
+                            dt = dt.AddMinutes(minuteValue);
+                        if (secondValue != 0)
+                            dt = dt.AddSeconds(secondValue);
+                        if (msecValue != 0)
+                            dt = dt.AddMilliseconds(msecValue);
+                        return new ValueExpression(dt - current);
+                    }
+                    else
+                    {
+                        if (!(string.IsNullOrEmpty(prefix) || string.IsNullOrEmpty(suffix)))
+                        {
+                            throw new FormatException(string.Format(errDuplicateTimeRelationIndicators, prefix, suffix));
+                        }
+
+                        bool pastTime = false;
+
+                        prefix = prefix?.ToLowerInvariant();
+                        suffix = suffix?.ToLowerInvariant();
+
+                        if ((prefix != null && extOptions.PeriodPastIndicators.Contains(prefix)) || (suffix != null && extOptions.PeriodPastIndicators.Contains(suffix)))
+                            pastTime = true;
+                        else
+                        if ((prefix != null && extOptions.PeriodFutureIndicators.Contains(prefix)) || (suffix != null && extOptions.PeriodFutureIndicators.Contains(suffix)))
+                            pastTime = false;
+                        else
+                            throw new FormatException(string.Format(errUnrecognizedTimeRelationIndicator, prefix));
+
+                        DateTime dt = DateTime.Now; // people are interested in local time before or after current moment
+                        if (pastTime)
+                        {
+                            yearValue = -yearValue;
+                            monthValue = -monthValue;
+                            weekValue = -weekValue;
+                            dayValue = -dayValue;
+                            hourValue = -hourValue;
+                            minuteValue = -minuteValue;
+                            secondValue = -secondValue;
+                            msecValue = -msecValue;
+                        }
+                        if (yearValue != 0)
+                            dt = dt.AddYears(yearValue);
+                        if (monthValue != 0)
+                            dt = dt.AddMonths(monthValue);
+                        if (weekValue != 0)
+                            dt = dt.AddDays(weekValue * 7);
+                        if (dayValue != 0)
+                            dt = dt.AddDays(dayValue);
+                        if (hourValue != 0)
+                            dt = dt.AddHours(hourValue);
+                        if (minuteValue != 0)
+                            dt = dt.AddMinutes(minuteValue);
+                        if (secondValue != 0)
+                            dt = dt.AddSeconds(secondValue);
+                        if (msecValue != 0)
+                            dt = dt.AddMilliseconds(msecValue);
+                        return new ValueExpression(dt);
+                    }
                 });
             }
             List<Parser<LogicalExpression>> timeParts = use12HourTime

@@ -56,6 +56,8 @@ Must be enclosed between sharps.
 ```
 By default, NCalc uses current Culture to evaluate DateTime values. When [Advanced Value Formats and Operations](advanced_value_formats.md) are used, the format of date and time values can be customized to a large extent.
 
+Additionally, it is possible to define dates relative to current moment in a humane form (e.g. #3 weeks ago# or #in 5 days#)  as described in the [Advanced Value Formats and Operations](advanced_value_formats.md) topic.
+
 ## Time
 
 Includes Hours, minutes, and seconds. 

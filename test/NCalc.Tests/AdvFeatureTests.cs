@@ -942,14 +942,31 @@ public class AdvFeatureTests
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.Flags = AdvExpressionOptions.ParseHumanePeriods;
-        expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
-        expression.AdvancedOptions.TimeSeparator = ":";
-        expression.AdvancedOptions.HoursFormat = AdvancedExpressionOptions.HoursFormatKind.Always24Hour;
         var result = expression.Evaluate();
 
         TimeSpan expectedTime = new TimeSpan(expectedValue[0], expectedValue[1], expectedValue[2], expectedValue[3], expectedValue[4]);
 
         Assert.Equal(expectedTime, result);
+    }
+
+    [Theory]
+    [InlineData("#1 day ago#", new int[] { -1, 0, 0, 0, 0})]
+    [InlineData("#in 2 weeks#", new int[] { 14, 0, 0, 0, 0 })]
+    [InlineData("#3 days later#", new int[] { 3, 0, 0, 0, 0 })]
+    [InlineData("#before 1 year#", new int[] { -365, 0, 0, 0, 0 })]
+    public void ShoudRecognizeHumaneDates(string input, int[] expectedValue)
+    {
+        var expression = new Expression(input, ExpressionOptions.NoCache);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.Flags = AdvExpressionOptions.ParseHumanePeriods;
+        var result = expression.Evaluate();
+
+        DateTime expectedDate = DateTime.Now + new TimeSpan(expectedValue[0], expectedValue[1], expectedValue[2], expectedValue[3], expectedValue[4]);
+        DateTime actualDate = (result as DateTime?) ?? DateTime.MinValue;
+
+        TimeSpan expectedTime = expectedDate - actualDate;
+
+        Assert.True(expectedTime.TotalSeconds < 10); // 10 seconds is enough for the test to run
     }
 
     [Theory]
@@ -959,9 +976,6 @@ public class AdvFeatureTests
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
-        expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
-        expression.AdvancedOptions.TimeSeparator = ":";
-        expression.AdvancedOptions.HoursFormat = AdvancedExpressionOptions.HoursFormatKind.Always24Hour;
         expression.AdvancedOptions.Flags = AdvExpressionOptions.ParseHumanePeriods;
         expression.AdvancedOptions.PeriodYearIndicators.Add("jahre"); // must be lowercase
         expression.AdvancedOptions.PeriodYearIndicators.Add("jahr"); // must be lowercase

@@ -20,11 +20,11 @@ public sealed class LogicalExpressionParserContext(string text, ExpressionOption
     public LogicalExpressionParserContext(string text, ExpressionOptions options, CultureInfo cultureInfo, AdvancedExpressionOptions? advancedOptions): this(text, options)
     {
         CultureInfo = cultureInfo;
-		AdvancedOptions = advancedOptions;
+        AdvancedOptions = advancedOptions;
     }
 
     public LogicalExpressionParserContext(string text, ExpressionOptions options, AdvancedExpressionOptions? advancedOptions): this(text, options)
     {
-		AdvancedOptions = advancedOptions;
+        AdvancedOptions = advancedOptions;
     }
 }

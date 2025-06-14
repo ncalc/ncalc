@@ -75,11 +75,11 @@ The <xref:NCalc.AdvancedExpressionOptions.HoursFormat> property lets you choose 
 
 When handling the 12-hour format, the parser will try values with and without a space before the am/pm value and with short (a/p) and normal (am/pm forms). This algorithm applies to all types of date formats including the built-in parsing.
 
-## Parsing of Humane Period Expressions
+## Parsing of Humane Date and Period Expressions
 
-<xref:NCalc.AdvancedExpressionOptions> makes it possible to write time periods in a humane form as a set of numbers and period identifiers. Example: "#321 yr 3 weeks 35 s#" (spaces are ignored). 
+<xref:NCalc.AdvancedExpressionOptions> makes it possible to write relative dates and time periods in a humane form as a set of numbers and period identifiers. Example: #5 days ago" or "in 3 days" for dates relative to today, or "#321 yr 3 weeks 35 s#" for a time period. In all cases, spaces are ignored, so "321yr3weeks35s" will work equally well. 
 
-The result of such parsing is expressed as a TimeSpan, suitable for date and timespan operations (see the next section).
+The result of such parsing is expressed as a DateTime or a TimeSpan respectively, suitable for date and timespan operations (see the next section).
 
 To enable Humane Period Expressions, include the <xref:NCalc.AdvExpressionOptions.ParseHumanePeriods> flag to the <xref:NCalc.AdvancedExpressionOptions.Flags> property of an instance of the <xref:NCalc.AdvancedExpressionOptions> class:
 ```c#
@@ -100,10 +100,16 @@ readonly List<string> _periodSecondIndicators = ["seconds", "second", "secs", "s
 readonly List<string> _periodMSecIndicators = ["msec", "ms"];
 ```
 
+For relative dates, the following time relation indicators are recognized by default:
+```c#
+readonly List<string> _periodPastIndicators = ["before", "earlier", "ago"];
+readonly List<string> _periodFutureIndicators = ["after", "in", "later"];
+```
+
 And you can also replace or amend those indicators with localized ones. Notes:
 1. More "complete" words must have precedence over abbreviations. Otherwise, the parser will match a shorter form and leave the rest to the next parser, which will fail.
 2. Use all lowercase - the parser will take a lowercase form of the parsed text and compare it with indicators in a case-sensitive manner for efficiency.
-3. Don't use the ending dot in abbreviations - the parser is aware of it and will skip it if the dot is present at the end. 
+3. (for time period indicators only) Don't use the ending dot in abbreviations - the parser is aware of it and will skip it if the dot is present at the end. 
 
 Here's how to add German indicators and their abbreviations:
 ```c#
