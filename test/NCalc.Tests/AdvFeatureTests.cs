@@ -246,10 +246,19 @@ public class AdvFeatureTests
     }
 
     [Theory]
-    [InlineData("#10:11#", new int[] { 10, 11, 00 })]
-    [InlineData("#10:11:12#", new int[] { 10, 11, 12 })]
-    [InlineData("#1:1:1#", new int[] { 1, 1, 1 })]
-    [InlineData("#1:12:12#", new int[] { 1, 12, 12 })]
+    [InlineData("#10:11#", new int[] { 0, 10, 11, 00 })]
+    [InlineData("#10:11:12#", new int[] { 0, 10, 11, 12 })]
+    [InlineData("#1:1:1#", new int[] { 0, 1, 1, 1 })]
+    [InlineData("#1:1#", new int[] { 0, 1, 1, 0 })]
+    [InlineData("#1:12:12#", new int[] { 0, 1, 12, 12 })]
+    [InlineData("#2.1:12:12#", new int[] { 2, 1, 12, 12 })]
+    [InlineData("#2.1:12#", new int[] { 2, 1, 12, 0 })]
+    [InlineData("#12.1:12:12#", new int[] { 12, 1, 12, 12 })]
+    [InlineData("#-2.1:12:12#", new int[] { -2, -1, -12, -12 })]
+    [InlineData("#-12.1:12:12#", new int[] { -12, -1, -12, -12 })]
+    [InlineData("#-12.1:12#", new int[] { -12, -1, -12, -0 })]
+    [InlineData("#-1:12:15#", new int[] { 0, -1, -12, -15 })]
+    [InlineData("#-1:12#", new int[] { 0, -1, -12, 0 })]
 
     public void ShouldParseTimesBuiltIn(string input, int[] expectedValue)
     {
@@ -257,7 +266,7 @@ public class AdvFeatureTests
 
         var result = expression.Evaluate();
 
-        TimeSpan expectedTime = new TimeSpan(expectedValue[0], expectedValue[1], expectedValue[2]);
+        TimeSpan expectedTime = new TimeSpan(expectedValue[0], expectedValue[1], expectedValue[2], expectedValue[3]);
 
         Assert.Equal(expectedTime, result);
     }
@@ -846,6 +855,7 @@ public class AdvFeatureTests
 
     [Theory]
     [InlineData("#2025/06/05# + #08:00:00#", new int[] { 2025, 6, 5, 8, 0, 0 })]
+    [InlineData("#08:00:00# + #2025/06/05#", new int[] { 2025, 6, 5, 8, 0, 0 })]
     [InlineData("#2025/06/06# - #8:00:00#", new int[] { 2025, 6, 5, 16, 0, 0 })]
     public void ShoudAddSubtractDateAndTimeLambda(string input, int[] expectedValue)
     {
@@ -1392,6 +1402,7 @@ public class AdvFeatureTests
         var expression = new Expression(input, ExpressionOptions.NoCache  /*| ExpressionOptions.UseAssignments*/ | ExpressionOptions.UseStatementSequences);
         var result = expression.Evaluate();
 
+        Assert.NotNull(result);
         if (result.GetType() == typeof(System.Double))
         {
             double dResult = (double)result;

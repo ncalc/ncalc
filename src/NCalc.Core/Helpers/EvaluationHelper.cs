@@ -41,6 +41,11 @@ public static class EvaluationHelper
             {
                 return ((TimeSpan)leftValue).Add((TimeSpan)rightValue);
             }
+            else
+            if ((rightValue is DateTime) && (leftValue is TimeSpan))
+            {
+                return ((DateTime)rightValue).Add((TimeSpan)leftValue);
+            }
         }
 
         try

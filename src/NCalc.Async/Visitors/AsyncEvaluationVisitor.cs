@@ -176,7 +176,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return Compare(await left.Value, await right.Value, ComparisonType.NotEqual);
 
             case BinaryExpressionType.Minus:
-                return MathHelper.Subtract(await left.Value, await right.Value, context);
+                return EvaluationHelper.Minus(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.Modulo:
                 return MathHelper.Modulo(await left.Value, await right.Value, context);

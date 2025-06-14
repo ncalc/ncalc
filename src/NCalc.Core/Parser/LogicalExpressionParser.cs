@@ -331,6 +331,8 @@ public static class LogicalExpressionParser
         var colon = Terms.Char(':');
         var semicolon = Terms.Char(';');
 
+        var dotChar = Terms.Char('.');
+
         var statementEnd = semicolon;
 
         Parser<string>? root2 = useCharsForOps ? Terms.Text("\u221A") : null;
@@ -591,8 +593,10 @@ public static class LogicalExpressionParser
 
             Sequence<TextSpan, TextSpan, TextSpan, string>? time12Definition = null;
             Sequence<TextSpan, TextSpan, TextSpan> timeDefinition;
+            Sequence<string, TextSpan, TextSpan, TextSpan, TextSpan> timeSpanDefinition;
             Sequence<TextSpan, TextSpan, string>? shortTime12Definition = null;
             Sequence<TextSpan, TextSpan> shortTimeDefinition;
+            Sequence<string, TextSpan, TextSpan, TextSpan> shortTimeSpanDefinition;
 
             bool use12HourTime = (extOptions == null) ? dateTimeFormat.ShortTimePattern.Contains("t") : extOptions.Use12HourTime();
 
@@ -679,6 +683,14 @@ public static class LogicalExpressionParser
                     shortTimeDefinition = charIsNumber
                         .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
                         .And(charIsNumber);
+                    timeSpanDefinition = ZeroOrOne(minus).And(ZeroOrOne(charIsNumber.AndSkip(dotChar))).And(charIsNumber)
+                        .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                        .And(charIsNumber)
+                        .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                        .And(charIsNumber);
+                    shortTimeSpanDefinition = ZeroOrOne(minus).And(ZeroOrOne(charIsNumber.AndSkip(dotChar))).And(charIsNumber)
+                        .AndSkip(OneOf(divided, secondTimeSep, thirdTimeSep))
+                        .And(charIsNumber);
                 }
                 else
                 {
@@ -705,6 +717,16 @@ public static class LogicalExpressionParser
                     shortTimeDefinition = charIsNumber
                         .AndSkip(OneOf(divided, secondTimeSep))
                         .And(charIsNumber);
+
+                    timeSpanDefinition = ZeroOrOne(minus).And(ZeroOrOne((charIsNumber).AndSkip(dotChar))).And(charIsNumber)
+                        .AndSkip(OneOf(divided, secondTimeSep))
+                        .And(charIsNumber)
+                        .AndSkip(OneOf(divided, secondTimeSep))
+                        .And(charIsNumber);
+
+                    shortTimeSpanDefinition = ZeroOrOne(minus).And(ZeroOrOne(charIsNumber.AndSkip(dotChar))).And(charIsNumber)
+                        .AndSkip(OneOf(divided, secondTimeSep))
+                        .And(charIsNumber);
                 }
             }
             else
@@ -723,7 +745,6 @@ public static class LogicalExpressionParser
                         .And(OneOf(amTimeIndicator!, pmTimeIndicator!, amTimeIndicatorFirstChar!, pmTimeIndicatorFirstChar!));
                 }
 
-                // time => number:number:number
                 timeDefinition = charIsNumber
                     .AndSkip(secondTimeSep)
                     .And(charIsNumber)
@@ -733,47 +754,102 @@ public static class LogicalExpressionParser
                 shortTimeDefinition = charIsNumber
                     .AndSkip(secondTimeSep)
                     .And(charIsNumber);
+
+                // timeSpan => [[-]number.]number:number:number
+                timeSpanDefinition = ZeroOrOne(minus).And(ZeroOrOne((charIsNumber).AndSkip(dotChar))).And(charIsNumber)
+                    .AndSkip(secondTimeSep)
+                    .And(charIsNumber)
+                    .AndSkip(secondTimeSep)
+                    .And(charIsNumber);
+
+                shortTimeSpanDefinition = ZeroOrOne(minus).And(ZeroOrOne(charIsNumber.AndSkip(dotChar))).And(charIsNumber)
+                    .AndSkip(secondTimeSep)
+                    .And(charIsNumber);
             }
 
             Parser<LogicalExpression>? time12 = null;
             Parser<LogicalExpression>? shortTime12 = null;
 
-            var time = timeDefinition.Then<LogicalExpression>(time =>
+            var time = timeSpanDefinition.Then<LogicalExpression>(time =>
             {
                 string customTimeSepForDT = dateTimeFormat.TimeSeparator;
                 if (useSecondTime || onlyCustomTimeTranslation)
                 {
-                    if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}{customTimeSepForDT}{time.Item3}", dateTimeFormat, DateTimeStyles.None, out var result))
+                    if (DateTime.TryParse($"{time.Item3}{customTimeSepForDT}{time.Item4}{customTimeSepForDT}{time.Item5}", dateTimeFormat, DateTimeStyles.None, out var result))
                     {
-                        return new ValueExpression(result.TimeOfDay);
+                        TimeSpan tsResult = result.TimeOfDay;
+
+                        if (time.Item2.Length > 0)
+                        {
+                            int days = Int32.Parse(time.Item2.Span.ToString());
+                            tsResult = tsResult.Add(TimeSpan.FromDays(days));
+                        }
+                        if (time.Item1 == "-")
+                        {
+                            tsResult = TimeSpan.FromMilliseconds(-tsResult.TotalMilliseconds);
+                        }
+                        return new ValueExpression(tsResult);
                     }
                 }
                 if (useSecondTime || !onlyCustomTimeTranslation)
                 {
-                    if (TimeSpan.TryParse($"{time.Item1}{builtInTimeSep}{time.Item2}{builtInTimeSep}{time.Item3}", out var result))
+                    if (TimeSpan.TryParse($"{time.Item3}{builtInTimeSep}{time.Item4}{builtInTimeSep}{time.Item5}", out var result))
                     {
-                        return new ValueExpression(result);
+                        TimeSpan tsResult = result;
+
+                        if (time.Item2.Length > 0)
+                        {
+                            int days = Int32.Parse(time.Item2.Span.ToString());
+                            tsResult = tsResult.Add(TimeSpan.FromDays(days));
+                        }
+                        if (time.Item1 == "-")
+                        {
+                            tsResult = TimeSpan.FromMilliseconds(-tsResult.TotalMilliseconds);
+                        }
+                        return new ValueExpression(tsResult);
                     }
                 }
 
                 throw new FormatException("Invalid TimeSpan format.");
             });
 
-            var shortTime = shortTimeDefinition.Then<LogicalExpression>(time =>
+            var shortTime = shortTimeSpanDefinition.Then<LogicalExpression>(time =>
             {
                 string customTimeSepForDT = dateTimeFormat.TimeSeparator;
                 if (useSecondTime || onlyCustomTimeTranslation)
                 {
-                    if (DateTime.TryParse($"{time.Item1}{customTimeSepForDT}{time.Item2}", dateTimeFormat, DateTimeStyles.None, out var result))
+                    if (DateTime.TryParse($"{time.Item3}{customTimeSepForDT}{time.Item4}", dateTimeFormat, DateTimeStyles.None, out var result))
                     {
-                        return new ValueExpression(result.TimeOfDay);
+                        TimeSpan tsResult = result.TimeOfDay;
+
+                        if (time.Item2.Length > 0)
+                        {
+                            int days = Int32.Parse(time.Item2.Span.ToString());
+                            tsResult = tsResult.Add(TimeSpan.FromDays(days));
+                        }
+                        if (time.Item1 == "-")
+                        {
+                            tsResult  = TimeSpan.FromMilliseconds(-tsResult.TotalMilliseconds);
+                        }
+                        return new ValueExpression(tsResult);
                     }
                 }
                 if (useSecondTime || !onlyCustomTimeTranslation)
                 {
-                    if (TimeSpan.TryParse($"{time.Item1}{builtInTimeSep}{time.Item2}", out var result))
+                    if (TimeSpan.TryParse($"{time.Item3}{builtInTimeSep}{time.Item4}", out var result))
                     {
-                        return new ValueExpression(result);
+                        TimeSpan tsResult = result;
+
+                        if (time.Item2.Length > 0)
+                        {
+                            int days = Int32.Parse(time.Item2.Span.ToString());
+                            tsResult = tsResult.Add(TimeSpan.FromDays(days));
+                        }
+                        if (time.Item1 == "-")
+                        {
+                            tsResult = TimeSpan.FromMilliseconds(-tsResult.TotalMilliseconds);
+                        }
+                        return new ValueExpression(tsResult);
                     }
                 }
 

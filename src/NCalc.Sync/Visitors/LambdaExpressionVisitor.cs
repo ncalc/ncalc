@@ -644,6 +644,19 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 }
                 return LinqExpression.Constant(0);
             }
+            else
+            if ((left.Type == typeof(TimeSpan)) && (right.Type == typeof(DateTime)))
+            {
+                if (expressionType == BinaryExpressionType.Plus)
+                {
+                    MethodInfo? addMethod = typeof(DateTime).GetMethod("Add", [typeof(TimeSpan)]);
+                    if (addMethod != null)
+                    {
+                        return LinqExpression.Call(right, addMethod, left);
+                    }
+                }
+                return LinqExpression.Constant(0);
+            }
         }
 
         var type = TypeHelper.GetMostPreciseNumberType(left.Type, right.Type);
