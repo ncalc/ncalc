@@ -32,6 +32,15 @@ public partial class Expression : ExpressionBase<ExpressionContext>
         remove => Context.EvaluateParameterHandler -= value;
     }
 
+    /// <summary>
+    /// Event triggered to handle parameter evaluation.
+    /// </summary>
+    public event UpdateParameterHandler UpdateParameter
+    {
+        add => Context.UpdateParameterHandler += value;
+        remove => Context.UpdateParameterHandler -= value;
+    }
+
     public IDictionary<string, ExpressionParameter> DynamicParameters
     {
         get => Context.DynamicParameters;
