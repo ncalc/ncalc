@@ -768,6 +768,9 @@ public class AdvFeatureTests
     [InlineData("100+5%", 105)]
     [InlineData("100+(3+2)%", 105)]
     [InlineData("100-5%", 95)]
+    [InlineData("20 * %5", 1)]
+    [InlineData("100 - %5", 95)]
+    [InlineData("100 + %(3+2)", 105)]
     public void ShouldCalculatePercentAsNumber(string input, int expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);

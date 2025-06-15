@@ -1399,7 +1399,12 @@ public static class LogicalExpressionParser
                     }
                     return new PercentExpression(x.Item1);
                 });
-            factorialOrPercent = numberPercent;
+            Parser<LogicalExpression>? numberPercent2 = percentChar.And(factorial)
+                .Then<LogicalExpression>(static x =>
+                {
+                    return new PercentExpression(x.Item2);
+                });
+            factorialOrPercent = OneOf(numberPercent, numberPercent2);
         }
         else
             factorialOrPercent = factorial;
