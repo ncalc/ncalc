@@ -10,7 +10,17 @@ namespace NCalc.Antlr;
 /// </summary>
 public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
 {
-    public LogicalExpression Create(string expression, ExpressionOptions options)
+    public LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
+    {
+        return Create(expression, options, null);
+    }
+
+    public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options, AdvancedExpressionOptions _)
+    {
+       return Create(expression, options, null); 
+    }
+
+    public LogicalExpression Create(string expression, ExpressionOptions options, AdvancedExpressionOptions _)
     {
         LogicalExpression logicalExpression;
         var lexer = new NCalcLexer(new AntlrInputStream(expression));

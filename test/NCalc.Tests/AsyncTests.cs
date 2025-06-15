@@ -1,6 +1,7 @@
 ﻿using NCalc.Domain;
 using NCalc.Factories;
 using NCalc.Tests.TestData;
+
 using Newtonsoft.Json;
 
 namespace NCalc.Tests;
@@ -209,7 +210,8 @@ public class AsyncTests
     [Fact]
     public async Task ShouldEvaluateTernaryAsync()
     {
-        Assert.Equal(42, await new AsyncExpression("1 == 1 ? 42 : 3/0").EvaluateAsync());
+        var result = await new AsyncExpression("1 == 1 ? 42 : 3/0").EvaluateAsync();
+        Assert.Equal(42, result);
     }
 
     [Fact]

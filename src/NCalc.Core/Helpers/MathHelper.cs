@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+
 using ExtendedNumerics;
 
 namespace NCalc.Helpers;
@@ -13,12 +14,26 @@ public static class MathHelper
     private static readonly Func<dynamic, dynamic, object> SubtractFunc = (a, b) => a - b;
     private static readonly Func<dynamic, dynamic, object> MultiplyFunc = (a, b) => a * b;
     private static readonly Func<dynamic, dynamic, object> DivideFunc = (a, b) => a / b;
+
+    private static readonly Func<dynamic, dynamic, object> AddPercentFunc = (a, b) => a * (100 + b) / 100; // a + (a * b/100);
+    private static readonly Func<dynamic, dynamic, object> SubtractPercentFunc = (a, b) => a * (100 - b) / 100; //a - (a * b / 100);
+    private static readonly Func<dynamic, dynamic, object> MultiplyPercentFunc = (a, b) => a * b / 100;
+    private static readonly Func<dynamic, dynamic, object> DividePercentFunc = (a, b) => a * 100 / b;
+
     private static readonly Func<dynamic, dynamic, object> ModuloFunc = (a, b) => a % b;
 
     // checked
     private static readonly Func<dynamic, dynamic, object> AddFuncChecked = (a, b) =>
     {
         var res = checked(a + b);
+        CheckOverflow(res);
+
+        return res;
+    };
+
+    private static readonly Func<dynamic, dynamic, object> AddPercentFuncChecked = (a, b) =>
+    {
+        var res = checked(a * (100 + b) / 100); //checked(a + (a * b / 100));
         CheckOverflow(res);
 
         return res;
@@ -32,9 +47,25 @@ public static class MathHelper
         return res;
     };
 
+    private static readonly Func<dynamic, dynamic, object> SubtractPercentFuncChecked = (a, b) =>
+    {
+        var res = checked(a * (100 - b) / 100); //checked(a + (a * b / 100));
+        CheckOverflow(res);
+
+        return res;
+    };
+
     private static readonly Func<dynamic, dynamic, object> MultiplyFuncChecked = (a, b) =>
     {
         var res = checked(a * b);
+        CheckOverflow(res);
+
+        return res;
+    };
+
+    private static readonly Func<dynamic, dynamic, object> MultiplyPercentFuncChecked = (a, b) =>
+    {
+        var res = checked(a * b / 100);
         CheckOverflow(res);
 
         return res;
@@ -48,9 +79,22 @@ public static class MathHelper
         return res;
     };
 
+    private static readonly Func<dynamic, dynamic, object> DividePercentFuncChecked = (a, b) =>
+    {
+        var res = checked(a * 100 / b);
+        CheckOverflow(res);
+
+        return res;
+    };
+
     public static object? Add(object? a, object? b)
     {
         return Add(a, b, CultureInfo.CurrentCulture);
+    }
+
+    public static object? AddPercent(object? a, object? b)
+    {
+        return AddPercent(a, b, CultureInfo.CurrentCulture);
     }
 
     public static object? Add(object? a, object? b, MathHelperOptions options)
@@ -65,9 +109,26 @@ public static class MathHelper
         return ExecuteOperation(a, b, '+', func);
     }
 
+    public static object? AddPercent(object? a, object? b, MathHelperOptions options)
+    {
+        if (a == null || b == null)
+            return null;
+
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+
+        var func = options.OverflowProtection ? AddPercentFuncChecked : AddPercentFunc;
+        return ExecuteOperation(a, b, '+', func);
+    }
+
     public static object? Subtract(object? a, object? b)
     {
         return Subtract(a, b, CultureInfo.CurrentCulture);
+    }
+
+    public static object? SubtractPercent(object? a, object? b)
+    {
+        return SubtractPercent(a, b, CultureInfo.CurrentCulture);
     }
 
     public static object? Subtract(object? a, object? b, MathHelperOptions options)
@@ -82,9 +143,26 @@ public static class MathHelper
         return ExecuteOperation(a, b, '-', func);
     }
 
+    public static object? SubtractPercent(object? a, object? b, MathHelperOptions options)
+    {
+        if (a == null || b == null)
+            return null;
+
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+
+        var func = options.OverflowProtection ? SubtractPercentFuncChecked : SubtractPercentFunc;
+        return ExecuteOperation(a, b, '-', func);
+    }
+
     public static object? Multiply(object? a, object? b)
     {
         return Multiply(a, b, CultureInfo.CurrentCulture);
+    }
+
+    public static object? MultiplyPercent(object? a, object? b)
+    {
+        return MultiplyPercent(a, b, CultureInfo.CurrentCulture);
     }
 
     public static object? Multiply(object? a, object? b, MathHelperOptions options)
@@ -96,6 +174,18 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? MultiplyFuncChecked : MultiplyFunc;
+        return ExecuteOperation(a, b, '*', func);
+    }
+
+    public static object? MultiplyPercent(object? a, object? b, MathHelperOptions options)
+    {
+        if (a == null || b == null)
+            return null;
+
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+
+        var func = options.OverflowProtection ? MultiplyPercentFuncChecked : MultiplyPercentFunc;
         return ExecuteOperation(a, b, '*', func);
     }
 
@@ -113,6 +203,18 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
+        return ExecuteOperation(a, b, '/', func);
+    }
+
+    public static object? DividePercent(object? a, object? b, MathHelperOptions options)
+    {
+        if (a == null || b == null)
+            return null;
+
+        a = ConvertIfNeeded(a, options);
+        b = ConvertIfNeeded(b, options);
+
+        var func = options.OverflowProtection ? DividePercentFuncChecked : DividePercentFunc;
         return ExecuteOperation(a, b, '/', func);
     }
 
@@ -367,6 +469,64 @@ public static class MathHelper
         return Math.Pow(ConvertToDouble(a, options), ConvertToDouble(b, options));
     }
 
+    public static object Factorial(object a, object b, MathHelperOptions options)
+    {
+        var value = new BigInteger(ConvertToLong(a, options));
+        if (value <= 0)
+            throw new NotImplementedException("Factorial operation is not implemented for negative or zero values");
+
+        var result = value;
+        var stepLong = ConvertToLong(b, options);
+        if (stepLong > 0)
+        {
+            var step = new BigInteger(stepLong);
+            value = value - step;
+            while (value > 1)
+            {
+                result = result * value;
+                value = value - step;
+            }
+        }
+
+        long longResult = -1;
+        try
+        {
+            longResult = (long) result;
+            return longResult;
+        }
+        catch (OverflowException)
+        {
+            return result;
+        }
+    }
+
+    public static long Factorial(long a, long b, MathHelperOptions options)
+    {
+        var value = ConvertToLong(a, options);
+        if (value <= 0)
+            throw new NotImplementedException("Factorial operation is not implemented for negative or zero values");
+
+        var result = value;
+        var step = ConvertToLong(b, options);
+        if (step > 0)
+        {
+            value = value - step;
+            while (value > 1)
+            {
+                try
+                {
+                    result = result * value;
+                }
+                catch (OverflowException)
+                {
+                    return -1;
+                }
+                value = value - step;
+            }
+        }
+        return result;
+    }
+
     public static object Round(object? a, object? b, MidpointRounding rounding, MathHelperOptions options)
     {
         if (options.DecimalAsDefault)
@@ -388,10 +548,37 @@ public static class MathHelper
         return Math.Sin(ConvertToDouble(a, options));
     }
 
-    public static object Sqrt(object? a, MathHelperOptions options)
+    public static object? Sqrt(object? a, MathHelperOptions options)
     {
-        return Math.Sqrt(ConvertToDouble(a, options));
+        if (a == null)
+            return null;
+
+        var d = ConvertToDouble(a, options);
+
+        return Math.Sqrt(d);
     }
+
+    public static object? Fthrt(object? a, MathHelperOptions options)
+    {
+        if (a == null)
+            return null;
+
+        var d = ConvertToDouble(a, options);
+
+        return Math.Sqrt(Math.Sqrt(d));
+    }
+
+#if NET8_0_OR_GREATER
+    public static object? Cbrt(object? a, MathHelperOptions options)
+    {
+        if (a == null)
+            return null;
+
+        var d = ConvertToDouble(a, options);
+
+        return Math.Cbrt(d);
+    }
+#endif
 
     public static object Tan(object? a, MathHelperOptions options)
     {
@@ -446,6 +633,16 @@ public static class MathHelper
             int i => i,
             char => Convert.ToInt32(value.ToString(), options.CultureInfo),
             _ => Convert.ToInt32(value, options.CultureInfo)
+        };
+    }
+
+    private static long ConvertToLong(object? value, MathHelperOptions options)
+    {
+        return value switch
+        {
+            int i => i,
+            char => Convert.ToInt64(value.ToString(), options.CultureInfo),
+            _ => Convert.ToInt64(value, options.CultureInfo)
         };
     }
 
