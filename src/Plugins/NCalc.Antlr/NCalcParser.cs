@@ -816,14 +816,14 @@ public partial class NCalcParser : Parser {
 					{
 					State = 130;
 					Match(T__11);
-					 type = BinaryExpressionType.Lesser;
+					 type = BinaryExpressionType.Less;
 					}
 					break;
 				case T__12:
 					{
 					State = 132;
 					Match(T__12);
-					 type = BinaryExpressionType.LesserOrEqual;
+					 type = BinaryExpressionType.LessOrEqual;
 					}
 					break;
 				case T__13:

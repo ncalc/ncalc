@@ -6,6 +6,8 @@
   href: operators.md
 - name: Values
   href: values.md
+- name: Advanced Value Formats and Operations
+  href: advanced_value_formats.md
 - name: Parameters
   href: parameters.md
 - name: Expression Context
