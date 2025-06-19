@@ -1130,13 +1130,13 @@ public static class LogicalExpressionParser
 
             if (extOptions != null && extOptions.Flags.HasFlag(AdvExpressionOptions.ParseHumanePeriods))
             {
-                Parser<string>? alphaText = Terms.Pattern(c => char.IsLetter(c)).Then<string>(x => x.ToString() ?? string.Empty);
+                Parser<string>? alphaText = Terms.Pattern(c => char.IsLetter(c) || c == '\'').Then<string>(x => x.ToString() ?? string.Empty);
 
                 var intNumberForPeriod = Terms.Number<int>(NumberOptions.Integer | useNumberGroupSeparatorFlag | useUnderscoreFlag, decimalSeparator, numGroupSeparator)
                     .AndSkip(Not(OneOf(Terms.Text(decimalSeparator.ToString()), Terms.Text("E", true))))
                     .Then<int>(d => d);
 
-                humaneTimeSpan = ZeroOrOne(alphaText).And(OneOrMany(intNumberForPeriod.And(alphaText.AndSkip(ZeroOrOne(Terms.Char('.')))))).And(ZeroOrOne(alphaText)).Then<LogicalExpression>(val =>
+                humaneTimeSpan = ZeroOrOne(alphaText).And(ZeroOrMany(intNumberForPeriod.And(alphaText.AndSkip(ZeroOrOne(Terms.Char('.')))))).And(ZeroOrOne(alphaText)).Then<LogicalExpression>(val =>
                 //humaneTimeSpan = OneOrMany(intNumberForPeriod.And(alphaText.AndSkip(ZeroOrOne(Terms.Char('.'))))).Then<LogicalExpression>(val =>
                 {
                     string indicator;
@@ -1251,47 +1251,68 @@ public static class LogicalExpressionParser
                             throw new FormatException(string.Format(errDuplicateTimeRelationIndicators, prefix, suffix));
                         }
 
+                        bool addTime = false;
                         bool pastTime = false;
+                        DateTime dt = DateTime.Now; // people are interested in local time now, today, before, or after current moment
 
                         prefix = prefix?.ToLowerInvariant();
                         suffix = suffix?.ToLowerInvariant();
 
+                        if (prefix != null && extOptions.PeriodNowIndicators.Contains(prefix))
+                        {
+                            addTime = false;  // ... and use dt as is
+                        }
+                        else
+                        if (prefix != null && extOptions.PeriodTodayIndicators.Contains(prefix))
+                        {
+                            addTime = false;
+                            dt = dt.Date;
+                        }
+                        else
                         if ((prefix != null && extOptions.PeriodPastIndicators.Contains(prefix)) || (suffix != null && extOptions.PeriodPastIndicators.Contains(suffix)))
+                        {
+                            addTime = true;
                             pastTime = true;
+                        }
                         else
                         if ((prefix != null && extOptions.PeriodFutureIndicators.Contains(prefix)) || (suffix != null && extOptions.PeriodFutureIndicators.Contains(suffix)))
+                        {
+                            addTime = true;
                             pastTime = false;
+                        }
                         else
                             throw new FormatException(string.Format(errUnrecognizedTimeRelationIndicator, prefix));
 
-                        DateTime dt = DateTime.Now; // people are interested in local time before or after current moment
-                        if (pastTime)
+                        if (addTime)
                         {
-                            yearValue = -yearValue;
-                            monthValue = -monthValue;
-                            weekValue = -weekValue;
-                            dayValue = -dayValue;
-                            hourValue = -hourValue;
-                            minuteValue = -minuteValue;
-                            secondValue = -secondValue;
-                            msecValue = -msecValue;
+                            if (pastTime)
+                            {
+                                yearValue = -yearValue;
+                                monthValue = -monthValue;
+                                weekValue = -weekValue;
+                                dayValue = -dayValue;
+                                hourValue = -hourValue;
+                                minuteValue = -minuteValue;
+                                secondValue = -secondValue;
+                                msecValue = -msecValue;
+                            }
+                            if (yearValue != 0)
+                                dt = dt.AddYears(yearValue);
+                            if (monthValue != 0)
+                                dt = dt.AddMonths(monthValue);
+                            if (weekValue != 0)
+                                dt = dt.AddDays(weekValue * 7);
+                            if (dayValue != 0)
+                                dt = dt.AddDays(dayValue);
+                            if (hourValue != 0)
+                                dt = dt.AddHours(hourValue);
+                            if (minuteValue != 0)
+                                dt = dt.AddMinutes(minuteValue);
+                            if (secondValue != 0)
+                                dt = dt.AddSeconds(secondValue);
+                            if (msecValue != 0)
+                                dt = dt.AddMilliseconds(msecValue);
                         }
-                        if (yearValue != 0)
-                            dt = dt.AddYears(yearValue);
-                        if (monthValue != 0)
-                            dt = dt.AddMonths(monthValue);
-                        if (weekValue != 0)
-                            dt = dt.AddDays(weekValue * 7);
-                        if (dayValue != 0)
-                            dt = dt.AddDays(dayValue);
-                        if (hourValue != 0)
-                            dt = dt.AddHours(hourValue);
-                        if (minuteValue != 0)
-                            dt = dt.AddMinutes(minuteValue);
-                        if (secondValue != 0)
-                            dt = dt.AddSeconds(secondValue);
-                        if (msecValue != 0)
-                            dt = dt.AddMilliseconds(msecValue);
                         return new ValueExpression(dt);
                     }
                 });

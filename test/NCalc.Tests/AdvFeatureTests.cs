@@ -842,7 +842,7 @@ public class AdvFeatureTests
     [Theory]
     [InlineData("#2025/06/05# + #08:00:00#", new int[] { 2025, 6, 5, 8, 0, 0 })]
     [InlineData("#2025/06/06# - #8:00:00#", new int[] { 2025, 6, 5, 16, 0, 0 })]
-    public void ShoudAddSubtractDateAndTime(string input, int[] expectedValue)
+    public void ShouldAddSubtractDateAndTime(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache | ExpressionOptions.SupportTimeOperations);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -860,7 +860,7 @@ public class AdvFeatureTests
     [InlineData("#2025/06/05# + #08:00:00#", new int[] { 2025, 6, 5, 8, 0, 0 })]
     [InlineData("#08:00:00# + #2025/06/05#", new int[] { 2025, 6, 5, 8, 0, 0 })]
     [InlineData("#2025/06/06# - #8:00:00#", new int[] { 2025, 6, 5, 16, 0, 0 })]
-    public void ShoudAddSubtractDateAndTimeLambda(string input, int[] expectedValue)
+    public void ShouldAddSubtractDateAndTimeLambda(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache | ExpressionOptions.SupportTimeOperations);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -878,7 +878,7 @@ public class AdvFeatureTests
     [Theory]
     [InlineData("#8:00:00# + #08:00:00#", new int[] { 16, 0, 0 })]
     [InlineData("#11:00:00# - #3:00:00#", new int[] { 8, 0, 0 })]
-    public void ShoudAddSubtractTimes(string input, int[] expectedValue)
+    public void ShouldAddSubtractTimes(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache | ExpressionOptions.SupportTimeOperations);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -895,7 +895,7 @@ public class AdvFeatureTests
     [Theory]
     [InlineData("#8:00:00# + #08:00:00#", new int[] { 16, 0, 0 })]
     [InlineData("#11:00:00# - #3:00:00#", new int[] { 8, 0, 0 })]
-    public void ShoudAddSubtractTimesLambda(string input, int[] expectedValue)
+    public void ShouldAddSubtractTimesLambda(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache | ExpressionOptions.SupportTimeOperations);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -912,7 +912,7 @@ public class AdvFeatureTests
 
     [Theory]
     [InlineData("#2025/06/05# - #2025/06/02#", new int[] { 72, 0, 0 })]
-    public void ShoudSubtractDates(string input, int[] expectedValue)
+    public void ShouldSubtractDates(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache | ExpressionOptions.SupportTimeOperations);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -928,7 +928,7 @@ public class AdvFeatureTests
 
     [Theory]
     [InlineData("#2025/06/05# - #2025/06/02#", new int[] { 72, 0, 0 })]
-    public void ShoudAddSubtractDatesLambda(string input, int[] expectedValue)
+    public void ShouldAddSubtractDatesLambda(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache | ExpressionOptions.SupportTimeOperations);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -950,7 +950,7 @@ public class AdvFeatureTests
     [InlineData("#1y 2wks 21day#", new int[] { 400, 0, 0, 0, 0 })]
     [InlineData("#1 day 3 hrs 356 ms#", new int[] { 1, 3, 0, 0, 356 })]
     [InlineData("#1 y 2 wks 21 day#", new int[] { 400, 0, 0, 0, 0 })]
-    public void ShoudRecognizeHumanePeriods(string input, int[] expectedValue)
+    public void ShouldRecognizeHumanePeriods(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -967,7 +967,7 @@ public class AdvFeatureTests
     [InlineData("#in 2 weeks#", new int[] { 14, 0, 0, 0, 0 })]
     [InlineData("#3 days later#", new int[] { 3, 0, 0, 0, 0 })]
     [InlineData("#before 1 year#", new int[] { -365, 0, 0, 0, 0 })]
-    public void ShoudRecognizeHumaneDates(string input, int[] expectedValue)
+    public void ShouldRecognizeHumaneDates(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -983,9 +983,27 @@ public class AdvFeatureTests
     }
 
     [Theory]
+    [InlineData("#now#", true)]
+    [InlineData("#today#", false)]
+    public void ShouldRecognizeNowAndToday(string input, bool compareTime)
+    {
+        var expression = new Expression(input, ExpressionOptions.NoCache);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.Flags = AdvExpressionOptions.ParseHumanePeriods;
+        var result = expression.Evaluate();
+
+        DateTime expectedDate = compareTime ? DateTime.Now : DateTime.Now.Date;
+        DateTime actualDate = (result as DateTime?) ?? DateTime.MinValue;
+
+        TimeSpan expectedTime = expectedDate - actualDate;
+
+        Assert.True(expectedTime.TotalSeconds < 10); // 10 seconds is enough for the test to run
+    }
+
+    [Theory]
     [InlineData("#1tag3std.356ms#", new int[] { 1, 3, 0, 0, 356 })]
     [InlineData("#1j.2woche21tag#", new int[] { 400, 0, 0, 0, 0 })]
-    public void ShoudRecognizeHumanePeriodsCustom(string input, int[] expectedValue)
+    public void ShouldRecognizeHumanePeriodsCustom(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -1031,7 +1049,7 @@ public class AdvFeatureTests
     [InlineData("#1y 2wks 21day#", new int[] { 400, 0, 0, 0, 0 })]
     [InlineData("#1 day 3 hrs 356 ms#", new int[] { 1, 3, 0, 0, 356 })]
     [InlineData("#1 y 2 wks 21 day#", new int[] { 400, 0, 0, 0, 0 })]
-    public void ShoudRecognizeHumanePeriodsLambda(string input, int[] expectedValue)
+    public void ShouldRecognizeHumanePeriodsLambda(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -1050,7 +1068,7 @@ public class AdvFeatureTests
     [Theory]
     [InlineData("#1tag3std.356ms#", new int[] { 1, 3, 0, 0, 356 })]
     [InlineData("#1j.2woche21tag#", new int[] { 400, 0, 0, 0, 0 })]
-    public void ShoudRecognizeHumanePeriodsCustomLambda(string input, int[] expectedValue)
+    public void ShouldRecognizeHumanePeriodsCustomLambda(string input, int[] expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
