@@ -60,84 +60,89 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         var left = expression.LeftExpression.Accept(this);
         var right = expression.RightExpression.Accept(this);
 
-        if ((expression.LeftExpression is PercentExpression) && (expression.RightExpression is PercentExpression))
+        if (_expressionContext?.AdvancedOptions != null && _expressionContext.AdvancedOptions.Flags.HasFlag(AdvExpressionOptions.CalculatePercent))
         {
-            return expression.Type switch
+            if (left.Type == typeof(Percent) && right.Type == typeof(Percent))
             {
-                BinaryExpressionType.Minus => _checked ? OfPercent(left, right, LinqExpression.SubtractChecked, expression.Type) : OfPercent(left, right, LinqExpression.Subtract, expression.Type),
-                BinaryExpressionType.Plus => _checked ? OfPercent(left, right, LinqExpression.AddChecked, expression.Type) : OfPercent(left, right, LinqExpression.Add, expression.Type),
+                return expression.Type switch
+                {
+                    BinaryExpressionType.Minus => _checked ? OfPercentAsPercent(UnwrapPercentValue(left), UnwrapPercentValue(right), LinqExpression.SubtractChecked, BinaryExpressionType.Minus) : OfPercentAsPercent(UnwrapPercentValue(left), UnwrapPercentValue(right), LinqExpression.Subtract, BinaryExpressionType.Minus),
+                    BinaryExpressionType.Plus => _checked ? OfPercentAsPercent(UnwrapPercentValue(left), UnwrapPercentValue(right), LinqExpression.AddChecked, BinaryExpressionType.Plus) : OfPercentAsPercent(UnwrapPercentValue(left), UnwrapPercentValue(right), LinqExpression.Add, BinaryExpressionType.Plus),
 
-                BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
-                _ => throw new ArgumentOutOfRangeException()
-            };
+                    BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            }
+            else
+            if (left.Type == typeof(Percent))
+            {
+                return expression.Type switch
+                {
+                    BinaryExpressionType.Div => WrapWithPercent(ConvertDoubleIfNoFraction(OfPercentAsNumeric(UnwrapPercentValue(left), right, LinqExpression.Divide, BinaryExpressionType.Div))),
+                    BinaryExpressionType.Times => _checked ? OfPercentAsPercent(UnwrapPercentValue(left), right, LinqExpression.MultiplyChecked, BinaryExpressionType.Times) : OfPercentAsPercent(UnwrapPercentValue(left), right, LinqExpression.Multiply, BinaryExpressionType.Times),
+
+                    BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            }
+            else
+            if (right.Type == typeof(Percent))
+            {
+                return expression.Type switch
+                {
+                    BinaryExpressionType.Assignment => UpdateParameter<object?>(expression.LeftExpression, right),
+                    BinaryExpressionType.PlusAssignment => UpdateParameter<object?>(expression.LeftExpression, _checked ? WithPercent(left, UnwrapPercentValue(right), LinqExpression.AddChecked, BinaryExpressionType.Plus) : WithPercent(left, UnwrapPercentValue(right), LinqExpression.Add, BinaryExpressionType.Plus)),
+                    BinaryExpressionType.MinusAssignment => UpdateParameter<object?>(expression.LeftExpression, _checked ? WithPercent(left, UnwrapPercentValue(right), LinqExpression.SubtractChecked, BinaryExpressionType.Minus) : WithPercent(left, UnwrapPercentValue(right), LinqExpression.Subtract, BinaryExpressionType.Minus)),
+                    BinaryExpressionType.MultiplyAssignment => UpdateParameter<object?>(expression.LeftExpression, _checked ? WithPercent(left, UnwrapPercentValue(right), LinqExpression.MultiplyChecked, BinaryExpressionType.Times) : WithPercent(left, UnwrapPercentValue(right), LinqExpression.Multiply, BinaryExpressionType.Times)),
+                    BinaryExpressionType.DivAssignment => UpdateParameter<object?>(expression.LeftExpression, ConvertDoubleIfNoFraction(WithPercent(left, UnwrapPercentValue(right), LinqExpression.Divide, BinaryExpressionType.Div))),
+                    BinaryExpressionType.Plus => _checked ? WithPercent(left, UnwrapPercentValue(right), LinqExpression.AddChecked, expression.Type) : WithPercent(left, UnwrapPercentValue(right), LinqExpression.Add, BinaryExpressionType.Plus),
+                    BinaryExpressionType.Minus => _checked ? WithPercent(left, UnwrapPercentValue(right), LinqExpression.SubtractChecked, expression.Type) : WithPercent(left, UnwrapPercentValue(right), LinqExpression.Subtract, BinaryExpressionType.Minus),
+                    BinaryExpressionType.Times => _checked ? WithPercent(left, UnwrapPercentValue(right), LinqExpression.MultiplyChecked, expression.Type) : WithPercent(left, UnwrapPercentValue(right), LinqExpression.Multiply, BinaryExpressionType.Times),
+                    BinaryExpressionType.Div => ConvertDoubleIfNoFraction(WithPercent(left, UnwrapPercentValue(right), LinqExpression.Divide, BinaryExpressionType.Div)),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            }
         }
-        else
-        if (expression.LeftExpression is PercentExpression)
+
+        return expression.Type switch
         {
-            return expression.Type switch
-            {
-                BinaryExpressionType.Div => OfPercent(left, right, LinqExpression.Divide, expression.Type),
-                BinaryExpressionType.Times => _checked ? OfPercent(left, right, LinqExpression.MultiplyChecked, expression.Type) : OfPercent(left, right, LinqExpression.Multiply, expression.Type),
+            BinaryExpressionType.StatementSequence => SkipAndReturn(left, right),
+            BinaryExpressionType.Assignment => UpdateParameter<object?>(expression.LeftExpression, right),
 
-                BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
-        else
-        if ((expression.RightExpression is PercentExpression) && (expression.Type != BinaryExpressionType.Assignment))
-        {
-            return expression.Type switch
-            {
-                BinaryExpressionType.Minus => _checked ? WithPercent(left, right, LinqExpression.SubtractChecked, expression.Type) : WithPercent(left, right, LinqExpression.Subtract, expression.Type),
-                BinaryExpressionType.Plus => _checked ? WithPercent(left, right, LinqExpression.AddChecked, expression.Type) : WithPercent(left, right, LinqExpression.Add, expression.Type),
-                BinaryExpressionType.Div => WithPercent(left, right, LinqExpression.Divide, expression.Type),
-                BinaryExpressionType.Times => _checked ? WithPercent(left, right, LinqExpression.MultiplyChecked, expression.Type) : WithPercent(left, right, LinqExpression.Multiply, expression.Type),
-                BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
-        else
-        {
-            return expression.Type switch
-            {
-                BinaryExpressionType.StatementSequence => SkipAndReturn(left, right),
-                BinaryExpressionType.Assignment => UpdateParameter<object?>(expression.LeftExpression, right),
+            BinaryExpressionType.PlusAssignment => UpdateParameter<object?>(expression.LeftExpression, _checked ? WithCommonNumericType(left, right, LinqExpression.AddChecked, BinaryExpressionType.Plus) : WithCommonNumericType(left, right, LinqExpression.Add, BinaryExpressionType.Plus)),
+            BinaryExpressionType.MinusAssignment => UpdateParameter<object?>(expression.LeftExpression, _checked ? WithCommonNumericType(left, right, LinqExpression.SubtractChecked, BinaryExpressionType.Minus) : WithCommonNumericType(left, right, LinqExpression.Subtract, BinaryExpressionType.Minus)),
 
-                BinaryExpressionType.PlusAssignment => UpdateParameter<object?>(expression.LeftExpression, _checked ? WithCommonNumericType(left, right, LinqExpression.AddChecked, BinaryExpressionType.Plus) : WithCommonNumericType(left, right, LinqExpression.Add, BinaryExpressionType.Plus)),
-                BinaryExpressionType.MinusAssignment => UpdateParameter<object?>(expression.LeftExpression, _checked ? WithCommonNumericType(left, right, LinqExpression.SubtractChecked, BinaryExpressionType.Minus) : WithCommonNumericType(left, right, LinqExpression.Subtract, BinaryExpressionType.Minus)),
+            BinaryExpressionType.MultiplyAssignment => UpdateParameter<object?>(expression.LeftExpression, _checked ? WithCommonNumericType(left, right, LinqExpression.MultiplyChecked) : WithCommonNumericType(left, right, LinqExpression.Multiply)),
+            BinaryExpressionType.DivAssignment => UpdateParameter<object?>(expression.LeftExpression, ConvertDoubleIfNoFraction(WithCommonNumericType(left, right, LinqExpression.Divide, BinaryExpressionType.DivAssignment))),
 
-                BinaryExpressionType.MultiplyAssignment => UpdateParameter<object?>(expression.LeftExpression, _checked ? WithCommonNumericType(left, right, LinqExpression.MultiplyChecked) : WithCommonNumericType(left, right, LinqExpression.Multiply)),
-                BinaryExpressionType.DivAssignment => UpdateParameter<object?>(expression.LeftExpression, WithCommonNumericType(left, right, LinqExpression.Divide)),
+            BinaryExpressionType.AndAssignment => UpdateParameter<object?>(expression.LeftExpression, LinqExpression.And(left, right)),
+            BinaryExpressionType.OrAssignment => UpdateParameter<object?>(expression.LeftExpression, LinqExpression.Or(left, right)),
+            BinaryExpressionType.XOrAssignment => UpdateParameter<object?>(expression.LeftExpression, LinqExpression.ExclusiveOr(left, right)),
 
-                BinaryExpressionType.AndAssignment => UpdateParameter<object?>(expression.LeftExpression, LinqExpression.And(left, right)),
-                BinaryExpressionType.OrAssignment => UpdateParameter<object?>(expression.LeftExpression, LinqExpression.Or(left, right)),
-                BinaryExpressionType.XOrAssignment => UpdateParameter<object?>(expression.LeftExpression, LinqExpression.ExclusiveOr(left, right)),
-
-                BinaryExpressionType.And => LinqExpression.AndAlso(left, right),
-                BinaryExpressionType.Or => LinqExpression.OrElse(left, right),
-                BinaryExpressionType.XOr => BooleanXOr(left, right),
-                BinaryExpressionType.NotEqual => WithCommonNumericType(left, right, LinqExpression.NotEqual, expression.Type),
-                BinaryExpressionType.LessOrEqual => WithCommonNumericType(left, right, LinqExpression.LessThanOrEqual, expression.Type),
-                BinaryExpressionType.GreaterOrEqual => WithCommonNumericType(left, right, LinqExpression.GreaterThanOrEqual, expression.Type),
-                BinaryExpressionType.Less => WithCommonNumericType(left, right, LinqExpression.LessThan, expression.Type),
-                BinaryExpressionType.Greater => WithCommonNumericType(left, right, LinqExpression.GreaterThan, expression.Type),
-                BinaryExpressionType.Equal => WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type),
-                BinaryExpressionType.Minus => _checked ? WithCommonNumericType(left, right, LinqExpression.SubtractChecked, BinaryExpressionType.Minus) : WithCommonNumericType(left, right, LinqExpression.Subtract, BinaryExpressionType.Minus),
-                BinaryExpressionType.Plus => _checked ? WithCommonNumericType(left, right, LinqExpression.AddChecked, BinaryExpressionType.Plus) : WithCommonNumericType(left, right, LinqExpression.Add, BinaryExpressionType.Plus),
-                BinaryExpressionType.Modulo => WithCommonNumericType(left, right, LinqExpression.Modulo),
-                BinaryExpressionType.Div => WithCommonNumericType(left, right, LinqExpression.Divide),
-                BinaryExpressionType.Times => _checked ? WithCommonNumericType(left, right, LinqExpression.MultiplyChecked) : WithCommonNumericType(left, right, LinqExpression.Multiply),
-                BinaryExpressionType.BitwiseOr => LinqExpression.Or(left, right),
-                BinaryExpressionType.BitwiseAnd => LinqExpression.And(left, right),
-                BinaryExpressionType.BitwiseXOr => LinqExpression.ExclusiveOr(left, right),
-                BinaryExpressionType.LeftShift => LinqExpression.LeftShift(left, right),
-                BinaryExpressionType.RightShift => LinqExpression.RightShift(left, right),
-                BinaryExpressionType.Exponentiation => LinqExpression.Power(LinqExpression.Convert(left, typeof(double)), LinqExpression.Convert(right, typeof(double))),
-                BinaryExpressionType.Factorial => Factorial(left, right),
-                BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
+            BinaryExpressionType.And => LinqExpression.AndAlso(left, right),
+            BinaryExpressionType.Or => LinqExpression.OrElse(left, right),
+            BinaryExpressionType.XOr => BooleanXOr(left, right),
+            BinaryExpressionType.NotEqual => WithCommonNumericType(left, right, LinqExpression.NotEqual, expression.Type),
+            BinaryExpressionType.LessOrEqual => WithCommonNumericType(left, right, LinqExpression.LessThanOrEqual, expression.Type),
+            BinaryExpressionType.GreaterOrEqual => WithCommonNumericType(left, right, LinqExpression.GreaterThanOrEqual, expression.Type),
+            BinaryExpressionType.Less => WithCommonNumericType(left, right, LinqExpression.LessThan, expression.Type),
+            BinaryExpressionType.Greater => WithCommonNumericType(left, right, LinqExpression.GreaterThan, expression.Type),
+            BinaryExpressionType.Equal => WithCommonNumericType(left, right, LinqExpression.Equal, expression.Type),
+            BinaryExpressionType.Minus => _checked ? WithCommonNumericType(left, right, LinqExpression.SubtractChecked, BinaryExpressionType.Minus) : WithCommonNumericType(left, right, LinqExpression.Subtract, BinaryExpressionType.Minus),
+            BinaryExpressionType.Plus => _checked ? WithCommonNumericType(left, right, LinqExpression.AddChecked, BinaryExpressionType.Plus) : WithCommonNumericType(left, right, LinqExpression.Add, BinaryExpressionType.Plus),
+            BinaryExpressionType.Modulo => WithCommonNumericType(left, right, LinqExpression.Modulo),
+            BinaryExpressionType.Div => ConvertDoubleIfNoFraction(WithCommonNumericType(left, right, LinqExpression.Divide, BinaryExpressionType.Div)),
+            BinaryExpressionType.Times => _checked ? WithCommonNumericType(left, right, LinqExpression.MultiplyChecked) : WithCommonNumericType(left, right, LinqExpression.Multiply),
+            BinaryExpressionType.BitwiseOr => LinqExpression.Or(left, right),
+            BinaryExpressionType.BitwiseAnd => LinqExpression.And(left, right),
+            BinaryExpressionType.BitwiseXOr => LinqExpression.ExclusiveOr(left, right),
+            BinaryExpressionType.LeftShift => LinqExpression.LeftShift(left, right),
+            BinaryExpressionType.RightShift => LinqExpression.RightShift(left, right),
+            BinaryExpressionType.Exponentiation => LinqExpression.Power(LinqExpression.Convert(left, typeof(double)), LinqExpression.Convert(right, typeof(double))),
+            BinaryExpressionType.Factorial => Factorial(left, right),
+            BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
     public LinqExpression Visit(UnaryExpression expression)
@@ -161,7 +166,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
     public LinqExpression Visit(PercentExpression expression)
     {
-        return expression.Expression.Accept(this);
+        LinqExpression result = expression.Expression.Accept(this);
+        if (result.Type != typeof(Percent))
+            return WrapWithPercent(result);
+        else
+            return result;
     }
 
     public LinqExpression Visit(ValueExpression expression)
@@ -362,6 +371,49 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         return null;
     }
 
+    public LinqExpression ConvertDoubleIfNoFraction(LinqExpression originalExpression)
+    {
+        if (!_options.HasFlag(ExpressionOptions.ReduceDivResultToInteger))
+            return originalExpression;
+
+        // Handle if the original expression is of a floating-point type
+        if (originalExpression.Type == typeof(float) || originalExpression.Type == typeof(double) || originalExpression.Type == typeof(decimal))
+        {
+            // (floating)value
+            var fpValue = LinqExpression.Convert(originalExpression, originalExpression.Type);
+            // Math.Floor(value)
+            MethodInfo? floorMethod = typeof(Math).GetMethod("Floor", new[] { originalExpression.Type });
+            if (floorMethod == null)
+            {
+                return originalExpression;
+            }
+            var floorValue = LinqExpression.Call(floorMethod, fpValue);
+            // value == Math.Floor(value)
+            var noFraction = LinqExpression.Equal(fpValue, floorValue);
+            // (long)value
+            var longValue = LinqExpression.Convert(fpValue, typeof(long));
+            // Box both to object for return type consistency
+            var longAsObject = LinqExpression.Convert(longValue, typeof(object));
+            var originalAsObject = LinqExpression.Convert(fpValue, typeof(object));
+            // noFraction ? (object)(long)value : (object)value
+            var condition = LinqExpression.Condition(noFraction, longAsObject, originalAsObject);
+
+            return condition;
+        }
+        else
+        {
+            // If not double, just box it to object
+            if (originalExpression.Type.IsValueType && originalExpression.Type != typeof(object))
+            {
+                return LinqExpression.Convert(originalExpression, typeof(object));
+            }
+            else
+            {
+                return originalExpression;
+            }
+        }
+    }
+
     private static Linq.Expression<Func<BigInteger>> ConvertToBigInteger(LinqExpression intExpr)
     {
         if (intExpr.Type != typeof(int) && intExpr.Type != typeof(long) && intExpr.Type != typeof(uint) && intExpr.Type != typeof(ulong) && intExpr.Type != typeof(string) && intExpr.Type != typeof(decimal) && intExpr.Type != typeof(double) && intExpr.Type != typeof(float))
@@ -454,7 +506,17 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             var needUpdateParamsVar = LinqExpression.Variable(typeof(bool), "needUpdateParams");
 
             // If required, update parameters
-            LinqExpression maybeUpdateParameters = (_context != null) ? LinqExpression.Assign(LinqExpression.PropertyOrField(_context, identifierName), valueExpr) : LinqExpression.Empty();
+            LinqExpression maybeUpdateParameters;
+            if (_context == null)
+                maybeUpdateParameters = LinqExpression.Empty();
+            else
+            {
+                var varType = LinqExpression.PropertyOrField(_context, identifierName).Type;
+                if (valueExpr.Type != varType)
+                    maybeUpdateParameters = LinqExpression.Assign(LinqExpression.PropertyOrField(_context, identifierName), LinqExpression.Convert(valueExpr, varType));
+                else
+                    maybeUpdateParameters = LinqExpression.Assign(LinqExpression.PropertyOrField(_context, identifierName), valueExpr);
+            }
 
             // Sequence: run side-effect, then return value
             var block = LinqExpression.Block(
@@ -660,6 +722,22 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         }
 
         var type = TypeHelper.GetMostPreciseNumberType(left.Type, right.Type);
+        if (expressionType == BinaryExpressionType.Div || expressionType == BinaryExpressionType.DivAssignment)
+        {
+            if (type != typeof(decimal))
+            {
+                type = typeof(double);
+            }
+            if (left.Type != type)
+            {
+                left = LinqExpression.Convert(left, type);
+            }
+            if (right.Type != type)
+            {
+                right = LinqExpression.Convert(right, type);
+            }
+            return action(left, right);
+        }
         if (type != null)
         {
             if (left.Type != type)
@@ -715,8 +793,109 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         return action(left, right);
     }
 
+    private LinqExpression WrapWithPercent(LinqExpression valueExpression)
+    {
+        ConstructorInfo? constructor = typeof(Percent).GetConstructor(new[] { typeof(object), typeof(Type) });
+        if (constructor == null)
+            throw new InvalidOperationException($"Could not find a Percent constructor that takes a parameter of type '{valueExpression.Type.Name}'");
+
+        LinqExpression constructorArgument = LinqExpression.Convert(valueExpression, typeof(object));
+
+        Linq.NewExpression newExpr = LinqExpression.New(constructor!, constructorArgument, LinqExpression.Constant(valueExpression.Type));
+
+        return newExpr;
+        //return LinqExpression.Lambda<Func<Percent>>(newExpr);
+    }
+
+    private LinqExpression UnwrapPercentValue(LinqExpression expression)
+    {
+        if (expression.Type == typeof(Percent))
+        {
+            return Linq.Expression.Property(expression, nameof(Percent.Value));
+
+            /*
+            Linq.ParameterExpression percentParameter = Linq.Expression.Parameter(typeof(Percent), "p");
+
+            // The body of the final expression will need to:
+            // a) Get the Percent object (from percentSourceExpression)
+            // b) Get its Value property (p.Value)
+            // c) Get its OriginalType property (p.OriginalType)
+            // d) Call Convert.ChangeType(p.Value, p.OriginalType)
+
+            // Find the MethodInfo for Convert.ChangeType(object value, Type conversionType)
+            MethodInfo? changeTypeMethod = typeof(Convert).GetMethod(
+                nameof(Convert.ChangeType),
+                new[] { typeof(object), typeof(Type) }
+            );
+
+            if (changeTypeMethod == null)
+                throw new InvalidOperationException("Could not find the 'Convert.ChangeType' method.");
+
+            // Expression to access the 'Value' property from the 'Percent' object
+            // (This 'p.Value' needs to come from the result of percentSourceExpression)
+            Linq.MemberExpression valueProperty = Linq.Expression.Property(percentParameter, nameof(Percent.Value));
+
+            // Expression to access the 'OriginalType' property from the 'Percent' object
+            // (This 'p.OriginalType' needs to come from the result of percentSourceExpression)
+            Linq.MemberExpression originalTypeProperty = Linq.Expression.Property(percentParameter, nameof(Percent.OriginalType));
+
+            // The problem: we need the 'percentParameter' to be the *result* of 'percentSourceExpression'.
+            // We can achieve this by making the percentSourceExpression the initial value
+            // of a BlockExpression, and then using a ParameterExpression to represent that value.
+
+            Linq.ParameterExpression tempPercent = Linq.Expression.Variable(typeof(Percent), "tempPercent");
+
+            Linq.BlockExpression conversionBlock = Linq.Expression.Block(
+                new[] { tempPercent }, // Declare local variable tempPercent
+                Linq.Expression.Assign(tempPercent, expression), // Assign the result of sourceExpression to tempPercent
+                Linq.Expression.Call(
+                    changeTypeMethod,
+                    Linq.Expression.Convert(Linq.Expression.Property(tempPercent, nameof(Percent.Value)), typeof(object)), // Cast long to object for ChangeType
+                    Linq.Expression.Property(tempPercent, nameof(Percent.OriginalType))
+                )
+            );
+
+            return conversionBlock;
+            */
+        }
+
+        return LinqExpression.Constant(0);
+    }
+
+    public static LinqExpression ConvertObjectExprToDouble(LinqExpression inputExpr)
+    {
+        // if (inputExpr is int) return (double)(int)inputExpr;
+        var isInt = LinqExpression.TypeIs(inputExpr, typeof(int));
+        var asInt = LinqExpression.Convert(LinqExpression.Convert(inputExpr, typeof(int)), typeof(double));
+
+        // else if (inputExpr is long) return (double)(long)inputExpr;
+        var isLong = LinqExpression.TypeIs(inputExpr, typeof(long));
+        var asLong = LinqExpression.Convert(LinqExpression.Convert(inputExpr, typeof(long)), typeof(double));
+
+        // else if (inputExpr is double) return (double)inputExpr;
+        var isDouble = LinqExpression.TypeIs(inputExpr, typeof(double));
+        var asDouble = LinqExpression.Convert(inputExpr, typeof(double));
+
+        // else throw
+        var throwExpr = LinqExpression.Throw(
+            LinqExpression.New(typeof(InvalidCastException).GetConstructor(Type.EmptyTypes)!),
+            typeof(double)
+        );
+
+        return LinqExpression.Condition(
+            isInt, asInt,
+            LinqExpression.Condition(
+                isLong, asLong,
+                LinqExpression.Condition(
+                    isDouble, asDouble,
+                    throwExpr
+                )
+            )
+        );
+    }
+
     /// <summary>
-    /// Operations with a percent value being the right operand
+    /// Operations with a percent value being only the right operand
     /// </summary>
     private LinqExpression WithPercent(LinqExpression left, LinqExpression right,
         Func<LinqExpression, LinqExpression, LinqExpression> action,
@@ -728,7 +907,18 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         LinqExpression threshold = LinqExpression.Constant(100000);
         LinqExpression cents = LinqExpression.Constant(100);
 
-        var type = TypeHelper.GetMostPreciseNumberType(left.Type, right.Type);
+        Type leftType = left.Type;
+        Type rightType = typeof(double);
+
+        var type = TypeHelper.GetMostPreciseNumberType(leftType, rightType);
+        if (expressionType == BinaryExpressionType.Div || expressionType == BinaryExpressionType.DivAssignment)
+        {
+            if (type != typeof(decimal))
+            {
+                type = typeof(double);
+            }
+        }
+
         if (type != null)
         {
             if (left.Type != type)
@@ -736,11 +926,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 left = LinqExpression.Convert(left, type);
             }
 
-            if (right.Type != type)
+            /*if (right.Type != type)
             {
                 right = LinqExpression.Convert(right, type);
             }
-
+            */
             if (threshold.Type != type)
             {
                 threshold = LinqExpression.Convert(threshold, type);
@@ -750,6 +940,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 cents = LinqExpression.Convert(cents, type);
             }
         }
+        right = ConvertObjectExprToDouble(right);
 
         if (typeof(string) != left.Type && typeof(string) != right.Type)
         {
@@ -774,30 +965,60 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
     }
 
     /// <summary>
-    /// Operations with a percent value being the left operand
+    /// Operations with a percent value being the left operand or both operands
     /// </summary>
-    private LinqExpression OfPercent(LinqExpression left, LinqExpression right,
+    private LinqExpression OfPercentAsNumeric(LinqExpression left, LinqExpression right,
         Func<LinqExpression, LinqExpression, LinqExpression> action,
         BinaryExpressionType expressionType = BinaryExpressionType.Unknown)
     {
         left = LinqUtils.UnwrapNullable(left);
         right = LinqUtils.UnwrapNullable(right);
 
-        var type = TypeHelper.GetMostPreciseNumberType(left.Type, right.Type);
+        Type leftType = left.Type;
+        Type rightType = right.Type;
+
+        bool forceLeftConversion = false;
+        bool forceRightConversion = false;
+
+        if (leftType == typeof(object))
+        {
+            leftType = typeof(double);
+            forceLeftConversion = true;
+        }
+
+        if (rightType == typeof(object))
+        {
+            rightType = typeof(double);
+            forceRightConversion = true;
+        }
+
+        var type = TypeHelper.GetMostPreciseNumberType(leftType, rightType);
+        if (expressionType == BinaryExpressionType.Div || expressionType == BinaryExpressionType.DivAssignment)
+        {
+            if (type != typeof(decimal))
+            {
+                type = typeof(double);
+            }
+        }
+
         if (type != null)
         {
-            if (left.Type != type)
+            if (left.Type != type && !forceLeftConversion)
             {
                 left = LinqExpression.Convert(left, type);
             }
 
-            if (right.Type != type)
+            if (right.Type != type && !forceRightConversion)
             {
                 right = LinqExpression.Convert(right, type);
             }
         }
-        else
-            type = typeof(double);
+
+        // this is the value that came from Percent
+        if (forceLeftConversion)
+            left = ConvertObjectExprToDouble(left);
+        if (forceRightConversion)
+            right = ConvertObjectExprToDouble(right);
 
         if (typeof(string) != left.Type && typeof(string) != right.Type)
         {
@@ -815,13 +1036,16 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                     break;
             }
 
-            MethodInfo? toStringMethod = type.GetMethod("ToString", Type.EmptyTypes);
-            MethodInfo? concatMethod = typeof(string).GetMethod("Concat", new[] { typeof(string), typeof(string) });
-            if ((toStringMethod != null) && (concatMethod != null))
-            {
-                return LinqExpression.Call(concatMethod, LinqExpression.Call(result, toStringMethod), LinqExpression.Constant("%"));
-            }
+            return result;
         }
         return LinqExpression.Constant(0);
+    }
+
+    private LinqExpression OfPercentAsPercent(LinqExpression left, LinqExpression right,
+        Func<LinqExpression, LinqExpression, LinqExpression> action,
+        BinaryExpressionType expressionType = BinaryExpressionType.Unknown)
+    {
+        LinqExpression result = OfPercentAsNumeric(left, right, action, expressionType);
+        return WrapWithPercent(result);
     }
 }

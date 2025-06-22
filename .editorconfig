@@ -14,5 +14,6 @@ trim_trailing_whitespace = true
 dotnet_diagnostic.RCS1194.severity = none
 dotnet_diagnostic.RCS1139.severity = none
 dotnet_diagnostic.RCS1001.severity = none
-dotnet_diagnostic.RCS1036.severity = error
+dotnet_diagnostic.RCS1036.severity = none
+dotnet_diagnostic.RCS0063.severity = warning
 dotnet_diagnostic.CA2012.severity = error

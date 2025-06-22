@@ -77,9 +77,11 @@ When handling the 12-hour format, the parser will try values with and without a 
 
 ## Parsing of Humane Date and Period Expressions
 
-<xref:NCalc.AdvancedExpressionOptions> makes it possible to write relative dates and time periods in a humane form as a set of numbers and period identifiers. Example: #5 days ago" or "in 3 days" for dates relative to today, or "#321 yr 3 weeks 35 s#" for a time period. In all cases, spaces are ignored, so "321yr3weeks35s" will work equally well. 
+<xref:NCalc.AdvancedExpressionOptions> makes it possible to write current and relative dates and time periods in a humane form as a set of numbers and period identifiers. Example: "#5 days ago#" or "#in 3 days#" for dates relative to today, or "#321 yr 3 weeks 35 s#" for a time period. In all cases, spaces are ignored, so "#321yr3weeks35s#" will work equally well. 
 
 The result of such parsing is expressed as a DateTime or a TimeSpan respectively, suitable for date and timespan operations (see the next section).
+
+The expression #today# evaluates to current local date with time set to 00:00, while the expression #now# evaluates to current local date and time. In both cases, the result is an instance of DateTime.
 
 To enable Humane Period Expressions, include the <xref:NCalc.AdvExpressionOptions.ParseHumanePeriods> flag to the <xref:NCalc.AdvancedExpressionOptions.Flags> property of an instance of the <xref:NCalc.AdvancedExpressionOptions> class:
 ```c#
@@ -100,8 +102,12 @@ readonly List<string> _periodSecondIndicators = ["seconds", "second", "secs", "s
 readonly List<string> _periodMSecIndicators = ["msec", "ms"];
 ```
 
-For relative dates, the following time relation indicators are recognized by default:
+For current and relative dates, the following time relation indicators are recognized by default:
 ```c#
+
+readonly List<string> _periodNowIndicators = ["now"];
+readonly List<string> _periodTodayIndicators = ["today"];
+
 readonly List<string> _periodPastIndicators = ["before", "earlier", "ago"];
 readonly List<string> _periodFutureIndicators = ["after", "in", "later"];
 ```
@@ -246,3 +252,4 @@ The following operations with percent are supported:
 * `a% + b%` : add the numeric value of percent b to the numeric value of percent a ( a + b ) with a result becoming a percent. E.g.: 5% + 2% = 7%
 * `a% - b%` : subtract the numeric value of percent b from the numeric value of percent a ( a - b ) with a result becoming a percent. E.g.: 5% - 2% = 3%
 
+Operations that produce percent as a result return an instance of the `Percent` type, whose `Value` property contains the value of a percent (e.g., 5 for 5% and so on). 

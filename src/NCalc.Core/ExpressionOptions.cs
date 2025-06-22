@@ -130,4 +130,9 @@ public enum ExpressionOptions
     /// When enabled, supports sequences of statements separated by ';'
     /// </summary>
     UseStatementSequences = 1 << 24,
+
+    /// <summary>
+    /// When enabled and during the Divide operation, there is no remainder to the division, an integer type is used for a result; otherwise, the result is always float (double or extended)
+    /// </summary>
+    ReduceDivResultToInteger = 1 << 25
 }

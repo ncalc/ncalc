@@ -202,8 +202,73 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
+        bool useInteger = false;
+
+        if (options.ReduceDivResultToInteger)
+        {
+            if (a is decimal || b is decimal)
+            {
+                if (a != null && a.GetType() != typeof(decimal))
+                    a = Convert.ChangeType(a, TypeCode.Decimal);
+                else
+                if (b != null && b.GetType() != typeof(decimal))
+                    b = Convert.ChangeType(b, TypeCode.Decimal);
+
+                if (a != null && b != null)
+                {
+                    object? modObj = ModuloFunc(a, b);
+                    if (modObj is decimal mod && mod == 0)
+                        useInteger = true;
+                }
+            }
+            else
+            if (a is double || b is double)
+            {
+                if (a != null && a.GetType() != typeof(double))
+                    a = Convert.ChangeType(a, TypeCode.Double);
+                else
+                if (b != null && b.GetType() != typeof(double))
+                    b = Convert.ChangeType(b, TypeCode.Double);
+
+                if (a != null && b != null)
+                {
+                    object? modObj = ModuloFunc(a, b);
+                    if (modObj is double mod && mod == 0)
+                        useInteger = true;
+                }
+            }
+        }
+
         var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
-        return ExecuteOperation(a, b, '/', func);
+        object? result = ExecuteOperation(a, b, '/', func);
+        if (result == null || !useInteger)
+            return result;
+
+        if (result is decimal decResult)
+        {
+            long lResult = (long)decResult;
+            if (lResult >= Int32.MinValue && lResult <= Int32.MaxValue)
+                return (int)lResult;
+            else
+                return lResult;
+        }
+        if (result is double dResult)
+        {
+            long lResult = (long)dResult;
+            if (lResult >= Int32.MinValue && lResult <= Int32.MaxValue)
+                return (int)lResult;
+            else
+                return lResult;
+        }
+        if (result is float fResult)
+        {
+            long lResult = (long)fResult;
+            if (lResult >= Int32.MinValue && lResult <= Int32.MaxValue)
+                return (int)lResult;
+            else
+                return lResult;
+        }
+        return result;
     }
 
     public static object? DividePercent(object? a, object? b, MathHelperOptions options)

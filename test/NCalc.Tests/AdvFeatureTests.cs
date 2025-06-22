@@ -715,6 +715,8 @@ public class AdvFeatureTests
     [Theory]
     [InlineData("1@000", "@", 1000)]
     [InlineData("1:000", ":", 1000)]
+    [InlineData("1 000", " ", 1000)]
+    [InlineData("2 1 000", " ", 21000)]
 
     public void ShouldHandleNumberGroupSeparatorCustom(string input, string separator, object expectedValue)
     {
@@ -790,10 +792,12 @@ public class AdvFeatureTests
 
     [Theory]
     [InlineData("5%+2%", "7%")]
+    [InlineData("(2/5)%", "0.4%")]
     [InlineData("3.5% + 2.5%", "6%")]
     [InlineData("5%-2%", "3%")]
     [InlineData("5%*2", "10%")]
     [InlineData("10%/2", "5%")]
+    [InlineData("10%/2 + 3%*3", "14%")]
     public void ShouldCalculatePercentAsPercent(string input, string expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
@@ -801,19 +805,32 @@ public class AdvFeatureTests
         expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
 
         var result = expression.Evaluate();
+        if (expectedValue.Contains('.') && CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator != ".")
+            expectedValue = expectedValue.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
 
         Assert.Equal(expectedValue, result?.ToString());
     }
 
     [Theory]
     [InlineData("20*5%", 1)]
-    [InlineData("20*2.5%", 0.5)]
     [InlineData("20/5%", 400)]
     [InlineData("20/2.5%", 800)]
     [InlineData("100+5%", 105)]
     [InlineData("100-5%", 95)]
     [InlineData("100+(3+2)%", 105)]
-    public void ShouldCalculatePercentAsNumberLambda(string input, double expectedValue)
+    public void ShouldCalculatePercentAsNumberLambda(string input, int expectedValue)
+    {
+        var expression = new Expression(input, ExpressionOptions.NoCache);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
+
+        var sut = expression.ToLambda<int>();
+        Assert.Equal(expectedValue, sut());
+    }
+
+    [Theory]
+    [InlineData("20*2.5%", 0.5)]
+    public void ShouldCalculatePercentAsNumber2Lambda(string input, double expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
@@ -824,19 +841,49 @@ public class AdvFeatureTests
     }
 
     [Theory]
-    [InlineData("5%+2%", "7%")]
-    [InlineData("3.5% + 2.5%", "6%")]
-    [InlineData("5%-2%", "3%")]
-    [InlineData("5%*2", "10%")]
-    [InlineData("10%/2", "5%")]
-    public void ShouldCalculatePercentAsPercentLambda(string input, string expectedValue)
+    [InlineData("5%+2%", 7)]
+    [InlineData("3.5% + 2.5%", 6)]
+    [InlineData("5%-2%", 3)]
+    [InlineData("5%*2", 10)]
+    [InlineData("5%*2 + 5%*3", 25)]
+    [InlineData("10%/2", 5)]
+    [InlineData("10%/2 + 3%*3", 14)]
+    public void ShouldCalculatePercentAsPercentLambda(string input, double expectedValue)
     {
         var expression = new Expression(input, ExpressionOptions.NoCache);
         expression.AdvancedOptions = new AdvancedExpressionOptions();
         expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
 
-        var sut = expression.ToLambda<string>();
-        Assert.Equal(expectedValue, sut());
+        var sut = expression.ToLambda<Percent>();
+        var result = sut();
+        if (result.Value is double dValue)
+            Assert.Equal(expectedValue, dValue);
+        else
+        if (result.Value is int iValue)
+            Assert.Equal(expectedValue, (double)iValue);
+        else
+            Assert.Fail($"Unknown result type '{result.Value?.GetType()}'");
+    }
+
+    [Theory]
+    [InlineData("(20/5)%", 4)]
+    [InlineData("5% / 2", 2.5)]
+    [InlineData("(20/5)% / 2", 2)]
+    public void ShouldCalculatePercentAsPercent2Lambda(string input, double expectedValue)
+    {
+        var expression = new Expression(input, ExpressionOptions.NoCache);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
+
+        var sut = expression.ToLambda<Percent>();
+        var result = sut();
+        if (result.Value is double dValue)
+            Assert.Equal(expectedValue, dValue);
+        else
+        if (result.Value is int iValue)
+            Assert.Equal(expectedValue, (double)iValue);
+        else
+            Assert.Fail($"Unknown result type '{result.Value?.GetType()}'");
     }
 
     [Theory]
@@ -1354,6 +1401,16 @@ public class AdvFeatureTests
         }
     }
 
+    class AssignmentLambdaTestsWithDoubleContext
+    {
+        public double a { get; set; }
+
+        public int length(string x)
+        {
+            return x?.Length ?? 0;
+        }
+    }
+
     [Theory]
     [InlineData("a := 2", 2, 2)]
     [InlineData("a := 2 + 2", 4, 4)]
@@ -1554,6 +1611,54 @@ public class AdvFeatureTests
             Assert.Equal(expectedExprValue, (int)uResult);
         }
         else
+        if (result.GetType() == typeof(Double))
+        {
+            double dResult = (double)result;
+            Assert.Equal((double)expectedExprValue, dResult);
+        }
+        else
+            Assert.Equal(expectedExprValue, result);
+
+        /*Assert.NotNull(expression.Parameters["a"]);
+        if (expression.Parameters["a"]!.GetType() == typeof(System.UInt64))
+        {
+            ulong uResult = (ulong)expression.Parameters["a"]!;
+            Assert.Equal(expectedExprValue, (int)uResult);
+        }
+        else
+            Assert.Equal(expectedExprValue, expression.Parameters["a"]!);*/
+        Assert.Equal((double)expectedExprValue, context.a);
+    }
+
+    [Theory]
+    [InlineData("a := 4; a /= 2", 2)]
+    public void ShouldHandleStatementSequenceWithAssignment3Lambda(string input, int expectedExprValue)
+    {
+        bool eventFired = false;
+
+        var expression = new Expression(input, ExpressionOptions.NoCache | ExpressionOptions.UseAssignments | ExpressionOptions.UseStatementSequences);
+        expression.UpdateParameter += (name, args) => eventFired = true;
+
+        Func<AssignmentLambdaTestsWithDoubleContext, object> function = expression.ToLambda<AssignmentLambdaTestsWithDoubleContext, object>();
+
+        var context = new AssignmentLambdaTestsWithDoubleContext { };
+        var result = function(context);
+
+        Assert.True(eventFired);
+
+        Assert.NotNull(result);
+        if (result.GetType() == typeof(System.UInt64))
+        {
+            ulong uResult = (ulong)result;
+            Assert.Equal(expectedExprValue, (int)uResult);
+        }
+        else
+        if (result.GetType() == typeof(Double))
+        {
+            double dResult = (double)result;
+            Assert.Equal((double)expectedExprValue, dResult);
+        }
+        else
             Assert.Equal(expectedExprValue, result);
 
         /*Assert.NotNull(expression.Parameters["a"]);
@@ -1652,5 +1757,305 @@ public class AdvFeatureTests
         Assert.True(eventFired);
         Assert.Equal(expectedExprValue, result);
         Assert.Equal(expectedVarValue, context.a);
+    }
+}
+
+[Trait("Category", "Advanced")]
+[Trait("Category", "Async")]
+public class AsyncAdvFeatureTests
+{
+    [Theory]
+    [InlineData("20*5%", 1)]
+    [InlineData("20/5%", 400)]
+    [InlineData("20/2.5%", 800)]
+    [InlineData("100+5%", 105)]
+    [InlineData("100+(3+2)%", 105)]
+    [InlineData("100-5%", 95)]
+    [InlineData("20 * %5", 1)]
+    [InlineData("100 - %5", 95)]
+    [InlineData("100 + %(3+2)", 105)]
+    public async Task ShouldCalculatePercentAsNumberAsync(string input, int expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
+
+        var result = await expression.EvaluateAsync();
+
+        if (result?.GetType() == typeof(System.Double))
+        {
+            double dResult = (double)result;
+            Assert.Equal(expectedValue, (int)dResult);
+        }
+        else
+            Assert.Equal(expectedValue, result);
+    }
+
+    [Theory]
+    [InlineData("5%+2%", "7%")]
+    [InlineData("(2/5)%", "0.4%")]
+    [InlineData("3.5% + 2.5%", "6%")]
+    [InlineData("5%-2%", "3%")]
+    [InlineData("5%*2", "10%")]
+    [InlineData("10%/2", "5%")]
+    public async Task ShouldCalculatePercentAsPercentAsync(string input, string expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.Flags |= AdvExpressionOptions.CalculatePercent;
+
+        var result = await expression.EvaluateAsync();
+
+        if (expectedValue.Contains('.') && CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator != ".")
+            expectedValue = expectedValue.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+
+        Assert.Equal(expectedValue, result?.ToString());
+    }
+
+    [Theory]
+    [InlineData("#2025/06/05# + #08:00:00#", new int[] { 2025, 6, 5, 8, 0, 0 })]
+    [InlineData("#2025/06/06# - #8:00:00#", new int[] { 2025, 6, 5, 16, 0, 0 })]
+    public async Task ShouldAddSubtractDateAndTimeAsync(string input, int[] expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache | ExpressionOptions.SupportTimeOperations);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
+        expression.AdvancedOptions.DateSeparator = "/";
+        expression.AdvancedOptions.DateOrder = AdvancedExpressionOptions.DateOrderKind.YMD;
+
+        var result = await expression.EvaluateAsync();
+
+        DateTime expectedDate = new DateTime(expectedValue[0], expectedValue[1], expectedValue[2], expectedValue[3], expectedValue[4], expectedValue[5]);
+
+        Assert.Equal(expectedDate, result);
+    }
+
+    [Theory]
+    [InlineData("#8:00:00# + #08:00:00#", new int[] { 16, 0, 0 })]
+    [InlineData("#11:00:00# - #3:00:00#", new int[] { 8, 0, 0 })]
+    public async Task ShouldAddSubtractTimesAsync(string input, int[] expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache | ExpressionOptions.SupportTimeOperations);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.TimeSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
+        expression.AdvancedOptions.TimeSeparator = ":";
+        expression.AdvancedOptions.HoursFormat = AdvancedExpressionOptions.HoursFormatKind.Always24Hour;
+
+        var result = await expression.EvaluateAsync();
+
+        TimeSpan expectedTime = new TimeSpan(expectedValue[0], expectedValue[1], expectedValue[2]);
+
+        Assert.Equal(expectedTime, result);
+    }
+
+    [Theory]
+    [InlineData("#2025/06/05# - #2025/06/02#", new int[] { 72, 0, 0 })]
+    public async Task ShouldSubtractDatesAsync(string input, int[] expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache | ExpressionOptions.SupportTimeOperations);
+        expression.AdvancedOptions = new AdvancedExpressionOptions();
+        expression.AdvancedOptions.DateSeparatorType = AdvancedExpressionOptions.SeparatorType.Custom;
+        expression.AdvancedOptions.DateSeparator = "/";
+        expression.AdvancedOptions.DateOrder = AdvancedExpressionOptions.DateOrderKind.YMD;
+
+        var result = await expression.EvaluateAsync();
+
+        TimeSpan expectedTime = new TimeSpan(expectedValue[0], expectedValue[1], expectedValue[2]);
+
+        Assert.Equal(expectedTime, result);
+    }
+
+    [Theory]
+    [InlineData("5!", 120)]
+    [InlineData("5!!", 15)]
+    [InlineData("10!!!", 280)]
+    [InlineData("20!!!", 4188800)]
+    public async Task ShouldCalculateSmallFactorialsAsync(string input, long expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache);
+
+        var result = await expression.EvaluateAsync();
+
+        Assert.Equal(expectedValue, result);
+    }
+
+    [Theory]
+    [InlineData("22!", "1124000727777607680000")]
+    [InlineData("50!!!", "13106744139423334400000")]
+    public async Task ShouldCalculateLargeFactorialsAsync(string input, string expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache);
+
+        var result = await expression.EvaluateAsync();
+
+        var expected = BigInteger.Parse(expectedValue);
+        Assert.Equal(expectedValue, result?.ToString());
+    }
+
+    [Theory]
+    [InlineData("2+5!", 122)]
+    [InlineData("2*4!", 48)]
+    [InlineData("(2+1)!", 6)]
+    [InlineData("(2+1) +2!", 5)]
+    [InlineData("2**3!", 64)]
+    public async Task ShouldCalculateOperationsWithFactorialsAsync(string input, long expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache);
+
+        var result = await expression.EvaluateAsync();
+
+        if (result?.GetType() == typeof(System.Double))
+        {
+            double dResult = (double)result;
+            Assert.Equal(expectedValue, (long)dResult);
+        }
+        else
+            Assert.Equal(expectedValue, result);
+    }
+
+    [Theory]
+    [InlineData("\u221A4", 2)]
+    [InlineData("\u221A(2+2)", 2)]
+
+#if NET8_0_OR_GREATER
+    [InlineData("\u221B8", 2)]
+    [InlineData("\u221B(4+4)", 2)]
+#endif
+    [InlineData("\u221C(4*4)", 2)]
+    public async Task ShouldCalculateRootsAsync(string input, double expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache | ExpressionOptions.UseUnicodeCharsForOperations);
+        var result = await expression.EvaluateAsync();
+        Assert.Equal(expectedValue, result);
+    }
+
+    [Theory]
+    [InlineData("a := 2", 2, 2)]
+    [InlineData("a := 2 + 2", 4, 4)]
+    [InlineData("{a} := (2 + 2)", 4, 4)]
+    public async Task ShouldHandleAssignmentAsync(string input, int expectedVarValue, int expectedExprValue)
+    {
+        bool eventFired = false;
+
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache | ExpressionOptions.UseAssignments);
+        expression.UpdateParameterAsync += async (name, args) =>
+        {
+            eventFired = true;
+            Assert.Equal("a", name);
+            Assert.Equal(expectedVarValue, args.Value);
+        };
+
+        var result = await expression.EvaluateAsync();
+
+        Assert.True(eventFired);
+        Assert.Equal(expectedExprValue, result);
+    }
+
+    [Theory]
+    [InlineData("2 + 2; 3 + 3", 6)]
+    [InlineData("(2 + 2); 3 + 3", 6)]
+    [InlineData("Max(2, 5); 3 + 3", 6)]
+    [InlineData("Max(2; 5)", 5)]
+    [InlineData("Max(2; 5); 3 + 3", 6)]
+    [InlineData("Length('12;45')", 5)]
+    [InlineData("'Text data with ; (semicolon)'; 3 + 3", 6)]
+    public async Task ShouldHandleStatementSequenceAsync(string input, int expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache | ExpressionOptions.UseStatementSequences);
+        expression.Functions["Length"] = async (args) =>
+        {
+            return ((await args[0].EvaluateAsync()) as string)?.Length ?? 0;
+        };
+        var result = await expression.EvaluateAsync();
+        Assert.Equal(expectedValue, result);
+    }
+
+    [Theory]
+    [InlineData("2 * 2 ", 4)]
+    [InlineData("2 ** 2 ", 4)]
+    [InlineData("2 || 2 ", true)]
+    [InlineData("2 == 2 ", true)]
+    public async Task ShouldHandleBinaryStatementsAsync(string input, object expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache  /*| ExpressionOptions.UseAssignments*/ | ExpressionOptions.UseStatementSequences);
+        var result = await expression.EvaluateAsync();
+
+        Assert.NotNull(result);
+        if (result.GetType() == typeof(System.Double))
+        {
+            double dResult = (double)result;
+            Assert.Equal(expectedValue, (int)dResult);
+        }
+        else
+        if (result.GetType() == typeof(System.Boolean))
+        {
+            bool bResult = (bool)result;
+            Assert.Equal(expectedValue, bResult);
+        }
+        else
+            Assert.Equal(expectedValue, result);
+    }
+
+    [Theory]
+    [InlineData("a := 2", 2, 2)]
+    [InlineData("a := 2 + 2", 4, 4)]
+    [InlineData("{a} := (2 + 2)", 4, 4)]
+    [InlineData("a := 2; a + 2", 2, 4)]
+    [InlineData("a := 2; {a} + 2", 2, 4)]
+    [InlineData("a := 2; a + Max(2, 4)", 2, 6)]
+    [InlineData("a := 2; b := 4; Max(a, b)", 2, 4)]
+    [InlineData("a := 2; a + Max(2; 4)", 2, 6)]
+    [InlineData("a := if (true, 2, 4); a + Max(2; 4)", 2, 6)]
+    [InlineData("if (true, a := 2, a := 4); a + Max(2; 4)", 2, 6)]
+    [InlineData("a := if (true; 2; 4); a + Max(2; 4)", 2, 6)]
+    [InlineData("if (true; a := 2; a := 4); a + Max(2; 4)", 2, 6)]
+    public async Task ShouldHandleStatementSequenceWithAssignmentAsync(string input, int expectedVarValue, int expectedExprValue)
+    {
+        bool eventFired = false;
+
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache | ExpressionOptions.UseAssignments | ExpressionOptions.UseStatementSequences);
+        expression.UpdateParameterAsync += async (name, args) =>
+        {
+            eventFired = true;
+
+            if (name == "a")
+            {
+                Assert.Equal("a", name);
+                Assert.Equal(expectedVarValue, args.Value);
+            }
+        };
+        var result = await expression.EvaluateAsync();
+        Assert.True(eventFired);
+        Assert.Equal(expectedExprValue, result);
+    }
+
+    [Theory]
+    [InlineData("LENgth('xyz')", 3)]
+    public async Task ShouldHandleFunctionsInLowercaseAsync(string input, object expectedValue)
+    {
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache | ExpressionOptions.LowerCaseIdentifierLookup);
+        expression.Functions.Add("length", async (x) => (await (x[0].EvaluateAsync()))?.ToString()?.Length ?? 0);
+        var result = await expression.EvaluateAsync();
+        Assert.Equal(expectedValue, result);
+    }
+
+    [Theory]
+    [InlineData("A := if (true, 2, 4); a + Max(2; 4) + A", 2, 8)]
+    public async Task ShouldHandleAssignmentInLowercaseAsync(string input, int expectedVarValue, int expectedExprValue)
+    {
+        bool eventFired = false;
+
+        var expression = new AsyncExpression(input, ExpressionOptions.NoCache | ExpressionOptions.UseAssignments | ExpressionOptions.UseStatementSequences | ExpressionOptions.LowerCaseIdentifierLookup);
+        expression.UpdateParameterAsync += async (name, args) =>
+        {
+            eventFired = true;
+            Assert.Equal("a", name.ToLowerInvariant());
+            Assert.Equal(expectedVarValue, args.Value);
+        };
+
+        var result = await expression.EvaluateAsync();
+
+        Assert.True(eventFired);
+        Assert.Equal(expectedExprValue, result);
     }
 }
