@@ -146,13 +146,12 @@ public class DecimalsTests
         Assert.Equal(0x2f, new Expression("0x17 + 0x18").Evaluate());
     }
 
-    
     [Fact]
     public void ShouldResolveOctal()
     {
         Assert.Equal(29, new Expression("0o16 + 0o17").Evaluate());
     }
-    
+
     [Fact]
     public void ShouldResolveBinary()
     {

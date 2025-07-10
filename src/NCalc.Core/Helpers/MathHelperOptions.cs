@@ -30,6 +30,12 @@ public readonly struct MathHelperOptions(CultureInfo cultureInfo, ExpressionOpti
         get => options.HasFlag(ExpressionOptions.AllowCharValues);
     }
 
+    public bool ReduceDivResultToInteger
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => options.HasFlag(ExpressionOptions.ReduceDivResultToInteger);
+    }
+
     public static implicit operator MathHelperOptions(CultureInfo cultureInfo)
     {
         return new MathHelperOptions(cultureInfo, ExpressionOptions.None);

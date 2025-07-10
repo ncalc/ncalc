@@ -149,7 +149,29 @@ public class LambdaTests
         var expression = new Expression(input);
         var sut = expression.ToLambda<int>();
 
-        Assert.Equal(sut(), expected);
+        Assert.Equal(expected, sut());
+    }
+
+    [Theory]
+    [InlineData("1/2", 0.5)]
+    [InlineData("2/5", 0.4)]
+    public void ShouldHandleDivision(string input, double expected)
+    {
+        var expression = new Expression(input);
+        var sut = expression.ToLambda<double>();
+
+        Assert.Equal(expected, sut());
+    }
+
+    [Theory]
+    [InlineData("2/1", 2)]
+    [InlineData("6/2", 3)]
+    public void ShouldHandleDivisionAsInteger(string input, int expected)
+    {
+        var expression = new Expression(input);
+        var sut = expression.ToLambda<int>();
+
+        Assert.Equal(expected, sut());
     }
 
     [Fact]

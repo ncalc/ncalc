@@ -306,6 +306,28 @@ public class MathsTests
         Assert.Equal(100M, e.Evaluate());
     }
 
+    [Theory]
+    [InlineData("1/2", 0.5)]
+    [InlineData("2/5", 0.4)]
+    public void ShouldHandleDivision(string input, double expected)
+    {
+        var expression = new Expression(input);
+        var result = expression.Evaluate();
+
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("2/1", 2)]
+    [InlineData("6/2", 3)]
+    public void ShouldHandleDivisionAsInteger(string input, int expected)
+    {
+        var expression = new Expression(input, ExpressionOptions.ReduceDivResultToInteger);
+        var result = expression.Evaluate();
+
+        Assert.Equal(expected, result);
+    }
+
     [Fact]
     public void Overflow_Issue_190()
     {

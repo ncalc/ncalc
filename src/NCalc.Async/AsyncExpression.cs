@@ -44,6 +44,15 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
         remove => Context.AsyncEvaluateParameterHandler -= value;
     }
 
+    /// <summary>
+    /// Event triggered to handle parameter update.
+    /// </summary>
+    public event AsyncUpdateParameterHandler UpdateParameterAsync
+    {
+        add => Context.AsyncUpdateParameterHandler += value;
+        remove => Context.AsyncUpdateParameterHandler -= value;
+    }
+
     protected IAsyncEvaluationVisitorFactory EvaluationVisitorFactory { get; }
 
     private AsyncExpression(AsyncExpressionContext? context = null) : base(context ?? new AsyncExpressionContext())

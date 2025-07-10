@@ -1,7 +1,9 @@
 using NCalc.Domain;
 using NCalc.Factories;
 using NCalc.Tests.TestData;
+
 using Newtonsoft.Json;
+
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NCalc.Tests;
@@ -74,10 +76,10 @@ public class SerializationTests
             new BinaryExpression(BinaryExpressionType.GreaterOrEqual, new ValueExpression(1), new ValueExpression(2))
                 .ToString());
         Assert.Equal("1 < 2",
-            new BinaryExpression(BinaryExpressionType.Lesser, new ValueExpression(1), new ValueExpression(2))
+            new BinaryExpression(BinaryExpressionType.Less, new ValueExpression(1), new ValueExpression(2))
                 .ToString());
         Assert.Equal("1 <= 2",
-            new BinaryExpression(BinaryExpressionType.LesserOrEqual, new ValueExpression(1), new ValueExpression(2))
+            new BinaryExpression(BinaryExpressionType.LessOrEqual, new ValueExpression(1), new ValueExpression(2))
                 .ToString());
         Assert.Equal("1 - 2",
             new BinaryExpression(BinaryExpressionType.Minus, new ValueExpression(1), new ValueExpression(2))

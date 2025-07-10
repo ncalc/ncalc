@@ -33,4 +33,3 @@ jobs:
         
       - name: Test
         run: dotnet run --project test/NCalc.Tests/NCalc.Tests.csproj -c Release
-

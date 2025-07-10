@@ -1,6 +1,6 @@
 # Parameters
 
-## Static parameters
+## Static Parameters
 
 Static parameters are values which can be defined before the evaluation of an expression.
 These parameters can be accessed using the <xref:NCalc.ExpressionBase`1.Parameters> property of the <xref:NCalc.Expression>
@@ -17,7 +17,7 @@ Console.WriteLine(expression.Evaluate());
 Parameters can be useful when a value is unknown at compile time, or when performance is important and the parsing can
 be saved for further calculations.
 
-## Expression parameters
+## Expression Parameters
 
 Expressions can be split into several ones by defining expression parameters. Those parameters are not simple values but
 <xref:NCalc.Expression> instances themselves.
@@ -30,7 +30,7 @@ surface.Parameters["l"] = 1;
 surface.Parameters["L"] = 2;
 ```
 
-## Dynamic parameters
+## Dynamic Parameters
 
 Sometimes parameters can be even more complex to evaluate and need a dedicated method to be evaluated. This can be done
 using the <xref:NCalc.ExpressionParameter> delegate.
@@ -47,7 +47,7 @@ expression.DynamicParameters["Pi"] = _ => {
 };
 ```
 
-## Square brackets parameters
+## Square Brackets Parameters
 
 Parameters in between square brackets can contain special characters like spaces, dots, and also start with digits.
 
@@ -55,7 +55,7 @@ Parameters in between square brackets can contain special characters like spaces
 var expression = new Expression("[My First Parameter] + [My Second Parameter]");
 ```
 
-## Curly braces parameters
+## Curly Braces Parameters
 
 You can also use a curly braces as alternative to square brackets.
 
@@ -63,7 +63,7 @@ You can also use a curly braces as alternative to square brackets.
 var expression = new Expression("{PageState} ==  'List'");
 ```
 
-## Multi-valued parameters
+## Multi-Valued Parameters
 
 When parameters are `IEnumerable` and the <xref:NCalc.ExpressionOptions.IterateParameters> is
 used, the result is a `List<object?>` made of the evaluation of each value in the parameter.
@@ -96,7 +96,7 @@ expression.EvaluateParameter += delegate(string name, ParameterArgs args)
 };
 ```
 
-## Compare with null parameters
+## Compare with Null Parameters
 
 When parameter is null and <xref:NCalc.ExpressionOptions.AllowNullParameter> is used, comparison of values to null is
 allowed.
@@ -108,7 +108,7 @@ var expression = new Expression("'a string' == null", ExpressionOptions.AllowNul
 //  False
 ```
 
-## Getting all parameters from an expression
+## Getting all Parameters from an Expression
 
 ```c#
 var expression = new Expression ("if(x=0,x,y)"); 
@@ -121,3 +121,19 @@ var parameters = expression.GetParametersNames();
 
 ## Case Sensitivity
 See [case_sensitivity](case_sensitivity.md) for more info.
+
+## Assigning and Updating Parameters 
+
+Parameters can be assigned in expressions. 
+Support for assignments must be enabled by including the <xref:NCalc.ExpressionOptions.UseAssignments> flag into <xref:NCalc.ExpressionOptions> of an <xref:NCalc.Expression>.
+
+When a parameter is assigned, first the <xref:NCalc.Expression.OnUpdateParameter> event is fired. An event handler may tell the evaluation engine to update the static parameter table or bypass this step by setting the UpdateParameterArgs.<xref:NCalc.Handlers.UpdateParameterArgs.UpdateParameterLists> or AsyncUpdateParameterArgs.<xref:NCalc.Handlers.AsyncUpdateParameterArgs.UpdateParameterLists> property to `true` or `false` respectively.
+
+An assignment is an expression, so it can be used wherever a value is accepted. E.g., the following operations are equivalent:
+
+```
+if (true, a := 2, a := 4); a + Max(2; 4)
+a := if (true; 2; 4); a + Max(2; 4)
+```
+
+Assignment can be combined with an operator (such as "+=" for addition with assignment); please, see the [Operators](operators.md) topic for the list of supported operators with assignment.
