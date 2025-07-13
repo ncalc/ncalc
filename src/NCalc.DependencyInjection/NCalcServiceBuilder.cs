@@ -15,13 +15,6 @@ public class NCalcServiceBuilder(IServiceCollection services)
         return this;
     }
 
-    public NCalcServiceBuilder WithAsyncExpressionFactory<TAsyncExpressionFactory>()
-        where TAsyncExpressionFactory : class, IAsyncExpressionFactory
-    {
-        Services.ReplaceScoped<IAsyncExpressionFactory, TAsyncExpressionFactory>();
-        return this;
-    }
-
     public NCalcServiceBuilder WithCache<TCache>() where TCache : class, ILogicalExpressionCache
     {
         Services.ReplaceSingleton<ILogicalExpressionCache, TCache>();
@@ -39,13 +32,6 @@ public class NCalcServiceBuilder(IServiceCollection services)
         where TEvaluationVisitorFactory : class, IEvaluationVisitorFactory
     {
         Services.ReplaceTransient<IEvaluationVisitorFactory, TEvaluationVisitorFactory>();
-        return this;
-    }
-
-    public NCalcServiceBuilder WithAsyncEvaluationVisitorFactory<TAsyncEvaluationVisitorFactory>()
-        where TAsyncEvaluationVisitorFactory : class, IAsyncEvaluationVisitorFactory
-    {
-        Services.ReplaceTransient<IAsyncEvaluationVisitorFactory, TAsyncEvaluationVisitorFactory>();
         return this;
     }
 }

@@ -15,6 +15,7 @@
     </ItemGroup>
     
     <ItemGroup>
+      <ProjectReference Include="..\..\NCalc.Core\NCalc.Core.csproj" />
       <ProjectReference Include="..\..\NCalc.DependencyInjection\NCalc.DependencyInjection.csproj" />
     </ItemGroup>
 

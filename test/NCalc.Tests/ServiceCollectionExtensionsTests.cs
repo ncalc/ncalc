@@ -24,7 +24,6 @@ public class ServiceCollectionExtensionsTests
         Assert.NotNull(serviceProvider.GetService<ILogicalExpressionCache>());
         Assert.NotNull(serviceProvider.GetService<ILogicalExpressionFactory>());
         Assert.NotNull(serviceProvider.GetService<IEvaluationVisitorFactory>());
-        Assert.NotNull(serviceProvider.GetService<IAsyncEvaluationVisitorFactory>());
     }
 
     [Fact]
@@ -87,24 +86,6 @@ public class ServiceCollectionExtensionsTests
         Assert.IsType<CustomEvaluationVisitorFactory>(customVisitorFactory);
     }
 
-    [Fact]
-    public async Task WithAsyncEvaluationService_ShouldReplaceEvaluationService()
-    {
-        var services = new ServiceCollection();
-
-        services.AddNCalc()
-            .WithAsyncEvaluationVisitorFactory<CustomAsyncEvaluationVisitorFactory>();
-
-        var serviceProvider = services.BuildServiceProvider();
-
-        var customVisitorFactory = serviceProvider.GetService<IAsyncEvaluationVisitorFactory>();
-        var expFactory = serviceProvider.GetRequiredService<IAsyncExpressionFactory>();
-
-        var exp = expFactory.Create("42");
-        Assert.Equal("The answer", await exp.EvaluateAsync());
-        Assert.IsType<CustomAsyncEvaluationVisitorFactory>(customVisitorFactory);
-    }
-
     #region Custom Implementations Stubs
 
     private class CustomExpressionFactory : IExpressionFactory
@@ -133,10 +114,10 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
     {
-        public override object Visit(ValueExpression expression)
+        public override ValueTask<object> Visit(ValueExpression expression)
         {
             if(expression.Value is 42)
-                return "The answer";
+                return new("The answer");
 
             return base.Visit(expression);
         }
@@ -149,25 +130,5 @@ public class ServiceCollectionExtensionsTests
             return new CustomVisitor(context);
         }
     }
-
-    private class CustomAsyncVisitor(AsyncExpressionContext context) : AsyncEvaluationVisitor(context)
-    {
-        public override ValueTask<object> Visit(ValueExpression expression)
-        {
-            if (expression.Value is 42)
-                return new("The answer");
-
-            return base.Visit(expression);
-        }
-    }
-
-    private class CustomAsyncEvaluationVisitorFactory : IAsyncEvaluationVisitorFactory
-    {
-        public AsyncEvaluationVisitor Create(AsyncExpressionContext context)
-        {
-            return new CustomAsyncVisitor(context);
-        }
-    }
-
     #endregion
 }

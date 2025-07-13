@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\NCalc.Core\NCalc.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj" />
   </ItemGroup>
 

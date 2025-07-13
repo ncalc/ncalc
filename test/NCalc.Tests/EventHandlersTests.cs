@@ -12,10 +12,12 @@ public class EventHandlersTests
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs args)
+        e.EvaluateFunction += (string name, FunctionArgs args) =>
         {
             if (name == "SecretOperation")
                 args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+
+            return ValueTask.CompletedTask;
         };
 
         Assert.Equal(9, e.Evaluate());
@@ -28,10 +30,12 @@ public class EventHandlersTests
         e.Parameters["e"] = 3;
         e.Parameters["f"] = 1;
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs args)
+        e.EvaluateFunction += (string name, FunctionArgs args) =>
         {
             if (name == "SecretOperation")
                 args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+
+            return ValueTask.CompletedTask;
         };
 
         Assert.Equal(10, e.Evaluate());
@@ -45,10 +49,12 @@ public class EventHandlersTests
         e.Parameters["Pi Squared"] = new Expression("Pi * [Pi]");
         e.Parameters["X"] = 10;
 
-        e.EvaluateParameter += delegate (string name, ParameterArgs args)
+        e.EvaluateParameter += (string name, ParameterArgs args) =>
         {
             if (name == "Pi")
                 args.Result = 3.14;
+
+            return ValueTask.CompletedTask;
         };
 
         Assert.Equal(117.07, e.Evaluate());
@@ -62,21 +68,22 @@ public class EventHandlersTests
 
         var expression = new Expression("MyFunc()");
 
-        expression.EvaluateFunction += Expression_EvaluateFunction;
+        expression.EvaluateFunction += (string name, FunctionArgs args) =>
+        {
+            if (name != "MyFunc")
+                return ValueTask.CompletedTask;
+
+            args.Result = 1;
+            counter++;
+            totalCounter++;
+
+            return ValueTask.CompletedTask;
+        };
 
         for (var i = 0; i < 10; i++)
         {
             counter = 0;
             _ = expression.Evaluate();
-        }
-
-        void Expression_EvaluateFunction(string name, FunctionArgs args)
-        {
-            if (name != "MyFunc")
-                return;
-            args.Result = 1;
-            counter++;
-            totalCounter++;
         }
 
         Assert.Equal(10, totalCounter);
@@ -89,10 +96,12 @@ public class EventHandlersTests
 
         Assert.Equal(1.99d, e.Evaluate());
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs args)
+        e.EvaluateFunction += (string name, FunctionArgs args) =>
         {
             if (name == "Round")
                 args.Result = 3;
+
+            return ValueTask.CompletedTask;
         };
 
         Assert.Equal(3, e.Evaluate());
@@ -103,10 +112,12 @@ public class EventHandlersTests
     {
         var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");
 
-        e.EvaluateParameter += delegate (string name, ParameterArgs arg)
+        e.EvaluateParameter += (string name, ParameterArgs arg) =>
         {
             if (name == "Pi")
                 arg.Result = 3.14;
+
+            return ValueTask.CompletedTask;
         };
 
         e.Evaluate();
@@ -117,7 +128,7 @@ public class EventHandlersTests
     {
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs arg)
+        e.EvaluateFunction += (string name, FunctionArgs arg) =>
         {
             switch (name)
             {
@@ -131,9 +142,11 @@ public class EventHandlersTests
                     arg.Result = 3 * Convert.ToDouble(arg.Parameters[0].Evaluate());
                     break;
             }
+
+            return ValueTask.CompletedTask;
         };
 
-        e.EvaluateParameter += delegate (string name, ParameterArgs arg)
+        e.EvaluateParameter += (string name, ParameterArgs arg) =>
         {
             switch (name)
             {
@@ -147,6 +160,8 @@ public class EventHandlersTests
                     arg.Result = 3;
                     break;
             }
+
+            return ValueTask.CompletedTask;
         };
 
         Assert.Equal(13d, e.Evaluate());
@@ -157,12 +172,14 @@ public class EventHandlersTests
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs args)
+        e.EvaluateFunction += (string name, FunctionArgs args) =>
         {
             Assert.False(args.HasResult);
             if (name == "SecretOperation")
                 args.Result = null;
             Assert.True(args.HasResult);
+
+            return ValueTask.CompletedTask;
         };
 
         Assert.Null(e.Evaluate());
@@ -173,12 +190,14 @@ public class EventHandlersTests
     {
         var e = new Expression("x");
 
-        e.EvaluateParameter += delegate (string name, ParameterArgs args)
+        e.EvaluateParameter += (string name, ParameterArgs args) =>
         {
             Assert.False(args.HasResult);
             if (name == "x")
                 args.Result = null;
             Assert.True(args.HasResult);
+
+            return ValueTask.CompletedTask;
         };
 
         Assert.Null(e.Evaluate());
@@ -194,6 +213,8 @@ public class EventHandlersTests
         {
             if (name.Equals(functionName, StringComparison.OrdinalIgnoreCase))
                 args.Result = 1;
+
+            return ValueTask.CompletedTask;
         };
 
         Assert.Equal(1, expression.Evaluate());
@@ -225,6 +246,8 @@ public class EventHandlersTests
 
                 args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
             }
+
+            return ValueTask.CompletedTask;
         };
 
         Assert.Equal(12, e.Evaluate());
@@ -261,7 +284,10 @@ public class EventHandlersTests
 
                 args.Result = r && times[id] == 0;
             }
+
+            return ValueTask.CompletedTask;
         };
+
         e.Parameters["value"] = 9;
 
         Assert.Equal(false, e.Evaluate());
