@@ -12,14 +12,14 @@ public class AsyncTests
     [ClassData(typeof(EvaluationTestData))]
     public async Task ShouldEvaluateAsync(string expression, object expected)
     {
-        Assert.Equal(expected, await new AsyncExpression(expression).EvaluateAsync());
+        Assert.Equal(expected, await new Expression(expression).EvaluateAsync());
     }
 
     [Fact]
     public async Task ShouldEvaluateAsyncFunction()
     {
-        var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
-        expression.Functions["database_operation"] = async (_) =>
+        var expression = new Expression("database_operation('SELECT FOO') == 'FOO'");
+        expression.AsyncFunctions["database_operation"] = async (_) =>
         {
             // My heavy database work.
             await Task.Delay(1);
@@ -34,9 +34,9 @@ public class AsyncTests
     [Fact]
     public async Task ShouldEvaluateAsyncParameter()
     {
-        var expression = new AsyncExpression("(a + b) == 'Leo'");
-        expression.Parameters["b"] = new AsyncExpression("'eo'");
-        expression.DynamicParameters["a"] = async _ =>
+        var expression = new Expression("(a + b) == 'Leo'");
+        expression.Parameters["b"] = new Expression("'eo'");
+        expression.AsyncDynamicParameters["a"] = async _ =>
         {
             await Task.Delay(1);
             return "L";
@@ -49,8 +49,8 @@ public class AsyncTests
     [Fact]
     public async Task ShouldEvaluateAsyncFunctionHandler()
     {
-        var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
-        expression.EvaluateFunctionAsync += async (name, args) =>
+        var expression = new Expression("database_operation('SELECT FOO') == 'FOO'");
+        expression.EvaluateFunction += async (name, args) =>
         {
             if (name == "database_operation")
             {
@@ -68,9 +68,9 @@ public class AsyncTests
     [Fact]
     public async Task ShouldEvaluateAsyncParameterHandler()
     {
-        var expression = new AsyncExpression("(a + b) == 'Leo'");
-        expression.Parameters["b"] = new AsyncExpression("'eo'");
-        expression.EvaluateParameterAsync += (name, args) =>
+        var expression = new Expression("(a + b) == 'Leo'");
+        expression.Parameters["b"] = new Expression("'eo'");
+        expression.EvaluateParameter += (name, args) =>
         {
             if (name == "a")
             {
@@ -87,7 +87,7 @@ public class AsyncTests
     [Fact]
     public async Task ShouldEvaluateArrayParameters()
     {
-        var e = new AsyncExpression("x * x", ExpressionOptions.IterateParameters)
+        var e = new Expression("x * x", ExpressionOptions.IterateParameters)
         {
             Parameters =
             {
@@ -109,7 +109,7 @@ public class AsyncTests
     [ClassData(typeof(BuiltInFunctionsTestData))]
     public async Task ShouldHandleBuiltInFunctions(string expression, object expected, double? tolerance)
     {
-        var result = await new AsyncExpression(expression).EvaluateAsync();
+        var result = await new Expression(expression).EvaluateAsync();
 
         if (tolerance.HasValue)
         {
@@ -125,7 +125,7 @@ public class AsyncTests
     [ClassData(typeof(ValuesTestData))]
     public async Task ShouldParseValues(string input, object expectedValue)
     {
-        var expression = new AsyncExpression(input);
+        var expression = new Expression(input);
         var result = await expression.EvaluateAsync();
 
         if (expectedValue is double expectedDouble)
@@ -142,7 +142,7 @@ public class AsyncTests
     [ClassData(typeof(NullCheckTestData))]
     public async Task ShouldAllowOperatorsWithNulls(string expression, object expected)
     {
-        var e = new AsyncExpression(expression, ExpressionOptions.AllowNullParameter);
+        var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
         Assert.Equal(expected, await e.EvaluateAsync());
     }
 
@@ -161,7 +161,7 @@ public class AsyncTests
             TypeNameHandling = TypeNameHandling.All
         });
 
-        var exp = new AsyncExpression(deserialized, ExpressionOptions.NoCache)
+        var exp = new Expression(deserialized, ExpressionOptions.NoCache)
         {
             Parameters =
             {
@@ -189,7 +189,7 @@ public class AsyncTests
     [InlineData("42 == 42", false)]
     public void HasErrorsIssue239(string expressionString, bool hasError)
     {
-        var expression = new AsyncExpression(expressionString);
+        var expression = new Expression(expressionString);
         Assert.Equal(hasError, expression.HasErrors());
     }
 
@@ -209,12 +209,12 @@ public class AsyncTests
     [Fact]
     public async Task ShouldEvaluateTernaryAsync()
     {
-        Assert.Equal(42, await new AsyncExpression("1 == 1 ? 42 : 3/0").EvaluateAsync());
+        Assert.Equal(42, await new Expression("1 == 1 ? 42 : 3/0").EvaluateAsync());
     }
 
     [Fact]
     public async Task ShouldEvaluatePowAsync()
     {
-        Assert.Equal(4d, await new AsyncExpression("2**2").EvaluateAsync());
+        Assert.Equal(4d, await new Expression("2**2").EvaluateAsync());
     }
 }

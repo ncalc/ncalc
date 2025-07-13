@@ -93,6 +93,8 @@ expression.EvaluateParameter += delegate(string name, ParameterArgs args)
 {
     if (name == "Pi")
         args.Result = 3.14;
+    
+    return ValueTask.CompletedTask;
 };
 ```
 

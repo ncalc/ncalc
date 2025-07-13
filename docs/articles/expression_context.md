@@ -1,6 +1,6 @@
 # Expression Context
 
-<xref:NCalc.ExpressionContext> (or <xref:NCalc.AsyncExpressionContext>) at [NCalcAsync](async.md), is the class
+<xref:NCalc.ExpressionContext> is the class
 responsible for storing contextual data of the expression, like [parameters](parameters.md)
 and [functions](functions.md).
 
