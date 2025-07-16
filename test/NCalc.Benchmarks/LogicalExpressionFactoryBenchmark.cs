@@ -34,24 +34,24 @@ public class LogicalExpressionFactoryBenchmark
     [Benchmark]
     public LogicalExpression SimpleAntlrExpression()
     {
-        return AntlrFactory.Create(SimpleExpression, ExpressionOptions.NoCache);
+        return AntlrFactory.Create(SimpleExpression);
     }
 
     [Benchmark]
     public LogicalExpression SimpleParlotExpression()
     {
-        return ParlotFactory.Create(SimpleExpression, ExpressionOptions.NoCache);
+        return ParlotFactory.Create(SimpleExpression);
     }
 
     [Benchmark]
     public LogicalExpression AdvancedAntlrExpression()
     {
-        return AntlrFactory.Create(AdvancedExpression, ExpressionOptions.NoCache);
+        return AntlrFactory.Create(AdvancedExpression);
     }
 
     [Benchmark]
     public LogicalExpression AdvancedParlotExpression()
     {
-        return ParlotFactory.Create(AdvancedExpression, ExpressionOptions.NoCache);
+        return ParlotFactory.Create(AdvancedExpression);
     }
 }
