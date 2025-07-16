@@ -14,7 +14,7 @@ namespace NCalc.Benchmarks
 
         [Benchmark]
         public LogicalExpression ParseWithoutCompilation() =>
-            LogicalExpressionParser.Parse(new LogicalExpressionParserContext(Expression, ExpressionOptions.None));
+            LogicalExpressionParser.Parse(new LogicalExpressionParserContext(Expression, ExpressionOptions.NoCache));
     }
 
     [MemoryDiagnoser]
@@ -27,6 +27,6 @@ namespace NCalc.Benchmarks
 
         [Benchmark]
         public LogicalExpression ParseWithCompilation() =>
-            LogicalExpressionParser.Parse(new LogicalExpressionParserContext(Expression, ExpressionOptions.None));
+            LogicalExpressionParser.Parse(new LogicalExpressionParserContext(Expression, ExpressionOptions.NoCache));
     }
 }
