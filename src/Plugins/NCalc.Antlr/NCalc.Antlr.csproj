@@ -5,15 +5,21 @@
         <Description>
             NCalc is a mathematical expression evaluator for .NET. This assembly allows NCalc to use Antlr as an alternative parser.
         </Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
+	
+	<ItemGroup>
+        <None Include="../../../NCalc.png">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+		<None Include="README.md" Pack="true" PackagePath="/" />
+    </ItemGroup>
+	
     <ItemGroup>
         <ProjectReference Include="..\..\NCalc.DependencyInjection\NCalc.DependencyInjection.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <None Include="../../../NCalc.png" Pack="true" PackagePath="/" />
-    </ItemGroup>
-    
     <ItemGroup>
         <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
     </ItemGroup>

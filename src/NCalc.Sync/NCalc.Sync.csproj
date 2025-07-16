@@ -42,7 +42,7 @@
         <None Include="..\..\README.md" Pack="true" PackagePath="" />
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="FastExpressionCompiler" Version="5.2.0" />
+      <PackageReference Include="FastExpressionCompiler" Version="5.3.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj" />
