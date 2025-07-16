@@ -20,7 +20,7 @@ public class NCalcVsDataTableBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        Expression = new Expression(ExpressionString);
+        Expression = new Expression(ExpressionString, ExpressionOptions.NoCache);
         DataTable = new DataTable();
     }
 
