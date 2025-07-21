@@ -122,7 +122,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
                 resultBuilder.Append(',');
             }
         }
-        resultBuilder.Append(") ");
+        resultBuilder.Append(')');
         return resultBuilder.ToString();
     }
 
