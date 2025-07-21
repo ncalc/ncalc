@@ -15,21 +15,18 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public string Visit(TernaryExpression expression)
     {
-        var resultBuilder = new StringBuilder();
-        resultBuilder.Append(EncapsulateNoValue(expression.LeftExpression));
-        resultBuilder.Append("? ");
-        resultBuilder.Append(EncapsulateNoValue(expression.MiddleExpression));
-        resultBuilder.Append(": ");
-        resultBuilder.Append(EncapsulateNoValue(expression.RightExpression));
-        return resultBuilder.ToString();
+        string result = EncapsulateNoValue(expression.LeftExpression) + "? ";
+        result += EncapsulateNoValue(expression.MiddleExpression) + ": ";
+        result += EncapsulateNoValue(expression.RightExpression);
+
+        return result;
     }
 
     public string Visit(BinaryExpression expression)
     {
-        var resultBuilder = new StringBuilder();
-        resultBuilder.Append(EncapsulateNoValue(expression.LeftExpression));
+        string result = EncapsulateNoValue(expression.LeftExpression);
 
-        resultBuilder.Append(expression.Type switch
+        result += expression.Type switch
         {
             BinaryExpressionType.And => "and ",
             BinaryExpressionType.Or => "or ",
@@ -56,60 +53,41 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             BinaryExpressionType.NotLike => "not like ",
             BinaryExpressionType.Unknown => "unknown ",
             _ => throw new ArgumentOutOfRangeException()
-        });
+        };
 
-        resultBuilder.Append(EncapsulateNoValue(expression.RightExpression));
-        return resultBuilder.ToString();
+        result += EncapsulateNoValue(expression.RightExpression);
+        return result;
     }
 
     public string Visit(UnaryExpression expression)
     {
-        var resultBuilder = new StringBuilder();
-
-        resultBuilder.Append(expression.Type switch
+        string result = expression.Type switch
         {
             UnaryExpressionType.Not => "!",
             UnaryExpressionType.Negate => "-",
             UnaryExpressionType.BitwiseNot => "~",
             _ => string.Empty
-        });
+        };
 
-        resultBuilder.Append(EncapsulateNoValue(expression.Expression));
-
-        return resultBuilder.ToString();
+        result += EncapsulateNoValue(expression.Expression);
+        return result;
     }
 
     public string Visit(ValueExpression expression)
     {
-        var resultBuilder = new StringBuilder();
-
-        switch (expression.Type)
+        return expression.Type switch
         {
-            case ValueType.Boolean:
-                resultBuilder.Append(expression.Value).Append(' ');
-                break;
-            case ValueType.DateTime or ValueType.TimeSpan:
-                resultBuilder.Append('#').Append(expression.Value).Append('#').Append(' ');
-                break;
-            case ValueType.Float:
-                resultBuilder.Append(decimal.Parse(expression.Value?.ToString() ?? string.Empty).ToString(_numberFormatInfo))
-                    .Append(' ');
-                break;
-            case ValueType.Integer:
-                resultBuilder.Append(expression.Value).Append(' ');
-                break;
-            case ValueType.String or ValueType.Char:
-                resultBuilder.Append('\'').Append(expression.Value).Append('\'').Append(' ');
-                break;
-        }
-
-        return resultBuilder.ToString();
+            ValueType.Boolean or ValueType.Integer => $"{expression.Value} ",
+            ValueType.DateTime or ValueType.TimeSpan => $"#{expression.Value}# ",
+            ValueType.Float => $"{decimal.Parse(expression.Value?.ToString() ?? string.Empty).ToString(_numberFormatInfo)} ",
+            ValueType.String or ValueType.Char => $"'{expression.Value}' ",
+            _ => "",
+        };
     }
 
     public string Visit(Function function)
     {
-        var resultBuilder = new StringBuilder();
-        resultBuilder.Append(function.Identifier.Name).Append('(');
+        var resultBuilder = new StringBuilder(function.Identifier.Name + '(');
 
         for (int i = 0; i < function.Parameters.Count; i++)
         {
@@ -135,7 +113,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public string Visit(LogicalExpressionList list)
     {
-        var resultBuilder = new StringBuilder().Append('(');
+        var resultBuilder = new StringBuilder("(");
         for (var i = 0; i < list.Count; i++)
         {
             resultBuilder.Append(list[i].Accept(this).TrimEnd());
@@ -153,13 +131,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         if (expression is ValueExpression valueExpression)
             return valueExpression.Accept(this);
 
-        var resultBuilder = new StringBuilder().Append('(');
-        resultBuilder.Append(expression.Accept(this));
-
-        while (resultBuilder[^1] == ' ')
-            resultBuilder.Length--;
-
-        resultBuilder.Append(") ");
-        return resultBuilder.ToString();
+        string result = expression.Accept(this);
+        return $"({result.TrimEnd(' ')}) ";
     }
 }
