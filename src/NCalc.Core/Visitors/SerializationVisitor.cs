@@ -113,7 +113,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public string Visit(LogicalExpressionList list)
     {
-        var resultBuilder = new StringBuilder('(');
+        var resultBuilder = new StringBuilder("(");
         for (var i = 0; i < list.Count; i++)
         {
             resultBuilder.Append(list[i].Accept(this).TrimEnd());
@@ -122,7 +122,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
                 resultBuilder.Append(',');
             }
         }
-        resultBuilder.Append(')');
+        resultBuilder.Append(") ");
         return resultBuilder.ToString();
     }
 
@@ -131,7 +131,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         if (expression is ValueExpression valueExpression)
             return valueExpression.Accept(this);
 
-        string result = '(' + expression.Accept(this);
+        string result = expression.Accept(this);
         return $"({result.TrimEnd(' ')}) ";
     }
 }
