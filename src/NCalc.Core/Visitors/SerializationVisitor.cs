@@ -131,7 +131,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         if (expression is ValueExpression valueExpression)
             return valueExpression.Accept(this);
 
-        string result = expression.Accept(this);
+        string result = '(' + expression.Accept(this);
         return $"({result.TrimEnd(' ')}) ";
     }
 }
