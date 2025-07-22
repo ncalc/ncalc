@@ -112,6 +112,9 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
+        if (!(TypeHelper.IsReal(a) || TypeHelper.IsReal(b)))
+            a = Convert.ToDouble(a, options.CultureInfo);
+
         var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
         return ExecuteOperation(a, b, '/', func);
     }

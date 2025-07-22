@@ -45,11 +45,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                        Convert.ToBoolean(await right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Div:
-                return IsReal(await left.Value) || IsReal(await right.Value)
-                    ? MathHelper.Divide(await left.Value, await right.Value, context)
-                    : MathHelper.Divide(Convert.ToDouble(await left.Value, context.CultureInfo),
-                        await right.Value,
-                        context);
+                return MathHelper.Divide(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.Equal:
                 return Compare(await left.Value, await right.Value, ComparisonType.Equal);
