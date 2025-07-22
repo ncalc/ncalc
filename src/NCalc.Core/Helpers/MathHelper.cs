@@ -113,7 +113,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         if (!(TypeHelper.IsReal(a) || TypeHelper.IsReal(b)))
-            a = Convert.ToDouble(a);
+            a = Convert.ToDouble(a, options.CultureInfo);
 
         var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
         return ExecuteOperation(a, b, '/', func);
