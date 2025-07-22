@@ -40,10 +40,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                        Convert.ToBoolean(right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Div:
-                return IsReal(left.Value) || IsReal(right.Value)
-                    ? MathHelper.Divide(left.Value, right.Value, context)
-                    : MathHelper.Divide(Convert.ToDouble(left.Value, context.CultureInfo), right.Value,
-                        context);
+                return MathHelper.Divide(left.Value, right.Value, context);
 
             case BinaryExpressionType.Equal:
                 return Compare(left.Value, right.Value, ComparisonType.Equal);
