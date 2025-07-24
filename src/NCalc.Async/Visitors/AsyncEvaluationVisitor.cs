@@ -111,30 +111,10 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return !EvaluationHelper.In(await right.Value, await left.Value, context);
 
             case BinaryExpressionType.Like:
-            {
-                var rightValue = (await right.Value)?.ToString();
-                var leftValue = (await left.Value)?.ToString();
-
-                if (rightValue == null || leftValue == null)
-                {
-                    return false;
-                }
-
-                return EvaluationHelper.Like(leftValue, rightValue, context);
-            }
+                return EvaluationHelper.Like(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.NotLike:
-            {
-                var rightValue = (await right.Value)?.ToString();
-                var leftValue = (await left.Value)?.ToString();
-
-                if (rightValue == null || leftValue == null)
-                {
-                    return false;
-                }
-
-                return !EvaluationHelper.Like(leftValue, rightValue, context);
-            }
+                return !EvaluationHelper.Like(await left.Value, await right.Value, context);
         }
 
         return null;

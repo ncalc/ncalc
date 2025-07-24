@@ -132,8 +132,41 @@ public static class EvaluationHelper
     /// <remarks>
     /// The comparison is case-insensitive if the <see cref="ExpressionOptions.CaseInsensitiveStringComparer"/> flag is set in the <paramref name="context"/>.
     /// </remarks>
+    [Obsolete]
     public static bool Like(string value, string pattern, ExpressionContextBase context)
     {
+        var regexPattern = Regex.Escape(pattern)
+            .Replace("%", ".*") // % matches zero or more characters
+            .Replace("_", "."); // _ matches exactly one character
+
+        var options = context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer)
+            ? RegexOptions.IgnoreCase
+            : RegexOptions.None;
+
+        // Use ^ and $ to match the start and end of the string
+        return Regex.IsMatch(value, $"^{regexPattern}$", options);
+    }
+
+    /// <summary>
+    /// Determines whether a specified string matches a pattern using SQL-like wildcards.
+    /// </summary>
+    /// <param name="leftValue">The left operand.</param>///
+    /// <param name="rightValue">The right operand.</param>
+    /// <param name="context">The context containing options for the comparison.</param>
+    /// <returns>
+    /// <c>true</c> if the <paramref name="value"/> matches the <paramref name="pattern"/>; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    /// The comparison is case-insensitive if the <see cref="ExpressionOptions.CaseInsensitiveStringComparer"/> flag is set in the <paramref name="context"/>.
+    /// </remarks>
+    public static bool Like(object? leftValue, object? rightValue, ExpressionContextBase context)
+    {
+        if (leftValue == null || rightValue == null)
+            return false;
+
+        string value = leftValue.ToString()!;
+        string pattern = rightValue.ToString()!;
+
         var regexPattern = Regex.Escape(pattern)
             .Replace("%", ".*") // % matches zero or more characters
             .Replace("_", "."); // _ matches exactly one character
