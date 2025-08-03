@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>NCalc.LambdaCompilation</RootNamespace>
+        <PackageTags>ncalc,memorycache,cache,expressions</PackageTags>
+        <Description>
+            NCalc is a mathematical expression evaluator for .NET. This assembly brings support to lambda compilation.
+        </Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../../NCalc.png" Pack="true" PackagePath="/" />
+        <None Include="README.md" Pack="true" PackagePath="/" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\NCalc.Sync\NCalc.Sync.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="FastExpressionCompiler" Version="5.3.0" />
+    </ItemGroup>
+</Project>

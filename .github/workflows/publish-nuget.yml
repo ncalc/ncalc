@@ -39,5 +39,6 @@ jobs:
           dotnet nuget push src/NCalc.Async/bin/Release/NCalcAsync*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
           dotnet nuget push src/NCalc.DependencyInjection/bin/Release/NCalc.DependencyInjection*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
           dotnet nuget push src/Plugins/NCalc.MemoryCache/bin/Release/NCalc.MemoryCache*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/Plugins/NCalc.LambdaCompilation/bin/Release/NCalc.LambdaCompilation*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
           dotnet nuget push src/Plugins/NCalc.Antlr/bin/Release/NCalc.Antlr*.nupkg --api-key "${{ secrets.NUGET_NCALC_PLUGINS_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
