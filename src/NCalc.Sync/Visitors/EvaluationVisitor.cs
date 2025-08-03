@@ -102,30 +102,10 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 return !EvaluationHelper.In(right.Value, left.Value, context);
 
             case BinaryExpressionType.Like:
-            {
-                var rightValue = right.Value?.ToString();
-                var leftValue = left.Value?.ToString();
-
-                if (rightValue == null || leftValue == null)
-                {
-                    return false;
-                }
-
-                return EvaluationHelper.Like(leftValue, rightValue, context);
-            }
+                return EvaluationHelper.Like(left.Value, right.Value, context);
 
             case BinaryExpressionType.NotLike:
-            {
-                var rightValue = right.Value?.ToString();
-                var leftValue = left.Value?.ToString();
-
-                if (rightValue == null || leftValue == null)
-                {
-                    return false;
-                }
-
-                return !EvaluationHelper.Like(leftValue, rightValue, context);
-            }
+                return !EvaluationHelper.Like(left.Value, right.Value, context);
         }
 
         return null;
