@@ -4,12 +4,13 @@ using ExtendedNumerics;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Helpers;
-using NCalc.Reflection;
+using NCalc.LambdaCompilation.Reflection;
+using NCalc.Visitors;
 using Linq = System.Linq.Expressions;
 using LinqExpression = System.Linq.Expressions.Expression;
 using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
-namespace NCalc.Visitors;
+namespace NCalc.LambdaCompilation.Visitors;
 
 public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpression>
 {

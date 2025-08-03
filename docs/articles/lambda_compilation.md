@@ -7,6 +7,9 @@ Using this you can write complex functions and even have greater performance whe
 
 Especial thanks to the [NCalc2 fork](https://github.com/sklose/NCalc2) for the original implementation.
 
+## Getting Started
+First, you will need to add a reference to `NCalc.LambdaCompilation` to your project.
+
 ## Functionalities
 
 **Simple Expressions**

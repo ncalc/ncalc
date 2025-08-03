@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using NCalc.Factories;
+using NCalc.LambdaCompilation;
 
 namespace NCalc.Benchmarks;
 

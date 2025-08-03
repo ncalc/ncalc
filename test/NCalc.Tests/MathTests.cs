@@ -1,3 +1,4 @@
+using NCalc.LambdaCompilation;
 using NCalc.Tests.TestData;
 using Assert = Xunit.Assert;
 
