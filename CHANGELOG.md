@@ -1,5 +1,28 @@
+# 5.6.0
+* Improve SerializationVisitor perf by @Bykiev in https://github.com/ncalc/ncalc/pull/451
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/452
+* Move IsReal check in MathHelper by @Bykiev in https://github.com/ncalc/ncalc/pull/453
+* Refactor Like/NotLike functions by @Bykiev in https://github.com/ncalc/ncalc/pull/454
+
+## Breaking Changes
+* Move lambda compilation to `NCalc.LambdaCompilation` by @gumbarros in https://github.com/ncalc/ncalc/pull/456
+
+# 5.5.0
+
+* Change parser by @Bykiev in https://github.com/ncalc/ncalc/pull/416
+* Fix handling culture separator for datetimes by @Bykiev in https://github.com/ncalc/ncalc/pull/424
+* Improve lambda compilation performance by @Bykiev in https://github.com/ncalc/ncalc/pull/407
+* Update BenchmarkDotNet by @Bykiev in https://github.com/ncalc/ncalc/pull/425
+* Small code improvements by @Bykiev in https://github.com/ncalc/ncalc/pull/422
+* Fix tests results output on CI by @Bykiev in https://github.com/ncalc/ncalc/pull/432
+* Update Parlot by @Bykiev in https://github.com/ncalc/ncalc/pull/436
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/419
+
+## Breaking Changes
+* The number with fractional part with scientific notation without specifying fractional part is not valid anymore (123.E2 is not a valid expression anymore, should be 123.0E2)
+
 # 5.4.1
-* Update Parlot version by @gumbarros in https://github.com/ncalc/ncalc/pull/397
+* Update Parlot version by @gumbarros in https://github.com/ncalc/ncalc/pull/397`
 
 # 5.4.0
 * Update NCalc.Core.csproj by @sebastienros in https://github.com/ncalc/ncalc/pull/381
