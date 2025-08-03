@@ -1,4 +1,4 @@
-# NCalc.LambdaCompilation
+# NCalc.MemoryCache
 
 NCalc is a mathematical expression evaluator for .NET.
 This assembly brings support to Microsoft.Extensions.MemoryCache for NCalc.
