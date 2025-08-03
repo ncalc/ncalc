@@ -17,7 +17,7 @@ public class SimpleEvaluationBenchmark
     public void Setup()
     {
         var logicalExpression = LogicalExpressionFactory.Create("pi == 3.14 || 'Chers' == name");
-        var expression = new Expression(logicalExpression)
+        var expression = new Expression(logicalExpression, ExpressionOptions.NoCache)
         {
             Parameters =
             {
