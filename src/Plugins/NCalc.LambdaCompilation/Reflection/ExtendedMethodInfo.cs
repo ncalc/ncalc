@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using LinqExpression = System.Linq.Expressions.Expression;
 
-namespace NCalc.Reflection;
+namespace NCalc.LambdaCompilation.Reflection;
 
 public sealed class ExtendedMethodInfo
 {

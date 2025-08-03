@@ -1,3 +1,3 @@
 namespace NCalc.LambdaCompilation;
 
-public readonly struct Void;
+internal readonly struct Void;

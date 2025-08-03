@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using FastExpressionCompiler;
 using NCalc.Exceptions;
-using NCalc.Visitors;
+using NCalc.LambdaCompilation.Visitors;
 using LinqExpression = System.Linq.Expressions.Expression;
 using LinqParameterExpression = System.Linq.Expressions.ParameterExpression;
 
