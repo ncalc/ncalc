@@ -436,4 +436,14 @@ public class MathsTests
     {
         Assert.Equal(expected, new Expression(expression, options | ExpressionOptions.NoCache).Evaluate());
     }
+
+    [Fact]
+    public void DivideNullShouldBeNull()
+    {
+        var e = new Expression("a / b", ExpressionOptions.AllowNullParameter);
+        e.Parameters["a"] = null;
+        e.Parameters["b"] = 2;
+
+        Assert.Null(e.Evaluate());
+    }
 }
