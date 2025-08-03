@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <RootNamespace>NCalc.LambdaCompilation</RootNamespace>
-        <PackageTags>ncalc,memorycache,cache,expressions</PackageTags>
+        <PackageTags>ncalc,lambda,compilation,expressions,linq,fastexpression</PackageTags>
         <Description>
             NCalc is a mathematical expression evaluator for .NET. This assembly brings support to lambda compilation.
         </Description>
