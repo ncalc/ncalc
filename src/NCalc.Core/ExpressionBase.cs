@@ -46,7 +46,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     /// </summary>
     public string? ExpressionString { get; protected init; }
 
-    public LogicalExpression? LogicalExpression { get; protected set; }
+    public LogicalExpression? LogicalExpression { get; set; }
 
     public Exception? Error { get; private set; }
 
@@ -126,7 +126,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         }
     }
 
-    protected LogicalExpression? GetLogicalExpression()
+    public LogicalExpression? GetLogicalExpression()
     {
         if (string.IsNullOrEmpty(ExpressionString))
         {

@@ -2,7 +2,7 @@
 using NCalc.Helpers;
 using LinqExpression = System.Linq.Expressions.Expression;
 
-namespace NCalc.Reflection;
+namespace NCalc.LambdaCompilation.Reflection;
 
 public static class LinqUtils
 {

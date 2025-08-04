@@ -12,11 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.1" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj" />
+    <ProjectReference Include="..\..\src\Plugins\NCalc.LambdaCompilation\NCalc.LambdaCompilation.csproj" />
   </ItemGroup>
 
 </Project>

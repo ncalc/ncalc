@@ -45,11 +45,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                        Convert.ToBoolean(await right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Div:
-                return IsReal(await left.Value) || IsReal(await right.Value)
-                    ? MathHelper.Divide(await left.Value, await right.Value, context)
-                    : MathHelper.Divide(Convert.ToDouble(await left.Value, context.CultureInfo),
-                        await right.Value,
-                        context);
+                return MathHelper.Divide(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.Equal:
                 return Compare(await left.Value, await right.Value, ComparisonType.Equal);
@@ -111,30 +107,10 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return !EvaluationHelper.In(await right.Value, await left.Value, context);
 
             case BinaryExpressionType.Like:
-            {
-                var rightValue = (await right.Value)?.ToString();
-                var leftValue = (await left.Value)?.ToString();
-
-                if (rightValue == null || leftValue == null)
-                {
-                    return false;
-                }
-
-                return EvaluationHelper.Like(leftValue, rightValue, context);
-            }
+                return EvaluationHelper.Like(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.NotLike:
-            {
-                var rightValue = (await right.Value)?.ToString();
-                var leftValue = (await left.Value)?.ToString();
-
-                if (rightValue == null || leftValue == null)
-                {
-                    return false;
-                }
-
-                return !EvaluationHelper.Like(leftValue, rightValue, context);
-            }
+                return !EvaluationHelper.Like(await left.Value, await right.Value, context);
         }
 
         return null;
