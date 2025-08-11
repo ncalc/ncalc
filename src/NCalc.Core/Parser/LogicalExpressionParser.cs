@@ -469,15 +469,21 @@ public static class LogicalExpressionParser
     {
         var parser = GetOrCreateExpressionParser(context.CultureInfo);
 
-        if (parser.TryParse(context, out var result, out var error))
+        try
+        {
+            var result = parser.Parse(context);
+            if (result == null)
+            {
+                string message = $"Error parsing the expression at position {context.Scanner.Cursor.Position}";
+                throw new NCalcParserException(message);
+            }
+
             return result;
-
-        string message;
-        if (error != null)
-            message = $"{error.Message} at position {error.Position}";
-        else
-            message = $"Error parsing the expression at position {context.Scanner.Cursor.Position}";
-
-        throw new NCalcParserException(message);
+        }
+        catch (ParseException ex)
+        {
+            string message = $"{ex.Message} at position {ex.Position}";
+            throw new NCalcParserException(message);
+        }
     }
 }
