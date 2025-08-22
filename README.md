@@ -55,6 +55,13 @@ Want `async` support at your functions and parameters?
 
 ```
 dotnet add package NCalcAsync 
+
+```
+
+Want to use lambda compilation?
+
+```
+dotnet add package NCalc.LambdaCompilation 
 ```
 
 Dependency Injection? We got you covered:
@@ -154,6 +161,8 @@ NCalc automatically cache the parsing of strings using a [`ConcurrentDictionary`
 You can also use our [Memory Cache plugin](https://ncalc.github.io/ncalc/articles/plugins/memory_cache.html).
 
 **Lambda Expressions**
+
+You should install ```NCalc.LambdaCompilation``` package for lamda compilation support.
 
 ```cs
 var expression = new Expression("1 + 2");
