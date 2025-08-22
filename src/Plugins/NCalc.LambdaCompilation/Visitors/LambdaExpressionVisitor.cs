@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using ExtendedNumerics;
 using NCalc.Domain;
 using NCalc.Exceptions;
@@ -80,6 +81,8 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             BinaryExpressionType.LeftShift => LinqExpression.LeftShift(left, right),
             BinaryExpressionType.RightShift => LinqExpression.RightShift(left, right),
             BinaryExpressionType.Exponentiation => LinqExpression.Power(left, right),
+            BinaryExpressionType.Like => LikeOperator(left, right),
+            BinaryExpressionType.NotLike => LinqExpression.Not(LikeOperator(left, right)),
             BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -371,5 +374,39 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         }
 
         return action(left, right);
+    }
+
+    public LinqExpression LikeOperator(LinqExpression leftValue, LinqExpression? rightValue)
+    {
+        if (leftValue is null || rightValue is null)
+            return LinqExpression.Constant(false);
+
+        var leftObj = LinqExpression.Convert(leftValue, typeof(string));
+        var rightObj = LinqExpression.Convert(rightValue, typeof(string));
+
+        var objToString = typeof(object).GetMethod(nameof(object.ToString))!;
+        var leftStr = LinqExpression.Call(leftObj, objToString);
+        var rightStr = LinqExpression.Call(rightObj, objToString);
+
+        var miRegexEscape = typeof(Regex).GetMethod(nameof(Regex.Escape), new[] { typeof(string) })!;
+        var miStringReplace = typeof(string).GetMethod(nameof(string.Replace), new[] { typeof(string), typeof(string) })!;
+
+        var escaped = LinqExpression.Call(null, miRegexEscape, rightStr);
+        var withStar = LinqExpression.Call(escaped, miStringReplace, LinqExpression.Constant("%"), LinqExpression.Constant(".*"));
+        var withUnderscore = LinqExpression.Call(withStar, miStringReplace, LinqExpression.Constant("_"), LinqExpression.Constant("."));
+
+        var miConcat = typeof(string).GetMethod(nameof(string.Concat), new[] { typeof(string), typeof(string), typeof(string) })!;
+        var pattern = LinqExpression.Call(miConcat, LinqExpression.Constant("^"), withUnderscore, LinqExpression.Constant("$")); // "^" + pattern + "$"
+
+        var miIsMatch = typeof(Regex).GetMethod(nameof(Regex.IsMatch), new[] { typeof(string), typeof(string), typeof(RegexOptions) })!;
+        var options = LinqExpression.Constant(_options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer) ? RegexOptions.IgnoreCase : RegexOptions.None);
+        var callIsMatch = LinqExpression.Call(null, miIsMatch, leftStr, pattern, options);
+
+        // if either side is null should be false
+        var leftNull = LinqExpression.Equal(leftObj, LinqExpression.Constant(null));
+        var rightNull = LinqExpression.Equal(rightObj, LinqExpression.Constant(null));
+        var anyNull = LinqExpression.OrElse(leftNull, rightNull);
+
+        return LinqExpression.Condition(anyNull, LinqExpression.Constant(false), callIsMatch);
     }
 }
