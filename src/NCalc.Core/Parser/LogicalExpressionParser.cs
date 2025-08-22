@@ -65,7 +65,7 @@ public static class LogicalExpressionParser
             .Then(x => Convert.ToInt64(x.ToString(), 2));
 
         var hexOctBinNumber = OneOf(hexNumber, octalNumber, binaryNumber)
-            .Then<LogicalExpression>(d =>
+            .Then<LogicalExpression>(static d =>
             {
                 if (d is > int.MaxValue or < int.MinValue)
                     return new ValueExpression(d);
@@ -75,11 +75,11 @@ public static class LogicalExpressionParser
 
         var intNumber = Terms.Number<int>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
-            .Then<LogicalExpression>(d => new ValueExpression(d));
+            .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var longNumber = Terms.Number<long>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
-            .Then<LogicalExpression>(d => new ValueExpression(d));
+            .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var decimalNumber = Terms.Number<decimal>(NumberOptions.Float)
             .Then<LogicalExpression>(static (ctx, val) =>
@@ -173,13 +173,13 @@ public static class LogicalExpressionParser
                 braceIdentifier,
                 curlyBraceIdentifier,
                 identifier)
-            .Then<LogicalExpression>(x => new Identifier(x.ToString()!));
+            .Then<LogicalExpression>(static x => new Identifier(x.ToString()!));
 
         // list => "(" (expression ("," expression)*)? ")"
         var populatedList =
             Between(openParen, Separated(comma.Or(semicolon), expression),
                     closeParen.ElseError("Parenthesis not closed."))
-                .Then<LogicalExpression>(values => new LogicalExpressionList(values));
+                .Then<LogicalExpression>(static values => new LogicalExpressionList(values));
 
         var emptyList = openParen.AndSkip(closeParen).Then<LogicalExpression>(_ => new LogicalExpressionList());
 
@@ -211,7 +211,7 @@ public static class LogicalExpressionParser
         var doubleQuotesStringValue =
             Terms
                 .String(quotes: StringLiteralQuotes.Double)
-                .Then<LogicalExpression>(value => new ValueExpression(value.ToString()!));
+                .Then<LogicalExpression>(static value => new ValueExpression(value.ToString()!));
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
 
