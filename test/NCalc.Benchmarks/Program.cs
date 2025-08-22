@@ -3,4 +3,6 @@ using NCalc.Benchmarks;
 
 BenchmarkRunner.Run<LogicalExpressionFactoryBenchmark>(null, args);
 BenchmarkRunner.Run<SimpleEvaluationBenchmark>(null, args);
+BenchmarkRunner.Run<WithoutCompilationBenchmark>(null, args);
+BenchmarkRunner.Run<WithCompilationBenchmark>(null, args);
 BenchmarkRunner.Run<EvaluateVsLambdaBenchmark>(null, args);
