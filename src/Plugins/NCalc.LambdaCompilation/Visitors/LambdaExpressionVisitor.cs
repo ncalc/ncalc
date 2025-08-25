@@ -80,6 +80,8 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             BinaryExpressionType.LeftShift => LinqExpression.LeftShift(left, right),
             BinaryExpressionType.RightShift => LinqExpression.RightShift(left, right),
             BinaryExpressionType.Exponentiation => LinqExpression.Power(left, right),
+            BinaryExpressionType.In => InOperator(left, right),
+            BinaryExpressionType.NotIn => LinqExpression.Not(InOperator(left, right)),
             BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -248,7 +250,10 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
     public LinqExpression Visit(LogicalExpressionList list)
     {
-        throw new NotSupportedException("Collections are not supported for Lambda expressions yet. Please open a issue at https://www.github.com/ncalc/ncalc if you want this support.");
+        var newList = LinqExpression.New(typeof(List<object>));
+        return LinqExpression.ListInit(newList,
+            list.Select(e => LinqExpression.Convert(e.Accept(this), typeof(object)))
+        );
     }
 
     private ExtendedMethodInfo? FindMethod(string methodName, LinqExpression[] methodArgs)
@@ -371,5 +376,41 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         }
 
         return action(left, right);
+    }
+
+    private LinqExpression InOperator(LinqExpression left, LinqExpression arr)
+    {
+        if (arr == null) return LinqExpression.Constant(false);
+
+        if (!typeof(IEnumerable).IsAssignableFrom(arr.Type))
+            return LinqExpression.Constant(false);
+
+        var isString = left.Type == typeof(string);
+
+        var castMi = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .First(m => m.Name == nameof(Enumerable.Cast) && m.GetParameters().Length == 1)
+            .MakeGenericMethod(left.Type);
+        var containsMi = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .First(m => m.Name == nameof(Enumerable.Contains) && m.GetParameters().Length == (isString ? 3 : 2))
+            .MakeGenericMethod(left.Type);
+
+        var source = LinqExpression.Call(castMi, LinqExpression.Convert(arr, typeof(IEnumerable)));
+
+        if (isString)
+        {
+            LinqExpression comparer =
+                _caseInsensitiveStringComparer
+                    ? (_ordinalStringComparer
+                        ? LinqExpression.Constant(StringComparer.OrdinalIgnoreCase)
+                        : LinqExpression.Constant(StringComparer.CurrentCultureIgnoreCase))
+                    : (_ordinalStringComparer
+                        ? LinqExpression.Constant(StringComparer.Ordinal)
+                        : LinqExpression.Constant(StringComparer.CurrentCulture));
+
+            return LinqExpression.Call(
+                null, containsMi, source, LinqExpression.Convert(left, typeof(string)), comparer);
+        }
+
+        return LinqExpression.Call(null, containsMi, source, left);
     }
 }
