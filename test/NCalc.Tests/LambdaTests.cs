@@ -703,6 +703,37 @@ public class LambdaTests
     }
 
     [Theory]
+    [InlineData("test", "%est", true, ExpressionOptions.None)]
+    [InlineData("TEST", "%est", false, ExpressionOptions.None)]
+    [InlineData("TEST", "%est", true, ExpressionOptions.CaseInsensitiveStringComparer)]
+    [InlineData("this is a test", "%is a%", true, ExpressionOptions.None)]
+    [InlineData("this is a test", "%ITS A%", false, ExpressionOptions.None)]
+    public void ShouldHandleLikeOperator(string val, string right, bool expected, ExpressionOptions opts)
+    {
+        string[] ops = ["like", "not like"];
+        // Arrange
+        foreach (var op in ops)
+        {
+            if (op == "not like")
+                expected = !expected;
+
+            var expressionLike = new Expression($"x {op} '{right}'", opts);
+            expressionLike.Parameters["x"] = val;
+
+            var lambdaAbs = expressionLike.ToLambda<bool>();
+
+            // Act
+            var actualAbs = lambdaAbs();
+            var expectedAbs = expressionLike.Evaluate();
+            Console.WriteLine($"Value: {val}, Pattern: {right}, Result: {actualAbs}");
+
+            // Assert
+            Assert.Equal(expected, actualAbs);
+            Assert.Equal(expectedAbs, actualAbs);
+        }
+    }
+
+    [Theory]
     [InlineData("test", "'a','test','z'", true, ExpressionOptions.None)]
     [InlineData("TEST", "'a','test','z'", false, ExpressionOptions.None)]
     [InlineData("TEST", "'a','test','z'", true, ExpressionOptions.CaseInsensitiveStringComparer)]
@@ -750,7 +781,7 @@ public class LambdaTests
 
         Assert.Equal(expected, actual);
         Assert.Equal(expectedEval, actual);
-    }
+}
 
     [Theory]
     [InlineData(3, new[] { 1, 2, 3 }, true)]
