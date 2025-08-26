@@ -162,7 +162,7 @@ You can also use our [Memory Cache plugin](https://ncalc.github.io/ncalc/article
 
 **Lambda Expressions**
 
-You should install ```NCalc.LambdaCompilation``` package for lamda compilation support.
+You can install ```NCalc.LambdaCompilation``` package for lambda compilation support.
 
 ```cs
 var expression = new Expression("1 + 2");
