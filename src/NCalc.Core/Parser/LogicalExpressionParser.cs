@@ -111,12 +111,13 @@ public static class LogicalExpressionParser
 
         var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
 
-        var comma = Terms.Char(',');
-        var divided = Terms.Text("/");
-        var times = Terms.Text("*");
-        var modulo = Terms.Text("%");
-        var minus = Terms.Text("-");
-        var plus = Terms.Text("+");
+    // Argument separator will be set dynamically from context
+    var argumentSeparator = Deferred<char>();
+    var divided = Terms.Text("/");
+    var times = Terms.Text("*");
+    var modulo = Terms.Text("%");
+    var minus = Terms.Text("-");
+    var plus = Terms.Text("+");
 
         var equal = OneOf(Terms.Text("=="), Terms.Text("="));
         var notEqual = OneOf(Terms.Text("<>"), Terms.Text("!="));
@@ -142,8 +143,8 @@ public static class LogicalExpressionParser
         var openCurlyBrace = Terms.Char('{');
         var closeCurlyBrace = Terms.Char('}');
         var questionMark = Terms.Char('?');
-        var colon = Terms.Char(':');
-        var semicolon = Terms.Char(';');
+    var colon = Terms.Char(':');
+    // Removed hardcoded semicolon, using argumentSeparator instead
 
         var identifier = Terms.Identifier();
 
@@ -175,11 +176,14 @@ public static class LogicalExpressionParser
                 identifier)
             .Then<LogicalExpression>(static x => new Identifier(x.ToString()!));
 
-        // list => "(" (expression ("," expression)*)? ")"
-        var populatedList =
-            Between(openParen, Separated(comma.Or(semicolon), expression),
-                    closeParen.ElseError("Parenthesis not closed."))
-                .Then<LogicalExpression>(static values => new LogicalExpressionList(values));
+    // list => "(" (expression (argumentSeparator expression)*)? ")"
+    var populatedList =
+        Between(openParen, Separated(argumentSeparator, expression),
+            closeParen.ElseError("Parenthesis not closed."))
+        .Then<LogicalExpression>(static values => new LogicalExpressionList(values));
+
+    // Set argumentSeparator from context at parse time
+    argumentSeparator.Parser = ctx => Terms.Char(((LogicalExpressionParserContext)ctx).ArgumentSeparator);
 
         var emptyList = openParen.AndSkip(closeParen).Then<LogicalExpression>(_ => new LogicalExpressionList());
 

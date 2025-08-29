@@ -8,6 +8,11 @@ public abstract record ExpressionContextBase
     public CultureInfo CultureInfo { get; set; } = CultureInfo.CurrentCulture;
     public IDictionary<string, object?> StaticParameters { get; set; } = new Dictionary<string, object?>();
 
+    /// <summary>
+    /// Separator character for function arguments (default is ',').
+    /// </summary>
+    public char ArgumentSeparator { get; set; } = ',';
+
     public static implicit operator MathHelperOptions(ExpressionContextBase context)
     {
         return new MathHelperOptions(context.CultureInfo, context.Options);
