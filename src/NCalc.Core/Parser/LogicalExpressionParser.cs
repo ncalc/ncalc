@@ -12,6 +12,10 @@ namespace NCalc.Parser;
 /// </summary>
 public static class LogicalExpressionParser
 {
+    // Cache for different parser configurations
+    private static readonly ConcurrentDictionary<LogicalExpressionParserOptions, Parser<LogicalExpression>> ParserCache = new();
+
+    // Legacy cache for backward compatibility
     private static readonly ConcurrentDictionary<CultureInfo, Parser<LogicalExpression>> Parsers = new();
 
     private static readonly ValueExpression True = new(true);
@@ -22,7 +26,32 @@ public static class LogicalExpressionParser
 
     private const string InvalidTokenMessage = "Invalid token in expression";
 
+    /// <summary>
+    /// Creates or retrieves a cached expression parser with the specified options.
+    /// </summary>
+    /// <param name="options">The parser options containing culture info and argument separator.</param>
+    /// <returns>A parser configured with the specified options.</returns>
+    public static Parser<LogicalExpression> GetOrCreateExpressionParser(LogicalExpressionParserOptions options)
+    {
+        return ParserCache.GetOrAdd(options, CreateExpressionParser);
+    }
+
+    /// <summary>
+    /// Creates a new expression parser with the specified options.
+    /// </summary>
+    /// <param name="options">The parser options containing culture info and argument separator.</param>
+    /// <returns>A new parser configured with the specified options.</returns>
+    private static Parser<LogicalExpression> CreateExpressionParser(LogicalExpressionParserOptions options)
+    {
+        return CreateExpressionParser(options.CultureInfo, options.ArgumentSeparator);
+    }
+
     private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo)
+    {
+        return CreateExpressionParser(cultureInfo, ','); // Default comma separator
+    }
+
+    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, char argumentSeparator)
     {
         /*
          * Grammar:
@@ -111,6 +140,7 @@ public static class LogicalExpressionParser
 
         var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
 
+        var argumentSeparatorTerm = Terms.Char(argumentSeparator);
         var comma = Terms.Char(',');
         var divided = Terms.Text("/");
         var times = Terms.Text("*");
@@ -175,9 +205,9 @@ public static class LogicalExpressionParser
                 identifier)
             .Then<LogicalExpression>(static x => new Identifier(x.ToString()!));
 
-        // list => "(" (expression ("," expression)*)? ")"
+        // list => "(" (expression (argumentSeparator expression)*)? ")"
         var populatedList =
-            Between(openParen, Separated(comma.Or(semicolon), expression),
+            Between(openParen, Separated(argumentSeparatorTerm, expression),
                     closeParen.ElseError("Parenthesis not closed."))
                 .Then<LogicalExpression>(static values => new LogicalExpressionList(values));
 
@@ -467,7 +497,9 @@ public static class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        var parser = GetOrCreateExpressionParser(context.CultureInfo);
+        var parser = context.ParserOptions != LogicalExpressionParserOptions.Default
+            ? GetOrCreateExpressionParser(context.ParserOptions)
+            : GetOrCreateExpressionParser(context.CultureInfo);
 
         if (parser.TryParse(context, out var result, out var error))
             return result;
