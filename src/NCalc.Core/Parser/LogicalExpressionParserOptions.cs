@@ -11,9 +11,9 @@ public sealed record LogicalExpressionParserOptions
     public CultureInfo CultureInfo { get; init; } = CultureInfo.CurrentCulture;
 
     /// <summary>
-    /// The character used to separate function arguments. Default is ','.
+    /// The argument separator used to separate function arguments. Default is Comma.
     /// </summary>
-    public char ArgumentSeparator { get; init; } = ',';
+    public ArgumentSeparator ArgumentSeparator { get; init; } = ArgumentSeparator.Comma;
 
     /// <summary>
     /// Gets the default parser options.
@@ -35,7 +35,7 @@ public sealed record LogicalExpressionParserOptions
     /// </summary>
     /// <param name="argumentSeparator">The argument separator to use.</param>
     /// <returns>Parser options with the specified argument separator.</returns>
-    public static LogicalExpressionParserOptions WithArgumentSeparator(char argumentSeparator) => new()
+    public static LogicalExpressionParserOptions WithArgumentSeparator(ArgumentSeparator argumentSeparator) => new()
     {
         ArgumentSeparator = argumentSeparator
     };
@@ -46,7 +46,7 @@ public sealed record LogicalExpressionParserOptions
     /// <param name="cultureInfo">The culture info to use.</param>
     /// <param name="argumentSeparator">The argument separator to use.</param>
     /// <returns>Parser options with the specified settings.</returns>
-    public static LogicalExpressionParserOptions Create(CultureInfo cultureInfo, char argumentSeparator) => new()
+    public static LogicalExpressionParserOptions Create(CultureInfo cultureInfo, ArgumentSeparator argumentSeparator) => new()
     {
         CultureInfo = cultureInfo,
         ArgumentSeparator = argumentSeparator

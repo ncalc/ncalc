@@ -5,11 +5,11 @@ namespace NCalc.Tests;
 public class ExpressionSeparatorIntegrationTests
 {
     [Theory]
-    [InlineData("Max(1, 2)", 2, ',')]
-    [InlineData("Max(1; 2)", 2, ';')]
-    [InlineData("Min(5, 3)", 3, ',')]
-    [InlineData("Min(5; 3)", 3, ';')]
-    public void Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, char separator)
+    [InlineData("Max(1, 2)", 2, ArgumentSeparator.Comma)]
+    [InlineData("Max(1; 2)", 2, ArgumentSeparator.Semicolon)]
+    [InlineData("Min(5, 3)", 3, ArgumentSeparator.Comma)]
+    [InlineData("Min(5; 3)", 3, ArgumentSeparator.Semicolon)]
+    public void Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, ArgumentSeparator separator)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(separator);
@@ -32,7 +32,7 @@ public class ExpressionSeparatorIntegrationTests
     public void Expression_Should_Work_With_Custom_Functions_And_Separators()
     {
         // Arrange
-        var options = LogicalExpressionParserOptions.WithArgumentSeparator(';');
+        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
         const string expressionText = "CustomAdd(10; 20)";
 
         var context = new LogicalExpressionParserContext(expressionText, ExpressionOptions.None)
@@ -62,7 +62,7 @@ public class ExpressionSeparatorIntegrationTests
     public void Expression_Should_Handle_Parameters_With_Custom_Separators()
     {
         // Arrange
-        var options = LogicalExpressionParserOptions.WithArgumentSeparator(';');
+        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
         const string expressionText = "Max(x; y)";
 
         var context = new LogicalExpressionParserContext(expressionText, ExpressionOptions.None)

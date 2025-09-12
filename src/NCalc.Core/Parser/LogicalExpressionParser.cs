@@ -37,13 +37,29 @@ public static class LogicalExpressionParser
     }
 
     /// <summary>
+    /// Converts an ArgumentSeparator enum value to its corresponding character.
+    /// </summary>
+    /// <param name="separator">The ArgumentSeparator enum value.</param>
+    /// <returns>The character representation of the separator.</returns>
+    private static char GetSeparatorChar(ArgumentSeparator separator)
+    {
+        return separator switch
+        {
+            ArgumentSeparator.Semicolon => ';',
+            ArgumentSeparator.Colon => ':',
+            ArgumentSeparator.Comma => ',',
+            _ => ';' // Default to semicolon
+        };
+    }
+
+    /// <summary>
     /// Creates a new expression parser with the specified options.
     /// </summary>
     /// <param name="options">The parser options containing culture info and argument separator.</param>
     /// <returns>A new parser configured with the specified options.</returns>
     private static Parser<LogicalExpression> CreateExpressionParser(LogicalExpressionParserOptions options)
     {
-        return CreateExpressionParser(options.CultureInfo, options.ArgumentSeparator);
+        return CreateExpressionParser(options.CultureInfo, GetSeparatorChar(options.ArgumentSeparator));
     }
 
     private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo)

@@ -85,7 +85,7 @@ public class ExtractionTests
     public void ShouldGetNestedFunctionsIssue334()
     {
         const string expressionText = "[a] + GetTimeValue(if([c] > [d]; test([e] > 0; [g]; [h]); [f]); 1; 'sec')";
-        var options = LogicalExpressionParserOptions.WithArgumentSeparator(';');
+        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
         var context = new LogicalExpressionParserContext(expressionText, ExpressionOptions.None)
         {
             ParserOptions = options
