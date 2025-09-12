@@ -41,6 +41,7 @@ public static class LogicalExpressionParser
     /// </summary>
     /// <param name="separator">The ArgumentSeparator enum value.</param>
     /// <returns>The character representation of the separator.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the separator value is not a valid ArgumentSeparator enum value.</exception>
     private static char GetSeparatorChar(ArgumentSeparator separator)
     {
         return separator switch
@@ -48,7 +49,8 @@ public static class LogicalExpressionParser
             ArgumentSeparator.Semicolon => ';',
             ArgumentSeparator.Colon => ':',
             ArgumentSeparator.Comma => ',',
-            _ => ';' // Default to semicolon
+            _ => throw new ArgumentOutOfRangeException(nameof(separator), separator,
+                $"Unhandled ArgumentSeparator value: {separator}")
         };
     }
 
