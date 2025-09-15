@@ -15,14 +15,11 @@ public static class LogicalExpressionParser
     // Cache for different parser configurations
     private static readonly ConcurrentDictionary<LogicalExpressionParserOptions, Parser<LogicalExpression>> ParserCache = new();
 
-    // Legacy cache for backward compatibility
-    private static readonly ConcurrentDictionary<CultureInfo, Parser<LogicalExpression>> Parsers = new();
-
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
 
-    private static readonly double MinDecDouble = (double)decimal.MinValue;
-    private static readonly double MaxDecDouble = (double)decimal.MaxValue;
+    private const double MinDecDouble = (double)decimal.MinValue;
+    private const double MaxDecDouble = (double)decimal.MaxValue;
 
     private const string InvalidTokenMessage = "Invalid token in expression";
 
@@ -62,11 +59,6 @@ public static class LogicalExpressionParser
     private static Parser<LogicalExpression> CreateExpressionParser(LogicalExpressionParserOptions options)
     {
         return CreateExpressionParser(options.CultureInfo, GetSeparatorChar(options.ArgumentSeparator));
-    }
-
-    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo)
-    {
-        return CreateExpressionParser(cultureInfo, ','); // Default comma separator
     }
 
     private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, char argumentSeparator)
@@ -492,13 +484,9 @@ public static class LogicalExpressionParser
 
     private static Parser<LogicalExpression> GetOrCreateExpressionParser(CultureInfo cultureInfo)
     {
-        if (Parsers.TryGetValue(cultureInfo, out var parser))
-            return parser;
-
-        var newParser = CreateExpressionParser(cultureInfo);
-        Parsers.TryAdd(cultureInfo, newParser);
-
-        return newParser;
+        // Use implicit conversion to convert CultureInfo to LogicalExpressionParserOptions
+        LogicalExpressionParserOptions options = cultureInfo;
+        return GetOrCreateExpressionParser(options);
     }
 
     private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
