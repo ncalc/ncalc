@@ -18,9 +18,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="Roslynator.Analyzers" Version="4.13.1" PrivateAssets="all"/>
-    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.13.1" PrivateAssets="all"/>
-    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.13.1" PrivateAssets="all"/>
+    <PackageReference Include="Roslynator.Analyzers" Version="4.14.0" PrivateAssets="all"/>
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all"/>
+    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.14.0" PrivateAssets="all"/>
   </ItemGroup>
   <ItemGroup>
     <Using Include="System" />
