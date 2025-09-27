@@ -259,6 +259,7 @@ public static class LogicalExpressionParser
 
         var dateSeparator = cultureInfo.DateTimeFormat.DateSeparator;
         var timeSeparator = cultureInfo.DateTimeFormat.TimeSeparator;
+        var decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator;
 
         var dateDefinition = charIsNumber
             .AndSkip(Literals.Text(dateSeparator))
@@ -278,32 +279,48 @@ public static class LogicalExpressionParser
             throw new FormatException("Invalid DateTime format.");
         });
 
-        // time => number:number:number
+        // time => number:number:number{.fractional}
         var timeDefinition = charIsNumber
             .AndSkip(Literals.Text(timeSeparator))
             .And(charIsNumber)
             .AndSkip(Literals.Text(timeSeparator))
-            .And(charIsNumber);
+            .And(charIsNumber)
+            .AndSkip(ZeroOrOne(Literals.Text(decimalSeparator)))
+            .And(ZeroOrOne(charIsNumber));
 
         var time = timeDefinition.Then<LogicalExpression>(time =>
         {
-            if (TimeSpan.TryParse($"{time.Item1}{timeSeparator}{time.Item2}{timeSeparator}{time.Item3}", cultureInfo, out var result))
+            if (time.Item4 == "")
             {
-                return new ValueExpression(result);
+                if (TimeSpan.TryParse($"{time.Item1}{timeSeparator}{time.Item2}{timeSeparator}{time.Item3}", cultureInfo, out var result))
+                    return new ValueExpression(result);
             }
+
+            if (TimeSpan.TryParse($"{time.Item1}{timeSeparator}{time.Item2}{timeSeparator}{time.Item3}{decimalSeparator}{time.Item4}", cultureInfo, out var res))
+                return new ValueExpression(res);
 
             throw new FormatException("Invalid TimeSpan format.");
         });
 
-        // dateAndTime => number/number/number number:number:number
+        // dateAndTime => number/number/number number:number:number{.fractional}
         var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
             dateTime =>
             {
+                if(dateTime.Item4.Item4 == "")
+                { 
+                    if (DateTime.TryParse(
+                            $"{dateTime.Item1}{dateSeparator}{dateTime.Item2}{dateSeparator}{dateTime.Item3} {dateTime.Item4.Item1}{timeSeparator}{dateTime.Item4.Item2}{timeSeparator}{dateTime.Item4.Item3}",
+                            cultureInfo, DateTimeStyles.None, out var result))
+                    {
+                        return new ValueExpression(result);
+                    }
+                }
+
                 if (DateTime.TryParse(
-                        $"{dateTime.Item1}{dateSeparator}{dateTime.Item2}{dateSeparator}{dateTime.Item3} {dateTime.Item4.Item1}{timeSeparator}{dateTime.Item4.Item2}{timeSeparator}{dateTime.Item4.Item3}",
-                        cultureInfo, DateTimeStyles.None, out var result))
+                            $"{dateTime.Item1}{dateSeparator}{dateTime.Item2}{dateSeparator}{dateTime.Item3} {dateTime.Item4.Item1}{timeSeparator}{dateTime.Item4.Item2}{timeSeparator}{dateTime.Item4.Item3}{decimalSeparator}{dateTime.Item4.Item4}",
+                            cultureInfo, DateTimeStyles.None, out var res))
                 {
-                    return new ValueExpression(result);
+                    return new ValueExpression(res);
                 }
 
                 throw new FormatException("Invalid DateTime format.");
