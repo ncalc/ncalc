@@ -149,4 +149,16 @@ public class SerializationTests
         Assert.Equal("()", new LogicalExpressionList([]).ToString());
         Assert.Equal("((True),('Hello','World'))", new LogicalExpressionList([trueArrayExpression, helloWorldArrayExpression]).ToString());
     }
+
+    [Fact]
+    public void FunctionWithParametersSerializationTest()
+    {
+        var expr = new Expression("Max([a], [b])");
+        expr.Parameters["a"] = 5;
+        expr.Parameters["b"] = 10;
+        expr.Evaluate();
+
+        var exprString = expr.LogicalExpression.ToString();
+        Assert.Equal("Max([a], [b])", exprString);
+    }
 }
