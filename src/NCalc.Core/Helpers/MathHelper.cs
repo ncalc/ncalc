@@ -457,7 +457,7 @@ public static class MathHelper
         return a switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'bool' and {b?.GetType().ToString() ?? "null"}"),
             byte b1 => ExecuteByteOperation(b1, b, operatorName, func),
             char @char => ExecuteCharOperation(@char, b, operatorName, func),
             sbyte @sbyte => ExecuteSByteOperation(@sbyte, b, operatorName, func),
@@ -471,7 +471,7 @@ public static class MathHelper
             double d => ExecuteDoubleOperation(d, b, operatorName, func),
             decimal @decimal => ExecuteDecimalOperation(@decimal, b, operatorName, func),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for operands of types {a?.GetType().ToString() ?? "null"} and {b?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for operands of types {a?.GetType().ToString() ?? "null"} and {b?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -480,10 +480,10 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'byte' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'byte' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for 'byte' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for 'byte' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -504,12 +504,11 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'sbyte' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'sbyte' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
-            ulong => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'sbyte' and 'ulong'"),
+            ulong => func(Convert.ToUInt64(left), right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for 'sbyte' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for 'sbyte' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -518,12 +517,11 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'short' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'short' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
-            ulong => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'short' and 'ulong'"),
+            ulong => func(Convert.ToUInt64(left), right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for types 'short' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for types 'short' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -532,10 +530,10 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'ushort' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'ushort' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for types 'ushort' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for types 'ushort' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -544,12 +542,11 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
-            ulong => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'ulong'"),
+            ulong => func(Convert.ToUInt64(left), right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for types 'int' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for types 'int' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -558,10 +555,10 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'uint' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'uint' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for types 'uint' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for types 'uint' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -570,12 +567,11 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'long' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'long' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
-            ulong => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'long' and 'ulong'"),
+            ulong => func(Convert.ToUInt64(left), right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for types 'long' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for types 'long' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -584,18 +580,11 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'bool'"),
-            sbyte => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'sbyte'"),
-            short => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'short'"),
-            int => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'int'"),
-            long => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'long'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'bool'"),
+            sbyte or short or int or long => func(left, Convert.ToUInt64(right)),
             byte or char or ushort or uint or ulong or float or double or decimal => func(left, right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for types 'ulong' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for types 'ulong' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -604,11 +593,11 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'float' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'float' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
             decimal => func(Convert.ToDecimal(left), right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for types 'float' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for types 'float' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -617,11 +606,11 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'double' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'double' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
             decimal => func(Convert.ToDecimal(left), right),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for types 'double' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for types 'double' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
@@ -630,11 +619,11 @@ public static class MathHelper
         return right switch
         {
             bool => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' can't be applied to operands of types 'decimal' and 'bool'"),
+                $"Operator '{operatorName}' can't be applied to operands of types 'decimal' and 'bool'"),
             byte or char or sbyte or short or ushort or int or uint or long or ulong or decimal => func(left, right),
             float or double => func(left, Convert.ToDecimal(right)),
             _ => throw new InvalidOperationException(
-                                $"Operator '{operatorName}' not implemented for types 'decimal' and {right?.GetType().ToString() ?? "null"}"),
+                $"Operator '{operatorName}' not implemented for types 'decimal' and {right?.GetType().ToString() ?? "null"}"),
         };
     }
 
