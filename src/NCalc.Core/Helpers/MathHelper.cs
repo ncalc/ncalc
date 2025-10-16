@@ -62,7 +62,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? AddFuncChecked : AddFunc;
-        return ExecuteOperation(a!, b!, '+', options.CultureInfo, func);
+        return ExecuteOperation(a, b, '+', options.CultureInfo, func);
     }
 
     public static object? Subtract(object? a, object? b)
@@ -79,7 +79,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? SubtractFuncChecked : SubtractFunc;
-        return ExecuteOperation(a!, b!, '-', options.CultureInfo, func);
+        return ExecuteOperation(a, b, '-', options.CultureInfo, func);
     }
 
     public static object? Multiply(object? a, object? b)
@@ -96,7 +96,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? MultiplyFuncChecked : MultiplyFunc;
-        return ExecuteOperation(a!, b!, '*', options.CultureInfo, func);
+        return ExecuteOperation(a, b, '*', options.CultureInfo, func);
     }
 
     public static object? Divide(object? a, object? b)
@@ -116,7 +116,7 @@ public static class MathHelper
             a = Convert.ToDouble(a, options.CultureInfo);
 
         var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
-        return ExecuteOperation(a!, b!, '/', options.CultureInfo, func);
+        return ExecuteOperation(a, b, '/', options.CultureInfo, func);
     }
 
     public static object? Modulo(object? a, object? b)
@@ -132,7 +132,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        return ExecuteOperation(a!, b!, '%', options.CultureInfo, ModuloFunc);
+        return ExecuteOperation(a, b, '%', options.CultureInfo, ModuloFunc);
     }
 
     public static object? Max(object a, object b)
@@ -160,21 +160,21 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var typeCode = ConvertToHighestPrecision(ref a!, ref b!, options.CultureInfo);
+        var typeCode = ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
 
         return typeCode switch
         {
-            TypeCode.Byte => Math.Max((byte)a!, (byte)b!),
-            TypeCode.SByte => Math.Max((sbyte)a!, (sbyte)b!),
-            TypeCode.Int16 => Math.Max((short)a!, (short)b!),
-            TypeCode.UInt16 => Math.Max((ushort)a!, (ushort)b!),
-            TypeCode.Int32 => Math.Max((int)a!, (int)b!),
-            TypeCode.UInt32 => Math.Max((uint)a!, (uint)b!),
-            TypeCode.Int64 => Math.Max((long)a!, (long)b!),
-            TypeCode.UInt64 => Math.Max((ulong)a!, (ulong)b!),
-            TypeCode.Single => Math.Max((float)a!, (float)b!),
-            TypeCode.Double => Math.Max((double)a!, (double)b!),
-            TypeCode.Decimal => Math.Max((decimal)a!, (decimal)b!),
+            TypeCode.Byte => Math.Max((byte)a, (byte)b),
+            TypeCode.SByte => Math.Max((sbyte)a, (sbyte)b),
+            TypeCode.Int16 => Math.Max((short)a, (short)b),
+            TypeCode.UInt16 => Math.Max((ushort)a, (ushort)b),
+            TypeCode.Int32 => Math.Max((int)a, (int)b),
+            TypeCode.UInt32 => Math.Max((uint)a, (uint)b),
+            TypeCode.Int64 => Math.Max((long)a, (long)b),
+            TypeCode.UInt64 => Math.Max((ulong)a, (ulong)b),
+            TypeCode.Single => Math.Max((float)a, (float)b),
+            TypeCode.Double => Math.Max((double)a, (double)b),
+            TypeCode.Decimal => Math.Max((decimal)a, (decimal)b),
             _ => null,
         };
     }
@@ -206,21 +206,21 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var typeCode = ConvertToHighestPrecision(ref a!, ref b!, cultureInfo);
+        var typeCode = ConvertToHighestPrecision(ref a, ref b, cultureInfo);
 
         return typeCode switch
         {
-            TypeCode.Byte => Math.Min((byte)a!, (byte)b!),
-            TypeCode.SByte => Math.Min((sbyte)a!, (sbyte)b!),
-            TypeCode.Int16 => Math.Min((short)a!, (short)b!),
-            TypeCode.UInt16 => Math.Min((ushort)a!, (ushort)b!),
-            TypeCode.Int32 => Math.Min((int)a!, (int)b!),
-            TypeCode.UInt32 => Math.Min((uint)a!, (uint)b!),
-            TypeCode.Int64 => Math.Min((long)a!, (long)b!),
-            TypeCode.UInt64 => Math.Min((ulong)a!, (ulong)b!),
-            TypeCode.Single => Math.Min((float)a!, (float)b!),
-            TypeCode.Double => Math.Min((double)a!, (double)b!),
-            TypeCode.Decimal => Math.Min((decimal)a!, (decimal)b!),
+            TypeCode.Byte => Math.Min((byte)a, (byte)b),
+            TypeCode.SByte => Math.Min((sbyte)a, (sbyte)b),
+            TypeCode.Int16 => Math.Min((short)a, (short)b),
+            TypeCode.UInt16 => Math.Min((ushort)a, (ushort)b),
+            TypeCode.Int32 => Math.Min((int)a, (int)b),
+            TypeCode.UInt32 => Math.Min((uint)a, (uint)b),
+            TypeCode.Int64 => Math.Min((long)a, (long)b),
+            TypeCode.UInt64 => Math.Min((ulong)a, (ulong)b),
+            TypeCode.Single => Math.Min((float)a, (float)b),
+            TypeCode.Double => Math.Min((double)a, (double)b),
+            TypeCode.Decimal => Math.Min((decimal)a, (decimal)b),
             _ => null
         };
     }
@@ -407,7 +407,7 @@ public static class MathHelper
         return Math.Truncate(ConvertToDouble(a, options));
     }
 
-    private static object? ConvertIfNeeded(object value, MathHelperOptions options)
+    private static object ConvertIfNeeded(object value, MathHelperOptions options)
     {
         return value switch
         {
