@@ -460,7 +460,7 @@ public static class MathHelper
                 $"Operator '{operatorName}' not implemented for operands of types {a?.GetType().ToString() ?? "null"} and {b?.GetType().ToString() ?? "null"}");
         }
 
-        return func(a!, b!);
+        return func(a, b);
     }
 
     private static void CheckOverflow(dynamic value)
