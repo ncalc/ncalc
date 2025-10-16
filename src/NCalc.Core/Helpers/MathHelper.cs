@@ -62,7 +62,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? AddFuncChecked : AddFunc;
-        return ExecuteOperation(a, b, '+', options.CultureInfo, func);
+        return ExecuteOperation(a!, b!, '+', options.CultureInfo, func);
     }
 
     public static object? Subtract(object? a, object? b)
@@ -79,7 +79,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? SubtractFuncChecked : SubtractFunc;
-        return ExecuteOperation(a, b, '-', options.CultureInfo, func);
+        return ExecuteOperation(a!, b!, '-', options.CultureInfo, func);
     }
 
     public static object? Multiply(object? a, object? b)
@@ -96,7 +96,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? MultiplyFuncChecked : MultiplyFunc;
-        return ExecuteOperation(a, b, '*', options.CultureInfo, func);
+        return ExecuteOperation(a!, b!, '*', options.CultureInfo, func);
     }
 
     public static object? Divide(object? a, object? b)
@@ -116,7 +116,7 @@ public static class MathHelper
             a = Convert.ToDouble(a, options.CultureInfo);
 
         var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
-        return ExecuteOperation(a, b, '/', options.CultureInfo, func);
+        return ExecuteOperation(a!, b!, '/', options.CultureInfo, func);
     }
 
     public static object? Modulo(object? a, object? b)
@@ -132,7 +132,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        return ExecuteOperation(a, b, '%', options.CultureInfo, ModuloFunc);
+        return ExecuteOperation(a!, b!, '%', options.CultureInfo, ModuloFunc);
     }
 
     public static object? Max(object a, object b)
@@ -160,7 +160,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var typeCode = ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        var typeCode = ConvertToHighestPrecision(ref a!, ref b!, options.CultureInfo);
 
         return typeCode switch
         {
@@ -206,7 +206,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var typeCode = ConvertToHighestPrecision(ref a, ref b, cultureInfo);
+        var typeCode = ConvertToHighestPrecision(ref a!, ref b!, cultureInfo);
 
         return typeCode switch
         {
@@ -225,11 +225,8 @@ public static class MathHelper
         };
     }
 
-    private static TypeCode ConvertToHighestPrecision(ref object? a, ref object? b, CultureInfo cultureInfo)
+    private static TypeCode ConvertToHighestPrecision(ref object a, ref object b, CultureInfo cultureInfo)
     {
-        if (a == null || b == null)
-            return TypeCode.Empty;
-
         var typeCodeA = Type.GetTypeCode(a.GetType());
         var typeCodeB = Type.GetTypeCode(b.GetType());
 
@@ -410,7 +407,7 @@ public static class MathHelper
         return Math.Truncate(ConvertToDouble(a, options));
     }
 
-    private static object? ConvertIfNeeded(object? value, MathHelperOptions options)
+    private static object? ConvertIfNeeded(object value, MathHelperOptions options)
     {
         return value switch
         {
@@ -453,7 +450,7 @@ public static class MathHelper
         };
     }
 
-    private static object ExecuteOperation(object? a, object? b, char operatorName, CultureInfo culture, Func<object, object, object> func)
+    private static object ExecuteOperation(object a, object b, char operatorName, CultureInfo culture, Func<object, object, object> func)
     {
         var typeCode = ConvertToHighestPrecision(ref a, ref b, culture);
 
