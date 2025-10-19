@@ -470,8 +470,7 @@ public class MathsTests
     [InlineData(2, 65535, 65537)]
     public void ShouldHandleSignedAndUnsignedShorts(short a, ushort b, int expected)
     {
-        //Fails with: System.OverflowException : Value was either too large or too small for a UInt16.
-        var failExp = new NCalc.Expression("a+b");
+        var failExp = new Expression("a+b");
         failExp.Parameters["a"] = a;
         failExp.Parameters["b"] = b;
         var result = failExp.Evaluate();
