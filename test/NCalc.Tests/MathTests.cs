@@ -470,10 +470,11 @@ public class MathsTests
     [InlineData(2, 65535, 65537)]
     public void ShouldHandleSignedAndUnsignedShorts(short a, ushort b, int expected)
     {
-        var failExp = new Expression("a+b");
-        failExp.Parameters["a"] = a;
-        failExp.Parameters["b"] = b;
-        var result = failExp.Evaluate();
+        var exp = new Expression("a+b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
+
         Assert.Equal(expected, result);
     }
 }
