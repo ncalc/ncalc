@@ -462,4 +462,19 @@ public class MathsTests
         var expected = Convert.ToUInt64(val) + 1ul;
         Assert.Equal(expected, e.Evaluate());
     }
+
+    [Theory]
+    [InlineData(-32767, 65535, 32768)]
+    [InlineData(-32768, 65535, 32767)]
+    [InlineData(-1, 65535, 65534)]
+    [InlineData(2, 65535, 65537)]
+    public void ShouldHandleSignedAndUnsignedShorts(short a, ushort b, int expected)
+    {
+        //Fails with: System.OverflowException : Value was either too large or too small for a UInt16.
+        var failExp = new NCalc.Expression("a+b");
+        failExp.Parameters["a"] = a;
+        failExp.Parameters["b"] = b;
+        var result = failExp.Evaluate();
+        Assert.Equal(expected, result);
+    }
 }
