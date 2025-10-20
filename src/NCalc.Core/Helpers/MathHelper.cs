@@ -475,7 +475,7 @@ public static class MathHelper
         if (typeCode == TypeCode.Empty || typeCode == TypeCode.Boolean)
         {
             throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for operands of types {a?.GetType().ToString() ?? "null"} and {b?.GetType().ToString() ?? "null"}");
+                $"Operator '{operatorName}' not implemented for operands of types {a.GetType()} and {b.GetType()}");
         }
 
         return func(a, b);
