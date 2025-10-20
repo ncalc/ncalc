@@ -237,4 +237,19 @@ public class ParametersAndFunctions
         _ = expression.Evaluate();
         Assert.Equal(3, count);
     }
+
+    [Fact]
+    public void MaxShouldWorkWithUShortAndShortTypes()
+    {
+        var a = ushort.MaxValue;
+        var b = short.MaxValue;
+
+        var expr = new Expression("Max([a], [b])");
+        expr.Parameters["a"] = a;
+        expr.Parameters["b"] = b;
+
+        var res = expr.Evaluate();
+        int expected = ushort.MaxValue;
+        Assert.Equal(expected, res);
+    }
 }

@@ -62,7 +62,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? AddFuncChecked : AddFunc;
-        return ExecuteOperation(a, b, '+', func);
+        return ExecuteOperation(a, b, '+', options.CultureInfo, func);
     }
 
     public static object? Subtract(object? a, object? b)
@@ -79,7 +79,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? SubtractFuncChecked : SubtractFunc;
-        return ExecuteOperation(a, b, '-', func);
+        return ExecuteOperation(a, b, '-', options.CultureInfo, func);
     }
 
     public static object? Multiply(object? a, object? b)
@@ -96,7 +96,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? MultiplyFuncChecked : MultiplyFunc;
-        return ExecuteOperation(a, b, '*', func);
+        return ExecuteOperation(a, b, '*', options.CultureInfo, func);
     }
 
     public static object? Divide(object? a, object? b)
@@ -116,7 +116,7 @@ public static class MathHelper
             a = Convert.ToDouble(a, options.CultureInfo);
 
         var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
-        return ExecuteOperation(a, b, '/', func);
+        return ExecuteOperation(a, b, '/', options.CultureInfo, func);
     }
 
     public static object? Modulo(object? a, object? b)
@@ -132,7 +132,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        return ExecuteOperation(a, b, '%', ModuloFunc);
+        return ExecuteOperation(a, b, '%', options.CultureInfo, ModuloFunc);
     }
 
     public static object? Max(object a, object b)
@@ -243,6 +243,25 @@ public static class MathHelper
         {
             b = Convert.ChangeType(b, typeCodeA, cultureInfo);
             return typeCodeA;
+        }
+
+        if (bitSizeA == bitSizeB)
+        {
+            bool isUnsignedA = TypeHelper.IsUnsignedType(a);
+            bool isUnsignedB = TypeHelper.IsUnsignedType(b);
+
+            if (isUnsignedA || isUnsignedB)
+            {
+                var extendedType = TypeHelper.TypeCodeExpandBits(typeCodeA);
+                if (extendedType != TypeCode.Empty)
+                {
+                    a = Convert.ChangeType(a, extendedType, cultureInfo);
+                    b = Convert.ChangeType(b, extendedType, cultureInfo);
+                    return extendedType;
+                }
+
+                return typeCodeA;
+            }
         }
 
         a = Convert.ChangeType(a, typeCodeB, cultureInfo);
@@ -412,7 +431,7 @@ public static class MathHelper
         {
             char ch when options is { DecimalAsDefault: true, AllowCharValues: false } => decimal.Parse(ch.ToString(), options.CultureInfo),
             string s when options is { DecimalAsDefault: true } => decimal.Parse(s, options.CultureInfo),
-            char ch when options is { AllowCharValues: false } => double.Parse(ch.ToString(), options.CultureInfo),
+            char ch => (int)ch,
             string s => double.Parse(s, options.CultureInfo),
             bool boolean when options.AllowBooleanCalculation => boolean ? 1 : 0,
             _ => value
@@ -449,179 +468,17 @@ public static class MathHelper
         };
     }
 
-    private static object ExecuteOperation(object a, object b, char operatorName, Func<object, object, object> func)
+    private static object ExecuteOperation(object a, object b, char operatorName, CultureInfo culture, Func<object, object, object> func)
     {
-        return a switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'bool' and {b.GetType()}"),
-            byte b1 => ExecuteByteOperation(b1, b, operatorName, func),
-            char @char => ExecuteCharOperation(@char, b, operatorName, func),
-            sbyte @sbyte => ExecuteSByteOperation(@sbyte, b, operatorName, func),
-            short s => ExecuteShortOperation(s, b, operatorName, func),
-            ushort @ushort => ExecuteUShortOperation(@ushort, b, operatorName, func),
-            int i => ExecuteIntOperation(i, b, operatorName, func),
-            uint u => ExecuteUIntOperation(u, b, operatorName, func),
-            long l => ExecuteLongOperation(l, b, operatorName, func),
-            ulong @ulong => ExecuteULongOperation(@ulong, b, operatorName, func),
-            float f => ExecuteFloatOperation(f, b, operatorName, func),
-            double d => ExecuteDoubleOperation(d, b, operatorName, func),
-            decimal @decimal => ExecuteDecimalOperation(@decimal, b, operatorName, func),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for operands of types {a.GetType()} and {b.GetType()}"),
-        };
-    }
+        var typeCode = ConvertToHighestPrecision(ref a, ref b, culture);
 
-    private static object ExecuteByteOperation(byte left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
+        if (typeCode == TypeCode.Empty || typeCode == TypeCode.Boolean)
         {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'byte' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for 'byte' and {right.GetType()}"),
-        };
-    }
+            throw new InvalidOperationException(
+                $"Operator '{operatorName}' not implemented for operands of types {a?.GetType().ToString() ?? "null"} and {b?.GetType().ToString() ?? "null"}");
+        }
 
-    private static object ExecuteCharOperation(char left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'char' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for 'char' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteSByteOperation(sbyte left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'sbyte' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
-            ulong => func(Convert.ToUInt64(left), right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for 'sbyte' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteShortOperation(short left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'short' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
-            ulong => func(Convert.ToUInt64(left), right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for types 'short' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteUShortOperation(ushort left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'ushort' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for types 'ushort' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteIntOperation(int left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'int' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
-            ulong => func(Convert.ToUInt64(left), right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for types 'int' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteUIntOperation(uint left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'uint' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => func(left, right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for types 'uint' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteLongOperation(long left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'long' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or float or double or decimal => func(left, right),
-            ulong => func(Convert.ToUInt64(left), right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for types 'long' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteULongOperation(ulong left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'ulong' and 'bool'"),
-            sbyte or short or int or long => func(left, Convert.ToUInt64(right)),
-            byte or char or ushort or uint or ulong or float or double or decimal => func(left, right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for types 'ulong' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteFloatOperation(float left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'float' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
-            decimal => func(Convert.ToDecimal(left), right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for types 'float' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteDoubleOperation(double left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'double' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or ulong or float or double => func(left, right),
-            decimal => func(Convert.ToDecimal(left), right),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for types 'double' and {right.GetType()}"),
-        };
-    }
-
-    private static object ExecuteDecimalOperation(decimal left, object right, char operatorName, Func<object, object, object> func)
-    {
-        return right switch
-        {
-            bool => throw new InvalidOperationException(
-                $"Operator '{operatorName}' can't be applied to operands of types 'decimal' and 'bool'"),
-            byte or char or sbyte or short or ushort or int or uint or long or ulong or decimal => func(left, right),
-            float or double => func(left, Convert.ToDecimal(right)),
-            _ => throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for types 'decimal' and {right.GetType()}"),
-        };
+        return func(a, b);
     }
 
     private static void CheckOverflow(dynamic value)

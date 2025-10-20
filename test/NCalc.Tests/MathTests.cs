@@ -1,3 +1,4 @@
+using System.Numerics;
 using NCalc.LambdaCompilation;
 using NCalc.Tests.TestData;
 using Assert = Xunit.Assert;
@@ -468,13 +469,57 @@ public class MathsTests
     [InlineData(-32768, 65535, 32767)]
     [InlineData(-1, 65535, 65534)]
     [InlineData(2, 65535, 65537)]
-    public void ShouldHandleSignedAndUnsignedShorts(short a, ushort b, int expected)
+    public void ShouldAddSignedAndUnsignedShorts(short a, ushort b, int expected)
     {
-        var exp = new Expression("a+b");
+        var exp = new Expression("a + b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
         var result = exp.Evaluate();
 
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(1, ushort.MaxValue, -65534)]
+    public void ShouldSubtractSignedAndUnsignedShorts(short a, ushort b, int expected)
+    {
+        var exp = new Expression("a - b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(1, uint.MaxValue, -4294967294)]
+    public void ShouldSubtractSignedAndUnsignedInts(int a, uint b, long expected)
+    {
+        var exp = new Expression("a - b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(short.MaxValue, short.MaxValue, 65534)]
+    public void ShouldAddToOutOfBoundsShorts(short a, short b, int expected)
+    {
+        var exp = new Expression("a + b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(short.MinValue, short.MaxValue, -65535)]
+    public void ShouldSubtractToOutOfBoundsShorts(short a, short b, int expected)
+    {
+        var exp = new Expression("a - b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
         Assert.Equal(expected, result);
     }
 }
