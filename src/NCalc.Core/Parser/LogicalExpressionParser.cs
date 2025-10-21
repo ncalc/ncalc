@@ -114,7 +114,14 @@ public static class LogicalExpressionParser
 
         var intNumber = Terms.Number<int>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
-            .Then<LogicalExpression>(static d => new ValueExpression(d));
+            .Then<LogicalExpression>(static (ctx, val) =>
+            {
+                bool useLong = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.LongAsDefault);
+                if (useLong)
+                    return new ValueExpression((long)val);
+
+                return new ValueExpression(val);
+            });
 
         var longNumber = Terms.Number<long>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
@@ -306,8 +313,8 @@ public static class LogicalExpressionParser
         var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
             dateTime =>
             {
-                if(dateTime.Item4.Item4 == "")
-                { 
+                if (dateTime.Item4.Item4 == "")
+                {
                     if (DateTime.TryParse(
                             $"{dateTime.Item1}{dateSeparator}{dateTime.Item2}{dateSeparator}{dateTime.Item3} {dateTime.Item4.Item1}{timeSeparator}{dateTime.Item4.Item2}{timeSeparator}{dateTime.Item4.Item3}",
                             cultureInfo, DateTimeStyles.None, out var result))
@@ -364,7 +371,7 @@ public static class LogicalExpressionParser
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
 
-        // primary => GUID | NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
+        // primary => GUID | NUMBER | identifier | DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
             guid,
             hexOctBinNumber,
