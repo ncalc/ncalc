@@ -30,6 +30,12 @@ public readonly struct MathHelperOptions(CultureInfo cultureInfo, ExpressionOpti
         get => options.HasFlag(ExpressionOptions.AllowCharValues);
     }
 
+    public bool LongAsDefault
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => options.HasFlag(ExpressionOptions.LongAsDefault);
+    }
+
     public static implicit operator MathHelperOptions(CultureInfo cultureInfo)
     {
         return new MathHelperOptions(cultureInfo, ExpressionOptions.None);
