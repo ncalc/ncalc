@@ -114,14 +114,7 @@ public static class LogicalExpressionParser
 
         var intNumber = Terms.Number<int>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
-            .Then<LogicalExpression>(static (ctx, val) =>
-            {
-                bool useLong = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.LongAsDefault);
-                if (useLong)
-                    return new ValueExpression((long)val);
-
-                return new ValueExpression(val);
-            });
+            .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var longNumber = Terms.Number<long>(NumberOptions.Integer)
             .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
@@ -371,12 +364,16 @@ public static class LogicalExpressionParser
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
 
+        var integralNumber = OneOf(If(static (ctx) =>
+            ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.LongAsDefault),
+            longNumber),
+            OneOf(intNumber, longNumber));
+
         // primary => GUID | NUMBER | identifier | DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
             guid,
             hexOctBinNumber,
-            intNumber,
-            longNumber,
+            integralNumber,
             decimalOrDoubleNumber,
             booleanTrue,
             booleanFalse,
