@@ -364,12 +364,14 @@ public static class LogicalExpressionParser
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
 
+        var intOrLong = OneOf(intNumber, longNumber);
+
         var integralNumber = Select<LogicalExpressionParserContext, LogicalExpression>((ctx) =>
         {
             if (ctx.Options.HasFlag(ExpressionOptions.LongAsDefault))
                 return longNumber;
 
-            return OneOf(intNumber, longNumber);
+            return intOrLong;
         });
 
         // primary => GUID | NUMBER | identifier | DateTime | string | function | boolean | groupExpression | list ;
