@@ -447,4 +447,24 @@ public class MathsTests
 
         Assert.Null(e.Evaluate());
     }
+
+    [Fact]
+    public void ShouldAllowLongAsDefault()
+    {
+        var exp = new Expression("10000000*1000", ExpressionOptions.LongAsDefault);
+        var result = exp.Evaluate();
+
+        var expected = 10000000L * 1000;
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void ShouldBeDoubleWithLongAsDefault()
+    {
+        var exp = new Expression("10000000.1*1000", ExpressionOptions.LongAsDefault, CultureInfo.InvariantCulture);
+        var result = exp.Evaluate();
+
+        var expected = 10000000.1 * 1000;
+        Assert.Equal(expected, result);
+    }
 }
