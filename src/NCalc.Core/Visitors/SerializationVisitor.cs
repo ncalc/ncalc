@@ -94,7 +94,9 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             resultBuilder.Append(function.Parameters[i].Accept(this));
             if (i < function.Parameters.Count - 1)
             {
-                resultBuilder.Remove(resultBuilder.Length - 1, 1);
+                if (resultBuilder[resultBuilder.Length - 1] == ' ')
+                    resultBuilder.Remove(resultBuilder.Length - 1, 1);
+
                 resultBuilder.Append(", ");
             }
         }

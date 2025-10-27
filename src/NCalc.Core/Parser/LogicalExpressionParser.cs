@@ -306,8 +306,8 @@ public static class LogicalExpressionParser
         var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition).Then<LogicalExpression>(
             dateTime =>
             {
-                if(dateTime.Item4.Item4 == "")
-                { 
+                if (dateTime.Item4.Item4 == "")
+                {
                     if (DateTime.TryParse(
                             $"{dateTime.Item1}{dateSeparator}{dateTime.Item2}{dateSeparator}{dateTime.Item3} {dateTime.Item4.Item1}{timeSeparator}{dateTime.Item4.Item2}{timeSeparator}{dateTime.Item4.Item3}",
                             cultureInfo, DateTimeStyles.None, out var result))
@@ -364,12 +364,21 @@ public static class LogicalExpressionParser
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
 
-        // primary => GUID | NUMBER | identifier| DateTime | string | function | boolean | groupExpression | list ;
+        var intOrLong = OneOf(intNumber, longNumber);
+
+        var integralNumber = Select<LogicalExpressionParserContext, LogicalExpression>((ctx) =>
+        {
+            if (ctx.Options.HasFlag(ExpressionOptions.LongAsDefault))
+                return longNumber;
+
+            return intOrLong;
+        });
+
+        // primary => GUID | NUMBER | identifier | DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
             guid,
             hexOctBinNumber,
-            intNumber,
-            longNumber,
+            integralNumber,
             decimalOrDoubleNumber,
             booleanTrue,
             booleanFalse,

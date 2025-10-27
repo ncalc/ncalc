@@ -55,4 +55,4 @@ To create expressions you can combine several [Operators](operators.md) and [Val
 
 ## Learn More
 For additional information on the technique we used to create this library please read [this
-article](http://www.codeproject.com/KB/recipes/sota_expression_evaluator.aspx).
+article](https://www.codeproject.com/articles/State-of-the-Art-Expression-Evaluation).
