@@ -202,11 +202,14 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     protected bool Compare(object? a, object? b, ComparisonType comparisonType)
     {
-        if (context.Options.HasFlag(ExpressionOptions.StrictTypeMatching) && a?.GetType() != b?.GetType())
-            return false;
+        if ((context.Options.HasFlag(ExpressionOptions.StrictTypeMatching) && a?.GetType() != b?.GetType())
+            || ((a == null || b == null) && !(a == null && b == null)))
+        {
+            if (comparisonType == ComparisonType.NotEqual)
+                return true;
 
-        if ((a == null || b == null) && !(a == null && b == null))
             return false;
+        }
 
         var result = CompareUsingMostPreciseType(a, b, context);
 
