@@ -121,14 +121,7 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var decimalNumber = Terms.Number<decimal>(NumberOptions.Float)
-            .Then<LogicalExpression>(static (ctx, val) =>
-            {
-                bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
-                if (useDecimal)
-                    return new ValueExpression(val);
-
-                return new ValueExpression((double)val);
-            });
+            .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var doubleNumber = Terms.Number<double>(NumberOptions.Float)
             .Then<LogicalExpression>(static (ctx, val) =>
@@ -148,7 +141,14 @@ public static class LogicalExpressionParser
                 return new ValueExpression(val);
             });
 
-        var decimalOrDoubleNumber = OneOf(decimalNumber, doubleNumber);
+        var decimalOrDouble = OneOf(decimalNumber, doubleNumber);
+        var decimalOrDoubleNumber = Select<LogicalExpressionParserContext, LogicalExpression>((ctx) =>
+        {
+            if (ctx.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+                return decimalOrDouble;
+
+            return doubleNumber;
+        });
 
         var argumentSeparatorTerm = Terms.Char(argumentSeparator);
         var comma = Terms.Char(',');
