@@ -202,8 +202,11 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     protected bool Compare(object? a, object? b, ComparisonType comparisonType)
     {
-        if ((context.Options.HasFlag(ExpressionOptions.StrictTypeMatching) && a?.GetType() != b?.GetType())
-            || ((a == null || b == null) && !(a == null && b == null)))
+        var isNullOrEmptyA = a == null || (a is string strA && string.IsNullOrWhiteSpace(strA));
+        var isNullOrEmptyB = b == null || (b is string strB && string.IsNullOrWhiteSpace(strB));
+
+        if ((context.Options.HasFlag(ExpressionOptions.StrictTypeMatching) && !isNullOrEmptyA && !isNullOrEmptyB
+            && a!.GetType() != b!.GetType()) || (isNullOrEmptyA != isNullOrEmptyB))
         {
             if (comparisonType == ComparisonType.NotEqual)
                 return true;

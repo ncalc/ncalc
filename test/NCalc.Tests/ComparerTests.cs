@@ -120,4 +120,11 @@ public class ComparerTests
 
         Assert.True((bool)e.Evaluate());
     }
+
+    [Fact]
+    public void ShouldCompareWithEmptyString()
+    {
+        var e = new Expression("1 == ''");
+        Assert.False((bool)e.Evaluate());
+    }
 }
