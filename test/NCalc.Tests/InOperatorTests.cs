@@ -53,4 +53,30 @@ public class InOperatorTests
             Parameters = { { "PageState", "Insert" } }
         }.Evaluate());
     }
+
+    [Fact]
+    public void ShouldEvaluateIntInOperatorWithParameters()
+    {
+        var x = 3;
+        int[] y = [1, 2, 3];
+
+        var expression = new Expression("{x} in {y}", ExpressionOptions.None);
+        expression.Parameters["x"] = x;
+        expression.Parameters["y"] = y;
+
+        Assert.True((bool)expression.Evaluate());
+    }
+
+    [Fact]
+    public void ShouldEvaluateStringInOperatorWithIntParameters()
+    {
+        var x = "3";
+        int[] y = [1, 2, 3];
+
+        var expression = new Expression("{x} in {y}", ExpressionOptions.None);
+        expression.Parameters["x"] = x;
+        expression.Parameters["y"] = y;
+
+        Assert.True((bool)expression.Evaluate());
+    }
 }
