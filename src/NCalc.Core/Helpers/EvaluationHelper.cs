@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NCalc.Domain;
 using NCalc.Exceptions;
@@ -54,7 +55,8 @@ public static class EvaluationHelper
         return rightValue switch
         {
             string rightValueString => Contains(leftValue, rightValueString, context),
-            IEnumerable<object?> rightValueEnumerable => Contains(leftValue, rightValueEnumerable, context),
+            IEnumerable<object?> rightValueEnumerableOfObj => Contains(leftValue, rightValueEnumerableOfObj, context),
+            IEnumerable rightValueEnumerable => Contains(leftValue, rightValueEnumerable, context),
             { } rightValueObject => Contains(leftValue, [rightValueObject], context),
             _ => throw new NCalcEvaluationException(
                 "'in' operator right value must implement IEnumerable, be a string or an object.")
@@ -98,6 +100,46 @@ public static class EvaluationHelper
 
         return rightArray.Contains(leftValue,
             noStringTypeCoercion ? EqualityComparer<object?>.Default : StringCoercionComparer.Default);
+    }
+
+    private static bool Contains(object? leftValue, IEnumerable rightValue, ExpressionContextBase context)
+    {
+        if (rightValue == null)
+            return false;
+
+        if (leftValue == null)
+        {
+            foreach (var item in rightValue)
+            {
+                if (item == null)
+                    return true;
+            }
+
+            return false;
+        }
+
+        var leftType = leftValue.GetType();
+
+        var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
+        var comparer = noStringTypeCoercion ? EqualityComparer<object?>.Default : StringCoercionComparer.Default;
+
+        foreach (var item in rightValue)
+        {
+            if (item != null)
+            {
+                var rightType = item.GetType();
+
+                if (rightType == leftType)
+                {
+                    if (leftValue.Equals(item))
+                        return true;
+                }
+                else if (comparer.Equals(leftValue, item))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
