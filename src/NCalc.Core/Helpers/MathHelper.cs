@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using ExtendedNumerics;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace NCalc.Helpers;
 
@@ -62,7 +63,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? AddFuncChecked : AddFunc;
-        return ExecuteOperation(a, b, '+', options.CultureInfo, func);
+        return ExecuteOperation(a, b, options.CultureInfo, func);
     }
 
     public static object? Subtract(object? a, object? b)
@@ -79,7 +80,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? SubtractFuncChecked : SubtractFunc;
-        return ExecuteOperation(a, b, '-', options.CultureInfo, func);
+        return ExecuteOperation(a, b, options.CultureInfo, func);
     }
 
     public static object? Multiply(object? a, object? b)
@@ -96,7 +97,7 @@ public static class MathHelper
         b = ConvertIfNeeded(b, options);
 
         var func = options.OverflowProtection ? MultiplyFuncChecked : MultiplyFunc;
-        return ExecuteOperation(a, b, '*', options.CultureInfo, func);
+        return ExecuteOperation(a, b, options.CultureInfo, func);
     }
 
     public static object? Divide(object? a, object? b)
@@ -116,7 +117,7 @@ public static class MathHelper
             a = Convert.ToDouble(a, options.CultureInfo);
 
         var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
-        return ExecuteOperation(a, b, '/', options.CultureInfo, func);
+        return ExecuteOperation(a, b, options.CultureInfo, func);
     }
 
     public static object? Modulo(object? a, object? b)
@@ -132,7 +133,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        return ExecuteOperation(a, b, '%', options.CultureInfo, ModuloFunc);
+        return ExecuteOperation(a, b, options.CultureInfo, ModuloFunc);
     }
 
     public static object? Max(object a, object b)
@@ -186,8 +187,6 @@ public static class MathHelper
 
     public static object? Min(object? a, object? b, MathHelperOptions options)
     {
-        var cultureInfo = options.CultureInfo;
-
         if (a == null && b == null)
         {
             return null;
@@ -206,7 +205,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var typeCode = ConvertToHighestPrecision(ref a, ref b, cultureInfo);
+        var typeCode = ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
 
         return typeCode switch
         {
@@ -468,17 +467,18 @@ public static class MathHelper
         };
     }
 
-    private static object ExecuteOperation(object a, object b, char operatorName, CultureInfo culture, Func<object, object, object> func)
+    private static object ExecuteOperation(object a, object b, CultureInfo culture, Func<object, object, object> func)
     {
-        var typeCode = ConvertToHighestPrecision(ref a, ref b, culture);
+        ConvertToHighestPrecision(ref a, ref b, culture);
 
-        if (typeCode == TypeCode.Empty || typeCode == TypeCode.Boolean)
+        try
         {
-            throw new InvalidOperationException(
-                $"Operator '{operatorName}' not implemented for operands of types {a.GetType()} and {b.GetType()}");
+            return func(a, b);
         }
-
-        return func(a, b);
+        catch (RuntimeBinderException ex)
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
     }
 
     private static void CheckOverflow(dynamic value)

@@ -145,4 +145,14 @@ public class ExceptionsTests
         Assert.Throws<NCalcException>(() => new Expression("").Evaluate());
         Assert.Throws<NCalcException>(() => new Expression((string)null).Evaluate());
     }
+
+    [Fact]
+    public void DateAdditionShouldThrowException()
+    {
+        var exp = new Expression("[a] + [b]");
+        exp.Parameters["a"] = DateTime.Now;
+        exp.Parameters["b"] = DateTime.Now.Date;
+
+        Assert.Throws<InvalidOperationException>(exp.Evaluate);
+    }
 }
