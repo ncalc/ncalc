@@ -1,9 +1,12 @@
 using System.Data;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 
 namespace NCalc.Benchmarks;
 
+[SimpleJob(RuntimeMoniker.Net80)]
+[SimpleJob(RuntimeMoniker.Net10_0)]
 [RankColumn]
 [CategoriesColumn]
 [MemoryDiagnoser]

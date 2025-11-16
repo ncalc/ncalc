@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using Microsoft.Extensions.Logging;
 using NCalc.Antlr;
@@ -7,6 +8,8 @@ using NCalc.Factories;
 
 namespace NCalc.Benchmarks;
 
+[SimpleJob(RuntimeMoniker.Net80)]
+[SimpleJob(RuntimeMoniker.Net10_0)]
 [RankColumn]
 [CategoriesColumn]
 [MemoryDiagnoser]
