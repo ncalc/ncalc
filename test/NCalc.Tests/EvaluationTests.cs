@@ -256,4 +256,18 @@ public class EvaluationTests
     {
         Assert.False(new Expression(expression, ExpressionOptions.StrictTypeMatching).Evaluate() as bool?);
     }
+
+    [Fact]
+    public void SpaceCharacterComparisonShouldBeTrue()
+    {
+        var expr = new Expression("[Test] == ' '")
+        {
+            Parameters =
+            {
+                ["Test"] = ' '
+            }
+        };
+        var result = expr.Evaluate();
+        Assert.True(result is true);
+    }
 }
