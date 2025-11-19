@@ -2,7 +2,6 @@ using NCalc.Domain;
 using NCalc.Exceptions;
 using Parlot;
 using Parlot.Fluent;
-using static Parlot.Fluent.Parsers;
 using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
@@ -204,10 +203,10 @@ public static class LogicalExpressionParser
         var groupExpression = Between(openParen, expression, closeParen);
 
         var braceIdentifier = openBrace
-            .SkipAnd(AnyCharBefore(closeBrace, consumeDelimiter: true, failOnEof: true).ElseError("Brace not closed."));
+            .SkipAnd(AnyCharBefore(closeBrace, failOnEof: true, consumeDelimiter: true).ElseError("Brace not closed."));
 
         var curlyBraceIdentifier =
-            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, consumeDelimiter: true, failOnEof: true)
+            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, failOnEof: true, consumeDelimiter: true)
                 .ElseError("Brace not closed."));
 
         // ("[" | "{") identifier ("]" | "}")
@@ -253,7 +252,7 @@ public static class LogicalExpressionParser
         var doubleQuotesStringValue =
             Terms
                 .String(quotes: StringLiteralQuotes.Double)
-                .Then<LogicalExpression>(static value => new ValueExpression(value.ToString()!));
+                .Then<LogicalExpression>(static value => new ValueExpression(value.ToString()));
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
 

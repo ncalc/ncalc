@@ -135,7 +135,9 @@ public static class EvaluationHelper
                         return true;
                 }
                 else if (comparer.Equals(leftValue, item))
+                {
                     return true;
+                }
             }
         }
 
