@@ -119,7 +119,7 @@ public static class TypeHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsUnsignedType(object? value) => value is byte or ushort or uint or ulong;
 
-    private static bool IsObjectNullOrWhiteSpace(object? x)
+    private static bool IsNullOrWhiteSpace(object? x)
     {
         switch (x)
         {
@@ -134,8 +134,8 @@ public static class TypeHelper
 
     public static bool HasNullOrTypeConflict(object? a, object? b, ExpressionOptions options)
     {
-        var na = IsObjectNullOrWhiteSpace(a);
-        var nb = IsObjectNullOrWhiteSpace(b);
+        var na = IsNullOrWhiteSpace(a);
+        var nb = IsNullOrWhiteSpace(b);
 
         if (options.HasFlag(ExpressionOptions.StrictTypeMatching) && !na && !nb && a!.GetType() != b!.GetType())
             return true;
