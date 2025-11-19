@@ -203,12 +203,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     protected bool Compare(object? a, object? b, ComparisonType comparisonType)
     {
         if (HasNullOrTypeConflict(a, b, context.Options))
-        {
-            if (comparisonType == ComparisonType.NotEqual)
-                return true;
-
-            return false;
-        }
+            return comparisonType == ComparisonType.NotEqual;
 
         var result = CompareUsingMostPreciseType(a, b, context);
 
