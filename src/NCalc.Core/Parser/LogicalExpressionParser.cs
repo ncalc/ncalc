@@ -112,12 +112,14 @@ public static class LogicalExpressionParser
                 return new ValueExpression((int)d);
             });
 
+        var nonScientificParser = Not(OneOf(Terms.Text("."), Terms.Text("E", true)));
+
         var intNumber = Terms.Number<int>(NumberOptions.Integer)
-            .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
+            .AndSkip(nonScientificParser)
             .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var longNumber = Terms.Number<long>(NumberOptions.Integer)
-            .AndSkip(Not(OneOf(Terms.Text("."), Terms.Text("E", true))))
+            .AndSkip(nonScientificParser)
             .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var decimalNumber = Terms.Number<decimal>(NumberOptions.Float)
