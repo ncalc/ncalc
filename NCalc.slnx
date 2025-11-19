@@ -1,0 +1,57 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Release" />
+    <BuildType Name="SignedRelease" />
+  </Configurations>
+  <Folder Name="/0. Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="CHANGELOG.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="README.md" />
+    <File Path="version.json" />
+  </Folder>
+  <Folder Name="/0. Solution Items/CI/">
+    <File Path=".github/workflows/benchmarks.yml" />
+    <File Path=".github/workflows/build-test.yml" />
+    <File Path=".github/workflows/publish-nuget.yml" />
+  </Folder>
+  <Folder Name="/0. Solution Items/Src/">
+    <File Path="src/Directory.Build.props" />
+  </Folder>
+  <Folder Name="/1. Docs/">
+    <File Path=".github/workflows/docs.yml" />
+    <Project Path="docs/NCalc.Docs.csproj" />
+  </Folder>
+  <Folder Name="/2. Plugins/">
+    <File Path="src/Plugins/Directory.build.props" />
+    <Project Path="src/NCalc.DependencyInjection/NCalc.DependencyInjection.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
+    <Project Path="src/Plugins/NCalc.Antlr/NCalc.Antlr.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
+    <Project Path="src/Plugins/NCalc.LambdaCompilation/NCalc.LambdaCompilation.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
+    <Project Path="src/Plugins/NCalc.MemoryCache/NCalc.MemoryCache.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/3. Tests and Examples/">
+    <Project Path="test/NCalc.Benchmarks/NCalc.Benchmarks.csproj" />
+    <Project Path="test/NCalc.Play/NCalc.Play.csproj" />
+    <Project Path="test/NCalc.Tests/NCalc.Tests.csproj" />
+  </Folder>
+  <Project Path="src/NCalc.Async/NCalc.Async.csproj">
+    <BuildType Solution="SignedRelease|*" Project="Debug" />
+  </Project>
+  <Project Path="src/NCalc.Core/NCalc.Core.csproj">
+    <BuildType Solution="SignedRelease|*" Project="Debug" />
+  </Project>
+  <Project Path="src/NCalc.Sync/NCalc.Sync.csproj" />
+  <Properties Name="TestCaseManagementSettings" Scope="PostLoad">
+    <Property Name="CategoryFile" Value="NCalc.vsmdi" />
+  </Properties>
+</Solution>
