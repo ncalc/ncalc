@@ -212,11 +212,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     protected bool Compare(object? a, object? b, ComparisonType comparisonType)
     {
-        var isNullOrEmptyA = a == null || (a is string strA && string.IsNullOrWhiteSpace(strA));
-        var isNullOrEmptyB = b == null || (b is string strB && string.IsNullOrWhiteSpace(strB));
-
-        if ((context.Options.HasFlag(ExpressionOptions.StrictTypeMatching) && !isNullOrEmptyA && !isNullOrEmptyB
-            && a!.GetType() != b!.GetType()) || (isNullOrEmptyA != isNullOrEmptyB))
+        if (HasNullOrTypeConflict(a, b, context.Options))
         {
             if (comparisonType == ComparisonType.NotEqual)
                 return true;
