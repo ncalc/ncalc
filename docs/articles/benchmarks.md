@@ -17,11 +17,11 @@ Allocated : Allocated memory per single operation (managed only, inclusive, 1KB 
 
 This is a benchmark of the default parser of NCalc v4+ vs the Antlr plugin (default parser of older versions).
 
-BenchmarkDotNet v0.15.4, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
-AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 9.0.306
-  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3
-  DefaultJob : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3
+> BenchmarkDotNet v0.15.4, Linux Ubuntu 24.04.3 LTS (Noble Numbat)  
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores  
+.NET SDK 9.0.306  
+  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
+  DefaultJob : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
 
 
 | Method                   | Mean      | Error     | StdDev    | Rank | Gen0   | Gen1   | Allocated |
@@ -37,11 +37,11 @@ This showcase how lambda expressions are faster than manually evaluating the exp
 lambda instead of manually compiling everytime.
 
 
-BenchmarkDotNet v0.15.4, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
-AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 9.0.306
-  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3
-  DefaultJob : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3
+> BenchmarkDotNet v0.15.4, Linux Ubuntu 24.04.3 LTS (Noble Numbat)  
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores  
+.NET SDK 9.0.306  
+  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
+  DefaultJob : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
 
 
 | Method                   | Mean        | Error     | StdDev    | Rank | Gen0   | Allocated |
@@ -54,11 +54,13 @@ AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
 
 [DataTable.Compute](https://learn.microsoft.com/en-us/dotnet/api/system.data.datatable.compute) it's the only way to evaluate expressions at .NET without a third-party library.
 
-BenchmarkDotNet v0.15.4, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
-AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 9.0.306
-  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3
-  DefaultJob : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3
+> BenchmarkDotNet v0.15.4, Linux Ubuntu 24.04.3 LTS (Noble Numbat)  
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores  
+.NET SDK 9.0.306  
+  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
+  DefaultJob : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
+
+
 | Method            | Mean     | Error     | StdDev    | Rank | Gen0   | Allocated |
 |------------------ |---------:|----------:|----------:|-----:|-------:|----------:|
 | EvaluateNCalc     | 1.748 us | 0.0174 us | 0.0154 us |    1 | 0.1431 |   2.36 KB |
