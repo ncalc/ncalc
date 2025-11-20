@@ -1,9 +1,14 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Jobs;
 using NCalc.Domain;
 using NCalc.Parser;
 
 namespace NCalc.Benchmarks
 {
+    [SimpleJob(RuntimeMoniker.Net80)]
+    [SimpleJob(RuntimeMoniker.Net10_0)]
+    [RankColumn]
+    [CategoriesColumn]
     [MemoryDiagnoser]
     public class WithoutCompilationBenchmark
     {
@@ -17,6 +22,10 @@ namespace NCalc.Benchmarks
             LogicalExpressionParser.Parse(new LogicalExpressionParserContext(Expression, ExpressionOptions.NoCache));
     }
 
+    [SimpleJob(RuntimeMoniker.Net80)]
+    [SimpleJob(RuntimeMoniker.Net10_0)]
+    [RankColumn]
+    [CategoriesColumn]
     [MemoryDiagnoser]
     public class WithCompilationBenchmark
     {
