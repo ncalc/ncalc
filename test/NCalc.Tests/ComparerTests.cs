@@ -111,4 +111,20 @@ public class ComparerTests
 
         Assert.False((bool)e.Evaluate());
     }
+
+    [Fact]
+    public void ShouldCompareInequlityWithStrictTypeMatching()
+    {
+        var e = new Expression("1 != ''",
+            ExpressionOptions.NoStringTypeCoercion | ExpressionOptions.StrictTypeMatching);
+
+        Assert.True((bool)e.Evaluate());
+    }
+
+    [Fact]
+    public void ShouldCompareWithEmptyString()
+    {
+        var e = new Expression("1 == ''");
+        Assert.False((bool)e.Evaluate());
+    }
 }

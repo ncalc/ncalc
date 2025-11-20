@@ -116,6 +116,36 @@ public static class TypeHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsReal(object? value) => value is decimal or double or float;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsUnsignedType(object? value) => value is byte or ushort or uint or ulong;
+
+    private static bool IsNullOrWhiteSpace(object? x)
+    {
+        switch (x)
+        {
+            case null:
+            case string s when string.IsNullOrWhiteSpace(s):
+            case char c when char.IsWhiteSpace(c):
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static bool HasNullOrTypeConflict(object? a, object? b, ExpressionOptions options)
+    {
+        var na = IsNullOrWhiteSpace(a);
+        var nb = IsNullOrWhiteSpace(b);
+
+        if (options.HasFlag(ExpressionOptions.StrictTypeMatching) && !na && !nb && a!.GetType() != b!.GetType())
+            return true;
+
+        if (na != nb)
+            return true;
+
+        return false;
+    }
+
     public static StringComparer GetStringComparer(ComparisonOptions options)
     {
         return options.IsOrdinal switch
@@ -137,5 +167,17 @@ public static class TypeHelper
         var comparer = GetStringComparer(options);
 
         return comparer.Compare(aValue, bValue);
+    }
+
+    public static TypeCode TypeCodeExpandBits(TypeCode typeCode)
+    {
+        return typeCode switch
+        {
+            TypeCode.SByte or TypeCode.Byte or TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Char => TypeCode.Int32,
+            TypeCode.Int32 or TypeCode.UInt32 => TypeCode.Int64,
+            TypeCode.Int64 or TypeCode.UInt64 => TypeCode.UInt64,
+            TypeCode.Single or TypeCode.Double or TypeCode.Decimal => TypeCode.Double,
+            _ => TypeCode.Empty,
+        };
     }
 }

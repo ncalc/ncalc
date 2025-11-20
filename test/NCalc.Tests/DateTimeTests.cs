@@ -94,4 +94,35 @@ public class DateTimeTests
             CultureInfo.CurrentCulture = oldCulture;
         }
     }
+
+    [Fact]
+    public void ShouldHandleTimespanFractionalPart()
+    {
+        var expected = new TimeSpan(0, 12, 0, 0, 333);
+
+        var expr = new Expression("#12:00:00.333#", ExpressionOptions.None, CultureInfo.InvariantCulture);
+        var res = expr.Evaluate();
+
+        Assert.Equal(expected, res);
+
+        var deCulture = CultureInfo.GetCultureInfo("de-DE");
+        var expr2 = new Expression("#12:00:00,333#", ExpressionOptions.None, deCulture);
+        var res2 = expr2.Evaluate();
+        Assert.Equal(expected, res2);
+    }
+
+    [Fact]
+    public void ShouldHandleDateTimeFractionalPart()
+    {
+        var expected = new DateTime(2025, 05, 27, 12, 0, 0, 333);
+
+        var expr = new Expression("#05/27/2025 12:00:00.333#", ExpressionOptions.None, CultureInfo.InvariantCulture);
+        var res = expr.Evaluate();
+        Assert.Equal(expected, res);
+
+        var deCulture = CultureInfo.GetCultureInfo("de-DE");
+        var expr2 = new Expression("#27.05.2025 12:00:00,333#", ExpressionOptions.None, deCulture);
+        var res2 = expr2.Evaluate();
+        Assert.Equal(expected, res2);
+    }
 }

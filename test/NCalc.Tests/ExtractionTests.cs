@@ -1,3 +1,5 @@
+using NCalc.Parser;
+
 namespace NCalc.Tests;
 
 [Trait("Category", "Extraction")]
@@ -82,7 +84,15 @@ public class ExtractionTests
     [Fact]
     public void ShouldGetNestedFunctionsIssue334()
     {
-        var expression = new Expression("[a] + GetTimeValue(if([c] > [d]; test([e] > 0; [g]; [h]); [f]); 1; 'sec')");
+        const string expressionText = "[a] + GetTimeValue(if([c] > [d]; test([e] > 0; [g]; [h]); [f]); 1; 'sec')";
+        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
+        var context = new LogicalExpressionParserContext(expressionText, ExpressionOptions.None)
+        {
+            ParserOptions = options
+        };
+
+        var logicalExpression = LogicalExpressionParser.Parse(context);
+        var expression = new Expression(logicalExpression);
         var functions = expression.GetFunctionNames();
         Assert.Contains("GetTimeValue", functions);
         Assert.Contains("if", functions);

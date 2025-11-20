@@ -212,11 +212,8 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
     protected bool Compare(object? a, object? b, ComparisonType comparisonType)
     {
-        if (context.Options.HasFlag(ExpressionOptions.StrictTypeMatching) && a?.GetType() != b?.GetType())
-            return false;
-
-        if ((a == null || b == null) && !(a == null && b == null))
-            return false;
+        if (HasNullOrTypeConflict(a, b, context.Options))
+            return comparisonType == ComparisonType.NotEqual;
 
         var result = CompareUsingMostPreciseType(a, b, context);
 

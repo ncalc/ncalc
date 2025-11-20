@@ -701,5 +701,135 @@ public class LambdaTests
         Assert.Equal(expectedSign, actualSign);
         Assert.Equal(expectedTruncate, actualTruncate);
     }
+
+    [Theory]
+    [InlineData("test", "%est", true, ExpressionOptions.None)]
+    [InlineData("TEST", "%est", false, ExpressionOptions.None)]
+    [InlineData("TEST", "%est", true, ExpressionOptions.CaseInsensitiveStringComparer)]
+    [InlineData("this is a test", "%is a%", true, ExpressionOptions.None)]
+    [InlineData("this is a test", "%ITS A%", false, ExpressionOptions.None)]
+    public void ShouldHandleLikeOperator(string val, string right, bool expected, ExpressionOptions opts)
+    {
+        string[] ops = ["like", "not like"];
+        // Arrange
+        foreach (var op in ops)
+        {
+            if (op == "not like")
+                expected = !expected;
+
+            var expressionLike = new Expression($"x {op} '{right}'", opts);
+            expressionLike.Parameters["x"] = val;
+
+            var lambdaAbs = expressionLike.ToLambda<bool>();
+
+            // Act
+            var actualAbs = lambdaAbs();
+            var expectedAbs = expressionLike.Evaluate();
+            Console.WriteLine($"Value: {val}, Pattern: {right}, Result: {actualAbs}");
+
+            // Assert
+            Assert.Equal(expected, actualAbs);
+            Assert.Equal(expectedAbs, actualAbs);
+        }
+    }
+
+    [Theory]
+    [InlineData("test", "'a','test','z'", true, ExpressionOptions.None)]
+    [InlineData("TEST", "'a','test','z'", false, ExpressionOptions.None)]
+    [InlineData("TEST", "'a','test','z'", true, ExpressionOptions.CaseInsensitiveStringComparer)]
+    [InlineData("this", "'this','is','a','test'", true, ExpressionOptions.None)]
+    [InlineData("THIS", "'this','is','a','test'", false, ExpressionOptions.None)]
+    [InlineData("THIS", "'this','is','a','test'", true, ExpressionOptions.CaseInsensitiveStringComparer)]
+    public void ShouldHandleInOperator_String(string val, string list, bool expected, ExpressionOptions opts)
+    {
+        string[] ops = ["in", "not in"];
+
+        foreach (var op in ops)
+        {
+            var exp = expected;
+            if (op == "not in") exp = !exp;
+
+            var expression = new Expression($"x {op} ({list})", opts);
+            expression.Parameters["x"] = val;
+
+            var lambda = expression.ToLambda<bool>();
+
+            var actual = lambda();
+            var expectedEval = (bool)expression.Evaluate();
+
+            Assert.Equal(exp, actual);
+            Assert.Equal(expectedEval, actual);
+        }
+    }
+
+    [Theory]
+    [InlineData("test", new[] { "a", "test", "z" }, true)]
+    [InlineData("nope", new[] { "a", "test", "z" }, false)]
+    [InlineData("x",    new string[] { },             false)] // empty list
+    [InlineData("dup",  new[] { "dup", "dup" },       true)]  // duplicates
+    [InlineData("Test", new[] { "a", "test", "z" },   false)] // case sensitivity
+    public void ShouldHandleInOperatorWithVariables_String(string x, string[] y, bool expected)
+    {
+        var expression = new Expression("x in y", ExpressionOptions.None);
+        expression.Parameters["x"] = x;
+        expression.Parameters["y"] = y; // string[] is fine
+
+        var lambda = expression.ToLambda<bool>();
+
+        var actual = lambda();
+        var expectedEval = (bool)expression.Evaluate();
+
+        Assert.Equal(expected, actual);
+        Assert.Equal(expectedEval, actual);
+}
+
+    [Theory]
+    [InlineData(3, new[] { 1, 2, 3 }, true)]
+    [InlineData(4, new[] { 1, 2, 3 }, false)]
+    [InlineData(7, new int[] { },     false)] // empty list
+    public void ShouldHandleInOperatorWithVariables_Int(int x, int[] y, bool expected)
+    {
+        var expression = new Expression("x in y", ExpressionOptions.None);
+        expression.Parameters["x"] = x;
+        // NCalc is happy with arrays; if needed you can box: y.Cast<object>().ToArray()
+        expression.Parameters["y"] = y;
+
+        var lambda = expression.ToLambda<bool>();
+
+        var actual = lambda();
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ShouldHandleInOperatorWithVariables_ListInt()
+    {
+        var expression = new Expression("x in y", ExpressionOptions.None);
+        expression.Parameters["x"] = 3;
+        // NCalc is happy with arrays; if needed you can box: y.Cast<object>().ToArray()
+        expression.Parameters["y"] = new System.Collections.Generic.List<int> { 1, 2, 3 };
+
+        var lambda = expression.ToLambda<bool>();
+
+        var actual = lambda();
+
+        Assert.True(actual);
+    }
+
+    [Theory]
+    [InlineData(3.0, new[] { 1.0, 2.0, 3.0 }, true)]
+    [InlineData(3.0, new[] { 1.1, 2.2, 3.3 }, false)]
+    public void ShouldHandleInOperatorWithVariables_Double(double x, double[] y, bool expected)
+    {
+        var expression = new Expression("x in y", ExpressionOptions.None);
+        expression.Parameters["x"] = x;
+        expression.Parameters["y"] = y;
+
+        var lambda = expression.ToLambda<bool>();
+
+        var actual = lambda();
+
+        Assert.Equal(expected, actual);
+    }
 }
 #endif

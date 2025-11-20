@@ -84,5 +84,10 @@ public enum ExpressionOptions
     /// <summary>
     /// Enables strict type matching, where comparisons between objects of different types will return false.
     /// </summary>
-    StrictTypeMatching = 1 << 15
+    StrictTypeMatching = 1 << 15,
+
+    /// <summary>
+    /// Uses long instead of integer as default integral data type.
+    /// </summary>
+    LongAsDefault = 1 << 16
 }

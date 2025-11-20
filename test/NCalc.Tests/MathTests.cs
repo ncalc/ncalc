@@ -1,3 +1,4 @@
+using System.Numerics;
 using NCalc.LambdaCompilation;
 using NCalc.Tests.TestData;
 using Assert = Xunit.Assert;
@@ -43,13 +44,13 @@ public class MathsTests
             // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
             [TypeCode.Boolean] = allTypes,
             [TypeCode.Byte] = [TypeCode.Boolean],
-            [TypeCode.SByte] = [TypeCode.Boolean, TypeCode.UInt64],
-            [TypeCode.Int16] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.SByte] = [TypeCode.Boolean],
+            [TypeCode.Int16] = [TypeCode.Boolean],
             [TypeCode.UInt16] = [TypeCode.Boolean],
-            [TypeCode.Int32] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.Int32] = [TypeCode.Boolean],
             [TypeCode.UInt32] = [TypeCode.Boolean],
-            [TypeCode.Int64] = [TypeCode.Boolean, TypeCode.UInt64],
-            [TypeCode.UInt64] = [TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64],
+            [TypeCode.Int64] = [TypeCode.Boolean],
+            [TypeCode.UInt64] = [TypeCode.Boolean],
             [TypeCode.Single] = [TypeCode.Boolean],
             [TypeCode.Double] = [TypeCode.Boolean],
             [TypeCode.Decimal] = [TypeCode.Boolean]
@@ -119,13 +120,13 @@ public class MathsTests
             // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
             [TypeCode.Boolean] = allTypes,
             [TypeCode.Byte] = [TypeCode.Boolean],
-            [TypeCode.SByte] = [TypeCode.Boolean, TypeCode.UInt64],
-            [TypeCode.Int16] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.SByte] = [TypeCode.Boolean],
+            [TypeCode.Int16] = [TypeCode.Boolean],
             [TypeCode.UInt16] = [TypeCode.Boolean],
-            [TypeCode.Int32] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.Int32] = [TypeCode.Boolean],
             [TypeCode.UInt32] = [TypeCode.Boolean],
-            [TypeCode.Int64] = [TypeCode.Boolean, TypeCode.UInt64],
-            [TypeCode.UInt64] = [TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64],
+            [TypeCode.Int64] = [TypeCode.Boolean],
+            [TypeCode.UInt64] = [TypeCode.Boolean],
             [TypeCode.Single] = [TypeCode.Boolean],
             [TypeCode.Double] = [TypeCode.Boolean],
             [TypeCode.Decimal] = [TypeCode.Boolean]
@@ -196,13 +197,13 @@ public class MathsTests
             // We want to test all of the cases in numbers.cs which means we need to test both LHS/RHS
             [TypeCode.Boolean] = allTypes,
             [TypeCode.Byte] = [TypeCode.Boolean],
-            [TypeCode.SByte] = [TypeCode.Boolean, TypeCode.UInt64],
-            [TypeCode.Int16] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.SByte] = [TypeCode.Boolean],
+            [TypeCode.Int16] = [TypeCode.Boolean],
             [TypeCode.UInt16] = [TypeCode.Boolean],
-            [TypeCode.Int32] = [TypeCode.Boolean, TypeCode.UInt64],
+            [TypeCode.Int32] = [TypeCode.Boolean],
             [TypeCode.UInt32] = [TypeCode.Boolean],
-            [TypeCode.Int64] = [TypeCode.Boolean, TypeCode.UInt64],
-            [TypeCode.UInt64] = [TypeCode.Boolean, TypeCode.SByte, TypeCode.Int16, TypeCode.Int32, TypeCode.Int64],
+            [TypeCode.Int64] = [TypeCode.Boolean],
+            [TypeCode.UInt64] = [TypeCode.Boolean],
             [TypeCode.Single] = [TypeCode.Boolean],
             [TypeCode.Double] = [TypeCode.Boolean],
             [TypeCode.Decimal] = [TypeCode.Boolean]
@@ -446,5 +447,100 @@ public class MathsTests
         e.Parameters["b"] = 2;
 
         Assert.Null(e.Evaluate());
+    }
+
+    [Theory]
+    [InlineData((sbyte)10)]
+    [InlineData((short)10)]
+    [InlineData((int)10)]
+    [InlineData((long)10)]
+    public void ShouldAllowIntegerWithUlongMath(object val)
+    {
+        var e = new Expression("a + b");
+        e.Parameters["a"] = val;
+        e.Parameters["b"] = 1ul;
+
+        var expected = Convert.ToUInt64(val) + 1ul;
+        Assert.Equal(expected, e.Evaluate());
+    }
+
+    [Theory]
+    [InlineData(-32767, 65535, 32768)]
+    [InlineData(-32768, 65535, 32767)]
+    [InlineData(-1, 65535, 65534)]
+    [InlineData(2, 65535, 65537)]
+    public void ShouldAddSignedAndUnsignedShorts(short a, ushort b, int expected)
+    {
+        var exp = new Expression("a + b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
+
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(1, ushort.MaxValue, -65534)]
+    public void ShouldSubtractSignedAndUnsignedShorts(short a, ushort b, int expected)
+    {
+        var exp = new Expression("a - b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(1, uint.MaxValue, -4294967294)]
+    public void ShouldSubtractSignedAndUnsignedInts(int a, uint b, long expected)
+    {
+        var exp = new Expression("a - b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(short.MaxValue, short.MaxValue, 65534)]
+    public void ShouldAddToOutOfBoundsShorts(short a, short b, int expected)
+    {
+        var exp = new Expression("a + b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(short.MinValue, short.MaxValue, -65535)]
+    public void ShouldSubtractToOutOfBoundsShorts(short a, short b, int expected)
+    {
+        var exp = new Expression("a - b");
+        exp.Parameters["a"] = a;
+        exp.Parameters["b"] = b;
+        var result = exp.Evaluate();
+		
+		Assert.Equal(expected, result);
+	}
+
+    [Fact]
+    public void ShouldAllowLongAsDefault()
+    {
+        var exp = new Expression("10000000*1000", ExpressionOptions.LongAsDefault);
+        var result = exp.Evaluate();
+
+        var expected = 10000000L * 1000;
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void ShouldBeDoubleWithLongAsDefault()
+    {
+        var exp = new Expression("10000000.1*1000", ExpressionOptions.LongAsDefault, CultureInfo.InvariantCulture);
+        var result = exp.Evaluate();
+
+        var expected = 10000000.1 * 1000;
+        Assert.Equal(expected, result);
     }
 }

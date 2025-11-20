@@ -1,5 +1,6 @@
 #nullable enable
 using NCalc.Exceptions;
+using NCalc.Parser;
 using NCalc.Tests.TestData;
 
 namespace NCalc.Tests;
@@ -160,13 +161,21 @@ public class EvaluationTests
     }
 
     [Theory]
-    [InlineData("Round(1.412; 2)", 1.41)]
-    [InlineData("Max(5.1; 10.2)", 10.2)]
-    [InlineData("Min(1.3; 2)", 1.3)]
+    [InlineData("Round(1.412;2)", 1.41)]
+    [InlineData("Max(5.1;10.2)", 10.2)]
+    [InlineData("Min(1.3;2)", 1.3)]
     [InlineData("Pow(5;2)", 25d)]
     public void ShouldAllowSemicolonAsArgumentSeparator(string expression, object expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
+        var context = new LogicalExpressionParserContext(expression, ExpressionOptions.None)
+        {
+            ParserOptions = options
+        };
+
+        var logicalExpression = LogicalExpressionParser.Parse(context);
+
+        Assert.Equal(expected, new Expression(logicalExpression).Evaluate());
     }
 
     [Fact]
@@ -246,5 +255,19 @@ public class EvaluationTests
     public void ShouldUseStrictTypeMatching(string expression)
     {
         Assert.False(new Expression(expression, ExpressionOptions.StrictTypeMatching).Evaluate() as bool?);
+    }
+
+    [Fact]
+    public void SpaceCharacterComparisonShouldBeTrue()
+    {
+        var expr = new Expression("[Test] == ' '")
+        {
+            Parameters =
+            {
+                ["Test"] = ' '
+            }
+        };
+        var result = expr.Evaluate();
+        Assert.True(result is true);
     }
 }

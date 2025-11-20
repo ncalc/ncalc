@@ -13,7 +13,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         NumberDecimalSeparator = "."
     };
 
-    public string Visit(TernaryExpression expression)
+    public virtual string Visit(TernaryExpression expression)
     {
         string result = EncapsulateNoValue(expression.LeftExpression) + "? ";
         result += EncapsulateNoValue(expression.MiddleExpression) + ": ";
@@ -22,7 +22,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return result;
     }
 
-    public string Visit(BinaryExpression expression)
+    public virtual string Visit(BinaryExpression expression)
     {
         string result = EncapsulateNoValue(expression.LeftExpression);
 
@@ -59,7 +59,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return result;
     }
 
-    public string Visit(UnaryExpression expression)
+    public virtual string Visit(UnaryExpression expression)
     {
         string result = expression.Type switch
         {
@@ -73,7 +73,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return result;
     }
 
-    public string Visit(ValueExpression expression)
+    public virtual string Visit(ValueExpression expression)
     {
         return expression.Type switch
         {
@@ -85,7 +85,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         };
     }
 
-    public string Visit(Function function)
+    public virtual string Visit(Function function)
     {
         var resultBuilder = new StringBuilder(function.Identifier.Name + '(');
 
@@ -94,7 +94,9 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             resultBuilder.Append(function.Parameters[i].Accept(this));
             if (i < function.Parameters.Count - 1)
             {
-                resultBuilder.Remove(resultBuilder.Length - 1, 1);
+                if (resultBuilder[^1] == ' ')
+                    resultBuilder.Remove(resultBuilder.Length - 1, 1);
+
                 resultBuilder.Append(", ");
             }
         }
@@ -106,12 +108,12 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return resultBuilder.ToString();
     }
 
-    public string Visit(Identifier identifier)
+    public virtual string Visit(Identifier identifier)
     {
         return $"[{identifier.Name}]";
     }
 
-    public string Visit(LogicalExpressionList list)
+    public virtual string Visit(LogicalExpressionList list)
     {
         var resultBuilder = new StringBuilder("(");
         for (var i = 0; i < list.Count; i++)

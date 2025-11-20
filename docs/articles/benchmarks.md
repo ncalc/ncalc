@@ -17,19 +17,19 @@ Allocated : Allocated memory per single operation (managed only, inclusive, 1KB 
 
 This is a benchmark of the default parser of NCalc v4+ vs the Antlr plugin (default parser of older versions).
 
-BenchmarkDotNet v0.13.12, Ubuntu 22.04.4 LTS (Jammy Jellyfish)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 8.0.303
-  [Host]     : .NET 8.0.7 (8.0.724.31311), X64 RyuJIT AVX2
-  DefaultJob : .NET 8.0.7 (8.0.724.31311), X64 RyuJIT AVX2
+> BenchmarkDotNet v0.15.4, Linux Ubuntu 24.04.3 LTS (Noble Numbat)  
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores  
+.NET SDK 9.0.306  
+  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
+  DefaultJob : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
 
 
-| Method                   | Mean      | Error     | StdDev    | Rank | Gen0   | Allocated |
-|------------------------- |----------:|----------:|----------:|-----:|-------:|----------:|
-| SimpleParlotExpression   |  7.117 μs | 0.0553 μs | 0.0490 μs |    1 |      - |   1.02 KB |
-| SimpleAntlrExpression    | 11.420 μs | 0.0582 μs | 0.0454 μs |    2 | 0.1526 |  13.38 KB |
-| AdvancedParlotExpression | 19.016 μs | 0.0922 μs | 0.0817 μs |    3 | 0.0305 |   2.51 KB |
-| AdvancedAntlrExpression  | 34.538 μs | 0.1062 μs | 0.0887 μs |    4 | 0.4272 |  38.47 KB |
+| Method                   | Mean      | Error     | StdDev    | Rank | Gen0   | Gen1   | Allocated |
+|------------------------- |----------:|----------:|----------:|-----:|-------:|-------:|----------:|
+| SimpleParlotExpression   |  7.743 us | 0.0074 us | 0.0062 us |    1 | 0.0610 |      - |   1.16 KB |
+| SimpleAntlrExpression    | 11.548 us | 0.0869 us | 0.0812 us |    2 | 0.8087 | 0.0305 |  13.38 KB |
+| AdvancedParlotExpression | 19.621 us | 0.0499 us | 0.0442 us |    3 | 0.1831 |      - |   3.08 KB |
+| AdvancedAntlrExpression  | 34.699 us | 0.1335 us | 0.1183 us |    4 | 2.3193 | 0.2441 |  38.58 KB |
 
 ## Evaluate vs Lambda
 
@@ -37,34 +37,34 @@ This showcase how lambda expressions are faster than manually evaluating the exp
 lambda instead of manually compiling everytime.
 
 
-BenchmarkDotNet v0.13.12, Ubuntu 22.04.4 LTS (Jammy Jellyfish)
-AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 8.0.303
-  [Host]     : .NET 8.0.7 (8.0.724.31311), X64 RyuJIT AVX2
-  DefaultJob : .NET 8.0.7 (8.0.724.31311), X64 RyuJIT AVX2
+> BenchmarkDotNet v0.15.4, Linux Ubuntu 24.04.3 LTS (Noble Numbat)  
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores  
+.NET SDK 9.0.306  
+  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
+  DefaultJob : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
 
 
-| Method                   | Mean           | Error       | StdDev      | Rank | Gen0   | Allocated |
-|------------------------- |---------------:|------------:|------------:|-----:|-------:|----------:|
-| LambdaWithoutCompilation |      0.3045 ns |   0.0123 ns |   0.0115 ns |    1 |      - |         - |
-| Evaluate                 |    705.6432 ns |   2.7688 ns |   2.1617 ns |    2 | 0.0200 |    1680 B |
-| LambdaWithCompilation    | 22,926.9179 ns | 161.2515 ns | 142.9452 ns |    3 |      - |    4992 B |
-
+| Method                   | Mean        | Error     | StdDev    | Rank | Gen0   | Allocated |
+|------------------------- |------------:|----------:|----------:|-----:|-------:|----------:|
+| LambdaWithoutCompilation |   0.3785 ns | 0.0050 ns | 0.0047 ns |    1 |      - |         - |
+| LambdaWithCompilation    | 759.5692 ns | 2.5919 ns | 2.2976 ns |    2 | 0.0248 |     424 B |
+| Evaluate                 | 768.3650 ns | 8.9148 ns | 8.3389 ns |    2 | 0.1030 |    1728 B |
 
 ## NCalc vs DataTable
 
 [DataTable.Compute](https://learn.microsoft.com/en-us/dotnet/api/system.data.datatable.compute) it's the only way to evaluate expressions at .NET without a third-party library.
 
-BenchmarkDotNet v0.14.0, Ubuntu 24.04 LTS (Noble Numbat)
-AMD Ryzen 5 3600, 1 CPU, 12 logical and 6 physical cores
-.NET SDK 8.0.108
-[Host]     : .NET 8.0.8 (8.0.824.36612), X64 RyuJIT AVX2
-DefaultJob : .NET 8.0.8 (8.0.824.36612), X64 RyuJIT AVX2
+> BenchmarkDotNet v0.15.4, Linux Ubuntu 24.04.3 LTS (Noble Numbat)  
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores  
+.NET SDK 9.0.306  
+  [Host]     : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
+  DefaultJob : .NET 8.0.21 (8.0.21, 8.0.2125.47513), X64 RyuJIT x86-64-v3  
 
-| Method            | Mean     | Error     | StdDev    | Median   | Rank | Gen0   | Allocated |
-|------------------ |---------:|----------:|----------:|---------:|-----:|-------:|----------:|
-| EvaluateNCalc     | 1.463 us | 0.0292 us | 0.0671 us | 1.434 us |    1 | 0.2766 |   2.27 KB |
-| EvaluateDataTable | 4.438 us | 0.0295 us | 0.0276 us | 4.440 us |    2 | 0.6790 |   5.58 KB |
+
+| Method            | Mean     | Error     | StdDev    | Rank | Gen0   | Allocated |
+|------------------ |---------:|----------:|----------:|-----:|-------:|----------:|
+| EvaluateNCalc     | 1.748 us | 0.0174 us | 0.0154 us |    1 | 0.1431 |   2.36 KB |
+| EvaluateDataTable | 4.409 us | 0.0305 us | 0.0238 us |    2 | 0.3357 |   5.58 KB |
 
 # Parlot parser compilation
 
