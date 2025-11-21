@@ -1,25 +1,10 @@
-<div align="center">
-    <img src="NCalc.png" alt="NCalc" style="width:100px;"/>
-    <h1>NCalc</h1>
-    <a href="https://github.com/ncalc/ncalc/actions/workflows/build-test.yml">
-      <img src="https://img.shields.io/github/actions/workflow/status/ncalc/ncalc/build-test.yml" alt="GitHub Actions Workflow Status" />
-    </a>
-    <a href="https://codecov.io/gh/ncalc/ncalc">
-      <img src="https://img.shields.io/codecov/c/github/ncalc/ncalc.svg" alt="Coverage" />
-    </a>
-    <a href="https://nuget.org/packages/NCalcSync.signed">
-      <img src="https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget&color=004880" alt="NuGet" />
-    </a>
-    <a href="https://nuget.org/packages/NCalcSync.signed">
-      <img src="https://img.shields.io/nuget/dt/NCalcSync.svg?color=004880" alt="NuGet Downloads" />
-    </a>
-    <a href="https://discord.gg/TeJkmXbqFk">
-      <img src="https://img.shields.io/discord/1237181265426387005?color=5b62ef&label=discord" alt="Discord" />
-    </a>
-</div>
-<br>
+# NCalc
 
-
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ncalc/ncalc/build-test.yml)](https://github.com/ncalc/ncalc/actions/workflows/build-test.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/ncalc/ncalc.svg)](https://codecov.io/gh/ncalc/ncalc)
+[![NuGet](https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget&color=004880)](https://nuget.org/packages/NCalcSync.signed)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/NCalcSync.svg?color=004880)](https://nuget.org/packages/NCalcSync.signed)
+[![Discord](https://img.shields.io/discord/1237181265426387005?color=5b62ef&label=discord)](https://discord.gg/TeJkmXbqFk)
 
 NCalc is a fast and lightweight expression evaluator library for .NET, designed for flexibility and high performance. It
 supports a wide range of mathematical and logical operations. NCalc can parse any expression and evaluate the result,
