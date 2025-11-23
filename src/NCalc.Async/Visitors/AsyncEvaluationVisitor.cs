@@ -3,7 +3,7 @@ using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using static NCalc.Helpers.TypeHelper;
-using static NCalc.Helpers.EvaluationHelper<NCalc.ExpressionContextBase>;
+using static NCalc.Helpers.EvaluationHelper<NCalc.AsyncExpressionContext>;
 using BinaryExpression = NCalc.Domain.BinaryExpression;
 using UnaryExpression = NCalc.Domain.UnaryExpression;
 
