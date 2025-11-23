@@ -4,17 +4,14 @@ public class AsyncFunctionArgs(Guid id, AsyncExpression[] parameters, Cancellati
 {
     public Guid Id { get; } = id;
 
-    public AsyncExpression[] Parameters { get; } = parameters;
-
     public CancellationToken CancellationToken { get; } = ct;
 
-    private object? _result;
     public object? Result
     {
-        get => _result;
+        get;
         set
         {
-            _result = value;
+            field = value;
             HasResult = true;
         }
     }

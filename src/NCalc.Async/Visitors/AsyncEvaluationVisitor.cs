@@ -3,6 +3,7 @@ using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using static NCalc.Helpers.TypeHelper;
+using static NCalc.Helpers.EvaluationHelper<NCalc.AsyncExpressionContext>;
 using BinaryExpression = NCalc.Domain.BinaryExpression;
 using UnaryExpression = NCalc.Domain.UnaryExpression;
 
@@ -72,7 +73,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return MathHelper.Modulo(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.Plus:
-                return EvaluationHelper.Plus(await left.Value, await right.Value, context);
+                return Plus(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.Times:
                 return MathHelper.Multiply(await left.Value, await right.Value, context);
@@ -101,16 +102,16 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return MathHelper.Pow(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.In:
-                return EvaluationHelper.In(await right.Value, await left.Value, context);
+                return In(await right.Value, await left.Value, context);
 
             case BinaryExpressionType.NotIn:
-                return !EvaluationHelper.In(await right.Value, await left.Value, context);
+                return !In(await right.Value, await left.Value, context);
 
             case BinaryExpressionType.Like:
-                return EvaluationHelper.Like(await left.Value, await right.Value, context);
+                return Like(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.NotLike:
-                return !EvaluationHelper.Like(await left.Value, await right.Value, context);
+                return !Like(await left.Value, await right.Value, context);
         }
 
         return null;
@@ -121,7 +122,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         // Recursively evaluates the underlying expression
         var result = await expression.Expression.Accept(this, ct);
 
-        return EvaluationHelper.Unary(expression, result, context);
+        return Unary(expression, result, context);
     }
 
     public virtual async ValueTask<object?> Visit(Function function, CancellationToken ct = default)

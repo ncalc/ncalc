@@ -3,6 +3,7 @@ using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using static NCalc.Helpers.TypeHelper;
+using static NCalc.Helpers.EvaluationHelper<NCalc.ExpressionContext>;
 
 namespace NCalc.Visitors;
 
@@ -67,7 +68,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 return MathHelper.Modulo(left.Value, right.Value, context);
 
             case BinaryExpressionType.Plus:
-                return EvaluationHelper.Plus(left.Value, right.Value, context);
+                return Plus(left.Value, right.Value, context);
 
             case BinaryExpressionType.Times:
                 return MathHelper.Multiply(left.Value, right.Value, context);
@@ -96,16 +97,16 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 return MathHelper.Pow(left.Value, right.Value, context);
 
             case BinaryExpressionType.In:
-                return EvaluationHelper.In(right.Value, left.Value, context);
+                return In(right.Value, left.Value, context);
 
             case BinaryExpressionType.NotIn:
-                return !EvaluationHelper.In(right.Value, left.Value, context);
+                return !In(right.Value, left.Value, context);
 
             case BinaryExpressionType.Like:
-                return EvaluationHelper.Like(left.Value, right.Value, context);
+                return Like(left.Value, right.Value, context);
 
             case BinaryExpressionType.NotLike:
-                return !EvaluationHelper.Like(left.Value, right.Value, context);
+                return !Like(left.Value, right.Value, context);
         }
 
         return null;
@@ -116,7 +117,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         // Recursively evaluates the underlying expression
         var result = expression.Expression.Accept(this, ct);
 
-        return EvaluationHelper.Unary(expression, result, context);
+        return Unary(expression, result, context);
     }
 
     public virtual object? Visit(ValueExpression expression, CancellationToken ct = default) => expression.Value;

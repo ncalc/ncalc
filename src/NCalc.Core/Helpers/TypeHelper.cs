@@ -140,10 +140,7 @@ public static class TypeHelper
         if (options.HasFlag(ExpressionOptions.StrictTypeMatching) && !na && !nb && a!.GetType() != b!.GetType())
             return true;
 
-        if (na != nb)
-            return true;
-
-        return false;
+        return na != nb;
     }
 
     public static StringComparer GetStringComparer(ComparisonOptions options)

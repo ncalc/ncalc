@@ -99,7 +99,7 @@ public static class LogicalExpressionParser
             .Then(x => Convert.ToInt64(x.ToString(), 8));
 
         var binaryNumber = Terms.Text("0b")
-            .SkipAnd(Terms.Pattern(c => c == '0' || c == '1'))
+            .SkipAnd(Terms.Pattern(c => c is '0' or '1'))
             .Then(x => Convert.ToInt64(x.ToString(), 2));
 
         var hexOctBinNumber = OneOf(hexNumber, octalNumber, binaryNumber)
@@ -143,7 +143,7 @@ public static class LogicalExpressionParser
             });
 
         var decimalOrDouble = OneOf(decimalNumber, doubleNumber);
-        var decimalOrDoubleNumber = Select<LogicalExpressionParserContext, LogicalExpression>((ctx) =>
+        var decimalOrDoubleNumber = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
         {
             if (ctx.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
                 return decimalOrDouble;
@@ -367,7 +367,7 @@ public static class LogicalExpressionParser
 
         var intOrLong = OneOf(intNumber, longNumber);
 
-        var integralNumber = Select<LogicalExpressionParserContext, LogicalExpression>((ctx) =>
+        var integralNumber = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
         {
             if (ctx.Options.HasFlag(ExpressionOptions.LongAsDefault))
                 return longNumber;
