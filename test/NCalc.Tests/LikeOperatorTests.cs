@@ -9,7 +9,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C";
 
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B2C'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B2C'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -18,7 +19,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C";
 
-        Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_12C'", context).Evaluate());
+        Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_12C'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -27,7 +29,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "X12345";
 
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '_12345'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '_12345'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -36,7 +39,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABCX23YZ";
 
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE 'ABCX__YZ'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE 'ABCX__YZ'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -45,7 +49,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C3D";
 
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B_C_D'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B_C_D'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -54,7 +59,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC";
 
-        Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B'", context).Evaluate());
+        Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -62,7 +68,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -70,7 +77,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC66";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '%66'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '%66'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -78,7 +86,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC66XYZ";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '%66%'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '%66%'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -86,7 +95,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -94,7 +104,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "77ABC";
-        Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context).Evaluate());
+        Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -102,7 +113,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "77ABC";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} NOT LIKE '66%'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} NOT LIKE '66%'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -110,8 +122,10 @@ public class LikeOperatorTests
     {
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context).Evaluate());
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context).Evaluate());
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
+        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -119,7 +133,9 @@ public class LikeOperatorTests
     {
         AsyncExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        Assert.Equal(true, await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66%'", context).EvaluateAsync());
-        Assert.Equal(true, await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context).EvaluateAsync());
+        Assert.Equal(true, await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+            .EvaluateAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(true, await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
+            .EvaluateAsync(TestContext.Current.CancellationToken));
     }
 }

@@ -16,9 +16,9 @@ public static class LambdaCompilationExtensions
         UseSystemLinqCompiler = AppContext.TryGetSwitch("NCalc.UseSystemLinqCompiler", out var enabled) && enabled;
     }
 
-    public static Func<TResult> ToLambda<TResult>(this Expression expression)
+    public static Func<TResult> ToLambda<TResult>(this Expression expression, CancellationToken ct = default)
     {
-        var body = expression.ToLinqExpression<TResult>();
+        var body = expression.ToLinqExpression<TResult>(ct);
         var lambda = LinqExpression.Lambda<Func<TResult>>(body);
 
         if (UseSystemLinqCompiler)
@@ -27,9 +27,9 @@ public static class LambdaCompilationExtensions
         return lambda.CompileFast();
     }
 
-    public static Func<TContext, TResult> ToLambda<TContext, TResult>(this Expression expression)
+    public static Func<TContext, TResult> ToLambda<TContext, TResult>(this Expression expression, CancellationToken ct = default)
     {
-        var linqExp = expression.ToLinqExpression<TContext, TResult>();
+        var linqExp = expression.ToLinqExpression<TContext, TResult>(ct);
         if (linqExp.Parameter != null)
         {
             var lambda = LinqExpression.Lambda<Func<TContext, TResult>>(linqExp.Expression, linqExp.Parameter);
@@ -43,19 +43,19 @@ public static class LambdaCompilationExtensions
         throw new NCalcException("Linq expression parameter cannot be null");
     }
 
-    public static LinqExpression ToLinqExpression<TResult>(this Expression expression)
+    public static LinqExpression ToLinqExpression<TResult>(this Expression expression, CancellationToken ct = default)
     {
-        return expression.ToLinqExpressionInternal<Void, TResult>().Expression;
+        return expression.ToLinqExpressionInternal<Void, TResult>(ct).Expression;
     }
 
-    public static LinqExpressionWithParameter ToLinqExpression<TContext, TResult>(this Expression expression)
+    public static LinqExpressionWithParameter ToLinqExpression<TContext, TResult>(this Expression expression, CancellationToken ct = default)
     {
-        return expression.ToLinqExpressionInternal<TContext, TResult>();
+        return expression.ToLinqExpressionInternal<TContext, TResult>(ct);
     }
 
-    private static LinqExpressionWithParameter ToLinqExpressionInternal<TContext, TResult>(this Expression expression)
+    private static LinqExpressionWithParameter ToLinqExpressionInternal<TContext, TResult>(this Expression expression, CancellationToken ct)
     {
-        expression.LogicalExpression ??= expression.GetLogicalExpression();
+        expression.LogicalExpression ??= expression.GetLogicalExpression(ct);
 
         if (expression.LogicalExpression is null)
             throw expression.Error!;
@@ -72,7 +72,7 @@ public static class LambdaCompilationExtensions
             visitor = new(parameter, expression.Options);
         }
 
-        var body = expression.LogicalExpression.Accept(visitor);
+        var body = expression.LogicalExpression.Accept(visitor, ct);
         if (!IsSameType(body, typeof(TResult)))
         {
             body = LinqExpression.Convert(body, typeof(TResult));

@@ -23,7 +23,7 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate();
+        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(expected, Convert.ToDouble(evaluationResult), 2);
@@ -45,7 +45,7 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate();
+        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(expected, evaluationResult);
@@ -93,8 +93,8 @@ public class ArgumentSeparatorTests
         var commaResult = LogicalExpressionParser.Parse(commaContext);
         var semicolonResult = LogicalExpressionParser.Parse(semicolonContext);
 
-        var commaValue = new Expression(commaResult).Evaluate();
-        var semicolonValue = new Expression(semicolonResult).Evaluate();
+        var commaValue = new Expression(commaResult).Evaluate(TestContext.Current.CancellationToken);
+        var semicolonValue = new Expression(semicolonResult).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(2, commaValue);
@@ -134,7 +134,7 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate();
+        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(2.3, Convert.ToDouble(evaluationResult), 1);
@@ -164,7 +164,7 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate();
+        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(Math.Abs(Convert.ToDouble(evaluationResult) - 3.0) < 0.0001,
@@ -181,7 +181,7 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate();
+        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(Math.Abs(Convert.ToDouble(evaluationResult) - 3.0) < 0.0001,
@@ -201,7 +201,7 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate();
+        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(Math.Abs(Convert.ToDouble(evaluationResult) - 3.0) < 0.0001,
@@ -222,7 +222,7 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate();
+        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(4, evaluationResult);
@@ -244,7 +244,7 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate();
+        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(2, evaluationResult);
@@ -272,8 +272,8 @@ public class ArgumentSeparatorTests
         var commaResult = LogicalExpressionParser.Parse(commaContext);
         var semicolonResult = LogicalExpressionParser.Parse(semicolonContext);
 
-        var commaValue = new Expression(commaResult).Evaluate();
-        var semicolonValue = new Expression(semicolonResult).Evaluate();
+        var commaValue = new Expression(commaResult).Evaluate(TestContext.Current.CancellationToken);
+        var semicolonValue = new Expression(semicolonResult).Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(5.0, commaValue);

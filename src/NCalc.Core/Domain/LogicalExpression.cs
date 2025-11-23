@@ -28,5 +28,5 @@ public abstract class LogicalExpression
     }
 
     [Pure]
-    public abstract T Accept<T>(ILogicalExpressionVisitor<T> visitor);
+    public abstract T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default);
 }

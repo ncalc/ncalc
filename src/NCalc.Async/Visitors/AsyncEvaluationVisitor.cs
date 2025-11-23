@@ -14,24 +14,24 @@ namespace NCalc.Visitors;
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
 public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalExpressionVisitor<ValueTask<object?>>
 {
-    public virtual async ValueTask<object?> Visit(TernaryExpression expression)
+    public virtual async ValueTask<object?> Visit(TernaryExpression expression, CancellationToken ct = default)
     {
         // Evaluates the left expression and saves the value
-        var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this), context.CultureInfo);
+        var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this, ct), context.CultureInfo);
 
         if (left)
         {
-            return await expression.MiddleExpression.Accept(this);
+            return await expression.MiddleExpression.Accept(this, ct);
         }
 
-        return await expression.RightExpression.Accept(this);
+        return await expression.RightExpression.Accept(this, ct);
     }
 
-    public virtual async ValueTask<object?> Visit(BinaryExpression expression)
+    public virtual async ValueTask<object?> Visit(BinaryExpression expression, CancellationToken ct = default)
     {
-        var left = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression),
+        var left = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression, ct),
             LazyThreadSafetyMode.None);
-        var right = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression),
+        var right = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression, ct),
             LazyThreadSafetyMode.None);
 
         switch (expression.Type)
@@ -116,15 +116,15 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         return null;
     }
 
-    public virtual async ValueTask<object?> Visit(UnaryExpression expression)
+    public virtual async ValueTask<object?> Visit(UnaryExpression expression, CancellationToken ct = default)
     {
         // Recursively evaluates the underlying expression
-        var result = await expression.Expression.Accept(this);
+        var result = await expression.Expression.Accept(this, ct);
 
         return EvaluationHelper.Unary(expression, result, context);
     }
 
-    public virtual async ValueTask<object?> Visit(Function function)
+    public virtual async ValueTask<object?> Visit(Function function, CancellationToken ct = default)
     {
         var argsCount = function.Parameters.Count;
         var args = new AsyncExpression[argsCount];
@@ -152,10 +152,10 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
             return await expressionFunction(new AsyncExpressionFunctionData(function.Identifier.Id, args, context));
         }
 
-        return await AsyncBuiltInFunctionHelper.EvaluateAsync(functionName, args, context);
+        return await AsyncBuiltInFunctionHelper.EvaluateAsync(functionName, args, context, ct);
     }
 
-    public virtual async ValueTask<object?> Visit(Identifier identifier)
+    public virtual async ValueTask<object?> Visit(Identifier identifier, CancellationToken ct = default)
     {
         var identifierName = identifier.Name;
 
@@ -182,7 +182,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 expression.EvaluateFunctionAsync += context.AsyncEvaluateFunctionHandler;
                 expression.EvaluateParameterAsync += context.AsyncEvaluateParameterHandler;
 
-                return await expression.EvaluateAsync();
+                return await expression.EvaluateAsync(ct);
             }
 
             return parameter;
@@ -196,15 +196,15 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    public virtual ValueTask<object?> Visit(ValueExpression expression) => new(expression.Value);
+    public virtual ValueTask<object?> Visit(ValueExpression expression, CancellationToken ct = default) => new(expression.Value);
 
-    public virtual async ValueTask<object?> Visit(LogicalExpressionList list)
+    public virtual async ValueTask<object?> Visit(LogicalExpressionList list, CancellationToken ct = default)
     {
         List<object?> result = [];
 
         foreach (var value in list)
         {
-            result.Add(await EvaluateAsync(value));
+            result.Add(await EvaluateAsync(value, ct));
         }
 
         return result;
@@ -239,8 +239,8 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         return context.AsyncEvaluateParameterHandler?.Invoke(name, args) ?? default;
     }
 
-    protected ValueTask<object?> EvaluateAsync(LogicalExpression expression)
+    protected ValueTask<object?> EvaluateAsync(LogicalExpression expression, CancellationToken ct = default)
     {
-        return expression.Accept(this);
+        return expression.Accept(this, ct);
     }
 }

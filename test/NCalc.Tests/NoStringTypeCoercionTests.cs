@@ -17,7 +17,8 @@ public class NoStringTypeCoercionTests
     [InlineData("'10' + 'mA - ' + (10 + 20) + 'mA'", "10mA - 30mA")]
     public void ShouldUseStringConcatenationIfEitherValueIsAString(string expression, object expected)
     {
-        var res = new Expression(expression, ExpressionOptions.NoStringTypeCoercion, CultureInfo.InvariantCulture).Evaluate();
+        var res = new Expression(expression, ExpressionOptions.NoStringTypeCoercion, CultureInfo.InvariantCulture)
+            .Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(expected, res);
     }
 
@@ -27,7 +28,8 @@ public class NoStringTypeCoercionTests
     [InlineData("1 in ('1',2)", false)]
     public void ShouldRespectDisabledCoercionAtInOperator(string expression, bool expected)
     {
-        Assert.Equal(expected, new Expression(expression, ExpressionOptions.NoStringTypeCoercion).Evaluate());
+        Assert.Equal(expected, new Expression(expression, ExpressionOptions.NoStringTypeCoercion)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -42,6 +44,6 @@ public class NoStringTypeCoercionTests
     [InlineData("('1' ='1'  AND '' IN ('6') OR ( '1' ='2'  AND '' IN ('6')) OR ( '1' ='6'  AND '' IN ('6')))", false)]
     public void ShouldRespectCoercionAtInOperator(string expression, bool expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
     }
 }

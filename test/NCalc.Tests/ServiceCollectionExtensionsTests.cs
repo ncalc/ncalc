@@ -83,7 +83,7 @@ public class ServiceCollectionExtensionsTests
         var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
 
         var exp = expFactory.Create("42");
-        Assert.Equal("The answer", exp.Evaluate());
+        Assert.Equal("The answer", exp.Evaluate(TestContext.Current.CancellationToken));
         Assert.IsType<CustomEvaluationVisitorFactory>(customVisitorFactory);
     }
 
@@ -101,7 +101,7 @@ public class ServiceCollectionExtensionsTests
         var expFactory = serviceProvider.GetRequiredService<IAsyncExpressionFactory>();
 
         var exp = expFactory.Create("42");
-        Assert.Equal("The answer", await exp.EvaluateAsync());
+        Assert.Equal("The answer", await exp.EvaluateAsync(TestContext.Current.CancellationToken));
         Assert.IsType<CustomAsyncEvaluationVisitorFactory>(customVisitorFactory);
     }
 
@@ -125,20 +125,20 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomLogicalExpressionFactory : ILogicalExpressionFactory
     {
-        public LogicalExpression Create(string expression, ExpressionOptions options) => throw new NCalcException("Stub method intented for testing.");
+        public LogicalExpression Create(string expression, ExpressionOptions options, CancellationToken ct = default) => throw new NCalcException("Stub method intented for testing.");
 
-        public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None)
+        public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
             => throw new NCalcException("Stub method intented for testing.");
     }
 
     private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
     {
-        public override object Visit(ValueExpression expression)
+        public override object Visit(ValueExpression expression, CancellationToken ct = default)
         {
-            if(expression.Value is 42)
+            if (expression.Value is 42)
                 return "The answer";
 
-            return base.Visit(expression);
+            return base.Visit(expression, ct);
         }
     }
 
@@ -152,12 +152,12 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomAsyncVisitor(AsyncExpressionContext context) : AsyncEvaluationVisitor(context)
     {
-        public override ValueTask<object> Visit(ValueExpression expression)
+        public override ValueTask<object> Visit(ValueExpression expression, CancellationToken ct = default)
         {
             if (expression.Value is 42)
                 return new("The answer");
 
-            return base.Visit(expression);
+            return base.Visit(expression, ct);
         }
     }
 

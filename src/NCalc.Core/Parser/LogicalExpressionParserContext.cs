@@ -3,8 +3,8 @@ using Parlot.Fluent;
 
 namespace NCalc.Parser;
 
-public sealed class LogicalExpressionParserContext(string text, ExpressionOptions options)
-    : ParseContext(new Scanner(text))
+public sealed class LogicalExpressionParserContext(string text, ExpressionOptions options, CancellationToken ct = default)
+    : ParseContext(new Scanner(text), ct)
 {
     /// <summary>
     /// Parser options containing culture info and argument separator settings.
@@ -14,7 +14,7 @@ public sealed class LogicalExpressionParserContext(string text, ExpressionOption
 
     public CultureInfo CultureInfo { get; } = CultureInfo.CurrentCulture;
 
-    public LogicalExpressionParserContext(string text, ExpressionOptions options, CultureInfo cultureInfo): this(text, options)
+    public LogicalExpressionParserContext(string text, ExpressionOptions options, CultureInfo cultureInfo, CancellationToken ct = default) : this(text, options, ct)
     {
         CultureInfo = cultureInfo;
     }

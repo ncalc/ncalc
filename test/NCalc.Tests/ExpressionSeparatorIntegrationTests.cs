@@ -22,7 +22,7 @@ public class ExpressionSeparatorIntegrationTests
 
         // Act
         var expression = new Expression(logicalExpression);
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(expected, Convert.ToInt32(result));
@@ -52,7 +52,7 @@ public class ExpressionSeparatorIntegrationTests
         };
 
         // Act
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(30.0, result);
@@ -81,7 +81,7 @@ public class ExpressionSeparatorIntegrationTests
         };
 
         // Act
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(10, result);

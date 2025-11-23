@@ -15,7 +15,7 @@ public class ParserTests
     public void ShouldIgnoreWhitespacesIssue222(string formula, object expectedValue)
     {
         var expression = new Expression(formula, CultureInfo.InvariantCulture);
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.Equal(expectedValue, result);
     }
@@ -28,7 +28,7 @@ public class ParserTests
     public void NotBehaviorIssue226(string formula, object expectedValue)
     {
         var expression = new Expression(formula, CultureInfo.InvariantCulture);
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.Equal(expectedValue, result);
     }
@@ -43,7 +43,7 @@ public class ParserTests
                                """;
 
         var expression = new Expression(formula, CultureInfo.InvariantCulture);
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.Equal(5, result);
     }
@@ -53,7 +53,7 @@ public class ParserTests
     {
         const string formula = "[{Diagnostic}.Data]";
 
-        var logicalExpression = LogicalExpressionFactory.Create(formula);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: TestContext.Current.CancellationToken);
 
         Assert.IsType<Identifier>(logicalExpression);
 
@@ -65,7 +65,7 @@ public class ParserTests
     {
         const string formula = "'c'";
 
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues, ct: TestContext.Current.CancellationToken);
 
         Assert.IsType<ValueExpression>(logicalExpression);
 
@@ -79,13 +79,13 @@ public class ParserTests
     [Theory]
     public void ShouldHandleBinaryExpression(string formula, int expectedResult)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(formula);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: TestContext.Current.CancellationToken);
 
         Assert.IsType<BinaryExpression>(logicalExpression);
 
         var expression = new Expression(logicalExpression);
 
-        Assert.Equal(expectedResult, expression.Evaluate());
+        Assert.Equal(expectedResult, expression.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [InlineData("(1,2,3,4,5)", 5)]
@@ -94,7 +94,7 @@ public class ParserTests
     [Theory]
     public void ShouldParseLists(string formula, int arrayExpectedCount)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(formula);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: TestContext.Current.CancellationToken);
 
         Assert.IsType<LogicalExpressionList>(logicalExpression);
 
@@ -115,17 +115,17 @@ public class ParserTests
     [Theory]
     public void ShouldParseGuids(string formula)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(formula);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: TestContext.Current.CancellationToken);
 
         Assert.IsType<ValueExpression>(logicalExpression);
 
-        Assert.IsType<Guid>(new Expression(logicalExpression).Evaluate());
+        Assert.IsType<Guid>(new Expression(logicalExpression).Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldParseGuidInsideFunction()
     {
-        var logicalExpression = LogicalExpressionFactory.Create("getUser(78b1941f4e7941c9bef656fad7326538)");
+        var logicalExpression = LogicalExpressionFactory.Create("getUser(78b1941f4e7941c9bef656fad7326538)", ct: TestContext.Current.CancellationToken);
 
         if (logicalExpression is Function function)
         {
@@ -140,7 +140,7 @@ public class ParserTests
     [Fact]
     public void OperatorPriorityIssue337()
     {
-        Assert.True((bool)new Expression("true or true and false").Evaluate()!);
+        Assert.True((bool)new Expression("true or true and false").Evaluate(TestContext.Current.CancellationToken)!);
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public class ParserTests
         {
             var expressionOptions = ExpressionOptions.DecimalAsDefault | ExpressionOptions.NoCache;
             var expression = new Expression("0.3333333333333333333333 + 1.6666666666666666666667", expressionOptions, CultureInfo.InvariantCulture);
-            var result = expression.Evaluate();
+            var result = expression.Evaluate(TestContext.Current.CancellationToken);
         }
         catch
         {

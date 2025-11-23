@@ -14,8 +14,8 @@ public sealed class TernaryExpression(
 
     public LogicalExpression RightExpression { get; set; } = rightExpression;
 
-    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default)
     {
-        return visitor.Visit(this);
+        return visitor.Visit(this, ct);
     }
 }

@@ -18,7 +18,7 @@ public class EventHandlersTests
                 args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
         };
 
-        Assert.Equal(9, e.Evaluate());
+        Assert.Equal(9, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class EventHandlersTests
                 args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
         };
 
-        Assert.Equal(10, e.Evaluate());
+        Assert.Equal(10, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class EventHandlersTests
                 args.Result = 3.14;
         };
 
-        Assert.Equal(117.07, e.Evaluate());
+        Assert.Equal(117.07, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class EventHandlersTests
         for (var i = 0; i < 10; i++)
         {
             counter = 0;
-            _ = expression.Evaluate();
+            _ = expression.Evaluate(TestContext.Current.CancellationToken);
         }
 
         void Expression_EvaluateFunction(string name, FunctionArgs args)
@@ -87,7 +87,7 @@ public class EventHandlersTests
     {
         var e = new Expression("Round(1.99, 2)");
 
-        Assert.Equal(1.99d, e.Evaluate());
+        Assert.Equal(1.99d, e.Evaluate(TestContext.Current.CancellationToken));
 
         e.EvaluateFunction += delegate (string name, FunctionArgs args)
         {
@@ -95,7 +95,7 @@ public class EventHandlersTests
                 args.Result = 3;
         };
 
-        Assert.Equal(3, e.Evaluate());
+        Assert.Equal(3, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class EventHandlersTests
                 arg.Result = 3.14;
         };
 
-        e.Evaluate();
+        e.Evaluate(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public class EventHandlersTests
             }
         };
 
-        Assert.Equal(13d, e.Evaluate());
+        Assert.Equal(13d, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class EventHandlersTests
             Assert.True(args.HasResult);
         };
 
-        Assert.Null(e.Evaluate());
+        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class EventHandlersTests
             Assert.True(args.HasResult);
         };
 
-        Assert.Null(e.Evaluate());
+        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -196,7 +196,7 @@ public class EventHandlersTests
                 args.Result = 1;
         };
 
-        Assert.Equal(1, expression.Evaluate());
+        Assert.Equal(1, expression.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -227,8 +227,8 @@ public class EventHandlersTests
             }
         };
 
-        Assert.Equal(12, e.Evaluate());
-        Assert.Equal(12, e.Evaluate());
+        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
 
         Assert.Equal(2, d.FirstOrDefault().Value);
     }
@@ -264,14 +264,14 @@ public class EventHandlersTests
         };
         e.Parameters["value"] = 9;
 
-        Assert.Equal(false, e.Evaluate());
+        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
 
         e.Parameters["value"] = 11;
-        Assert.Equal(false, e.Evaluate());
+        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
         e.Parameters["value"] = 12;
-        Assert.Equal(false, e.Evaluate());
+        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
         e.Parameters["value"] = 13;
-        Assert.Equal(true, e.Evaluate());
+        Assert.Equal(true, e.Evaluate(TestContext.Current.CancellationToken));
         Assert.Single(times);
     }
 }

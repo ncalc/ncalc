@@ -10,9 +10,9 @@ public class OperatorsTests
     [InlineData("not true")]
     public void Should_Evaluate_Not_Unary_Operator(string expression)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(expression);
+        var logicalExpression = LogicalExpressionFactory.Create(expression, ct: TestContext.Current.CancellationToken);
         var expr = new Expression(logicalExpression);
-        Assert.False((bool)expr.Evaluate()!);
+        Assert.False((bool)expr.Evaluate(TestContext.Current.CancellationToken)!);
     }
 
     [Theory]
@@ -58,7 +58,7 @@ public class OperatorsTests
     [InlineData("if(false, 0, 1)", 1)]
     public void ShouldEvaluateOperators(string expression, object expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -76,7 +76,7 @@ public class OperatorsTests
     [InlineData("2 ** 4 / 2", 8d)]
     public void ShouldHandleOperatorsPriority(string expression, object expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -85,18 +85,18 @@ public class OperatorsTests
         var eif = new Expression("foo = true");
         eif.Parameters["foo"] = "true";
 
-        Assert.Equal(true, eif.Evaluate());
+        Assert.Equal(true, eif.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void Should_Use_Correct_BitwiseXOr_133()
     {
-        var logicalExpression = LogicalExpressionFactory.Create(expression: "1 ^ 2");
+        var logicalExpression = LogicalExpressionFactory.Create(expression: "1 ^ 2", ct: TestContext.Current.CancellationToken);
 
         var serializedString = logicalExpression.ToString();
 
         Assert.Equal("1 ^ 2", serializedString);
-        Assert.Equal(3UL, new Expression(logicalExpression).Evaluate());
+        Assert.Equal(3UL, new Expression(logicalExpression).Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -105,6 +105,6 @@ public class OperatorsTests
         var e = new Expression("([a] != 0) && ([b]/[a]>2)");
         e.Parameters["a"] = 0;
 
-        Assert.False((bool)e.Evaluate()!);
+        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken)!);
     }
 }

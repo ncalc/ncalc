@@ -20,11 +20,11 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
 
     public static LogicalExpressionFactory GetInstance() => Instance;
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options)
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options, CancellationToken ct)
     {
         try
         {
-            return Create(expression, options);
+            return Create(expression, options, ct);
         }
         catch (Exception exception)
         {
@@ -33,11 +33,11 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
     }
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, CultureInfo cultureInfo, ExpressionOptions options)
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, CultureInfo cultureInfo, ExpressionOptions options, CancellationToken ct)
     {
         try
         {
-            return Create(expression, cultureInfo, options);
+            return Create(expression, cultureInfo, options, ct);
         }
         catch (Exception exception)
         {
@@ -46,15 +46,15 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
     }
 
-    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
     {
-        var parserContext = new LogicalExpressionParserContext(expression, options);
+        var parserContext = new LogicalExpressionParserContext(expression, options, ct);
         return LogicalExpressionParser.Parse(parserContext);
     }
 
-    public static LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None)
+    public static LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
     {
-        var parserContext = new LogicalExpressionParserContext(expression, options, cultureInfo);
+        var parserContext = new LogicalExpressionParserContext(expression, options, cultureInfo, ct);
         return LogicalExpressionParser.Parse(parserContext);
     }
 }

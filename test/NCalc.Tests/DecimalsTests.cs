@@ -21,7 +21,7 @@ public class DecimalsTests
         Assert.Equal(expectedDecimalResult.ToString(CultureInfo.InvariantCulture), expectedDecimalResultStr);
 
         var expression = new Expression(expressionStr, ExpressionOptions.DecimalAsDefault);
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
         Assert.IsType<decimal>(result);
         Assert.Equal(expectedDecimalResult, result);
     }
@@ -31,7 +31,7 @@ public class DecimalsTests
     {
         // https://github.com/ncalc/ncalc/issues/335
         var expression = new Expression("8E28", ExpressionOptions.DecimalAsDefault);
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
         Assert.IsType<double>(result);
         Assert.Equal(double.PositiveInfinity, result);
     }
@@ -41,7 +41,7 @@ public class DecimalsTests
     {
         // https://github.com/ncalc/ncalc/issues/335
         var expression = new Expression("-8E28", ExpressionOptions.DecimalAsDefault);
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
         Assert.IsType<double>(result);
         Assert.Equal(double.NegativeInfinity, result);
     }
@@ -51,7 +51,7 @@ public class DecimalsTests
     {
         var expression = new Expression("0.3 - 0.2 - 0.1", ExpressionOptions.DecimalAsDefault);
 
-        var result = expression.Evaluate();
+        var result = expression.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(0M, result);
     }
 
@@ -61,7 +61,7 @@ public class DecimalsTests
         var e = new Expression("1.8 + Abs([var1])");
         e.Parameters["var1"] = 9.2;
 
-        Assert.Equal(11d, e.Evaluate());
+        Assert.Equal(11d, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class DecimalsTests
         var e = new Expression("1.8 - Abs([var1])");
         e.Parameters["var1"] = 0.8;
 
-        Assert.Equal(1d, e.Evaluate());
+        Assert.Equal(1d, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class DecimalsTests
         var e = new Expression("1.8 * Abs([var1])");
         e.Parameters["var1"] = 9.2;
 
-        Assert.Equal(16.56, e.Evaluate());
+        Assert.Equal(16.56, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class DecimalsTests
         var e = new Expression("1.8 / Abs([var1])");
         e.Parameters["var1"] = 0.5;
 
-        Assert.Equal(3.6d, e.Evaluate());
+        Assert.Equal(3.6d, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class DecimalsTests
         var e = new Expression("x / 1.0");
         e.Parameters["x"] = 1m;
 
-        Assert.Equal(1m, e.Evaluate());
+        Assert.Equal(1m, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -109,56 +109,56 @@ public class DecimalsTests
         e.Parameters["x"] = 1m;
         e.Parameters["y"] = 1f;
 
-        Assert.Equal(1m, e.Evaluate());
+        Assert.Equal(1m, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldHandleTrailingDecimalPoint()
     {
-        Assert.Equal(3.0, new Expression("1. + 2.").Evaluate());
+        Assert.Equal(3.0, new Expression("1. + 2.").Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldNotLoosePrecision()
     {
-        Assert.Equal(0.5, new Expression("3/6").Evaluate());
+        Assert.Equal(0.5, new Expression("3/6").Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldNotRoundDecimalValues()
     {
-        Assert.Equal(false, new Expression("0 <= -0.6").Evaluate());
+        Assert.Equal(false, new Expression("0 <= -0.6").Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldAllowPowWithDecimals()
     {
         var e = new Expression("3.1 ** 2", ExpressionOptions.DecimalAsDefault);
-        Assert.Equal(9.61m, e.Evaluate());
+        Assert.Equal(9.61m, e.Evaluate(TestContext.Current.CancellationToken));
 
         var e2 = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault);
-        Assert.Equal(9.61m, e2.Evaluate());
+        Assert.Equal(9.61m, e2.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldResolveHexadecimal()
     {
-        Assert.Equal(0x2f, new Expression("0x17 + 0x18").Evaluate());
+        Assert.Equal(0x2f, new Expression("0x17 + 0x18").Evaluate(TestContext.Current.CancellationToken));
     }
 
     
     [Fact]
     public void ShouldResolveOctal()
     {
-        Assert.Equal(29, new Expression("0o16 + 0o17").Evaluate());
+        Assert.Equal(29, new Expression("0o16 + 0o17").Evaluate(TestContext.Current.CancellationToken));
     }
     
     [Fact]
     public void ShouldResolveBinary()
     {
-        Assert.Equal(255, new Expression("0b00001111 + 0b11110000").Evaluate());
-        Assert.Equal(0UL, new Expression("0b00001111 & 0b11110000").Evaluate());
-        Assert.Equal(255UL, new Expression("0b00001111 | 0b11110000").Evaluate());
+        Assert.Equal(255, new Expression("0b00001111 + 0b11110000").Evaluate(TestContext.Current.CancellationToken));
+        Assert.Equal(0UL, new Expression("0b00001111 & 0b11110000").Evaluate(TestContext.Current.CancellationToken));
+        Assert.Equal(255UL, new Expression("0b00001111 | 0b11110000").Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -169,7 +169,7 @@ public class DecimalsTests
     public void ShouldNotTreatIntegersAsDecimals(string expr)
     {
         var expression = new Expression(expr, ExpressionOptions.DecimalAsDefault);
-        var res = expression.Evaluate();
+        var res = expression.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(typeof(int), res.GetType());
     }
 
@@ -177,7 +177,7 @@ public class DecimalsTests
     public void ShouldParseBigNumbersAsDecimals()
     {
         var expr = new Expression("25343463636363454545454544563464.12", ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
-        var res = expr.Evaluate();
+        var res = expr.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(double.PositiveInfinity, res);
     }
 }

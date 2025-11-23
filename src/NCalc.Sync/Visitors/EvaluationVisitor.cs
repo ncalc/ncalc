@@ -11,23 +11,23 @@ namespace NCalc.Visitors;
 /// </summary>
 public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor<object?>
 {
-    public virtual object? Visit(TernaryExpression expression)
+    public virtual object? Visit(TernaryExpression expression, CancellationToken ct = default)
     {
         // Evaluates the left expression and saves the value
-        var left = Convert.ToBoolean(expression.LeftExpression.Accept(this), context.CultureInfo);
+        var left = Convert.ToBoolean(expression.LeftExpression.Accept(this, ct), context.CultureInfo);
 
         if (left)
         {
-            return expression.MiddleExpression.Accept(this);
+            return expression.MiddleExpression.Accept(this, ct);
         }
 
-        return expression.RightExpression.Accept(this);
+        return expression.RightExpression.Accept(this, ct);
     }
 
-    public virtual object? Visit(BinaryExpression expression)
+    public virtual object? Visit(BinaryExpression expression, CancellationToken ct = default)
     {
-        var left = new Lazy<object?>(() => Evaluate(expression.LeftExpression), LazyThreadSafetyMode.None);
-        var right = new Lazy<object?>(() => Evaluate(expression.RightExpression), LazyThreadSafetyMode.None);
+        var left = new Lazy<object?>(() => Evaluate(expression.LeftExpression, ct), LazyThreadSafetyMode.None);
+        var right = new Lazy<object?>(() => Evaluate(expression.RightExpression, ct), LazyThreadSafetyMode.None);
 
         switch (expression.Type)
         {
@@ -111,17 +111,17 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         return null;
     }
 
-    public virtual object? Visit(UnaryExpression expression)
+    public virtual object? Visit(UnaryExpression expression, CancellationToken ct = default)
     {
         // Recursively evaluates the underlying expression
-        var result = expression.Expression.Accept(this);
+        var result = expression.Expression.Accept(this, ct);
 
         return EvaluationHelper.Unary(expression, result, context);
     }
 
-    public virtual object? Visit(ValueExpression expression) => expression.Value;
+    public virtual object? Visit(ValueExpression expression, CancellationToken ct = default) => expression.Value;
 
-    public virtual object? Visit(Function function)
+    public virtual object? Visit(Function function, CancellationToken ct = default)
     {
         var argsCount = function.Parameters.Count;
         var args = new Expression[argsCount];
@@ -147,10 +147,10 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             return expressionFunction(new ExpressionFunctionData(function.Identifier.Id, args, context));
         }
 
-        return BuiltInFunctionHelper.Evaluate(functionName, args, context);
+        return BuiltInFunctionHelper.Evaluate(functionName, args, context, ct);
     }
 
-    public virtual object? Visit(Identifier identifier)
+    public virtual object? Visit(Identifier identifier, CancellationToken ct = default)
     {
         var identifierName = identifier.Name;
 
@@ -177,7 +177,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 expression.EvaluateFunction += context.EvaluateFunctionHandler;
                 expression.EvaluateParameter += context.EvaluateParameterHandler;
 
-                return expression.Evaluate();
+                return expression.Evaluate(ct);
             }
 
             return parameter;
@@ -191,11 +191,11 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    public virtual object Visit(LogicalExpressionList list)
+    public virtual object Visit(LogicalExpressionList list, CancellationToken ct = default)
     {
         List<object?> result = [];
 
-        result.AddRange(list.Select(Evaluate));
+        result.AddRange(list.Select(e => Evaluate(e, ct)));
 
         return result;
     }
@@ -229,8 +229,8 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         context.EvaluateParameterHandler?.Invoke(name, args);
     }
 
-    protected object? Evaluate(LogicalExpression expression)
+    protected object? Evaluate(LogicalExpression expression, CancellationToken ct = default)
     {
-        return expression.Accept(this);
+        return expression.Accept(this, ct);
     }
 }

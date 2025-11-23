@@ -13,7 +13,8 @@ public class ExceptionsTests
     [InlineData("ifs([divider] > 0, [divider] / [divided], [divider < 0], [divider] + [divided])")]
     public void Ifs_With_Improper_Arguments_Should_Throw_Exceptions(string expression)
     {
-        Assert.Throws<NCalcEvaluationException>(() => new Expression(expression).Evaluate());
+        Assert.Throws<NCalcEvaluationException>(() => new Expression(expression)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -33,7 +34,7 @@ public class ExceptionsTests
     [InlineData("42 . 3")]
     public void Should_Throw_Parse_Exception(string expression)
     {
-        Assert.Throws<NCalcParserException>(() => new Expression(expression).Evaluate());
+        Assert.Throws<NCalcParserException>(() => new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -42,12 +43,12 @@ public class ExceptionsTests
         //Yes, I know at v3 the test was a + b * ( , but it's impossible to define an empty expression.
         var e = new Expression("a + b * ( 1 + 1");
         Assert.Null(e.Error);
-        Assert.True(e.HasErrors());
+        Assert.True(e.HasErrors(TestContext.Current.CancellationToken));
         Assert.NotNull(e.Error);
 
         e = new Expression("* b ");
         Assert.Null(e.Error);
-        Assert.True(e.HasErrors());
+        Assert.True(e.HasErrors(TestContext.Current.CancellationToken));
         Assert.NotNull(e.Error);
     }
 
@@ -65,25 +66,26 @@ public class ExceptionsTests
 
         Assert.Throws<InvalidOperationException>(() =>
         {
-            e.Evaluate();
+            e.Evaluate(TestContext.Current.CancellationToken);
         });
     }
 
     [Fact]
     public void Should_Throw_Exception_On_Lexer_Errors_Issue_6()
     {
-        Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#t -chers"));
+        Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#t -chers", ct: TestContext.Current.CancellationToken));
 
         var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
         string dateStr = $"#13{dateSeparator}13{dateSeparator}2222#";
-        var invalidDateException = Assert.Throws<FormatException>(() => LogicalExpressionFactory.Create(dateStr));
+        var invalidDateException = Assert.Throws<FormatException>(() =>
+            LogicalExpressionFactory.Create(dateStr, ct: TestContext.Current.CancellationToken));
         Assert.IsType<FormatException>(invalidDateException);
 
         //At v4, DateTime is better handled, and this should no longer cause errors.
         // https://github.com/ncalc/ncalc-async/issues/6
         try
         {
-            LogicalExpressionFactory.Create("Format(\"{0:(###) ###-####}\", \"9999999999\")");
+            LogicalExpressionFactory.Create("Format(\"{0:(###) ###-####}\", \"9999999999\")", ct: TestContext.Current.CancellationToken);
         }
         catch
         {
@@ -97,7 +99,7 @@ public class ExceptionsTests
         var expression = new Expression("42a");
         try
         {
-            expression.Evaluate();
+            expression.Evaluate(TestContext.Current.CancellationToken);
             Assert.Throws<NCalcParserException>(() => true);
         }
         catch (NCalcParserException ex)
@@ -110,7 +112,8 @@ public class ExceptionsTests
     public void Should_Throw_Function_Not_Found()
     {
         var expression = new Expression("drop_database()");
-        var exception = Assert.Throws<NCalcFunctionNotFoundException>(() => expression.Evaluate());
+        var exception = Assert.Throws<NCalcFunctionNotFoundException>(() =>
+            expression.Evaluate(TestContext.Current.CancellationToken));
         Assert.Equal("drop_database", exception.FunctionName);
     }
 
@@ -118,7 +121,8 @@ public class ExceptionsTests
     public void Should_Throw_Parameter_Not_Found()
     {
         var expression = new Expression("{Name} == 'Spinella'");
-        var exception = Assert.Throws<NCalcParameterNotDefinedException>(() => expression.Evaluate());
+        var exception = Assert.Throws<NCalcParameterNotDefinedException>(() =>
+            expression.Evaluate(TestContext.Current.CancellationToken));
         Assert.Equal("Name", exception.ParameterName);
     }
 
@@ -129,21 +133,25 @@ public class ExceptionsTests
     public void Should_Throw_Issue_195(string expressionString)
     {
         var expression = new Expression(expressionString);
-        Assert.Throws<NCalcParserException>(() => expression.Evaluate());
+        Assert.Throws<NCalcParserException>(() =>
+            expression.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void Should_Throw_Issue_208()
     {
         var expression = new Expression("1.3,4.5");
-        Assert.Throws<NCalcParserException>(() => expression.Evaluate());
+        Assert.Throws<NCalcParserException>(() =>
+            expression.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldThrowExceptionWhenNullOrEmpty()
     {
-        Assert.Throws<NCalcException>(() => new Expression("").Evaluate());
-        Assert.Throws<NCalcException>(() => new Expression((string)null).Evaluate());
+        Assert.Throws<NCalcException>(() =>
+            new Expression("").Evaluate(TestContext.Current.CancellationToken));
+        Assert.Throws<NCalcException>(() =>
+            new Expression((string)null).Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -153,6 +161,16 @@ public class ExceptionsTests
         exp.Parameters["a"] = DateTime.Now;
         exp.Parameters["b"] = DateTime.Now.Date;
 
-        Assert.Throws<InvalidOperationException>(exp.Evaluate);
+        Assert.Throws<InvalidOperationException>(() => exp.Evaluate(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public void ShouldCancelEvaluation()
+    {
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var exp = new Expression("11 + 33", ExpressionOptions.None);
+        Assert.Throws<NCalcParserException>(() => exp.Evaluate(cts.Token));
     }
 }

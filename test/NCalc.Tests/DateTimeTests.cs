@@ -10,7 +10,7 @@ public class DateTimeTests
     {
         var timeSeparator = CultureInfo.CurrentCulture.DateTimeFormat.TimeSeparator;
         var expr = new Expression($"#20{timeSeparator}42{timeSeparator}12#");
-        Assert.Equal(new TimeSpan(20, 42, 12), expr.Evaluate());
+        Assert.Equal(new TimeSpan(20, 42, 12), expr.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -18,7 +18,7 @@ public class DateTimeTests
     {
         var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
         var expr = new Expression($"#01{dateSeparator}01{dateSeparator}2001#");
-        Assert.Equal(new DateTime(2001, 1, 1), expr.Evaluate());
+        Assert.Equal(new DateTime(2001, 1, 1), expr.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -27,7 +27,8 @@ public class DateTimeTests
         var timeSeparator = CultureInfo.CurrentCulture.DateTimeFormat.TimeSeparator;
         var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
         string exprStr = $"#2022{dateSeparator}12{dateSeparator}31 08{timeSeparator}00{timeSeparator}00#";
-        Assert.Equal(new DateTime(2022, 12, 31, 8, 0, 0), new Expression(exprStr).Evaluate());
+        Assert.Equal(new DateTime(2022, 12, 31, 8, 0, 0),
+            new Expression(exprStr).Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -40,7 +41,8 @@ public class DateTimeTests
         var dateSeparator = trueDateSeparator == "." ? "/" : ".";
 
         string exprStr = $"#2022{dateSeparator}12{dateSeparator}31 08{timeSeparator}00{timeSeparator}00#";
-        Assert.Throws<NCalcParserException>(() => new Expression(exprStr).Evaluate());
+        Assert.Throws<NCalcParserException>(() =>
+            new Expression(exprStr).Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -52,11 +54,11 @@ public class DateTimeTests
         try
         {
             var expr = new Expression("#05/27/2025 12:00:00#", ExpressionOptions.None);
-            var res = expr.Evaluate();
+            var res = expr.Evaluate(TestContext.Current.CancellationToken);
 
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
             var expr2 = new Expression("#27.05.2025 12:00:00#");
-            var res2 = expr.Evaluate();
+            var res2 = expr.Evaluate(TestContext.Current.CancellationToken);
 
             var dt = new DateTime(2025, 05, 27, 12, 0, 0);
 
@@ -78,11 +80,11 @@ public class DateTimeTests
         try
         {
             var expr = new Expression("#05/27/2025 12:00:00#", ExpressionOptions.None);
-            var res = expr.Evaluate();
+            var res = expr.Evaluate(TestContext.Current.CancellationToken);
 
             var ruCulture = CultureInfo.GetCultureInfo("ru-RU");
             var expr2 = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None, ruCulture);
-            var res2 = expr.Evaluate();
+            var res2 = expr.Evaluate(TestContext.Current.CancellationToken);
 
             var dt = new DateTime(2025, 05, 27, 12, 0, 0);
 
@@ -101,13 +103,13 @@ public class DateTimeTests
         var expected = new TimeSpan(0, 12, 0, 0, 333);
 
         var expr = new Expression("#12:00:00.333#", ExpressionOptions.None, CultureInfo.InvariantCulture);
-        var res = expr.Evaluate();
+        var res = expr.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.Equal(expected, res);
 
         var deCulture = CultureInfo.GetCultureInfo("de-DE");
         var expr2 = new Expression("#12:00:00,333#", ExpressionOptions.None, deCulture);
-        var res2 = expr2.Evaluate();
+        var res2 = expr2.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(expected, res2);
     }
 
@@ -117,12 +119,12 @@ public class DateTimeTests
         var expected = new DateTime(2025, 05, 27, 12, 0, 0, 333);
 
         var expr = new Expression("#05/27/2025 12:00:00.333#", ExpressionOptions.None, CultureInfo.InvariantCulture);
-        var res = expr.Evaluate();
+        var res = expr.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(expected, res);
 
         var deCulture = CultureInfo.GetCultureInfo("de-DE");
         var expr2 = new Expression("#27.05.2025 12:00:00,333#", ExpressionOptions.None, deCulture);
-        var res2 = expr2.Evaluate();
+        var res2 = expr2.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(expected, res2);
     }
 }

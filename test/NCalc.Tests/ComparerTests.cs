@@ -11,7 +11,7 @@ public class ComparerTests
         var eif = new Expression("PageState == 'LIST'", ExpressionOptions.CaseInsensitiveStringComparer);
         eif.Parameters["PageState"] = "List";
 
-        Assert.True((bool)eif.Evaluate());
+        Assert.True((bool)eif.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -29,28 +29,28 @@ public class ComparerTests
             }
         };
 
-        Assert.Equal(expectedResult, (bool)issueExp.Evaluate());
+        Assert.Equal(expectedResult, (bool)issueExp.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ExpressionShouldHandleNullRightParameters()
     {
         var e = new Expression("'a string' == null", ExpressionOptions.AllowNullParameter);
-        Assert.False((bool)e.Evaluate());
+        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ExpressionShouldHandleNullLeftParameters()
     {
         var e = new Expression("null == 'a string'", ExpressionOptions.AllowNullParameter);
-        Assert.False((bool)e.Evaluate());
+        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ExpressionShouldHandleNullBothParameters()
     {
         var e = new Expression("null == null", ExpressionOptions.AllowNullParameter);
-        Assert.True((bool)e.Evaluate());
+        Assert.True((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class ComparerTests
         var e = new Expression("[x] = null", ExpressionOptions.AllowNullParameter);
         e.Parameters["x"] = null;
 
-        Assert.True((bool)e.Evaluate());
+        Assert.True((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -68,10 +68,10 @@ public class ComparerTests
         var e = new Expression("[x] = 5", ExpressionOptions.AllowNullParameter);
 
         e.Parameters["x"] = (int?)5;
-        Assert.True((bool)e.Evaluate());
+        Assert.True((bool)e.Evaluate(TestContext.Current.CancellationToken));
 
         e.Parameters["x"] = (int?)6;
-        Assert.False((bool)e.Evaluate());
+        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class ComparerTests
         var e = new Expression("[x] = 5", ExpressionOptions.AllowNullParameter);
 
         e.Parameters["x"] = null;
-        Assert.False((bool)e.Evaluate());
+        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class ComparerTests
         var e = new Expression("[x] = 'foo'", ExpressionOptions.AllowNullParameter);
         e.Parameters["x"] = null;
 
-        Assert.False((bool)e.Evaluate());
+        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -97,7 +97,8 @@ public class ComparerTests
     {
         var e = new Expression("'a string' == null");
 
-        var ex = Assert.Throws<NCalcParameterNotDefinedException>(() => e.Evaluate());
+        var ex = Assert.Throws<NCalcParameterNotDefinedException>(() =>
+            e.Evaluate(TestContext.Current.CancellationToken));
         Assert.Contains("not defined", ex.Message);
     }
 
@@ -109,7 +110,7 @@ public class ComparerTests
         var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
         e.Parameters["x"] = null;
 
-        Assert.False((bool)e.Evaluate());
+        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -118,13 +119,13 @@ public class ComparerTests
         var e = new Expression("1 != ''",
             ExpressionOptions.NoStringTypeCoercion | ExpressionOptions.StrictTypeMatching);
 
-        Assert.True((bool)e.Evaluate());
+        Assert.True((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldCompareWithEmptyString()
     {
         var e = new Expression("1 == ''");
-        Assert.False((bool)e.Evaluate());
+        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
     }
 }

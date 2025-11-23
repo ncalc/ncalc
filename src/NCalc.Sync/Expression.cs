@@ -107,11 +107,12 @@ public class Expression : ExpressionBase<ExpressionContext>
     /// <summary>
     /// Evaluates the logical expression.
     /// </summary>
+    /// <param name="ct">Cancellation token</param>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public object? Evaluate()
+    public object? Evaluate(CancellationToken ct = default)
     {
-        LogicalExpression ??= GetLogicalExpression();
+        LogicalExpression ??= GetLogicalExpression(ct);
 
         if (Error is not null)
             throw Error;
@@ -121,20 +122,20 @@ public class Expression : ExpressionBase<ExpressionContext>
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
-            return IterateParameters();
+            return IterateParameters(ct);
 
         var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
-        return LogicalExpression?.Accept(evaluationVisitor);
+        return LogicalExpression?.Accept(evaluationVisitor, ct);
     }
 
-    private object? IterateParameters()
+    private object? IterateParameters(CancellationToken ct)
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
         var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
 
         if (size == null)
-            return LogicalExpression?.Accept(evaluationVisitor);
+            return LogicalExpression?.Accept(evaluationVisitor, ct);
 
         var results = new List<object?>();
 
@@ -146,7 +147,7 @@ public class Expression : ExpressionBase<ExpressionContext>
                 Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            results.Add(LogicalExpression?.Accept(evaluationVisitor));
+            results.Add(LogicalExpression?.Accept(evaluationVisitor, ct));
         }
 
         return results;

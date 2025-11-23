@@ -10,8 +10,8 @@ public class ParametersAndFunctions
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
-        Assert.Equal(9, e.Evaluate());
+        e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate(TestContext.Current.CancellationToken) + (int)args[1].Evaluate(TestContext.Current.CancellationToken);
+        Assert.Equal(9, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -23,7 +23,7 @@ public class ParametersAndFunctions
 
         e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
 
-        Assert.Equal(10, e.Evaluate());
+        Assert.Equal(10, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -52,8 +52,8 @@ public class ParametersAndFunctions
             return (int)args[0].Evaluate() + (int)args[1].Evaluate();
         };
 
-        Assert.Equal(12, e.Evaluate());
-        Assert.Equal(12, e.Evaluate());
+        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
 
         Assert.Equal(2, d.FirstOrDefault().Value);
     }
@@ -86,14 +86,14 @@ public class ParametersAndFunctions
         };
         e.Parameters["value"] = 9;
 
-        Assert.Equal(false, e.Evaluate());
+        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
 
         e.Parameters["value"] = 11;
-        Assert.Equal(false, e.Evaluate());
+        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
         e.Parameters["value"] = 12;
-        Assert.Equal(false, e.Evaluate());
+        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
         e.Parameters["value"] = 13;
-        Assert.Equal(true, e.Evaluate());
+        Assert.Equal(true, e.Evaluate(TestContext.Current.CancellationToken));
         Assert.Single(times);
     }
 
@@ -107,7 +107,7 @@ public class ParametersAndFunctions
 
         e.DynamicParameters["Pi"] = _ => 3.14;
 
-        Assert.Equal(117.07, e.Evaluate());
+        Assert.Equal(117.07, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class ParametersAndFunctions
         for (var i = 0; i < 10; i++)
         {
             counter = 0;
-            _ = expression.Evaluate();
+            _ = expression.Evaluate(TestContext.Current.CancellationToken);
         }
 
         object Expression_EvaluateFunction(ExpressionFunctionData args)
@@ -141,11 +141,11 @@ public class ParametersAndFunctions
     {
         var e = new Expression("Round(1.99, 2)");
 
-        Assert.Equal(1.99d, e.Evaluate());
+        Assert.Equal(1.99d, e.Evaluate(TestContext.Current.CancellationToken));
 
         e.Functions["Round"] = (_) => 3;
 
-        Assert.Equal(3, e.Evaluate());
+        Assert.Equal(3, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class ParametersAndFunctions
         var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");
 
         e.DynamicParameters["Pi"] = _ => 3.14;
-        e.Evaluate();
+        e.Evaluate(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public class ParametersAndFunctions
         e.DynamicParameters["y"] = _ => 2;
         e.DynamicParameters["z"] = _ => 3;
 
-        Assert.Equal(13d, e.Evaluate());
+        Assert.Equal(13d, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class ParametersAndFunctions
 
         e.Functions["SecretOperation"] = (_) => null;
 
-        Assert.Null(e.Evaluate());
+        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public class ParametersAndFunctions
 
         e.DynamicParameters["x"] = _ => null;
 
-        Assert.Null(e.Evaluate());
+        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -201,7 +201,7 @@ public class ParametersAndFunctions
         var expression = new Expression($"{functionName}(3.14)");
         expression.Functions[functionName] = (_) => 1;
 
-        Assert.Equal(1, expression.Evaluate());
+        Assert.Equal(1, expression.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -214,7 +214,7 @@ public class ParametersAndFunctions
                 { "Name", "Beatriz" }
             }
         };
-        Assert.Equal(true, expression.Evaluate());
+        Assert.Equal(true, expression.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -234,7 +234,7 @@ public class ParametersAndFunctions
                 }
             }
         };
-        _ = expression.Evaluate();
+        _ = expression.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(3, count);
     }
 
@@ -248,7 +248,7 @@ public class ParametersAndFunctions
         expr.Parameters["a"] = a;
         expr.Parameters["b"] = b;
 
-        var res = expr.Evaluate();
+        var res = expr.Evaluate(TestContext.Current.CancellationToken);
         int expected = ushort.MaxValue;
         Assert.Equal(expected, res);
     }

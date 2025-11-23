@@ -13,7 +13,7 @@ public class SerializationTests
     [ClassData(typeof(WaterLevelCheckTestData))]
     public void SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
-        var compiled = LogicalExpressionFactory.Create(expression);
+        var compiled = LogicalExpressionFactory.Create(expression, ct: TestContext.Current.CancellationToken);
         var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
@@ -35,7 +35,7 @@ public class SerializationTests
         object evaluated;
         try
         {
-            evaluated = exp.Evaluate();
+            evaluated = exp.Evaluate(TestContext.Current.CancellationToken);
         }
         catch
         {
@@ -50,7 +50,7 @@ public class SerializationTests
     [Fact]
     public void SystemTextJsonPolymorphicSerializeAndDeserializeShouldWork()
     {
-        var expression = LogicalExpressionFactory.Create("1 == 1");
+        var expression = LogicalExpressionFactory.Create("1 == 1", ct: TestContext.Current.CancellationToken);
         var expressionJson = JsonSerializer.Serialize(expression);
         Assert.True(JsonSerializer.Deserialize<LogicalExpression>(expressionJson) is BinaryExpression);
     }
@@ -156,7 +156,7 @@ public class SerializationTests
         var expr = new Expression("Max([a], [b])");
         expr.Parameters["a"] = 5;
         expr.Parameters["b"] = 10;
-        expr.Evaluate();
+        expr.Evaluate(TestContext.Current.CancellationToken);
 
         var exprString = expr.LogicalExpression.ToString();
         Assert.Equal("Max([a], [b])", exprString);

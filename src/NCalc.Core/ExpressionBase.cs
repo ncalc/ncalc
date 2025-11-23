@@ -87,34 +87,37 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     /// <summary>
     /// Returns a list with all parameter names from the expression.
     /// </summary>
-    public List<string> GetParameterNames()
+    /// <param name="ct">Cancellation token</param>
+    public List<string> GetParameterNames(CancellationToken ct = default)
     {
         var parameterExtractionVisitor = new ParameterExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
-        return LogicalExpression.Accept(parameterExtractionVisitor);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
+        return LogicalExpression.Accept(parameterExtractionVisitor, ct);
     }
 
     /// <summary>
     /// Returns a list with all function names from the expression.
     /// </summary>
-    public List<string> GetFunctionNames()
+    /// <param name="ct">Cancellation token</param>
+    public List<string> GetFunctionNames(CancellationToken ct = default)
     {
         var functionExtractionVisitor = new FunctionExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
-        return LogicalExpression.Accept(functionExtractionVisitor);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
+        return LogicalExpression.Accept(functionExtractionVisitor, ct);
     }
 
     /// <summary>
     /// Create the LogicalExpression in order to check syntax errors.
     /// If errors are detected, the Error property contains the exception.
     /// </summary>
+    /// <param name="ct">Cancellation token</param>
     /// <returns>True if the expression syntax is correct, otherwise False.</returns>
     [MemberNotNullWhen(true, nameof(Error))]
-    public bool HasErrors()
+    public bool HasErrors(CancellationToken ct = default)
     {
         try
         {
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -126,7 +129,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
         }
     }
 
-    public LogicalExpression? GetLogicalExpression()
+    public LogicalExpression? GetLogicalExpression(CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(ExpressionString))
         {
@@ -147,7 +150,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
 
         try
         {
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
