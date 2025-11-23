@@ -1,8 +1,9 @@
 namespace NCalc.Handlers;
 
-public class AsyncParameterArgs(Guid id) : EventArgs
+public class AsyncParameterArgs(Guid id, CancellationToken ct) : EventArgs
 {
     public Guid Id { get; } = id;
+    public CancellationToken CancellationToken { get; } = ct;
 
     private object? _result;
     public object? Result

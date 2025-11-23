@@ -57,7 +57,7 @@ public class AsyncTests
             if (name == "database_operation")
             {
                 //My heavy database work.
-                await Task.Delay(100);
+                await Task.Delay(100, args.CancellationToken);
 
                 args.Result = "FOO";
             }

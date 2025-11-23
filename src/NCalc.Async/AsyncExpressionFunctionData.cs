@@ -1,10 +1,11 @@
 namespace NCalc;
 
-public class AsyncExpressionFunctionData(Guid id, AsyncExpression[] arguments, AsyncExpressionContext context) : IEnumerable<AsyncExpression>
+public class AsyncExpressionFunctionData(Guid id, AsyncExpression[] arguments, AsyncExpressionContext context, CancellationToken ct) : IEnumerable<AsyncExpression>
 {
     public Guid Id { get; } = id;
     private AsyncExpression[] Arguments { get; } = arguments;
     public AsyncExpressionContext Context { get; } = context;
+    public CancellationToken CancellationToken { get; } = ct;
 
     public AsyncExpression this[int index]
     {

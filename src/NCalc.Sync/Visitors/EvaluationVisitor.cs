@@ -135,7 +135,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         }
 
         var functionName = function.Identifier.Name;
-        var functionArgs = new FunctionArgs(function.Identifier.Id, args);
+        var functionArgs = new FunctionArgs(function.Identifier.Id, args, ct);
 
         OnEvaluateFunction(functionName, functionArgs);
 
@@ -144,7 +144,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
         if (context.Functions.TryGetValue(functionName, out var expressionFunction))
         {
-            return expressionFunction(new ExpressionFunctionData(function.Identifier.Id, args, context));
+            return expressionFunction(new ExpressionFunctionData(function.Identifier.Id, args, context, ct));
         }
 
         return BuiltInFunctionHelper.Evaluate(functionName, args, context, ct);
@@ -154,7 +154,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     {
         var identifierName = identifier.Name;
 
-        var parameterArgs = new ParameterArgs(identifier.Id);
+        var parameterArgs = new ParameterArgs(identifier.Id, ct);
 
         OnEvaluateParameter(identifierName, parameterArgs);
 
@@ -185,7 +185,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
-            return dynamicParameter(new ExpressionParameterData(identifier.Id, context));
+            return dynamicParameter(new ExpressionParameterData(identifier.Id, context, ct));
         }
 
         throw new NCalcParameterNotDefinedException(identifierName);

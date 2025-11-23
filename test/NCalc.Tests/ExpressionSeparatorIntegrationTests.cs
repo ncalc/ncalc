@@ -47,7 +47,8 @@ public class ExpressionSeparatorIntegrationTests
         {
             if (name == "CustomAdd" && args.Parameters.Length == 2)
             {
-                args.Result = Convert.ToDouble(args.Parameters[0].Evaluate()) + Convert.ToDouble(args.Parameters[1].Evaluate());
+                args.Result = Convert.ToDouble(args.Parameters[0].Evaluate(args.CancellationToken)) +
+                    Convert.ToDouble(args.Parameters[1].Evaluate(args.CancellationToken));
             }
         };
 
