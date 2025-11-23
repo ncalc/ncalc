@@ -8,13 +8,12 @@ public class FunctionArgs(Guid id, Expression[] parameters, CancellationToken ct
 
     public CancellationToken CancellationToken { get; } = ct;
 
-    private object? _result;
     public object? Result
     {
-        get => _result;
+        get;
         set
         {
-            _result = value;
+            field = value;
             HasResult = true;
         }
     }

@@ -4,6 +4,8 @@ public class AsyncFunctionArgs(Guid id, AsyncExpression[] parameters, Cancellati
 {
     public Guid Id { get; } = id;
 
+    public AsyncExpression[] Parameters { get; } = parameters;
+
     public CancellationToken CancellationToken { get; } = ct;
 
     public object? Result
