@@ -14,7 +14,7 @@ var cts = new CancellationTokenSource();
 var expression = new AsyncExpression("getUserName(1) == 'admin'");
 expression.Functions["getUserName"] = async args =>
 {
-    var id = (int)(await args[0].EvaluateAsync(cts.Token)!)!;
+    var id = (int)(await args[0].EvaluateAsync(args.CancellationToken)!)!;
 
     args.CancellationToken.ThrowIfCancellationRequested();
 
@@ -26,7 +26,7 @@ expression.Functions["getUserName"] = async args =>
         .FirstAsync(args.CancellationToken);
 };
 
-var result = await expression.EvaluateAsync(cts.Token);
+var result = await expression.EvaluateAsync(args.CancellationToken);
 ```
 
 ### Learn more about cancellation tokens
