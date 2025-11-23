@@ -72,11 +72,8 @@ public static class EvaluationHelper
 
         var leftValueString = Convert.ToString(leftValue, CultureInfo.InvariantCulture);
 
-        if (string.IsNullOrEmpty(leftValueString) && string.IsNullOrEmpty(rightValue))
-            return true;
-
         if (string.IsNullOrEmpty(leftValueString))
-            return false;
+            return string.IsNullOrEmpty(rightValue);
 
         return rightValue.Contains(leftValueString);
     }
