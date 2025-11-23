@@ -7,7 +7,7 @@ namespace NCalc.Helpers;
 /// <summary>
 /// Provides helper methods for evaluating expressions.
 /// </summary>
-public static class EvaluationHelper
+public static class EvaluationHelper<TExpressionContext> where TExpressionContext : ExpressionContextBase
 {
     /// <summary>
     /// Adds two values, with special handling for string concatenation based on the context options.
@@ -16,7 +16,7 @@ public static class EvaluationHelper
     /// <param name="rightValue">The right operand.</param>
     /// <param name="context">The evaluation context.</param>
     /// <returns>The result of the addition or string concatenation.</returns>
-    public static object? Plus(object? leftValue, object? rightValue, ExpressionContextBase context)
+    public static object? Plus(object? leftValue, object? rightValue, TExpressionContext context)
     {
         if (context.Options.HasFlag(ExpressionOptions.StringConcat))
             return string.Concat(
@@ -49,7 +49,7 @@ public static class EvaluationHelper
     /// <param name="context">The evaluation context.</param>
     /// <returns>True if the left value is contained within the right value, otherwise false.</returns>
     /// <exception cref="NCalcEvaluationException">Thrown when the right value is not an enumerable or a string.</exception>
-    public static bool In(object? rightValue, object? leftValue, ExpressionContextBase context)
+    public static bool In(object? rightValue, object? leftValue, TExpressionContext context)
     {
         return rightValue switch
         {
@@ -62,7 +62,7 @@ public static class EvaluationHelper
         };
     }
 
-    private static bool Contains(object? leftValue, string rightValue, ExpressionContextBase context)
+    private static bool Contains(object? leftValue, string rightValue, TExpressionContext context)
     {
         if (leftValue is not string && context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion))
         {
@@ -77,7 +77,7 @@ public static class EvaluationHelper
         return rightValue.Contains(leftValueString);
     }
 
-    private static bool Contains(object? leftValue, IEnumerable<object?> rightValue, ExpressionContextBase context)
+    private static bool Contains(object? leftValue, IEnumerable<object?> rightValue, TExpressionContext context)
     {
         var rightArray = rightValue as object[] ?? rightValue.ToArray();
 
@@ -98,7 +98,7 @@ public static class EvaluationHelper
             noStringTypeCoercion ? EqualityComparer<object?>.Default : StringCoercionComparer.Default);
     }
 
-    private static bool Contains(object? leftValue, IEnumerable rightValue, ExpressionContextBase context)
+    private static bool Contains(object? leftValue, IEnumerable rightValue, TExpressionContext context)
     {
         if (rightValue == null)
             return false;
@@ -148,7 +148,7 @@ public static class EvaluationHelper
     /// <param name="context">The evaluation context.</param>
     /// <returns>The result of the unary operation.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the unary expression type is unknown.</exception>
-    public static object? Unary(UnaryExpression expression, object? result, ExpressionContextBase context)
+    public static object? Unary(UnaryExpression expression, object? result, TExpressionContext context)
     {
         return expression.Type switch
         {
@@ -172,7 +172,7 @@ public static class EvaluationHelper
     /// <remarks>
     /// The comparison is case-insensitive if the <see cref="ExpressionOptions.CaseInsensitiveStringComparer"/> flag is set in the <paramref name="context"/>.
     /// </remarks>
-    public static bool Like(object? leftValue, object? rightValue, ExpressionContextBase context)
+    public static bool Like(object? leftValue, object? rightValue, TExpressionContext context)
     {
         if (leftValue == null || rightValue == null)
             return false;
