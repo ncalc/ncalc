@@ -68,8 +68,7 @@ public static class LinqUtils
             }
             else
             {
-                if (paramsKeywordArgument != null)
-                    paramsKeywordArgument[i - paramsParameterPosition] = argument!;
+                paramsKeywordArgument?[i - paramsParameterPosition] = argument!;
             }
         }
 
