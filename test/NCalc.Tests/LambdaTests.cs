@@ -148,7 +148,7 @@ public class LambdaTests
     public void ShouldHandleIntegers(string input, int expected)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<int>();
+        var sut = expression.ToLambda<int>(TestContext.Current.CancellationToken);
 
         Assert.Equal(sut(), expected);
     }
@@ -157,7 +157,7 @@ public class LambdaTests
     public void ShouldHandleParameters()
     {
         var expression = new Expression("[FieldA] > 5 && [FieldB] = 'test'");
-        var sut = expression.ToLambda<Context, bool>();
+        var sut = expression.ToLambda<Context, bool>(TestContext.Current.CancellationToken);
         var context = new Context { FieldA = 7, FieldB = "test" };
 
         Assert.True(sut(context));
@@ -167,7 +167,7 @@ public class LambdaTests
     public void ShouldHandleOverloadingSameParamCount()
     {
         var expression = new Expression("Test('Hello', ' world!')");
-        var sut = expression.ToLambda<Context, string>();
+        var sut = expression.ToLambda<Context, string>(TestContext.Current.CancellationToken);
         var context = new Context();
 
         Assert.Equal("Hello world!", sut(context));
@@ -177,7 +177,7 @@ public class LambdaTests
     public void ShouldHandleOverloadingDifferentParamCount()
     {
         var expression = new Expression("Test(Test(1, 2), 3, 4)");
-        var sut = expression.ToLambda<Context, int>();
+        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
         var context = new Context();
 
         Assert.Equal(10, sut(context));
@@ -187,7 +187,7 @@ public class LambdaTests
     public void ShouldHandleOverloadingObjectParameters()
     {
         var expression = new Expression("Sum(CreateTestObject1(2), CreateTestObject2(2)) + Sum(CreateTestObject2(1), CreateTestObject1(5))");
-        var sut = expression.ToLambda<Context, int>();
+        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
         var context = new Context();
 
         Assert.Equal(10, sut(context));
@@ -197,7 +197,7 @@ public class LambdaTests
     public void ShouldHandleParamsKeyword()
     {
         var expression = new Expression("Sum(Test(1,1),2)");
-        var sut = expression.ToLambda<Context, int>();
+        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
         var context = new Context();
 
         Assert.Equal(4, sut(context));
@@ -207,7 +207,7 @@ public class LambdaTests
     public void ShouldHandleMixedParamsKeyword()
     {
         var expression = new Expression("Sum('Your total is: ', Test(1,1), 2, 3)");
-        var sut = expression.ToLambda<Context, string>();
+        var sut = expression.ToLambda<Context, string>(TestContext.Current.CancellationToken);
         var context = new Context();
 
         Assert.Equal("Your total is: 7", sut(context));
@@ -217,7 +217,7 @@ public class LambdaTests
     public void ShouldHandleCustomFunctions()
     {
         var expression = new Expression("Test(Test(1, 2), 3)");
-        var sut = expression.ToLambda<Context, int>();
+        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
         var context = new Context();
 
         Assert.Equal(6, sut(context));
@@ -226,11 +226,11 @@ public class LambdaTests
     [Fact]
     public void ShouldHandleContextInheritance()
     {
-        var lambda1 = new Expression("Multiply(5, 2)").ToLambda<SubContext, int>();
-        var lambda2 = new Expression("Test(5, 5)").ToLambda<SubContext, int>();
-        var lambda3 = new Expression("Test(1,2,3,4)").ToLambda<SubContext, int>();
+        var lambda1 = new Expression("Multiply(5, 2)").ToLambda<SubContext, int>(TestContext.Current.CancellationToken);
+        var lambda2 = new Expression("Test(5, 5)").ToLambda<SubContext, int>(TestContext.Current.CancellationToken);
+        var lambda3 = new Expression("Test(1,2,3,4)").ToLambda<SubContext, int>(TestContext.Current.CancellationToken);
         var lambda4 = new Expression("Sum(CreateTestObject1(100), CreateTestObject2(100), CreateTestObject2(100))")
-            .ToLambda<SubContext, int>();
+            .ToLambda<SubContext, int>(TestContext.Current.CancellationToken);
 
         var context = new SubContext();
         Assert.Equal(10, lambda1(context));
@@ -245,7 +245,7 @@ public class LambdaTests
     [InlineData("Test(1.0, 1, 1.0)")]
     public void ShouldHandleImplicitConversion(string input)
     {
-        var lambda = new Expression(input).ToLambda<Context, int>();
+        var lambda = new Expression(input).ToLambda<Context, int>(TestContext.Current.CancellationToken);
 
         var context = new Context();
         Assert.Equal(3, lambda(context));
@@ -257,7 +257,7 @@ public class LambdaTests
         var expression = new Expression("MissingMethod(1)");
         try
         {
-            _ = expression.ToLambda<Context, int>();
+            _ = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
         }
         catch (MissingMethodException ex)
         {
@@ -272,7 +272,7 @@ public class LambdaTests
     public void ShouldHandleTernaryOperator()
     {
         var expression = new Expression("Test(1, 2) = 3 ? 1 : 2");
-        var sut = expression.ToLambda<Context, int>();
+        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
         var context = new Context();
 
         Assert.Equal(1, sut(context));
@@ -291,7 +291,7 @@ public class LambdaTests
         expr.Parameters["a"] = a;
         expr.Parameters["b"] = b;
 
-        var f = expr.ToLambda<float>(); // Here it throws System.ArgumentNullException. Parameter name: expression
+        var f = expr.ToLambda<float>(TestContext.Current.CancellationToken); // Here it throws System.ArgumentNullException. Parameter name: expression
         Assert.Equal(-14, f());
     }
 
@@ -301,7 +301,7 @@ public class LambdaTests
     public void ShouldHandleBuiltInFunctions(string input)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<bool>();
+        var sut = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
         Assert.True(sut());
     }
 
@@ -313,7 +313,7 @@ public class LambdaTests
     public void ShouldProritiseContextFunctions(string input, double expected)
     {
         var expression = new Expression(input);
-        var lambda = expression.ToLambda<Context, double>();
+        var lambda = expression.ToLambda<Context, double>(TestContext.Current.CancellationToken);
         var context = new Context();
         var actual = lambda(context);
         Assert.Equal(expected, actual);
@@ -328,7 +328,7 @@ public class LambdaTests
     public void ShouldHandleDataConversions(string input, bool expected)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<Context, bool>();
+        var sut = expression.ToLambda<Context, bool>(TestContext.Current.CancellationToken);
         var context = new Context { FieldA = 7, FieldB = "test", FieldC = 2.4m, FieldE = 2 };
 
         Assert.Equal(expected, sut(context));
@@ -343,7 +343,7 @@ public class LambdaTests
     public void ShouldHandleNumericBuiltInFunctions(string input, double expected)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<object>();
+        var sut = expression.ToLambda<object>(TestContext.Current.CancellationToken);
         Assert.Equal(expected, sut());
     }
 
@@ -354,7 +354,7 @@ public class LambdaTests
     public void ShouldHandleFloatIfFunction(string input, double expected)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<object>();
+        var sut = expression.ToLambda<object>(TestContext.Current.CancellationToken);
         Assert.Equal(expected, sut());
     }
 
@@ -363,7 +363,7 @@ public class LambdaTests
     public void ShouldHandleIntIfFunction(string input, int expected)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<object>();
+        var sut = expression.ToLambda<object>(TestContext.Current.CancellationToken);
         Assert.Equal(expected, sut());
     }
 
@@ -372,7 +372,7 @@ public class LambdaTests
     public void ShouldHandleStringIfFunction(string input, string expected)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<object>();
+        var sut = expression.ToLambda<object>(TestContext.Current.CancellationToken);
         Assert.Equal(expected, sut());
     }
 
@@ -382,7 +382,7 @@ public class LambdaTests
         // Arrange
         const decimal expected = 6.908m;
         var expression = new Expression("Foo * 3.14");
-        var sut = expression.ToLambda<FooStruct, decimal>();
+        var sut = expression.ToLambda<FooStruct, decimal>(TestContext.Current.CancellationToken);
         var context = new FooStruct();
 
         // Act
@@ -402,7 +402,7 @@ public class LambdaTests
         var e = new Expression(expression);
         var context = new object();
 
-        var lambda = e.ToLambda<object, long>();
+        var lambda = e.ToLambda<object, long>(TestContext.Current.CancellationToken);
 
         // Act
         var actual = lambda(context);
@@ -461,7 +461,7 @@ public class LambdaTests
                 currentContext.Func = expressionString;
 
                 var expression = new Expression(expressionString, CultureInfo.InvariantCulture);
-                var lambda = expression.ToLambda<ContextAndResult, double>();
+                var lambda = expression.ToLambda<ContextAndResult, double>(TestContext.Current.CancellationToken);
 
                 for (var i = 0; i < testValues.Length; ++i)
                 {
@@ -477,7 +477,7 @@ public class LambdaTests
                         expression.Parameters["y"] = currentContext.y;
                     }
 
-                    currentContext.ExpressionResult = (double)expression.Evaluate()!;
+                    currentContext.ExpressionResult = (double)expression.Evaluate(TestContext.Current.CancellationToken)!;
                     currentContext.LambdaResult = lambda(currentContext);
 
                     testResults.Add(currentContext);
@@ -528,9 +528,9 @@ public class LambdaTests
                         currentContext.Func = expressionString;
 
                         var expression = new Expression(expressionString);
-                        var lambda = expression.ToLambda<double>();
+                        var lambda = expression.ToLambda<double>(TestContext.Current.CancellationToken);
 
-                        currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate());
+                        currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate(TestContext.Current.CancellationToken));
                         currentContext.LambdaResult = lambda();
                         testResults.Add(currentContext);
                     }
@@ -597,17 +597,20 @@ public class LambdaTests
 
         // Not overriden function
         var expressionAbs = new Expression("Abs(x)");
-        var lambdaAbs = expressionAbs.ToLambda<ContextWithOverridenMethods, double>();
+        var lambdaAbs = expressionAbs.ToLambda<ContextWithOverridenMethods, double>(TestContext.Current.CancellationToken);
 
         // Overriden functions
         var expressionCos = new Expression("Cos(x)");
-        var lambdaCos = expressionCos.ToLambda<ContextWithOverridenMethods, double>();
+        var lambdaCos = expressionCos
+            .ToLambda<ContextWithOverridenMethods, double>(TestContext.Current.CancellationToken);
 
         var expressionLog1 = new Expression("Log(x)");
-        var lambdaLog1 = expressionLog1.ToLambda<ContextWithOverridenMethods, double>();
+        var lambdaLog1 = expressionLog1
+            .ToLambda<ContextWithOverridenMethods, double>(TestContext.Current.CancellationToken);
 
         var expressionLog2 = new Expression("Log(x, y)");
-        var lambdaLog2 = expressionLog2.ToLambda<ContextWithOverridenMethods, double>();
+        var lambdaLog2 = expressionLog2
+            .ToLambda<ContextWithOverridenMethods, double>(TestContext.Current.CancellationToken);
 
         // Act
         var actualAbs = lambdaAbs(context);
@@ -639,7 +642,7 @@ public class LambdaTests
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
-        var lambda = e.ToLambda<int>();
+        var lambda = e.ToLambda<int>(TestContext.Current.CancellationToken);
 
         Assert.Throws<OverflowException>(() => lambda());
     }
@@ -648,7 +651,7 @@ public class LambdaTests
     public void ShouldAllowPowWithDecimals()
     {
         var e = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
-        var lambda = e.ToLambda<decimal>();
+        var lambda = e.ToLambda<decimal>(TestContext.Current.CancellationToken);
         Assert.Equal(9.61m, lambda());
     }
 
@@ -660,23 +663,23 @@ public class LambdaTests
         // Arrange
         var expressionAbs = new Expression("Abs(x)", ExpressionOptions.DecimalAsDefault);
         expressionAbs.Parameters["x"] = val;
-        var lambdaAbs = expressionAbs.ToLambda<decimal>();
+        var lambdaAbs = expressionAbs.ToLambda<decimal>(TestContext.Current.CancellationToken);
 
         var expressionCeiling = new Expression("Ceiling(x)", ExpressionOptions.DecimalAsDefault);
         expressionCeiling.Parameters["x"] = val;
-        var lambdaCeiling = expressionCeiling.ToLambda<decimal>();
+        var lambdaCeiling = expressionCeiling.ToLambda<decimal>(TestContext.Current.CancellationToken);
 
         var expressionFloor = new Expression("Floor(x)", ExpressionOptions.DecimalAsDefault);
         expressionFloor.Parameters["x"] = val;
-        var lambdaFloor = expressionFloor.ToLambda<decimal>();
+        var lambdaFloor = expressionFloor.ToLambda<decimal>(TestContext.Current.CancellationToken);
 
         var expressionSign = new Expression("Sign(x)", ExpressionOptions.DecimalAsDefault);
         expressionSign.Parameters["x"] = val;
-        var lambdaSign = expressionSign.ToLambda<decimal>();
+        var lambdaSign = expressionSign.ToLambda<decimal>(TestContext.Current.CancellationToken);
 
         var expressionTruncate = new Expression("Truncate(x)", ExpressionOptions.DecimalAsDefault);
         expressionTruncate.Parameters["x"] = val;
-        var lambdaTruncate = expressionTruncate.ToLambda<decimal>();
+        var lambdaTruncate = expressionTruncate.ToLambda<decimal>(TestContext.Current.CancellationToken);
 
         // Act
         var actualAbs = lambdaAbs();
@@ -720,11 +723,11 @@ public class LambdaTests
             var expressionLike = new Expression($"x {op} '{right}'", opts);
             expressionLike.Parameters["x"] = val;
 
-            var lambdaAbs = expressionLike.ToLambda<bool>();
+            var lambdaAbs = expressionLike.ToLambda<bool>(TestContext.Current.CancellationToken);
 
             // Act
             var actualAbs = lambdaAbs();
-            var expectedAbs = expressionLike.Evaluate();
+            var expectedAbs = expressionLike.Evaluate(TestContext.Current.CancellationToken);
             Console.WriteLine($"Value: {val}, Pattern: {right}, Result: {actualAbs}");
 
             // Assert
@@ -752,10 +755,10 @@ public class LambdaTests
             var expression = new Expression($"x {op} ({list})", opts);
             expression.Parameters["x"] = val;
 
-            var lambda = expression.ToLambda<bool>();
+            var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
 
             var actual = lambda();
-            var expectedEval = (bool)expression.Evaluate();
+            var expectedEval = (bool)expression.Evaluate(TestContext.Current.CancellationToken);
 
             Assert.Equal(exp, actual);
             Assert.Equal(expectedEval, actual);
@@ -774,10 +777,10 @@ public class LambdaTests
         expression.Parameters["x"] = x;
         expression.Parameters["y"] = y; // string[] is fine
 
-        var lambda = expression.ToLambda<bool>();
+        var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
 
         var actual = lambda();
-        var expectedEval = (bool)expression.Evaluate();
+        var expectedEval = (bool)expression.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.Equal(expected, actual);
         Assert.Equal(expectedEval, actual);
@@ -794,7 +797,7 @@ public class LambdaTests
         // NCalc is happy with arrays; if needed you can box: y.Cast<object>().ToArray()
         expression.Parameters["y"] = y;
 
-        var lambda = expression.ToLambda<bool>();
+        var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
 
         var actual = lambda();
 
@@ -807,9 +810,9 @@ public class LambdaTests
         var expression = new Expression("x in y", ExpressionOptions.None);
         expression.Parameters["x"] = 3;
         // NCalc is happy with arrays; if needed you can box: y.Cast<object>().ToArray()
-        expression.Parameters["y"] = new System.Collections.Generic.List<int> { 1, 2, 3 };
+        expression.Parameters["y"] = new List<int> { 1, 2, 3 };
 
-        var lambda = expression.ToLambda<bool>();
+        var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
 
         var actual = lambda();
 
@@ -825,7 +828,7 @@ public class LambdaTests
         expression.Parameters["x"] = x;
         expression.Parameters["y"] = y;
 
-        var lambda = expression.ToLambda<bool>();
+        var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
 
         var actual = lambda();
 

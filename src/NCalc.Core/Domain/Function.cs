@@ -8,8 +8,8 @@ public sealed class Function(Identifier identifier, LogicalExpressionList parame
 
     public LogicalExpressionList Parameters { get; set; } = parameters;
 
-    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default)
     {
-        return visitor.Visit(this);
+        return visitor.Visit(this, ct);
     }
 }

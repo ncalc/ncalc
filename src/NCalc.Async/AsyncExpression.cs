@@ -107,11 +107,12 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
     /// <summary>
     /// Asynchronously evaluates the logical expression.
     /// </summary>
+    /// <param name="ct">Cancellation token</param>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public ValueTask<object?> EvaluateAsync()
+    public ValueTask<object?> EvaluateAsync(CancellationToken ct = default)
     {
-        LogicalExpression ??= GetLogicalExpression();
+        LogicalExpression ??= GetLogicalExpression(ct);
 
         if (Error is not null)
             throw Error;
@@ -121,17 +122,17 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
 
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
-            return IterateParametersAsync();
+            return IterateParametersAsync(ct);
 
         var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
 
         if (LogicalExpression is null)
             return new ValueTask<object?>();
 
-        return LogicalExpression.Accept(evaluationVisitor);
+        return LogicalExpression.Accept(evaluationVisitor, ct);
     }
 
-    private async ValueTask<object?> IterateParametersAsync()
+    private async ValueTask<object?> IterateParametersAsync(CancellationToken ct)
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
@@ -141,7 +142,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
             return null;
 
         if (size == null)
-            return await LogicalExpression.Accept(evaluationVisitor);
+            return await LogicalExpression.Accept(evaluationVisitor, ct);
 
         var results = new List<object?>();
 
@@ -153,7 +154,7 @@ public class AsyncExpression : ExpressionBase<AsyncExpressionContext>
                 Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            results.Add(await LogicalExpression.Accept(evaluationVisitor));
+            results.Add(await LogicalExpression.Accept(evaluationVisitor, ct));
         }
 
         return results;

@@ -1,10 +1,11 @@
 namespace NCalc;
 
-public class ExpressionFunctionData(Guid id, Expression[] arguments, ExpressionContext context) : IEnumerable<Expression>
+public class ExpressionFunctionData(Guid id, Expression[] arguments, ExpressionContext context, CancellationToken ct) : IEnumerable<Expression>
 {
     public Guid Id { get; } = id;
     private Expression[] Arguments { get; } = arguments;
     public ExpressionContext Context { get; } = context;
+    public CancellationToken CancellationToken { get; } = ct;
 
     public Expression this[int index]
     {

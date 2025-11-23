@@ -1,4 +1,3 @@
-using System.Numerics;
 using NCalc.LambdaCompilation;
 using NCalc.Tests.TestData;
 using Assert = Xunit.Assert;
@@ -12,7 +11,7 @@ public class MathsTests
     [ClassData(typeof(BuiltInFunctionsTestData))]
     public void BuiltInFunctions_Test(string expression, object expected, double? tolerance)
     {
-        var result = new Expression(expression).Evaluate();
+        var result = new Expression(expression).Evaluate(TestContext.Current.CancellationToken);
 
         if (tolerance.HasValue)
         {
@@ -73,7 +72,7 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
                     }
-                        .Evaluate();
+                        .Evaluate(TestContext.Current.CancellationToken);
                     Assert.True(Convert.ToInt64(result) == expectedResult,
                         $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
                 }
@@ -95,7 +94,7 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
                 }
-                        .Evaluate());
+                        .Evaluate(TestContext.Current.CancellationToken));
             }
         }
     }
@@ -149,7 +148,7 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
                     }
-                        .Evaluate();
+                        .Evaluate(TestContext.Current.CancellationToken);
                     Assert.True(Convert.ToInt64(result) == expectedResult,
                         $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
                 }
@@ -172,7 +171,7 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(1, typecodeB)
                             }
                 }
-                        .Evaluate());
+                        .Evaluate(TestContext.Current.CancellationToken));
             }
         }
     }
@@ -226,7 +225,7 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
                     }
-                        .Evaluate();
+                        .Evaluate(TestContext.Current.CancellationToken);
                     Assert.True(Convert.ToInt64(result) == expectedResult,
                         $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
                 }
@@ -248,7 +247,7 @@ public class MathsTests
                                 ["x"] = Convert.ChangeType(lhsValue, typecodeA),
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                         }
-                }.Evaluate());
+                }.Evaluate(TestContext.Current.CancellationToken));
             }
         }
     }
@@ -257,7 +256,7 @@ public class MathsTests
     public void IncorrectCalculation_NCalcAsync_Issue_4()
     {
         Expression e = new Expression("(1604326026000-1604325747000)/60000");
-        var evalutedResult = e.Evaluate();
+        var evalutedResult = e.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.IsType<double>(evalutedResult);
         Assert.Equal(4.65, (double)evalutedResult, 3);
@@ -272,19 +271,21 @@ public class MathsTests
     [InlineData("1e10", 10000000000d)]
     public void ShouldParseScientificNotation(string expression, double expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate());
+        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldHandleLongValues()
     {
-        Assert.Equal(40_000_000_000 + 1, new Expression("40000000000+1").Evaluate());
+        Assert.Equal(40_000_000_000 + 1, new Expression("40000000000+1")
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public void ShouldCompareLongValues()
     {
-        Assert.Equal(false, new Expression("(0=1500000)||(((0+2200000000)-1500000)<0)").Evaluate());
+        Assert.Equal(false, new Expression("(0=1500000)||(((0+2200000000)-1500000)<0)")
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -292,20 +293,20 @@ public class MathsTests
     {
         var e = new Expression("x/2");
         e.Parameters["x"] = 2F;
-        Assert.IsType<float>(e.Evaluate());
+        Assert.IsType<float>(e.Evaluate(TestContext.Current.CancellationToken));
 
         e = new Expression("x/2");
         e.Parameters["x"] = 2D;
-        Assert.IsType<double>(e.Evaluate());
+        Assert.IsType<double>(e.Evaluate(TestContext.Current.CancellationToken));
 
         e = new Expression("x/2");
         e.Parameters["x"] = 2m;
-        Assert.IsType<decimal>(e.Evaluate());
+        Assert.IsType<decimal>(e.Evaluate(TestContext.Current.CancellationToken));
 
         e = new Expression("a / b * 100");
         e.Parameters["a"] = 20M;
         e.Parameters["b"] = 20M;
-        Assert.Equal(100M, e.Evaluate());
+        Assert.Equal(100M, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -313,7 +314,7 @@ public class MathsTests
     {
         const decimal minValue = decimal.MinValue;
         var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
-        Assert.Equal(minValue, expr.Evaluate());
+        Assert.Equal(minValue, expr.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -331,9 +332,9 @@ public class MathsTests
         var expression = new Expression(formula, ExpressionOptions.AllowBooleanCalculation);
         expression.Parameters["X1"] = 1;
 
-        Assert.Equal(expectedValue, expression.Evaluate());
+        Assert.Equal(expectedValue, expression.Evaluate(TestContext.Current.CancellationToken));
 
-        var lambda = expression.ToLambda<double>();
+        var lambda = expression.ToLambda<double>(TestContext.Current.CancellationToken);
 
         Assert.Equal(Convert.ToDouble(expectedValue), lambda());
     }
@@ -342,7 +343,7 @@ public class MathsTests
     public void Should_Evaluate_Floor_Of_Double_Max_Value()
     {
         var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
-        var res = expr.Evaluate();
+        var res = expr.Evaluate(TestContext.Current.CancellationToken);
 
 #if NET8_0_OR_GREATER
         Assert.Equal(Math.Floor(double.MaxValue), res);
@@ -355,7 +356,7 @@ public class MathsTests
     public void Should_Not_Change_Double_Precision()
     {
         var expr = new Expression("Floor(12e+100)");
-        var res = expr.Evaluate();
+        var res = expr.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.Equal(Math.Floor(12e+100), res);
     }
@@ -368,7 +369,7 @@ public class MathsTests
     public void Should_Correctly_Parse_Floating_Point_Numbers(string formula, object expectedValue)
     {
         var expr = new Expression(formula, CultureInfo.InvariantCulture);
-        var res = expr.Evaluate();
+        var res = expr.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.Equal(expectedValue, res);
     }
@@ -382,7 +383,7 @@ public class MathsTests
     public void Should_Not_Overflow_Bitwise(string formula, object expectedValue)
     {
         var e = new Expression(formula, CultureInfo.InvariantCulture);
-        var res = e.Evaluate();
+        var res = e.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.Equal(expectedValue, res);
     }
@@ -397,7 +398,7 @@ public class MathsTests
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
-        Assert.Throws<OverflowException>(() => e.Evaluate());
+        Assert.Throws<OverflowException>(() => e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -411,7 +412,7 @@ public class MathsTests
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
-        Assert.Throws<OverflowException>(() => e.Evaluate());
+        Assert.Throws<OverflowException>(() => e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -425,7 +426,7 @@ public class MathsTests
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
-        Assert.Throws<OverflowException>(() => e.Evaluate());
+        Assert.Throws<OverflowException>(() => e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -436,7 +437,8 @@ public class MathsTests
     [InlineData("'4' + '2'", ExpressionOptions.None, 6d)]
     public void ShouldHandleCharAddition(string expression, ExpressionOptions options, object expected)
     {
-        Assert.Equal(expected, new Expression(expression, options | ExpressionOptions.NoCache).Evaluate());
+        Assert.Equal(expected, new Expression(expression, options | ExpressionOptions.NoCache)
+            .Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -446,7 +448,7 @@ public class MathsTests
         e.Parameters["a"] = null;
         e.Parameters["b"] = 2;
 
-        Assert.Null(e.Evaluate());
+        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -461,7 +463,7 @@ public class MathsTests
         e.Parameters["b"] = 1ul;
 
         var expected = Convert.ToUInt64(val) + 1ul;
-        Assert.Equal(expected, e.Evaluate());
+        Assert.Equal(expected, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -474,7 +476,7 @@ public class MathsTests
         var exp = new Expression("a + b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate();
+        var result = exp.Evaluate(TestContext.Current.CancellationToken);
 
         Assert.Equal(expected, result);
     }
@@ -486,7 +488,7 @@ public class MathsTests
         var exp = new Expression("a - b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate();
+        var result = exp.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(expected, result);
     }
 
@@ -497,7 +499,7 @@ public class MathsTests
         var exp = new Expression("a - b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate();
+        var result = exp.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(expected, result);
     }
 
@@ -508,7 +510,7 @@ public class MathsTests
         var exp = new Expression("a + b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate();
+        var result = exp.Evaluate(TestContext.Current.CancellationToken);
         Assert.Equal(expected, result);
     }
 
@@ -519,8 +521,8 @@ public class MathsTests
         var exp = new Expression("a - b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate();
-		
+        var result = exp.Evaluate(TestContext.Current.CancellationToken);
+
 		Assert.Equal(expected, result);
 	}
 
@@ -528,7 +530,7 @@ public class MathsTests
     public void ShouldAllowLongAsDefault()
     {
         var exp = new Expression("10000000*1000", ExpressionOptions.LongAsDefault);
-        var result = exp.Evaluate();
+        var result = exp.Evaluate(TestContext.Current.CancellationToken);
 
         var expected = 10000000L * 1000;
         Assert.Equal(expected, result);
@@ -538,7 +540,7 @@ public class MathsTests
     public void ShouldBeDoubleWithLongAsDefault()
     {
         var exp = new Expression("10000000.1*1000", ExpressionOptions.LongAsDefault, CultureInfo.InvariantCulture);
-        var result = exp.Evaluate();
+        var result = exp.Evaluate(TestContext.Current.CancellationToken);
 
         var expected = 10000000.1 * 1000;
         Assert.Equal(expected, result);

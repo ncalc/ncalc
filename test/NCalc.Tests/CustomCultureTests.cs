@@ -40,7 +40,7 @@ public class CustomCultureTests
                     {"A","2,0"},
                     {"B","0,5"}
                 }
-            }.Evaluate());
+            }.Evaluate(TestContext.Current.CancellationToken));
 
             //combining decimal dot and comma fails
             Assert.Throws<FormatException>(() => new Expression(formula, cultureComma)
@@ -50,7 +50,7 @@ public class CustomCultureTests
                     {"A","2,0"},
                     {"B","0.5"}
                 }
-            }.Evaluate());
+            }.Evaluate(TestContext.Current.CancellationToken));
 
             //combining decimal dot and comma fails
             Assert.Throws<FormatException>(() => new Expression(formula, cultureDot)
@@ -77,7 +77,7 @@ public class CustomCultureTests
             try
             {
                 var expr = new Expression("[a]<2.0") { Parameters = { ["a"] = "1.7" } };
-                expr.Evaluate();
+                expr.Evaluate(TestContext.Current.CancellationToken);
             }
             catch (FormatException)
             {
@@ -88,7 +88,7 @@ public class CustomCultureTests
 
             var e = new Expression("[a]<2.0", CultureInfo.InvariantCulture);
             e.Parameters["a"] = "1.7";
-            Assert.Equal(true, e.Evaluate());
+            Assert.Equal(true, e.Evaluate(TestContext.Current.CancellationToken));
         }
         finally
         {
@@ -111,7 +111,7 @@ public class CustomCultureTests
             {
                 Parameters = { ["a"] = 1.7 }
             };
-            Assert.Equal("1.72.5", expr.Evaluate());
+            Assert.Equal("1.72.5", expr.Evaluate(TestContext.Current.CancellationToken));
         }
         finally
         {

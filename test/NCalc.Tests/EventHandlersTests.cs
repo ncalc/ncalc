@@ -12,13 +12,16 @@ public class EventHandlersTests
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs args)
+        e.EvaluateFunction += (name, args) =>
         {
             if (name == "SecretOperation")
-                args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+            {
+                args.Result = (int)args.Parameters[0].Evaluate(args.CancellationToken) +
+                    (int)args.Parameters[1].Evaluate(args.CancellationToken);
+            }
         };
 
-        Assert.Equal(9, e.Evaluate());
+        Assert.Equal(9, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -28,13 +31,13 @@ public class EventHandlersTests
         e.Parameters["e"] = 3;
         e.Parameters["f"] = 1;
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs args)
+        e.EvaluateFunction += (name, args) =>
         {
             if (name == "SecretOperation")
-                args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+                args.Result = (int)args.Parameters[0].Evaluate(args.CancellationToken) + (int)args.Parameters[1].Evaluate(args.CancellationToken);
         };
 
-        Assert.Equal(10, e.Evaluate());
+        Assert.Equal(10, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -45,13 +48,13 @@ public class EventHandlersTests
         e.Parameters["Pi Squared"] = new Expression("Pi * [Pi]");
         e.Parameters["X"] = 10;
 
-        e.EvaluateParameter += delegate (string name, ParameterArgs args)
+        e.EvaluateParameter += (name, args) =>
         {
             if (name == "Pi")
                 args.Result = 3.14;
         };
 
-        Assert.Equal(117.07, e.Evaluate());
+        Assert.Equal(117.07, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -67,7 +70,7 @@ public class EventHandlersTests
         for (var i = 0; i < 10; i++)
         {
             counter = 0;
-            _ = expression.Evaluate();
+            _ = expression.Evaluate(TestContext.Current.CancellationToken);
         }
 
         void Expression_EvaluateFunction(string name, FunctionArgs args)
@@ -87,15 +90,15 @@ public class EventHandlersTests
     {
         var e = new Expression("Round(1.99, 2)");
 
-        Assert.Equal(1.99d, e.Evaluate());
+        Assert.Equal(1.99d, e.Evaluate(TestContext.Current.CancellationToken));
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs args)
+        e.EvaluateFunction += (name, args) =>
         {
             if (name == "Round")
                 args.Result = 3;
         };
 
-        Assert.Equal(3, e.Evaluate());
+        Assert.Equal(3, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -103,13 +106,13 @@ public class EventHandlersTests
     {
         var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");
 
-        e.EvaluateParameter += delegate (string name, ParameterArgs arg)
+        e.EvaluateParameter += (name, arg) =>
         {
             if (name == "Pi")
                 arg.Result = 3.14;
         };
 
-        e.Evaluate();
+        e.Evaluate(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -117,7 +120,7 @@ public class EventHandlersTests
     {
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs arg)
+        e.EvaluateFunction += (name, arg) =>
         {
             switch (name)
             {
@@ -125,15 +128,15 @@ public class EventHandlersTests
                     arg.Result = 1;
                     break;
                 case "func2":
-                    arg.Result = 2 * Convert.ToDouble(arg.Parameters[0].Evaluate());
+                    arg.Result = 2 * Convert.ToDouble(arg.Parameters[0].Evaluate(arg.CancellationToken));
                     break;
                 case "func3":
-                    arg.Result = 3 * Convert.ToDouble(arg.Parameters[0].Evaluate());
+                    arg.Result = 3 * Convert.ToDouble(arg.Parameters[0].Evaluate(arg.CancellationToken));
                     break;
             }
         };
 
-        e.EvaluateParameter += delegate (string name, ParameterArgs arg)
+        e.EvaluateParameter += (name, arg) =>
         {
             switch (name)
             {
@@ -149,7 +152,7 @@ public class EventHandlersTests
             }
         };
 
-        Assert.Equal(13d, e.Evaluate());
+        Assert.Equal(13d, e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -157,7 +160,7 @@ public class EventHandlersTests
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.EvaluateFunction += delegate (string name, FunctionArgs args)
+        e.EvaluateFunction += (name, args) =>
         {
             Assert.False(args.HasResult);
             if (name == "SecretOperation")
@@ -165,7 +168,7 @@ public class EventHandlersTests
             Assert.True(args.HasResult);
         };
 
-        Assert.Null(e.Evaluate());
+        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -173,7 +176,7 @@ public class EventHandlersTests
     {
         var e = new Expression("x");
 
-        e.EvaluateParameter += delegate (string name, ParameterArgs args)
+        e.EvaluateParameter += (name, args) =>
         {
             Assert.False(args.HasResult);
             if (name == "x")
@@ -181,7 +184,7 @@ public class EventHandlersTests
             Assert.True(args.HasResult);
         };
 
-        Assert.Null(e.Evaluate());
+        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -196,7 +199,7 @@ public class EventHandlersTests
                 args.Result = 1;
         };
 
-        Assert.Equal(1, expression.Evaluate());
+        Assert.Equal(1, expression.Evaluate(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -223,12 +226,13 @@ public class EventHandlersTests
                     }
                 }
 
-                args.Result = (int)args.Parameters[0].Evaluate() + (int)args.Parameters[1].Evaluate();
+                args.Result = (int)args.Parameters[0].Evaluate(args.CancellationToken) +
+                    (int)args.Parameters[1].Evaluate(args.CancellationToken);
             }
         };
 
-        Assert.Equal(12, e.Evaluate());
-        Assert.Equal(12, e.Evaluate());
+        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
 
         Assert.Equal(2, d.FirstOrDefault().Value);
     }
@@ -245,8 +249,8 @@ public class EventHandlersTests
             var id = name;
             if (name == "Repeat")
             {
-                var t = (int)args.Parameters[1].Evaluate() - 1;
-                var r = (bool)args.Parameters[0].Evaluate();
+                var t = (int)args.Parameters[1].Evaluate(args.CancellationToken) - 1;
+                var r = (bool)args.Parameters[0].Evaluate(args.CancellationToken);
                 if (r && id != null)
                 {
                     if (!times.ContainsKey(id))
@@ -264,14 +268,14 @@ public class EventHandlersTests
         };
         e.Parameters["value"] = 9;
 
-        Assert.Equal(false, e.Evaluate());
+        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
 
         e.Parameters["value"] = 11;
-        Assert.Equal(false, e.Evaluate());
+        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
         e.Parameters["value"] = 12;
-        Assert.Equal(false, e.Evaluate());
+        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
         e.Parameters["value"] = 13;
-        Assert.Equal(true, e.Evaluate());
+        Assert.Equal(true, e.Evaluate(TestContext.Current.CancellationToken));
         Assert.Single(times);
     }
 }

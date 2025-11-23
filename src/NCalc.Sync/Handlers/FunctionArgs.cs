@@ -1,8 +1,12 @@
 namespace NCalc.Handlers;
 
-public class FunctionArgs(Guid id, Expression[] parameters) : EventArgs
+public class FunctionArgs(Guid id, Expression[] parameters, CancellationToken ct) : EventArgs
 {
     public Guid Id { get; } = id;
+
+    public Expression[] Parameters { get; } = parameters;
+
+    public CancellationToken CancellationToken { get; } = ct;
 
     public object? Result
     {
@@ -14,16 +18,14 @@ public class FunctionArgs(Guid id, Expression[] parameters) : EventArgs
         }
     }
 
-    public Expression[] Parameters { get; } = parameters;
-
     public bool HasResult { get; private set; }
 
-    public object?[] EvaluateParameters()
+    public object?[] EvaluateParameters(CancellationToken ct)
     {
         var values = new object?[Parameters.Length];
         for (var i = 0; i < values.Length; i++)
         {
-            values[i] = Parameters[i].Evaluate();
+            values[i] = Parameters[i].Evaluate(ct);
         }
 
         return values;

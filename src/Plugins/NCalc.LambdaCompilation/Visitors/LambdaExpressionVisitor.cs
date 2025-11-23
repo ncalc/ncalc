@@ -46,19 +46,19 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         _context = context;
     }
 
-    public LinqExpression Visit(TernaryExpression expression)
+    public LinqExpression Visit(TernaryExpression expression, CancellationToken ct = default)
     {
-        var conditional = expression.LeftExpression.Accept(this);
-        var ifTrue = expression.MiddleExpression.Accept(this);
-        var ifFalse = expression.RightExpression.Accept(this);
+        var conditional = expression.LeftExpression.Accept(this, ct);
+        var ifTrue = expression.MiddleExpression.Accept(this, ct);
+        var ifFalse = expression.RightExpression.Accept(this, ct);
 
         return LinqExpression.Condition(conditional, ifTrue, ifFalse);
     }
 
-    public LinqExpression Visit(BinaryExpression expression)
+    public LinqExpression Visit(BinaryExpression expression, CancellationToken ct = default)
     {
-        var left = expression.LeftExpression.Accept(this);
-        var right = expression.RightExpression.Accept(this);
+        var left = expression.LeftExpression.Accept(this, ct);
+        var right = expression.RightExpression.Accept(this, ct);
 
         return expression.Type switch
         {
@@ -90,9 +90,9 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         };
     }
 
-    public LinqExpression Visit(UnaryExpression expression)
+    public LinqExpression Visit(UnaryExpression expression, CancellationToken ct = default)
     {
-        var operand = expression.Expression.Accept(this);
+        var operand = expression.Expression.Accept(this, ct);
 
         return expression.Type switch
         {
@@ -104,17 +104,17 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         };
     }
 
-    public LinqExpression Visit(ValueExpression expression)
+    public LinqExpression Visit(ValueExpression expression, CancellationToken ct = default)
     {
         return LinqExpression.Constant(expression.Value);
     }
 
-    public LinqExpression Visit(Function function)
+    public LinqExpression Visit(Function function, CancellationToken ct = default)
     {
         var args = new LinqExpression[function.Parameters.Count];
         for (var i = 0; i < function.Parameters.Count; i++)
         {
-            args[i] = function.Parameters[i].Accept(this);
+            args[i] = function.Parameters[i].Accept(this, ct);
         }
 
         var functionName = function.Identifier.Name.ToUpperInvariant();
@@ -236,7 +236,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         }
     }
 
-    public LinqExpression Visit(Identifier identifier)
+    public LinqExpression Visit(Identifier identifier, CancellationToken ct = default)
     {
         var identifierName = identifier.Name;
 
@@ -251,11 +251,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         return LinqExpression.PropertyOrField(_context, identifierName);
     }
 
-    public LinqExpression Visit(LogicalExpressionList list)
+    public LinqExpression Visit(LogicalExpressionList list, CancellationToken ct = default)
     {
         var newList = LinqExpression.New(typeof(List<object>));
         return LinqExpression.ListInit(newList,
-            list.Select(e => LinqExpression.Convert(e.Accept(this), typeof(object)))
+            list.Select(e => LinqExpression.Convert(e.Accept(this, ct), typeof(object)))
         );
     }
 
