@@ -4,14 +4,12 @@ public class AsyncFunctionArgs(Guid id, AsyncExpression[] parameters) : EventArg
 {
     public Guid Id { get; } = id;
 
-    private object? _result;
-
     public object? Result
     {
-        get => _result;
+        get;
         set
         {
-            _result = value;
+            field = value;
             HasResult = true;
         }
     }

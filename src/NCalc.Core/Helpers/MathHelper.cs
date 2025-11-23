@@ -143,14 +143,12 @@ public static class MathHelper
 
     public static object? Max(object? a, object? b, MathHelperOptions options)
     {
-        if (a == null && b == null)
+        switch (a)
         {
-            return null;
-        }
-
-        if (a == null)
-        {
-            return b;
+            case null when b == null:
+                return null;
+            case null:
+                return b;
         }
 
         if (b == null)
@@ -232,10 +230,7 @@ public static class MathHelper
         if (typeCodeA == typeCodeB)
             return typeCodeA;
 
-        if (TypeCodeBitSize(typeCodeA, out var floatingPointA) is not { } bitSizeA)
-            return TypeCode.Empty;
-
-        if (TypeCodeBitSize(typeCodeB, out var floatingPointB) is not { } bitSizeB)
+        if (TypeCodeBitSize(typeCodeA, out var floatingPointA) is not { } bitSizeA || TypeCodeBitSize(typeCodeB, out var floatingPointB) is not { } bitSizeB)
             return TypeCode.Empty;
 
         if ((floatingPointA && !floatingPointB) || (bitSizeA > bitSizeB))
