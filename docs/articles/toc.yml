@@ -24,6 +24,8 @@
   href: async.md
 - name: Caching
   href: caching.md
+- name: Cancellation Token Support
+  href: cancellation.md
 - name: Logging
   href: logging.md
 - name: Lambda Compilation
