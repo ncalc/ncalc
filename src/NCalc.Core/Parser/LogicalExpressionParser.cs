@@ -184,7 +184,8 @@ public static class LogicalExpressionParser
         var closeCurlyBrace = Terms.Char('}');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
-        var semicolon = Terms.Char(';');
+
+        var exclamation = Terms.Char('!');
 
         var identifier = Terms.Identifier();
 
@@ -390,8 +391,21 @@ public static class LogicalExpressionParser
             identifierExpression,
             list);
 
+        // factorial => primary ( "!" )* ;
+        var factorial = primary.And(ZeroOrMany(exclamation.AndSkip(Not(equal))))
+            .Then(static x =>
+            {
+                var result = x.Item1;
+                var count = x.Item2.Count;
+
+                for (var i = 0; i < count; i++)
+                    result = new UnaryExpression(UnaryExpressionType.Factorial, result);
+
+                return result;
+            });
+
         // exponential => unary ( "**" unary )* ;
-        var exponential = primary.And(ZeroOrMany(exponent.And(primary)))
+        var exponential = factorial.And(ZeroOrMany(exponent.And(factorial)))
             .Then(static x =>
             {
                 LogicalExpression result = null!;

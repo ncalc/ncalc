@@ -485,4 +485,51 @@ public static class MathHelper
                 throw new OverflowException("Arithmetic operation resulted in an overflow");
         }
     }
+
+    public static object Factorial(object? result)
+    {
+        switch (result)
+        {
+            case int v:
+                return CalculateFactorial(v);
+            case long v:
+                return CalculateFactorial(v);
+            case float v:
+                return CalculateFactorial(v);
+            case double v:
+                return CalculateFactorial(v);
+            case decimal v:
+                return CalculateFactorial(v);
+            case BigInteger v:
+                return CalculateFactorial(v);
+            default:
+                throw new ArgumentException("Unsupported numeric type.", nameof(result));
+        }
+    }
+
+#if NET
+    private static T CalculateFactorial<T>(T n) where T : INumber<T>
+    {
+        if (n < T.Zero)
+            throw new ArgumentOutOfRangeException(nameof(n));
+
+        var one = T.One;
+        var r = one;
+
+        for (var i = one + one; i <= n; i++)
+            r *= i;
+
+        return r;
+    }
+#else
+    private static dynamic CalculateFactorial(dynamic n)
+    {
+        var r = 1;
+
+        for (var i = 1 + 1; i <= n; i++)
+            r *= i;
+
+        return r;
+    }
+#endif
 }
