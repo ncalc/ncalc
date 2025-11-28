@@ -184,7 +184,6 @@ public static class LogicalExpressionParser
         var closeCurlyBrace = Terms.Char('}');
         var questionMark = Terms.Char('?');
         var colon = Terms.Char(':');
-
         var exclamation = Terms.Char('!');
 
         var identifier = Terms.Identifier();
