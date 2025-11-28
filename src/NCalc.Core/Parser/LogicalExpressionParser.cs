@@ -152,7 +152,6 @@ public static class LogicalExpressionParser
         });
 
         var argumentSeparatorTerm = Terms.Char(argumentSeparator);
-        var comma = Terms.Char(',');
         var divided = Terms.Text("/");
         var times = Terms.Text("*");
         var modulo = Terms.Text("%");
