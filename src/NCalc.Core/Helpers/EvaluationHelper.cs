@@ -156,6 +156,7 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
             UnaryExpressionType.Negate => MathHelper.Subtract(0, result, context),
             UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, context.CultureInfo),
             UnaryExpressionType.Positive => result,
+            UnaryExpressionType.Factorial => MathHelper.Factorial(result),
             _ => throw new InvalidOperationException("Unknown UnaryExpressionType")
         };
     }

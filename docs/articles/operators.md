@@ -40,15 +40,20 @@ secret_operation("my_db", 2) // Function arguments are actually a list!
 
 Unary operators operate on a single operand.
 
+### Prefix Operators
 * `!` : Logical NOT
 * `not` : Logical NOT
 * `-` : Negation
 * `~` : Bitwise NOT
 
+### Suffix operators
+* `!`  : Factorial
+
 **Examples:**
 ```csharp
-not true
-!(1 != 2)
+not true // Evaluates to false
+!(1 != 2) // Evaluates to true
+3!        // Evaluates to 6 (3*2*1)
 ```
 
 ## Exponential

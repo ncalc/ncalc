@@ -5,5 +5,6 @@ public enum UnaryExpressionType
     Not,
     Negate,
     BitwiseNot,
-    Positive
+    Positive,
+    Factorial
 }
