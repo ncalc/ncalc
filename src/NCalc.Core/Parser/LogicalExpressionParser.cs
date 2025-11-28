@@ -405,7 +405,7 @@ public static class LogicalExpressionParser
             });
 
         // exponential => unary ( "**" unary )* ;
-        var exponential = factorial.And(ZeroOrMany(exponent.And(factorial)))
+        var exponential = factorial.And(ZeroOrMany(exponent.And(primary)))
             .Then(static x =>
             {
                 LogicalExpression result = null!;
