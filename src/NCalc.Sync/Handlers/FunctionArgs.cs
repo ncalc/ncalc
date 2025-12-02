@@ -2,6 +2,7 @@ namespace NCalc.Handlers;
 
 public class FunctionArgs(Guid id, Expression[] parameters, CancellationToken ct) : EventArgs
 {
+    private object? _result;
     public Guid Id { get; } = id;
 
     public Expression[] Parameters { get; } = parameters;
@@ -10,10 +11,10 @@ public class FunctionArgs(Guid id, Expression[] parameters, CancellationToken ct
 
     public object? Result
     {
-        get;
+        get => _result;
         set
         {
-            field = value;
+            _result = value;
             HasResult = true;
         }
     }
