@@ -27,6 +27,8 @@ jobs:
           dotnet-version: 10.x
 
       - name: Build and Generate Documentation
+        env:
+          DocFx: true # Workaround https://github.com/dotnet/docfx/issues/10808
         run: |
           dotnet tool update -g docfx
           cd docs

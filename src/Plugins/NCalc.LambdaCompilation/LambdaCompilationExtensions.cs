@@ -16,7 +16,8 @@ public static class LambdaCompilationExtensions
         UseSystemLinqCompiler = AppContext.TryGetSwitch("NCalc.UseSystemLinqCompiler", out var enabled) && enabled;
     }
 
-    extension(Expression expression)
+#if !DOCFX
+     extension(Expression expression)
     {
         public Func<TResult> ToLambda<TResult>(CancellationToken ct = default)
         {
@@ -83,6 +84,7 @@ public static class LambdaCompilationExtensions
             return new() { Expression = body, Parameter = parameter };
         }
     }
+#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsVoidType<TContext>() => typeof(TContext) == typeof(Void);
