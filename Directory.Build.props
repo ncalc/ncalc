@@ -8,6 +8,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
+    
+    <PropertyGroup>
+        <DefineConstants Condition="'$(DocFx)'=='true'">$(DefineConstants);DOCFX</DefineConstants>
+    </PropertyGroup>
+    
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning">
       <Version>3.8.118</Version>
