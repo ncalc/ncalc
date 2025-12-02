@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿#if !DOCFX
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NCalc.Cache;
 using NCalc.Factories;
@@ -51,3 +53,4 @@ public static class ServiceCollectionExtensions
         }
     }
 }
+#endif
