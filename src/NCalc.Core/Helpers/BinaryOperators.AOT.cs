@@ -188,7 +188,7 @@ static class BinaryOperatorsAOT
         return $"{a} {op} {b}: {aType}, {bType}";
     }
 
-    private static object CheckOverflow(object value)
+    private static T CheckOverflow<T>(T value)
     {
         switch (value)
         {
