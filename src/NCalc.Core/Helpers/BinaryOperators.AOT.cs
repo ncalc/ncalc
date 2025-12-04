@@ -101,10 +101,8 @@ static class BinaryOperatorsAOT
         }
     }
 
-   
-
     // checked
-    public static readonly Func<object, object, object> AddFuncChecked = (a, b) =>
+    public static object AddFuncChecked(object a, object b)
     {
         switch (a)
         {
@@ -121,9 +119,9 @@ static class BinaryOperatorsAOT
             case decimal aa when b is decimal bb: return CheckOverflow(checked(aa + bb));
             default: throw new InvalidOperationException(FormatError(a, "+", b));
         }
-    };
+    }
 
-    public static readonly Func<object, object, object> SubtractFuncChecked = (a, b) =>
+    public static object SubtractFuncChecked(object a, object b)
     {
         switch (a)
         {
@@ -140,9 +138,9 @@ static class BinaryOperatorsAOT
             case decimal aa when b is decimal bb: return CheckOverflow(checked(aa - bb));
             default: throw new InvalidOperationException(FormatError(a, "-", b));
         }
-    };
+    }
 
-    public static readonly Func<object, object, object> MultiplyFuncChecked = (a, b) =>
+    public static object MultiplyFuncChecked(object a, object b)
     {
         switch (a)
         {
@@ -159,9 +157,9 @@ static class BinaryOperatorsAOT
             case decimal aa when b is decimal bb: return CheckOverflow(checked(aa * bb));
             default: throw new InvalidOperationException(FormatError(a, "*", b));
         }
-    };
+    }
 
-    public static readonly Func<object, object, object> DivideFuncChecked = (a, b) =>
+    public static object DivideFuncChecked(object a, object b)
     {
         switch (a)
         {
@@ -178,7 +176,7 @@ static class BinaryOperatorsAOT
             case decimal aa when b is decimal bb: return CheckOverflow(checked(aa / bb));
             default: throw new InvalidOperationException(FormatError(a, "/", b));
         }
-    };
+    }
 
     private static string FormatError(object a, string op, object b)
     {
