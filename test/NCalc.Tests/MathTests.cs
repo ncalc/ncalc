@@ -1,30 +1,29 @@
 using NCalc.LambdaCompilation;
 using NCalc.Tests.TestData;
-using Assert = Xunit.Assert;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "Math")]
+[Property("Category", "Math")]
 public class MathsTests
 {
-    [Theory]
-    [ClassData(typeof(BuiltInFunctionsTestData))]
-    public void BuiltInFunctions_Test(string expression, object expected, double? tolerance)
+    [Test]
+    [MethodDataSource<BuiltInFunctionsTestData>(nameof(BuiltInFunctionsTestData.GetTestData))]
+    public async Task BuiltInFunctions_Test(string expression, object expected, double? tolerance, CancellationToken cancellationToken)
     {
-        var result = new Expression(expression).Evaluate(TestContext.Current.CancellationToken);
+        var result = new Expression(expression).Evaluate(cancellationToken);
 
         if (tolerance.HasValue)
         {
-            Assert.Equal((double)expected, (double)result, precision: 15);
+            await Assert.That((double)result).IsEqualTo((double)expected).Within(15);
         }
         else
         {
-            Assert.Equal(expected, result);
+            await Assert.That(result).IsEqualTo(expected);
         }
     }
 
-    [Fact]
-    public void Should_Modulo_All_Numeric_Types_Issue_58()
+    [Test]
+    public async Task Should_Modulo_All_Numeric_Types_Issue_58(CancellationToken cancellationToken)
     {
         // https://github.com/ncalc/ncalc/issues/58
         const int expectedResult = 0;
@@ -72,13 +71,12 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
                     }
-                        .Evaluate(TestContext.Current.CancellationToken);
-                    Assert.True(Convert.ToInt64(result) == expectedResult,
-                        $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                        .Evaluate(cancellationToken);
+                    await Assert.That(Convert.ToInt64(result)).IsEqualTo(expectedResult);
                 }
                 catch (Exception ex)
                 {
-                    Assert.Fail($"{expr}: {typecodeA}, {typecodeB} should not throw an exception but {ex} was thrown");
+                    Assert.Fail(ex.Message);
                 }
             }
 
@@ -86,7 +84,7 @@ public class MathsTests
             foreach (var typecodeB in shouldNotWork[typecodeA])
             {
                 const string expr = $"x {operand} y";
-                Assert.Throws<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
+                await Assert.That(() => new Expression(expr, CultureInfo.InvariantCulture)
                 {
                     Parameters =
                             {
@@ -94,13 +92,13 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
                 }
-                        .Evaluate(TestContext.Current.CancellationToken));
+                        .Evaluate(cancellationToken)).ThrowsExactly<InvalidOperationException>();
             }
         }
     }
 
-    [Fact]
-    public void Should_Add_All_Numeric_Types_Issue_58()
+    [Test]
+    public async Task Should_Add_All_Numeric_Types_Issue_58(CancellationToken cancellationToken)
     {
         // https://github.com/ncalc/ncalc/issues/58
         const int expectedResult = 100;
@@ -148,13 +146,13 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
                     }
-                        .Evaluate(TestContext.Current.CancellationToken);
-                    Assert.True(Convert.ToInt64(result) == expectedResult,
-                        $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                        .Evaluate(cancellationToken);
+
+                    await Assert.That(Convert.ToInt64(result)).IsEqualTo(expectedResult);
                 }
                 catch (Exception ex)
                 {
-                    Assert.Fail($"{expr}: {typecodeA}, {typecodeB} should not throw an exception but {ex} was thrown");
+                    Assert.Fail(ex.Message);
                 }
             }
 
@@ -163,7 +161,7 @@ public class MathsTests
             foreach (var typecodeB in shouldNotWork[typecodeA])
             {
                 const string expr = $"x {operand} y";
-                Assert.Throws<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
+                await Assert.That(() => new Expression(expr, CultureInfo.InvariantCulture)
                 {
                     Parameters =
                             {
@@ -171,13 +169,13 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(1, typecodeB)
                             }
                 }
-                        .Evaluate(TestContext.Current.CancellationToken));
+                        .Evaluate(cancellationToken)).ThrowsExactly<InvalidOperationException>();
             }
         }
     }
 
-    [Fact]
-    public void Should_Subtract_All_Numeric_Types_Issue_58()
+    [Test]
+    public async Task Should_Subtract_All_Numeric_Types_Issue_58(CancellationToken cancellationToken)
     {
         // https://github.com/ncalc/ncalc/issues/58
         const int expectedResult = 0;
@@ -225,13 +223,13 @@ public class MathsTests
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
                     }
-                        .Evaluate(TestContext.Current.CancellationToken);
-                    Assert.True(Convert.ToInt64(result) == expectedResult,
-                        $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                        .Evaluate(cancellationToken);
+
+                    await Assert.That(Convert.ToInt64(result)).IsEqualTo(expectedResult);
                 }
                 catch (Exception ex)
                 {
-                    Assert.Fail($"{expr}: {typecodeA}, {typecodeB} should not throw an exception but {ex} was thrown");
+                    Assert.Fail(ex.Message);
                 }
             }
 
@@ -240,309 +238,309 @@ public class MathsTests
             foreach (var typecodeB in shouldNotWork[typecodeA])
             {
                 const string expr = $"x {operand} y";
-                Assert.Throws<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
+                await Assert.That(() => new Expression(expr, CultureInfo.InvariantCulture)
                 {
                     Parameters =
                         {
                                 ["x"] = Convert.ChangeType(lhsValue, typecodeA),
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                         }
-                }.Evaluate(TestContext.Current.CancellationToken));
+                }.Evaluate(cancellationToken)).ThrowsExactly<InvalidOperationException>();
             }
         }
     }
 
-    [Fact]
-    public void IncorrectCalculation_NCalcAsync_Issue_4()
+    [Test]
+    public async Task IncorrectCalculation_NCalcAsync_Issue_4(CancellationToken cancellationToken)
     {
         Expression e = new Expression("(1604326026000-1604325747000)/60000");
-        var evalutedResult = e.Evaluate(TestContext.Current.CancellationToken);
+        var evalutedResult = e.Evaluate(cancellationToken);
 
-        Assert.IsType<double>(evalutedResult);
-        Assert.Equal(4.65, (double)evalutedResult, 3);
+        await Assert.That(evalutedResult).IsTypeOf<double>();
+        await Assert.That((double)evalutedResult).IsEqualTo(4.65).Within(3);
     }
 
-    [Theory]
-    [InlineData("1.22e1", 12.2d)]
-    [InlineData("1e2", 100d)]
-    [InlineData("1e+2", 100d)]
-    [InlineData("1e-2", 0.01d)]
-    [InlineData(".1e-2", 0.001d)]
-    [InlineData("1e10", 10000000000d)]
-    public void ShouldParseScientificNotation(string expression, double expected)
+    [Test]
+    [Arguments("1.22e1", 12.2d)]
+    [Arguments("1e2", 100d)]
+    [Arguments("1e+2", 100d)]
+    [Arguments("1e-2", 0.01d)]
+    [Arguments(".1e-2", 0.001d)]
+    [Arguments("1e10", 10000000000d)]
+    public async Task ShouldParseScientificNotation(string expression, double expected, CancellationToken cancellationToken)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression(expression).Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void ShouldHandleLongValues()
+    [Test]
+    public async Task ShouldHandleLongValues(CancellationToken cancellationToken)
     {
-        Assert.Equal(40_000_000_000 + 1, new Expression("40000000000+1")
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("40000000000+1")
+            .Evaluate(cancellationToken)).IsEqualTo(40_000_000_000 + 1);
     }
 
-    [Fact]
-    public void ShouldCompareLongValues()
+    [Test]
+    public async Task ShouldCompareLongValues(CancellationToken cancellationToken)
     {
-        Assert.Equal(false, new Expression("(0=1500000)||(((0+2200000000)-1500000)<0)")
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("(0=1500000)||(((0+2200000000)-1500000)<0)")
+            .Evaluate(cancellationToken)).IsEqualTo(false);
     }
 
-    [Fact]
-    public void ShouldNotConvertRealTypes()
+    [Test]
+    public async Task ShouldNotConvertRealTypes(CancellationToken cancellationToken)
     {
         var e = new Expression("x/2");
         e.Parameters["x"] = 2F;
-        Assert.IsType<float>(e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsTypeOf<float>();
 
         e = new Expression("x/2");
         e.Parameters["x"] = 2D;
-        Assert.IsType<double>(e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsTypeOf<double>();
 
         e = new Expression("x/2");
         e.Parameters["x"] = 2m;
-        Assert.IsType<decimal>(e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsTypeOf<decimal>();
 
         e = new Expression("a / b * 100");
         e.Parameters["a"] = 20M;
         e.Parameters["b"] = 20M;
-        Assert.Equal(100M, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(100M);
     }
 
-    [Fact]
-    public void Overflow_Issue_190()
+    [Test]
+    public async Task Overflow_Issue_190(CancellationToken cancellationToken)
     {
         const decimal minValue = decimal.MinValue;
         var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
-        Assert.Equal(minValue, expr.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(expr.Evaluate(cancellationToken)).IsEqualTo(minValue);
     }
 
-    [Theory]
-    [InlineData("(X1 = 1)/2", 0.5)]
-    [InlineData("(X1 = 1)*2", 2)]
-    [InlineData("(X1 = 1)+1", 2)]
-    [InlineData("(X1 = 1)-1", 0)]
-    [InlineData("2*(X1 = 1)", 2)]
-    [InlineData("2/(X1 = 1)", 2.0)]
-    [InlineData("1+(X1 = 1)", 2)]
-    [InlineData("true-(X1 = 1)", 0)]
-    [InlineData("true-(X1 = true - false)", 0)]
-    public void ShouldOptionallyCalculateWithBoolean(string formula, object expectedValue)
+    [Test]
+    [Arguments("(X1 = 1)/2", 0.5)]
+    [Arguments("(X1 = 1)*2", 2)]
+    [Arguments("(X1 = 1)+1", 2)]
+    [Arguments("(X1 = 1)-1", 0)]
+    [Arguments("2*(X1 = 1)", 2)]
+    [Arguments("2/(X1 = 1)", 2.0)]
+    [Arguments("1+(X1 = 1)", 2)]
+    [Arguments("true-(X1 = 1)", 0)]
+    [Arguments("true-(X1 = true - false)", 0)]
+    public async Task ShouldOptionallyCalculateWithBoolean(string formula, object expectedValue, CancellationToken cancellationToken)
     {
         var expression = new Expression(formula, ExpressionOptions.AllowBooleanCalculation);
         expression.Parameters["X1"] = 1;
 
-        Assert.Equal(expectedValue, expression.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(expression.Evaluate(cancellationToken)).IsEqualTo(expectedValue);
 
-        var lambda = expression.ToLambda<double>(TestContext.Current.CancellationToken);
+        var lambda = expression.ToLambda<double>(cancellationToken);
 
-        Assert.Equal(Convert.ToDouble(expectedValue), lambda());
+        await Assert.That(lambda()).IsEqualTo(Convert.ToDouble(expectedValue));
     }
 
-    [Fact]
-    public void Should_Evaluate_Floor_Of_Double_Max_Value()
+    [Test]
+    public async Task Should_Evaluate_Floor_Of_Double_Max_Value(CancellationToken cancellationToken)
     {
         var expr = new Expression($"Floor({double.MaxValue.ToString(CultureInfo.InvariantCulture)})");
-        var res = expr.Evaluate(TestContext.Current.CancellationToken);
+        var res = expr.Evaluate(cancellationToken);
 
 #if NET8_0_OR_GREATER
-        Assert.Equal(Math.Floor(double.MaxValue), res);
+        await Assert.That(res).IsEqualTo(Math.Floor(double.MaxValue));
 #else
-        Assert.Equal(double.PositiveInfinity, res);
+        await Assert.That(res).IsEqualTo(double.PositiveInfinity);
 #endif
     }
 
-    [Fact]
-    public void Should_Not_Change_Double_Precision()
+    [Test]
+    public async Task Should_Not_Change_Double_Precision(CancellationToken cancellationToken)
     {
         var expr = new Expression("Floor(12e+100)");
-        var res = expr.Evaluate(TestContext.Current.CancellationToken);
+        var res = expr.Evaluate(cancellationToken);
 
-        Assert.Equal(Math.Floor(12e+100), res);
+        await Assert.That(res).IsEqualTo(Math.Floor(12e+100));
     }
 
-    [Theory]
-    [InlineData(".05", 0.05)]
-    [InlineData("0.05", 0.05)]
-    [InlineData("0.005", 0.005)]
-    [InlineData(".0", 0d)]
-    public void Should_Correctly_Parse_Floating_Point_Numbers(string formula, object expectedValue)
+    [Test]
+    [Arguments(".05", 0.05)]
+    [Arguments("0.05", 0.05)]
+    [Arguments("0.005", 0.005)]
+    [Arguments(".0", 0d)]
+    public async Task Should_Correctly_Parse_Floating_Point_Numbers(string formula, object expectedValue, CancellationToken cancellationToken)
     {
         var expr = new Expression(formula, CultureInfo.InvariantCulture);
-        var res = expr.Evaluate(TestContext.Current.CancellationToken);
+        var res = expr.Evaluate(cancellationToken);
 
-        Assert.Equal(expectedValue, res);
+        await Assert.That(res).IsEqualTo(expectedValue);
     }
 
-    [Theory]
-    [InlineData("131055 ^ 8", 131047ul)]
-    [InlineData("524288 | 128", 524416ul)]
-    [InlineData("262143 & 131055", 131055ul)]
-    [InlineData("262143 << 2", 1048572ul)]
-    [InlineData("262143 >> 2", 65535ul)]
-    public void Should_Not_Overflow_Bitwise(string formula, object expectedValue)
+    [Test]
+    [Arguments("131055 ^ 8", 131047ul)]
+    [Arguments("524288 | 128", 524416ul)]
+    [Arguments("262143 & 131055", 131055ul)]
+    [Arguments("262143 << 2", 1048572ul)]
+    [Arguments("262143 >> 2", 65535ul)]
+    public async Task Should_Not_Overflow_Bitwise(string formula, object expectedValue, CancellationToken cancellationToken)
     {
         var e = new Expression(formula, CultureInfo.InvariantCulture);
-        var res = e.Evaluate(TestContext.Current.CancellationToken);
+        var res = e.Evaluate(cancellationToken);
 
-        Assert.Equal(expectedValue, res);
+        await Assert.That(res).IsEqualTo(expectedValue);
     }
 
-    [Theory]
-    [InlineData(int.MaxValue, '+', int.MaxValue)]
-    [InlineData(int.MinValue, '-', int.MaxValue)]
-    [InlineData(int.MaxValue, '*', int.MaxValue)]
-    public void Should_Handle_Overflow_Int(int a, char op, int b)
+    [Test]
+    [Arguments(int.MaxValue, '+', int.MaxValue)]
+    [Arguments(int.MinValue, '-', int.MaxValue)]
+    [Arguments(int.MaxValue, '*', int.MaxValue)]
+    public async Task Should_Handle_Overflow_Int(int a, char op, int b, CancellationToken cancellationToken)
     {
         var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
-        Assert.Throws<OverflowException>(() => e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(() => e.Evaluate(cancellationToken)).ThrowsExactly<OverflowException>();
     }
 
-    [Theory]
-    [InlineData(double.MaxValue, '+', double.MaxValue)]
-    [InlineData(double.MinValue, '-', double.MaxValue)]
-    [InlineData(double.MaxValue, '*', double.MaxValue)]
-    [InlineData(double.MinValue, '/', 0.001d)]
-    public void Should_Handle_Overflow_Double(double a, char op, double b)
+    [Test]
+    [Arguments(double.MaxValue, '+', double.MaxValue)]
+    [Arguments(double.MinValue, '-', double.MaxValue)]
+    [Arguments(double.MaxValue, '*', double.MaxValue)]
+    [Arguments(double.MinValue, '/', 0.001d)]
+    public async Task Should_Handle_Overflow_Double(double a, char op, double b, CancellationToken cancellationToken)
     {
         var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
-        Assert.Throws<OverflowException>(() => e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(() => e.Evaluate(cancellationToken)).ThrowsExactly<OverflowException>();
     }
 
-    [Theory]
-    [InlineData(float.MaxValue, '+', float.MaxValue)]
-    [InlineData(float.MinValue, '-', float.MaxValue)]
-    [InlineData(float.MaxValue, '*', float.MaxValue)]
-    [InlineData(float.MinValue, '/', 0.001f)]
-    public void Should_Handle_Overflow_Float(float a, char op, float b)
+    [Test]
+    [Arguments(float.MaxValue, '+', float.MaxValue)]
+    [Arguments(float.MinValue, '-', float.MaxValue)]
+    [Arguments(float.MaxValue, '*', float.MaxValue)]
+    [Arguments(float.MinValue, '/', 0.001f)]
+    public async Task Should_Handle_Overflow_Float(float a, char op, float b, CancellationToken cancellationToken)
     {
         var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
-        Assert.Throws<OverflowException>(() => e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(() => e.Evaluate(cancellationToken)).ThrowsExactly<OverflowException>();
     }
 
-    [Theory]
-    [InlineData("3 + '3'", ExpressionOptions.AllowCharValues, 54)]
-    [InlineData("3 + '3'", ExpressionOptions.None, 6d)]
-    [InlineData("'4' + '2'", ExpressionOptions.AllowCharValues, 102)]
-    [InlineData("'4' + '2'", ExpressionOptions.StringConcat, "42")]
-    [InlineData("'4' + '2'", ExpressionOptions.None, 6d)]
-    public void ShouldHandleCharAddition(string expression, ExpressionOptions options, object expected)
+    [Test]
+    [Arguments("3 + '3'", ExpressionOptions.AllowCharValues, 54)]
+    [Arguments("3 + '3'", ExpressionOptions.None, 6d)]
+    [Arguments("'4' + '2'", ExpressionOptions.AllowCharValues, 102)]
+    [Arguments("'4' + '2'", ExpressionOptions.StringConcat, "42")]
+    [Arguments("'4' + '2'", ExpressionOptions.None, 6d)]
+    public async Task ShouldHandleCharAddition(string expression, ExpressionOptions options, object expected, CancellationToken cancellationToken)
     {
-        Assert.Equal(expected, new Expression(expression, options | ExpressionOptions.NoCache)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression(expression, options | ExpressionOptions.NoCache)
+            .Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void DivideNullShouldBeNull()
+    [Test]
+    public async Task DivideNullShouldBeNull(CancellationToken cancellationToken)
     {
         var e = new Expression("a / b", ExpressionOptions.AllowNullParameter);
         e.Parameters["a"] = null;
         e.Parameters["b"] = 2;
 
-        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsNull();
     }
 
-    [Theory]
-    [InlineData((sbyte)10)]
-    [InlineData((short)10)]
-    [InlineData((int)10)]
-    [InlineData((long)10)]
-    public void ShouldAllowIntegerWithUlongMath(object val)
+    [Test]
+    [Arguments((sbyte)10)]
+    [Arguments((short)10)]
+    [Arguments((int)10)]
+    [Arguments((long)10)]
+    public async Task ShouldAllowIntegerWithUlongMath(object val, CancellationToken cancellationToken)
     {
         var e = new Expression("a + b");
         e.Parameters["a"] = val;
         e.Parameters["b"] = 1ul;
 
         var expected = Convert.ToUInt64(val) + 1ul;
-        Assert.Equal(expected, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData(-32767, 65535, 32768)]
-    [InlineData(-32768, 65535, 32767)]
-    [InlineData(-1, 65535, 65534)]
-    [InlineData(2, 65535, 65537)]
-    public void ShouldAddSignedAndUnsignedShorts(short a, ushort b, int expected)
+    [Test]
+    [Arguments(-32767, 65535, 32768)]
+    [Arguments(-32768, 65535, 32767)]
+    [Arguments(-1, 65535, 65534)]
+    [Arguments(2, 65535, 65537)]
+    public async Task ShouldAddSignedAndUnsignedShorts(short a, ushort b, int expected, CancellationToken cancellationToken)
     {
         var exp = new Expression("a + b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate(TestContext.Current.CancellationToken);
+        var result = exp.Evaluate(cancellationToken);
 
-        Assert.Equal(expected, result);
+        await Assert.That(result).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData(1, ushort.MaxValue, -65534)]
-    public void ShouldSubtractSignedAndUnsignedShorts(short a, ushort b, int expected)
+    [Test]
+    [Arguments(1, ushort.MaxValue, -65534)]
+    public async Task ShouldSubtractSignedAndUnsignedShorts(short a, ushort b, int expected, CancellationToken cancellationToken)
     {
         var exp = new Expression("a - b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate(TestContext.Current.CancellationToken);
-        Assert.Equal(expected, result);
+        var result = exp.Evaluate(cancellationToken);
+        await Assert.That(result).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData(1, uint.MaxValue, -4294967294)]
-    public void ShouldSubtractSignedAndUnsignedInts(int a, uint b, long expected)
+    [Test]
+    [Arguments(1, uint.MaxValue, -4294967294)]
+    public async Task ShouldSubtractSignedAndUnsignedInts(int a, uint b, long expected, CancellationToken cancellationToken)
     {
         var exp = new Expression("a - b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate(TestContext.Current.CancellationToken);
-        Assert.Equal(expected, result);
+        var result = exp.Evaluate(cancellationToken);
+        await Assert.That(result).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData(short.MaxValue, short.MaxValue, 65534)]
-    public void ShouldAddToOutOfBoundsShorts(short a, short b, int expected)
+    [Test]
+    [Arguments(short.MaxValue, short.MaxValue, 65534)]
+    public async Task ShouldAddToOutOfBoundsShorts(short a, short b, int expected, CancellationToken cancellationToken)
     {
         var exp = new Expression("a + b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate(TestContext.Current.CancellationToken);
-        Assert.Equal(expected, result);
+        var result = exp.Evaluate(cancellationToken);
+        await Assert.That(result).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData(short.MinValue, short.MaxValue, -65535)]
-    public void ShouldSubtractToOutOfBoundsShorts(short a, short b, int expected)
+    [Test]
+    [Arguments(short.MinValue, short.MaxValue, -65535)]
+    public async Task ShouldSubtractToOutOfBoundsShorts(short a, short b, int expected, CancellationToken cancellationToken)
     {
         var exp = new Expression("a - b");
         exp.Parameters["a"] = a;
         exp.Parameters["b"] = b;
-        var result = exp.Evaluate(TestContext.Current.CancellationToken);
+        var result = exp.Evaluate(cancellationToken);
 
-		Assert.Equal(expected, result);
-	}
+        await Assert.That(result).IsEqualTo(expected);
+    }
 
-    [Fact]
-    public void ShouldAllowLongAsDefault()
+    [Test]
+    public async Task ShouldAllowLongAsDefault(CancellationToken cancellationToken)
     {
         var exp = new Expression("10000000*1000", ExpressionOptions.LongAsDefault);
-        var result = exp.Evaluate(TestContext.Current.CancellationToken);
+        var result = exp.Evaluate(cancellationToken);
 
-        var expected = 10000000L * 1000;
-        Assert.Equal(expected, result);
+        const long expected = 10000000L * 1000;
+        await Assert.That(result).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void ShouldBeDoubleWithLongAsDefault()
+    [Test]
+    public async Task ShouldBeDoubleWithLongAsDefault(CancellationToken cancellationToken)
     {
         var exp = new Expression("10000000.1*1000", ExpressionOptions.LongAsDefault, CultureInfo.InvariantCulture);
-        var result = exp.Evaluate(TestContext.Current.CancellationToken);
+        var result = exp.Evaluate(cancellationToken);
 
-        var expected = 10000000.1 * 1000;
-        Assert.Equal(expected, result);
+        const double expected = 10000000.1 * 1000;
+        await Assert.That(result).IsEqualTo(expected);
     }
 }

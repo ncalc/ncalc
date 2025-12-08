@@ -4,12 +4,12 @@ namespace NCalc.Tests;
 
 public class ExpressionSeparatorIntegrationTests
 {
-    [Theory]
-    [InlineData("Max(1, 2)", 2, ArgumentSeparator.Comma)]
-    [InlineData("Max(1; 2)", 2, ArgumentSeparator.Semicolon)]
-    [InlineData("Min(5, 3)", 3, ArgumentSeparator.Comma)]
-    [InlineData("Min(5; 3)", 3, ArgumentSeparator.Semicolon)]
-    public void Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, ArgumentSeparator separator)
+    [Test]
+    [Arguments("Max(1, 2)", 2, ArgumentSeparator.Comma)]
+    [Arguments("Max(1; 2)", 2, ArgumentSeparator.Semicolon)]
+    [Arguments("Min(5, 3)", 3, ArgumentSeparator.Comma)]
+    [Arguments("Min(5; 3)", 3, ArgumentSeparator.Semicolon)]
+    public async Task Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, ArgumentSeparator separator, CancellationToken cancellationToken)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(separator);
@@ -22,14 +22,14 @@ public class ExpressionSeparatorIntegrationTests
 
         // Act
         var expression = new Expression(logicalExpression);
-        var result = expression.Evaluate(TestContext.Current.CancellationToken);
+        var result = expression.Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(expected, Convert.ToInt32(result));
+        await Assert.That(Convert.ToInt32(result)).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void Expression_Should_Work_With_Custom_Functions_And_Separators()
+    [Test]
+    public async Task Expression_Should_Work_With_Custom_Functions_And_Separators(CancellationToken cancellationToken)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
@@ -53,14 +53,14 @@ public class ExpressionSeparatorIntegrationTests
         };
 
         // Act
-        var result = expression.Evaluate(TestContext.Current.CancellationToken);
+        var result = expression.Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(30.0, result);
+        await Assert.That(result).IsEqualTo(30.0);
     }
 
-    [Fact]
-    public void Expression_Should_Handle_Parameters_With_Custom_Separators()
+    [Test]
+    public async Task Expression_Should_Handle_Parameters_With_Custom_Separators(CancellationToken cancellationToken)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
@@ -82,9 +82,9 @@ public class ExpressionSeparatorIntegrationTests
         };
 
         // Act
-        var result = expression.Evaluate(TestContext.Current.CancellationToken);
+        var result = expression.Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(10, result);
+        await Assert.That(result).IsEqualTo(10);
     }
 }

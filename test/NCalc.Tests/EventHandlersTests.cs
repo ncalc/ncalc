@@ -2,13 +2,11 @@ using NCalc.Handlers;
 
 namespace NCalc.Tests;
 
-using Xunit;
-
-[Trait("Category", "Event Handlers")]
+[Property("Category", "Event Handlers")]
 public class EventHandlersTests
 {
-    [Fact]
-    public void ExpressionShouldEvaluateCustomFunctions()
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomFunctions(CancellationToken cancellationToken)
     {
         var e = new Expression("SecretOperation(3, 6)");
 
@@ -21,11 +19,11 @@ public class EventHandlersTests
             }
         };
 
-        Assert.Equal(9, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(9);
     }
 
-    [Fact]
-    public void ExpressionShouldEvaluateCustomFunctionsWithParameters()
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomFunctionsWithParameters(CancellationToken cancellationToken)
     {
         var e = new Expression("SecretOperation([e], 6) + f");
         e.Parameters["e"] = 3;
@@ -37,11 +35,11 @@ public class EventHandlersTests
                 args.Result = (int)args.Parameters[0].Evaluate(args.CancellationToken) + (int)args.Parameters[1].Evaluate(args.CancellationToken);
         };
 
-        Assert.Equal(10, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(10);
     }
 
-    [Fact]
-    public void ExpressionShouldEvaluateParameters()
+    [Test]
+    public async Task ExpressionShouldEvaluateParameters(CancellationToken cancellationToken)
     {
         var e = new Expression("Round(Pow(Pi, 2) + Pow([Pi Squared], 2) + [X], 2)");
 
@@ -54,11 +52,11 @@ public class EventHandlersTests
                 args.Result = 3.14;
         };
 
-        Assert.Equal(117.07, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(117.07);
     }
 
-    [Fact]
-    public void Should_Evaluate_Function_Only_Once_Issue_107()
+    [Test]
+    public async Task Should_Evaluate_Function_Only_Once_Issue_107(CancellationToken cancellationToken)
     {
         var counter = 0;
         var totalCounter = 0;
@@ -70,7 +68,7 @@ public class EventHandlersTests
         for (var i = 0; i < 10; i++)
         {
             counter = 0;
-            _ = expression.Evaluate(TestContext.Current.CancellationToken);
+            _ = expression.Evaluate(cancellationToken);
         }
 
         void Expression_EvaluateFunction(string name, FunctionArgs args)
@@ -82,15 +80,15 @@ public class EventHandlersTests
             totalCounter++;
         }
 
-        Assert.Equal(10, totalCounter);
+        await Assert.That(totalCounter).IsEqualTo(10);
     }
 
-    [Fact]
-    public void ShouldOverrideExistingFunctions()
+    [Test]
+    public async Task ShouldOverrideExistingFunctions(CancellationToken cancellationToken)
     {
         var e = new Expression("Round(1.99, 2)");
 
-        Assert.Equal(1.99d, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(1.99d);
 
         e.EvaluateFunction += (name, args) =>
         {
@@ -98,25 +96,32 @@ public class EventHandlersTests
                 args.Result = 3;
         };
 
-        Assert.Equal(3, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(3);
     }
 
-    [Fact]
-    public void ShouldHandleCustomParametersWhenNoSpecificParameterIsDefined()
+    [Test]
+    public async Task ShouldHandleCustomParametersWhenNoSpecificParameterIsDefined(CancellationToken cancellationToken)
     {
         var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");
 
-        e.EvaluateParameter += (name, arg) =>
+        try
         {
-            if (name == "Pi")
-                arg.Result = 3.14;
-        };
+            e.EvaluateParameter += (name, arg) =>
+            {
+                if (name == "Pi")
+                    arg.Result = 3.14;
+            };
 
-        e.Evaluate(TestContext.Current.CancellationToken);
+            e.Evaluate(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail(ex.Message);
+        }
     }
 
-    [Fact]
-    public void ShouldHandleCustomFunctionsInFunctions()
+    [Test]
+    public async Task ShouldHandleCustomFunctionsInFunctions(CancellationToken cancellationToken)
     {
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
 
@@ -152,45 +157,49 @@ public class EventHandlersTests
             }
         };
 
-        Assert.Equal(13d, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(13d);
     }
 
-    [Fact]
-    public void CustomFunctionShouldReturnNull()
+    [Test]
+    public async Task CustomFunctionShouldReturnNull(CancellationToken cancellationToken)
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.EvaluateFunction += (name, args) =>
+        e.EvaluateFunction += async (name, args) =>
         {
-            Assert.False(args.HasResult);
+            await Assert.That(args.HasResult).IsFalse();
+
             if (name == "SecretOperation")
                 args.Result = null;
-            Assert.True(args.HasResult);
+
+            await Assert.That(args.HasResult).IsTrue();
         };
 
-        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsNull();
     }
 
-    [Fact]
-    public void CustomParametersShouldReturnNull()
+    [Test]
+    public async Task CustomParametersShouldReturnNullAsync(CancellationToken cancellationToken)
     {
         var e = new Expression("x");
 
-        e.EvaluateParameter += (name, args) =>
+        e.EvaluateParameter += async (name, args) =>
         {
-            Assert.False(args.HasResult);
+            await Assert.That(args.HasResult).IsFalse();
+
             if (name == "x")
                 args.Result = null;
-            Assert.True(args.HasResult);
+
+            await Assert.That(args.HasResult).IsTrue();
         };
 
-        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsNull();
     }
 
-    [Theory]
-    [InlineData("notExistingfunction")]
-    [InlineData("andDoThis")]
-    public void ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName)
+    [Test]
+    [Arguments("notExistingfunction")]
+    [Arguments("andDoThis")]
+    public async Task ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName, CancellationToken cancellationToken)
     {
         var expression = new Expression($"{functionName}(3.14)");
         expression.EvaluateFunction += (name, args) =>
@@ -199,11 +208,11 @@ public class EventHandlersTests
                 args.Result = 1;
         };
 
-        Assert.Equal(1, expression.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(expression.Evaluate(cancellationToken)).IsEqualTo(1);
     }
 
-    [Fact]
-    public void ExpressionShouldEvaluateCustomFunctionsWithSameName()
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomFunctionsWithSameName(CancellationToken cancellationToken)
     {
         var e = new Expression("SecretOperation(3, 6) + SecretOperation(1, 2)");
 
@@ -216,13 +225,13 @@ public class EventHandlersTests
             {
                 if (id != null)
                 {
-                    if (!d.ContainsKey(id))
+                    if (!d.TryGetValue(id, out int value))
                     {
                         d[id] = 3;
                     }
                     else
                     {
-                        d[id]--;
+                        d[id] = --value;
                     }
                 }
 
@@ -231,14 +240,14 @@ public class EventHandlersTests
             }
         };
 
-        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
-        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(12);
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(12);
 
-        Assert.Equal(2, d.FirstOrDefault().Value);
+        await Assert.That(d.FirstOrDefault().Value).IsEqualTo(2);
     }
 
-    [Fact]
-    public void ExpressionShouldEvaluateCustomFunctionsWithEffects()
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomFunctionsWithEffects(CancellationToken cancellationToken)
     {
         var e = new Expression("Repeat([value] > 10, 3)");
 
@@ -253,13 +262,13 @@ public class EventHandlersTests
                 var r = (bool)args.Parameters[0].Evaluate(args.CancellationToken);
                 if (r && id != null)
                 {
-                    if (!times.ContainsKey(id))
+                    if (!times.TryGetValue(id, out int value))
                     {
                         times[id] = t;
                     }
                     else
                     {
-                        times[id]--;
+                        times[id] = --value;
                     }
                 }
 
@@ -268,14 +277,14 @@ public class EventHandlersTests
         };
         e.Parameters["value"] = 9;
 
-        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(false);
 
         e.Parameters["value"] = 11;
-        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(false);
         e.Parameters["value"] = 12;
-        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(false);
         e.Parameters["value"] = 13;
-        Assert.Equal(true, e.Evaluate(TestContext.Current.CancellationToken));
-        Assert.Single(times);
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(true);
+        await Assert.That(times).HasSingleItem();
     }
 }

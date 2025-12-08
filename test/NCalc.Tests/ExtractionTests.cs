@@ -2,11 +2,11 @@ using NCalc.Parser;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "Extraction")]
+[Property("Category", "Extraction")]
 public class ExtractionTests
 {
-    [Fact]
-    public void ShouldGetParametersIssue103()
+    [Test]
+    public async Task ShouldGetParametersIssue103(CancellationToken cancellationToken)
     {
         var expression = new Expression("PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3)", ExpressionOptions.CaseInsensitiveStringComparer)
         {
@@ -18,71 +18,70 @@ public class ExtractionTests
         expression.DynamicParameters["PageState"] = _ => "List";
         expression.Functions["customfunction"] = _ => true;
 
-        var parameters = expression.GetParameterNames(TestContext.Current.CancellationToken);
-        Assert.Contains("a", parameters);
-        Assert.Contains("PageState", parameters);
-        Assert.Equal(2, parameters.Count);
+        var parameters = expression.GetParameterNames(cancellationToken);
+        await Assert.That(parameters).Contains("a");
+        await Assert.That(parameters).Contains("PageState");
+        await Assert.That(parameters.Count).IsEqualTo(2);
     }
 
-    [Fact]
-    public void ShouldGetParametersOneTimeIssue141()
+    [Test]
+    public async Task ShouldGetParametersOneTimeIssue141(CancellationToken cancellationToken)
     {
-        var expression =
-            new Expression("if(x=0,x,y)",
+        var expression = new Expression("if(x=0,x,y)",
                 ExpressionOptions.CaseInsensitiveStringComparer);
-        var parameters = expression.GetParameterNames(TestContext.Current.CancellationToken);
+        var parameters = expression.GetParameterNames(cancellationToken);
 
-        Assert.Equal(2, parameters.Count);
+        await Assert.That(parameters.Count).IsEqualTo(2);
     }
 
-    [Fact]
-    public void ShouldGetParametersWithUnary()
+    [Test]
+    public async Task ShouldGetParametersWithUnary(CancellationToken cancellationToken)
     {
         var expression = new Expression("-0.68");
-        var p = expression.GetParameterNames(TestContext.Current.CancellationToken);
-        Assert.Empty(p);
+        var p = expression.GetParameterNames(cancellationToken);
+        await Assert.That(p).IsEmpty();
     }
 
-    [Theory]
-    [InlineData("(a, b, c)", 3)]
-    [InlineData("725 - 1 == result * secret_operation(secretValue)", 2)]
-    [InlineData("getLightsaberColor(selectedJedi) == selectedColor", 2)]
-    public void ShouldGetParameters(string formula, int expectedCount)
+    [Test]
+    [Arguments("(a, b, c)", 3)]
+    [Arguments("725 - 1 == result * secret_operation(secretValue)", 2)]
+    [Arguments("getLightsaberColor(selectedJedi) == selectedColor", 2)]
+    public async Task ShouldGetParameters(string formula, int expectedCount, CancellationToken cancellationToken)
     {
         var expression = new Expression(formula);
-        var p = expression.GetParameterNames(TestContext.Current.CancellationToken);
-        Assert.Equal(expectedCount, p.Count);
+        var p = expression.GetParameterNames(cancellationToken);
+        await Assert.That(p.Count).IsEqualTo(expectedCount);
     }
 
-    [InlineData("(a, drop_database(), c) == toUpper(getName())", 3)]
-    [InlineData("Abs(523/2) == Abs(523/2)", 1)]
-    [InlineData("getLightsaberColor('Yoda') == selectedColor", 1)]
-    [Theory]
-    public void ShouldGetFunctions(string formula, int expectedCount)
+    [Arguments("(a, drop_database(), c) == toUpper(getName())", 3)]
+    [Arguments("Abs(523/2) == Abs(523/2)", 1)]
+    [Arguments("getLightsaberColor('Yoda') == selectedColor", 1)]
+    [Test]
+    public async Task ShouldGetFunctions(string formula, int expectedCount, CancellationToken cancellationToken)
     {
         var expression = new Expression(formula);
-        var functions = expression.GetFunctionNames(TestContext.Current.CancellationToken);
-        Assert.Equal(expectedCount, functions.Count);
+        var functions = expression.GetFunctionNames(cancellationToken);
+        await Assert.That(functions.Count).IsEqualTo(expectedCount);
     }
 
-    [Fact]
-    public void ShouldGetParametersInsideFunctionsIssue305()
+    [Test]
+    public async Task ShouldGetParametersInsideFunctionsIssue305(CancellationToken cancellationToken)
     {
         var expression = new Expression("if([Value] >= 50, 'background-color: #80ffcc;', null)", ExpressionOptions.AllowNullParameter);
-        var parameters = expression.GetParameterNames(TestContext.Current.CancellationToken);
-        Assert.Equal(2, parameters.Count);
+        var parameters = expression.GetParameterNames(cancellationToken);
+        await Assert.That(parameters.Count).IsEqualTo(2);
     }
 
-    [Fact]
-    public void ShouldGetFunctionsInsideFunctionsIssue305()
+    [Test]
+    public async Task ShouldGetFunctionsInsideFunctionsIssue305(CancellationToken cancellationToken)
     {
         var expression = new Expression("if(getValue() >= 50, 'background-color: #80ffcc;', null)", ExpressionOptions.AllowNullParameter);
-        var functions = expression.GetFunctionNames(TestContext.Current.CancellationToken);
-        Assert.Equal(2, functions.Count);
+        var functions = expression.GetFunctionNames(cancellationToken);
+        await Assert.That(functions.Count).IsEqualTo(2);
     }
 
-    [Fact]
-    public void ShouldGetNestedFunctionsIssue334()
+    [Test]
+    public async Task ShouldGetNestedFunctionsIssue334(CancellationToken cancellationToken)
     {
         const string expressionText = "[a] + GetTimeValue(if([c] > [d]; test([e] > 0; [g]; [h]); [f]); 1; 'sec')";
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
@@ -93,9 +92,9 @@ public class ExtractionTests
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression);
-        var functions = expression.GetFunctionNames(TestContext.Current.CancellationToken);
-        Assert.Contains("GetTimeValue", functions);
-        Assert.Contains("if", functions);
-        Assert.Contains("test", functions);
+        var functions = expression.GetFunctionNames(cancellationToken);
+        await Assert.That(functions).Contains("GetTimeValue");
+        await Assert.That(functions).Contains("if");
+        await Assert.That(functions).Contains("test");
     }
 }

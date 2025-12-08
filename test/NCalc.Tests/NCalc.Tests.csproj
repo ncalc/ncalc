@@ -19,16 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="xunit.v3" Version="3.2.0" />
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="TUnit" Version="1.5.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,9 +29,5 @@
     <ProjectReference Include="..\..\src\Plugins\NCalc.Antlr\NCalc.Antlr.csproj" />
     <ProjectReference Include="..\..\src\Plugins\NCalc.LambdaCompilation\NCalc.LambdaCompilation.csproj" />
     <ProjectReference Include="..\..\src\Plugins\NCalc.MemoryCache\NCalc.MemoryCache.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
   </ItemGroup>
 </Project>

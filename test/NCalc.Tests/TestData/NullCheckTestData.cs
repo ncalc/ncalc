@@ -1,13 +1,13 @@
 ﻿namespace NCalc.Tests.TestData;
 
-public class NullCheckTestData : TheoryData<string, object>
+public class NullCheckTestData
 {
-    public NullCheckTestData()
+    public static IEnumerable<(string, object)> GetTestData()
     {
-        Add("if((5 + null > 0), 1, 2)", 2);
-        Add("if((5 - null > 0), 1, 2)", 2);
-        Add("if((5 / null > 0), 1, 2)", 2);
-        Add("if((5 * null > 0), 1, 2)", 2);
-        Add("if((5 % null > 0), 1, 2)", 2);
+        yield return ("if((5 + null > 0), 1, 2)", 2);
+        yield return ("if((5 - null > 0), 1, 2)", 2);
+        yield return ("if((5 / null > 0), 1, 2)", 2);
+        yield return ("if((5 * null > 0), 1, 2)", 2);
+        yield return ("if((5 % null > 0), 1, 2)", 2);
     }
 }
