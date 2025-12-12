@@ -34,6 +34,9 @@ jobs:
       - name: Test
         run: dotnet run --project test/NCalc.Tests/NCalc.Tests.csproj --configuration Release --coverage --coverage-output-format "cobertura" --report-trx
 
+      - name: Debug - list coverage files
+        run: find . -name "*.cobertura.xml" -type f
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         with:
