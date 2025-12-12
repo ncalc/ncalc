@@ -2,23 +2,23 @@ using NCalc.Exceptions;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "Comparer")]
+[Property("Category", "Comparer")]
 public class ComparerTests
 {
-    [Fact]
-    public void Should_Use_Case_Insensitive_Comparer_Issue_85()
+    [Test]
+    public async Task Should_Use_Case_Insensitive_Comparer_Issue_85(CancellationToken cancellationToken)
     {
         var eif = new Expression("PageState == 'LIST'", ExpressionOptions.CaseInsensitiveStringComparer);
         eif.Parameters["PageState"] = "List";
 
-        Assert.True((bool)eif.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)eif.Evaluate(cancellationToken)).IsTrue();
     }
 
-    [Theory]
-    [InlineData(null, 2, false)]
-    [InlineData(2, 2L, true)]
-    [InlineData("Hello", "World", false)]
-    public void Compare_Using_Most_Precise_Type_Issue_102(object a, object b, bool expectedResult)
+    [Test]
+    [Arguments(null, 2, false)]
+    [Arguments(2, 2L, true)]
+    [Arguments("Hello", "World", false)]
+    public async Task Compare_Using_Most_Precise_Type_Issue_102(object a, object b, bool expectedResult, CancellationToken cancellationToken)
     {
         var issueExp = new Expression("a == b")
         {
@@ -29,103 +29,103 @@ public class ComparerTests
             }
         };
 
-        Assert.Equal(expectedResult, (bool)issueExp.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)issueExp.Evaluate(cancellationToken)).IsEqualTo(expectedResult);
     }
 
-    [Fact]
-    public void ExpressionShouldHandleNullRightParameters()
+    [Test]
+    public async Task ExpressionShouldHandleNullRightParameters(CancellationToken cancellationToken)
     {
         var e = new Expression("'a string' == null", ExpressionOptions.AllowNullParameter);
-        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsFalse();
     }
 
-    [Fact]
-    public void ExpressionShouldHandleNullLeftParameters()
+    [Test]
+    public async Task ExpressionShouldHandleNullLeftParameters(CancellationToken cancellationToken)
     {
         var e = new Expression("null == 'a string'", ExpressionOptions.AllowNullParameter);
-        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsFalse();
     }
 
-    [Fact]
-    public void ExpressionShouldHandleNullBothParameters()
+    [Test]
+    public async Task ExpressionShouldHandleNullBothParameters(CancellationToken cancellationToken)
     {
         var e = new Expression("null == null", ExpressionOptions.AllowNullParameter);
-        Assert.True((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsTrue();
     }
 
-    [Fact]
-    public void ShouldCompareNullToNull()
+    [Test]
+    public async Task ShouldCompareNullToNull(CancellationToken cancellationToken)
     {
         var e = new Expression("[x] = null", ExpressionOptions.AllowNullParameter);
         e.Parameters["x"] = null;
 
-        Assert.True((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsTrue();
     }
 
-    [Fact]
-    public void ShouldCompareNullableToNonNullable()
+    [Test]
+    public async Task ShouldCompareNullableToNonNullable(CancellationToken cancellationToken)
     {
         var e = new Expression("[x] = 5", ExpressionOptions.AllowNullParameter);
 
         e.Parameters["x"] = (int?)5;
-        Assert.True((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsTrue();
 
         e.Parameters["x"] = (int?)6;
-        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsFalse();
     }
 
-    [Fact]
-    public void ShouldCompareNullableNullToNonNullable()
+    [Test]
+    public async Task ShouldCompareNullableNullToNonNullable(CancellationToken cancellationToken)
     {
         var e = new Expression("[x] = 5", ExpressionOptions.AllowNullParameter);
 
         e.Parameters["x"] = null;
-        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsFalse();
     }
 
-    [Fact]
-    public void ShouldCompareNullToString()
+    [Test]
+    public async Task ShouldCompareNullToString(CancellationToken cancellationToken)
     {
         var e = new Expression("[x] = 'foo'", ExpressionOptions.AllowNullParameter);
         e.Parameters["x"] = null;
 
-        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsFalse();
     }
 
-    [Fact]
-    public void ExpressionDoesNotDefineNullParameterWithoutNullOption()
+    [Test]
+    public async Task ExpressionDoesNotDefineNullParameterWithoutNullOption(CancellationToken cancellationToken)
     {
         var e = new Expression("'a string' == null");
 
-        var ex = Assert.Throws<NCalcParameterNotDefinedException>(() =>
-            e.Evaluate(TestContext.Current.CancellationToken));
-        Assert.Contains("not defined", ex.Message);
+        var ex = await Assert.That(() =>
+            e.Evaluate(cancellationToken)).ThrowsExactly<NCalcParameterNotDefinedException>();
+        await Assert.That(ex.Message).Contains("not defined");
     }
 
-    [Theory]
-    [InlineData("(10/null)<0")]
-    [InlineData("(10/null)>0")]
-    public void CompareWithNullShouldReturnFalse(string expression)
+    [Test]
+    [Arguments("(10/null)<0")]
+    [Arguments("(10/null)>0")]
+    public async Task CompareWithNullShouldReturnFalse(string expression, CancellationToken cancellationToken)
     {
         var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
         e.Parameters["x"] = null;
 
-        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsFalse();
     }
 
-    [Fact]
-    public void ShouldCompareInequlityWithStrictTypeMatching()
+    [Test]
+    public async Task ShouldCompareInequlityWithStrictTypeMatching(CancellationToken cancellationToken)
     {
         var e = new Expression("1 != ''",
             ExpressionOptions.NoStringTypeCoercion | ExpressionOptions.StrictTypeMatching);
 
-        Assert.True((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsTrue();
     }
 
-    [Fact]
-    public void ShouldCompareWithEmptyString()
+    [Test]
+    public async Task ShouldCompareWithEmptyString(CancellationToken cancellationToken)
     {
         var e = new Expression("1 == ''");
-        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)e.Evaluate(cancellationToken)).IsFalse();
     }
 }

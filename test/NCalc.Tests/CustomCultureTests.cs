@@ -1,10 +1,10 @@
 namespace NCalc.Tests;
 
-[Trait("Category", "Custom Culture")]
+[Property("Category", "Custom Culture")]
 public class CustomCultureTests
 {
-    [Fact]
-    public void ShouldCorrectlyParseCustomCultureParameter()
+    [Test]
+    public async Task ShouldCorrectlyParseCustomCultureParameter(CancellationToken cancellationToken)
     {
         var cultureDot = (CultureInfo)CultureInfo.InvariantCulture.Clone();
         cultureDot.NumberFormat.NumberGroupSeparator = " ";
@@ -13,59 +13,59 @@ public class CustomCultureTests
         cultureComma.NumberFormat.NumberGroupSeparator = " ";
 
         //use 1*[A] to avoid evaluating expression parameters as string - force numeric conversion
-        ExecuteTest("1*[A]-[B]", 1.5);
-        ExecuteTest("1*[A]+[B]", 2.5);
-        ExecuteTest("1*[A]/[B]", 4d);
-        ExecuteTest("1*[A]*[B]", 1d);
-        ExecuteTest("1*[A]>[B]", true);
-        ExecuteTest("1*[A]<[B]", false);
+        await ExecuteTestAsync("1*[A]-[B]", 1.5);
+        await ExecuteTestAsync("1*[A]+[B]", 2.5);
+        await ExecuteTestAsync("1*[A]/[B]", 4d);
+        await ExecuteTestAsync("1*[A]*[B]", 1d);
+        await ExecuteTestAsync("1*[A]>[B]", true);
+        await ExecuteTestAsync("1*[A]<[B]", false);
 
-        void ExecuteTest(string formula, object expectedValue)
+        async Task ExecuteTestAsync(string formula, object expectedValue)
         {
             //Correctly evaluate with decimal dot culture and parameter with dot
-            Assert.Equal(expectedValue, new Expression(formula, cultureDot)
+            await Assert.That(new Expression(formula, cultureDot)
             {
                 Parameters =
                 {
                     {"A","2.0"},
                     {"B","0.5"}
                 }
-            }.Evaluate());
+            }.Evaluate(cancellationToken)).IsEqualTo(expectedValue);
 
             //Correctly evaluate with decimal comma and parameter with comma
-            Assert.Equal(expectedValue, new Expression(formula, cultureComma)
+            await Assert.That(new Expression(formula, cultureComma)
             {
                 Parameters =
                 {
                     {"A","2,0"},
                     {"B","0,5"}
                 }
-            }.Evaluate(TestContext.Current.CancellationToken));
+            }.Evaluate(cancellationToken)).IsEqualTo(expectedValue);
 
             //combining decimal dot and comma fails
-            Assert.Throws<FormatException>(() => new Expression(formula, cultureComma)
+            await Assert.That(() => new Expression(formula, cultureComma)
             {
                 Parameters =
                 {
                     {"A","2,0"},
                     {"B","0.5"}
                 }
-            }.Evaluate(TestContext.Current.CancellationToken));
+            }.Evaluate(cancellationToken)).ThrowsExactly<FormatException>();
 
             //combining decimal dot and comma fails
-            Assert.Throws<FormatException>(() => new Expression(formula, cultureDot)
+            await Assert.That(() => new Expression(formula, cultureDot)
             {
                 Parameters =
                 {
                     {"A","2,0"},
                     {"B","0.5"}
                 }
-            }.Evaluate());
+            }.Evaluate(cancellationToken)).ThrowsExactly<FormatException>();
         }
     }
 
-    [Fact]
-    public void ShouldParseInvariantCulture()
+    [Test]
+    public async Task ShouldParseInvariantCulture(CancellationToken cancellationToken)
     {
         var originalCulture = (CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
         try
@@ -77,26 +77,26 @@ public class CustomCultureTests
             try
             {
                 var expr = new Expression("[a]<2.0") { Parameters = { ["a"] = "1.7" } };
-                expr.Evaluate(TestContext.Current.CancellationToken);
+                expr.Evaluate(cancellationToken);
             }
             catch (FormatException)
             {
                 exceptionThrown = true;
             }
 
-            Assert.True(exceptionThrown);
+            await Assert.That(exceptionThrown).IsTrue();
 
             var e = new Expression("[a]<2.0", CultureInfo.InvariantCulture);
             e.Parameters["a"] = "1.7";
-            Assert.Equal(true, e.Evaluate(TestContext.Current.CancellationToken));
+            await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(true);
         }
         finally
         {
             Thread.CurrentThread.CurrentCulture = originalCulture;
         }
     }
-    [Fact]
-    public void ShouldConvertToStringUsingCultureInfo()
+    [Test]
+    public async Task ShouldConvertToStringUsingCultureInfo(CancellationToken cancellationToken)
     {
         var originalCulture = (CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
         try
@@ -111,7 +111,7 @@ public class CustomCultureTests
             {
                 Parameters = { ["a"] = 1.7 }
             };
-            Assert.Equal("1.72.5", expr.Evaluate(TestContext.Current.CancellationToken));
+            await Assert.That(expr.Evaluate(cancellationToken)).IsEqualTo("1.72.5");
         }
         finally
         {

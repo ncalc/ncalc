@@ -4,32 +4,33 @@ using NCalc.Tests.TestData;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "Plugins")]
-public class AntlrTests(FactoriesWithAntlrFixture fixture) : IClassFixture<FactoriesWithAntlrFixture>
+[Property("Category", "Plugins")]
+[ClassDataSource<FactoriesWithAntlrFixture>(Shared = SharedType.PerClass)]
+public class AntlrTests(FactoriesWithAntlrFixture fixture)
 {
     private IExpressionFactory ExpressionFactory { get; } = fixture.ExpressionFactory;
 
-    [Theory]
-    [ClassData(typeof(EvaluationTestData))]
-    public void Expression_Should_Evaluate(string expression, object expected)
+    [Test]
+    [MethodDataSource<EvaluationTestData>(nameof(EvaluationTestData.GetTestData))]
+    public async Task Expression_Should_Evaluate(string expression, object expected, CancellationToken cancellationToken)
     {
-        Assert.Equal(expected, ExpressionFactory.Create(expression, ExpressionOptions.NoCache).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(ExpressionFactory.Create(expression, ExpressionOptions.NoCache).Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [ClassData(typeof(ValuesTestData))]
-    public void Should_Parse_Values(string expressionString, object expectedValue)
+    [Test]
+    [MethodDataSource<ValuesTestData>(nameof(ValuesTestData.GetTestData))]
+    public async Task Should_Parse_Values(string expressionString, object expectedValue, CancellationToken cancellationToken)
     {
         var expression = ExpressionFactory.Create(expressionString, ExpressionOptions.NoCache);
-        var result = expression.Evaluate(TestContext.Current.CancellationToken);
+        var result = expression.Evaluate(cancellationToken);
 
         if (expectedValue is double expectedDouble)
         {
-            Assert.Equal(expectedDouble, (double)result, precision: 15);
+            await Assert.That((double)result).IsEqualTo(expectedDouble).Within(15);
         }
         else
         {
-            Assert.Equal(expectedValue, result);
+            await Assert.That(result).IsEqualTo(expectedValue);
         }
     }
 }

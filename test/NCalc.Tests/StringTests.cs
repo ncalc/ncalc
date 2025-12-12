@@ -1,45 +1,45 @@
 namespace NCalc.Tests;
 
-[Trait("Category", "Strings")]
+[Property("Category", "Strings")]
 public class StringTests
 {
-    [Theory]
-    [InlineData("経済協力開発機構", "'経済協力開発機構'")]
-    [InlineData("Hello", @"'\u0048\u0065\u006C\u006C\u006F'")]
-    [InlineData("だ", @"'\u3060'")]
-    [InlineData("\u0100", @"'\u0100'")]
-    public void ShouldHandleUnicode(string expected, string expression)
+    [Test]
+    [Arguments("経済協力開発機構", "'経済協力開発機構'")]
+    [Arguments("Hello", @"'\u0048\u0065\u006C\u006C\u006F'")]
+    [Arguments("だ", @"'\u3060'")]
+    [Arguments("\u0100", @"'\u0100'")]
+    public async Task ShouldHandleUnicode(string expected, string expression, CancellationToken cancellationToken)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression(expression).Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("'hello'", @"'\'hello\''")]
-    [InlineData(" ' hel lo ' ", @"' \' hel lo \' '")]
-    [InlineData("hel\nlo", @"'hel\nlo'")]
-    public void ShouldEscapeCharacters(string expected, string expression)
+    [Test]
+    [Arguments("'hello'", @"'\'hello\''")]
+    [Arguments(" ' hel lo ' ", @"' \' hel lo \' '")]
+    [Arguments("hel\nlo", @"'hel\nlo'")]
+    public async Task ShouldEscapeCharacters(string expected, string expression, CancellationToken cancellationToken)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression(expression).Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("'to' + 'to'", "toto")]
-    [InlineData("'one' + 2", "one2")]
-    [InlineData("2 + 'one'", "2one")]
-    [InlineData("'1' + '2'", "12")]
-    public void ShouldHandleStringConcatenation(string expression, object expected)
+    [Test]
+    [Arguments("'to' + 'to'", "toto")]
+    [Arguments("'one' + 2", "one2")]
+    [Arguments("2 + 'one'", "2one")]
+    [Arguments("'1' + '2'", "12")]
+    public async Task ShouldHandleStringConcatenation(string expression, object expected, CancellationToken cancellationToken)
     {
         var e = new Expression(expression, ExpressionOptions.StringConcat);
-        Assert.Equal(expected, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("1 + '2'")]
-    [InlineData("'1' + 2")]
-    [InlineData("'1' + '2'")]
-    public void ShouldHandleStringAddition(string expr)
+    [Test]
+    [Arguments("1 + '2'")]
+    [Arguments("'1' + 2")]
+    [Arguments("'1' + '2'")]
+    public async Task ShouldHandleStringAddition(string expr, CancellationToken cancellationToken)
     {
         var e = new Expression(expr, ExpressionOptions.DecimalAsDefault);
-        Assert.Equal(3m, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(3m);
     }
 }

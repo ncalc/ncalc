@@ -1,12 +1,12 @@
 namespace NCalc.Tests;
 
-[Trait("Category", "Multiple Threads")]
+[Property("Category", "Multiple Threads")]
 public class MultiThreadTests
 {
     private List<Exception> _exceptions;
 
-    [Fact]
-    public void Should_Reuse_Compiled_Expressions_In_Multi_Threaded_Mode()
+    [Test]
+    public async Task Should_Reuse_Compiled_Expressions_In_Multi_Threaded_Mode()
     {
         for (int cpt = 0; cpt < 20; cpt++)
         {
@@ -16,7 +16,7 @@ public class MultiThreadTests
 
             for (int i = 0; i < nbthreads; i++)
             {
-                var thread = new Thread(WorkerThread);
+                var thread = new Thread(async () => await WorkerThread());
                 thread.Start();
                 threads[i] = thread;
             }
@@ -36,12 +36,13 @@ public class MultiThreadTests
             if (_exceptions.Count > 0)
             {
                 Console.WriteLine(_exceptions[0].StackTrace);
+
                 Assert.Fail(_exceptions[0].Message);
             }
         }
     }
 
-    private void WorkerThread()
+    private async Task WorkerThread()
     {
         try
         {
@@ -52,7 +53,7 @@ public class MultiThreadTests
 
             var exp = n1 + " + " + n2;
             var e = new Expression(exp);
-            Assert.True(e.Evaluate().Equals(n1 + n2));
+            await Assert.That(e.Evaluate().Equals(n1 + n2)).IsTrue();
         }
         catch (Exception e)
         {

@@ -5,64 +5,64 @@ using NCalc.Tests.TestData;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "Evaluations")]
+[Property("Category", "Evaluations")]
 public class EvaluationTests
 {
-    [Theory]
-    [ClassData(typeof(EvaluationTestData))]
-    public void Expression_Should_Evaluate(string expression, object expected)
+    [Test]
+    [MethodDataSource<EvaluationTestData>(nameof(EvaluationTestData.GetTestData))]
+    public async Task Expression_Should_Evaluate(string expression, object expected, CancellationToken cancellationToken)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression(expression).Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [ClassData(typeof(ValuesTestData))]
-    public void ShouldParseValues(string input, object expectedValue)
+    [Test]
+    [MethodDataSource<ValuesTestData>(nameof(ValuesTestData.GetTestData))]
+    public async Task ShouldParseValues(string input, object expectedValue, CancellationToken cancellationToken)
     {
         var expression = new Expression(input);
 
-        var result = expression.Evaluate(TestContext.Current.CancellationToken);
+        var result = expression.Evaluate(cancellationToken);
 
         if (expectedValue is double expectedDouble)
         {
-            Assert.Equal(expectedDouble, (double)result!, precision: 15);
+            await Assert.That((double)result!).IsEqualTo(expectedDouble).Within(15);
         }
         else
         {
-            Assert.Equal(expectedValue, result);
+            await Assert.That(result).IsEqualTo(expectedValue);
         }
     }
 
-    [Fact]
-    public void ShouldEvaluateInFunction()
+    [Test]
+    public async Task ShouldEvaluateInFunction(CancellationToken cancellationToken)
     {
         // The last argument should not be evaluated
         var ein = new Expression("in((2 + 2), [1], [2], 1 + 2, 4, 1 / 0)");
         ein.Parameters["1"] = 2;
         ein.Parameters["2"] = 5;
 
-        Assert.Equal(true, ein.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(ein.Evaluate(cancellationToken)).IsEqualTo(true);
 
         var eout = new Expression("in((2 + 2), [1], [2], 1 + 2, 3)");
         eout.Parameters["1"] = 2;
         eout.Parameters["2"] = 5;
 
-        Assert.Equal(false, eout.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(eout.Evaluate(cancellationToken)).IsEqualTo(false);
 
         // Should work with strings
         var estring = new Expression("in('to' + 'to', 'titi', 'toto')");
 
-        Assert.Equal(true, estring.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(estring.Evaluate(cancellationToken)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void ShouldEvaluateTernaryExpression()
+    [Test]
+    public async Task ShouldEvaluateTernaryExpression(CancellationToken cancellationToken)
     {
-        Assert.Equal(1, new Expression("1+2<3 ? 3+4 : 1").Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("1+2<3 ? 3+4 : 1").Evaluate(cancellationToken)).IsEqualTo(1);
     }
 
-    [Fact]
-    public void Should_Not_Throw_Function_Not_Found_Issue_110()
+    [Test]
+    public async Task Should_Not_Throw_Function_Not_Found_Issue_110(CancellationToken cancellationToken)
     {
         const string expressionStr = "IN([acp_associated_person_transactions], 'T', 'Z', 'A')";
         var expression = new Expression(expressionStr)
@@ -74,85 +74,85 @@ public class EvaluationTests
             }
         };
 
-        Assert.Equal(true, expression.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(expression.Evaluate(cancellationToken)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void Should_Evaluate_Ifs()
+    [Test]
+    public async Task Should_Evaluate_Ifs(CancellationToken cancellationToken)
     {
         // Test first case true, return next value
         var eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)");
         eifs.Parameters["divider"] = 5;
         eifs.Parameters["divided"] = 5;
 
-        Assert.Equal(1d, eifs.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(eifs.Evaluate(cancellationToken)).IsEqualTo(1d);
 
         // Test first case false, no next case, return default value
         eifs = new Expression("ifs([divider] != 0, [divided] / [divider], -1)");
         eifs.Parameters["divider"] = 0;
         eifs.Parameters["divided"] = 5;
 
-        Assert.Equal(-1, eifs.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(eifs.Evaluate(cancellationToken)).IsEqualTo(-1);
 
         // Test first case false, next case true, return next value (eg 4th expr)
 
         eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)");
         eifs.Parameters["number"] = 5;
-        Assert.Equal(3, eifs.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(eifs.Evaluate(cancellationToken)).IsEqualTo(3);
 
         // Test first case false, next case false, return default value (eg 5th expr)
 
         eifs = new Expression("ifs([number] == 3, 5, [number] == 5, 3, 8)");
         eifs.Parameters["number"] = 1337;
 
-        Assert.Equal(8, eifs.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(eifs.Evaluate(cancellationToken)).IsEqualTo(8);
     }
 
-    [Fact]
-    public void ShouldEvaluateConditional()
+    [Test]
+    public async Task ShouldEvaluateConditional(CancellationToken cancellationToken)
     {
         var eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)");
         eif.Parameters["divider"] = 5;
         eif.Parameters["divided"] = 5;
 
-        Assert.Equal(1d, eif.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(eif.Evaluate(cancellationToken)).IsEqualTo(1d);
 
         eif = new Expression("if([divider] <> 0, [divided] / [divider], 0)");
         eif.Parameters["divider"] = 0;
         eif.Parameters["divided"] = 5;
-        Assert.Equal(0, eif.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(eif.Evaluate(cancellationToken)).IsEqualTo(0);
     }
 
-    [Fact]
-    public void ShouldHandleCaseSensitiveness()
+    [Test]
+    public async Task ShouldHandleCaseSensitiveness(CancellationToken cancellationToken)
     {
-        Assert.Equal(1M, new Expression("aBs(-1)", ExpressionOptions.DecimalAsDefault | ExpressionOptions.IgnoreCaseAtBuiltInFunctions).Evaluate(TestContext.Current.CancellationToken));
-        Assert.Equal(1M, new Expression("Abs(-1)", ExpressionOptions.DecimalAsDefault).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("aBs(-1)", ExpressionOptions.DecimalAsDefault | ExpressionOptions.IgnoreCaseAtBuiltInFunctions).Evaluate(cancellationToken)).IsEqualTo(1M);
+        await Assert.That(new Expression("Abs(-1)", ExpressionOptions.DecimalAsDefault).Evaluate(cancellationToken)).IsEqualTo(1M);
 
-        Assert.Throws<NCalcFunctionNotFoundException>(() => new Expression("aBs(-1)").Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(() => new Expression("aBs(-1)").Evaluate(cancellationToken)).ThrowsExactly<NCalcFunctionNotFoundException>();
     }
 
-    [Fact]
-    public void ShouldCompareDates()
+    [Test]
+    public async Task ShouldCompareDates(CancellationToken cancellationToken)
     {
         var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
-        Assert.Equal(true, new Expression($"#1{dateSeparator}1{dateSeparator}2009#==#1{dateSeparator}1{dateSeparator}2009#")
-            .Evaluate(TestContext.Current.CancellationToken));
-        Assert.Equal(false, new Expression($"#2{dateSeparator}1{dateSeparator}2009#==#1{dateSeparator}1{dateSeparator}2009#")
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression($"#1{dateSeparator}1{dateSeparator}2009#==#1{dateSeparator}1{dateSeparator}2009#")
+            .Evaluate(cancellationToken)).IsEqualTo(true);
+        await Assert.That(new Expression($"#2{dateSeparator}1{dateSeparator}2009#==#1{dateSeparator}1{dateSeparator}2009#")
+            .Evaluate(cancellationToken)).IsEqualTo(false);
     }
 
-    [Fact]
-    public void ShouldRoundAwayFromZero()
+    [Test]
+    public async Task ShouldRoundAwayFromZero(CancellationToken cancellationToken)
     {
-        Assert.Equal(22d, new Expression("Round(22.5, 0)")
-            .Evaluate(TestContext.Current.CancellationToken));
-        Assert.Equal(23d, new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("Round(22.5, 0)")
+            .Evaluate(cancellationToken)).IsEqualTo(22d);
+        await Assert.That(new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero)
+            .Evaluate(cancellationToken)).IsEqualTo(23d);
     }
 
-    [Fact]
-    public void ShouldEvaluateSubExpressions()
+    [Test]
+    public async Task ShouldEvaluateSubExpressions(CancellationToken cancellationToken)
     {
         var volume = new Expression("[surface] * h");
         var surface = new Expression("[l] * [L]");
@@ -161,15 +161,15 @@ public class EvaluationTests
         surface.Parameters["l"] = 1;
         surface.Parameters["L"] = 2;
 
-        Assert.Equal(6, volume.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(volume.Evaluate(cancellationToken)).IsEqualTo(6);
     }
 
-    [Theory]
-    [InlineData("Round(1.412;2)", 1.41)]
-    [InlineData("Max(5.1;10.2)", 10.2)]
-    [InlineData("Min(1.3;2)", 1.3)]
-    [InlineData("Pow(5;2)", 25d)]
-    public void ShouldAllowSemicolonAsArgumentSeparator(string expression, object expected)
+    [Test]
+    [Arguments("Round(1.412;2)", 1.41)]
+    [Arguments("Max(5.1;10.2)", 10.2)]
+    [Arguments("Min(1.3;2)", 1.3)]
+    [Arguments("Pow(5;2)", 25d)]
+    public async Task ShouldAllowSemicolonAsArgumentSeparator(string expression, object expected, CancellationToken cancellationToken)
     {
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
         var context = new LogicalExpressionParserContext(expression, ExpressionOptions.None)
@@ -179,12 +179,12 @@ public class EvaluationTests
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
 
-        Assert.Equal(expected, new Expression(logicalExpression)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression(logicalExpression)
+            .Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void ShouldAllowToUseCurlyBraces()
+    [Test]
+    public async Task ShouldAllowToUseCurlyBraces(CancellationToken cancellationToken)
     {
         var volume = new Expression("{surface} * h");
         var surface = new Expression("{l} * {L}");
@@ -193,19 +193,19 @@ public class EvaluationTests
         surface.Parameters["l"] = 1;
         surface.Parameters["L"] = 2;
 
-        Assert.Equal(6, volume.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(volume.Evaluate(cancellationToken)).IsEqualTo(6);
     }
 
-    [Theory]
-    [ClassData(typeof(NullCheckTestData))]
-    public void ShouldAllowOperatorsWithNulls(string expression, object expected)
+    [Test]
+    [MethodDataSource<NullCheckTestData>(nameof(NullCheckTestData.GetTestData))]
+    public async Task ShouldAllowOperatorsWithNulls(string expression, object expected, CancellationToken cancellationToken)
     {
         var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
-        Assert.Equal(expected, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void ShouldEvaluateArrayParameters()
+    [Test]
+    public async Task ShouldEvaluateArrayParameters(CancellationToken cancellationToken)
     {
         var e = new Expression("x * x", ExpressionOptions.IterateParameters)
         {
@@ -215,18 +215,18 @@ public class EvaluationTests
             }
         };
 
-        var result = (IList<object>?)e.Evaluate(TestContext.Current.CancellationToken);
+        var result = (IList<object>?)e.Evaluate(cancellationToken);
 
-        Assert.NotNull(result);
-        Assert.Equal(0, result[0]);
-        Assert.Equal(1, result[1]);
-        Assert.Equal(4, result[2]);
-        Assert.Equal(9, result[3]);
-        Assert.Equal(16, result[4]);
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result[0]).IsEqualTo(0);
+        await Assert.That(result[1]).IsEqualTo(1);
+        await Assert.That(result[2]).IsEqualTo(4);
+        await Assert.That(result[3]).IsEqualTo(9);
+        await Assert.That(result[4]).IsEqualTo(16);
     }
 
-    [Fact]
-    public void ShouldEvaluateArrayParametersWithFunctions()
+    [Test]
+    public async Task ShouldEvaluateArrayParametersWithFunctions(CancellationToken cancellationToken)
     {
         var e = new Expression("Round(x, 2)", ExpressionOptions.IterateParameters)
         {
@@ -236,37 +236,38 @@ public class EvaluationTests
             }
         };
 
-        var result = (IList<object>?)e.Evaluate(TestContext.Current.CancellationToken);
+        var result = (IList<object>?)e.Evaluate(cancellationToken);
 
-        Assert.NotNull(result);
-        Assert.Equal(0.51, result[0]);
-        Assert.Equal(1.67, result[1]);
-        Assert.Equal(2.24, result[2]);
-        Assert.Equal(3.57, result[3]);
-        Assert.Equal(4.11, result[4]);
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result[0]).IsEqualTo(0.51);
+        await Assert.That(result[1]).IsEqualTo(1.67);
+        await Assert.That(result[2]).IsEqualTo(2.24);
+        await Assert.That(result[3]).IsEqualTo(3.57);
+        await Assert.That(result[4]).IsEqualTo(4.11);
     }
 
-    [Fact]
-    public void AllowNullOrEmptyExpressions()
+    [Test]
+    public async Task AllowNullOrEmptyExpressions(CancellationToken cancellationToken)
     {
-        Assert.Equal("", new Expression("", ExpressionOptions.AllowNullOrEmptyExpressions)
-            .Evaluate(TestContext.Current.CancellationToken));
-        Assert.Null(new Expression((string?)null, ExpressionOptions.AllowNullOrEmptyExpressions)
-            .Evaluate(TestContext.Current.CancellationToken));
-    }
-    [Theory]
-    [InlineData("01 == ''")]
-    [InlineData("' ' == 01")]
-    [InlineData("\" \" == 01")]
-    [InlineData("\"dog\" == 01")]
-    public void ShouldUseStrictTypeMatching(string expression)
-    {
-        Assert.False(new Expression(expression, ExpressionOptions.StrictTypeMatching)
-            .Evaluate(TestContext.Current.CancellationToken) as bool?);
+        await Assert.That(new Expression("", ExpressionOptions.AllowNullOrEmptyExpressions)
+            .Evaluate(cancellationToken)).IsEqualTo("");
+        await Assert.That(new Expression((string?)null, ExpressionOptions.AllowNullOrEmptyExpressions)
+            .Evaluate(cancellationToken)).IsNull();
     }
 
-    [Fact]
-    public void SpaceCharacterComparisonShouldBeTrue()
+    [Test]
+    [Arguments("01 == ''")]
+    [Arguments("' ' == 01")]
+    [Arguments("\" \" == 01")]
+    [Arguments("\"dog\" == 01")]
+    public async Task ShouldUseStrictTypeMatching(string expression, CancellationToken cancellationToken)
+    {
+        await Assert.That(new Expression(expression, ExpressionOptions.StrictTypeMatching)
+            .Evaluate(cancellationToken) as bool?).IsFalse();
+    }
+
+    [Test]
+    public async Task SpaceCharacterComparisonShouldBeTrue(CancellationToken cancellationToken)
     {
         var expr = new Expression("[Test] == ' '")
         {
@@ -275,7 +276,7 @@ public class EvaluationTests
                 ["Test"] = ' '
             }
         };
-        var result = expr.Evaluate(TestContext.Current.CancellationToken);
-        Assert.True(result is true);
+        var result = expr.Evaluate(cancellationToken);
+        await Assert.That(result is true).IsTrue();
     }
 }

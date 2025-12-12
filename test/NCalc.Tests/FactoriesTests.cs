@@ -3,22 +3,23 @@ using NCalc.Tests.Fixtures;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "DependencyInjection")]
-public class FactoriesTests(FactoriesFixture fixture) : IClassFixture<FactoriesFixture>
+[Property("Category", "DependencyInjection")]
+[ClassDataSource<FactoriesFixture>(Shared = SharedType.PerClass)]
+public class FactoriesTests(FactoriesFixture fixture)
 {
     private readonly IExpressionFactory _expressionFactory = fixture.ExpressionFactory;
     private readonly ILogicalExpressionFactory _logicalExpressionFactory = fixture.LogicalExpressionFactory;
 
-    [Fact]
-    public void Expression_From_Factory_Should_Evaluate()
+    [Test]
+    public async Task Expression_From_Factory_Should_Evaluate(CancellationToken cancellationToken)
     {
-        Assert.Equal(4, _expressionFactory.Create("2+2").Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(_expressionFactory.Create("2+2").Evaluate(cancellationToken)).IsEqualTo(4);
     }
 
-    [Fact]
-    public void Logical_Expression_From_Factory_Should_Evaluate()
+    [Test]
+    public async Task Logical_Expression_From_Factory_Should_Evaluate(CancellationToken cancellationToken)
     {
-        Assert.Equal(4, _expressionFactory.Create(_logicalExpressionFactory.Create("2+2", ct: TestContext.Current.CancellationToken))
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(_expressionFactory.Create(_logicalExpressionFactory.Create("2+2", ct: cancellationToken))
+            .Evaluate(cancellationToken)).IsEqualTo(4);
     }
 }

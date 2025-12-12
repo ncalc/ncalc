@@ -4,37 +4,37 @@ using NCalc.Parser;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "Parser")]
+[Property("Category", "Parser")]
 public class ParserTests
 {
-    [Theory]
-    [InlineData("11+33 ", 44)]
-    [InlineData(" 11+33", 44)]
-    [InlineData(" 11+33 ", 44)]
-    [InlineData("0.0-1.1", -1.1)]
-    public void ShouldIgnoreWhitespacesIssue222(string formula, object expectedValue)
+    [Test]
+    [Arguments("11+33 ", 44)]
+    [Arguments(" 11+33", 44)]
+    [Arguments(" 11+33 ", 44)]
+    [Arguments("0.0-1.1", -1.1)]
+    public async Task ShouldIgnoreWhitespacesIssue222(string formula, object expectedValue, CancellationToken cancellationToken)
     {
         var expression = new Expression(formula, CultureInfo.InvariantCulture);
-        var result = expression.Evaluate(TestContext.Current.CancellationToken);
+        var result = expression.Evaluate(cancellationToken);
 
-        Assert.Equal(expectedValue, result);
+        await Assert.That(result).IsEqualTo(expectedValue);
     }
 
-    [Theory]
-    [InlineData("not( true )", false)]
-    [InlineData("not ( true )", false)]
-    [InlineData("not(true)", false)]
-    [InlineData(" not(true) ", false)]
-    public void NotBehaviorIssue226(string formula, object expectedValue)
+    [Test]
+    [Arguments("not( true )", false)]
+    [Arguments("not ( true )", false)]
+    [Arguments("not(true)", false)]
+    [Arguments(" not(true) ", false)]
+    public async Task NotBehaviorIssue226(string formula, object expectedValue, CancellationToken cancellationToken)
     {
         var expression = new Expression(formula, CultureInfo.InvariantCulture);
-        var result = expression.Evaluate(TestContext.Current.CancellationToken);
+        var result = expression.Evaluate(cancellationToken);
 
-        Assert.Equal(expectedValue, result);
+        await Assert.That(result).IsEqualTo(expectedValue);
     }
 
-    [Fact]
-    public void ShouldHandleNewLines()
+    [Test]
+    public async Task ShouldHandleNewLines(CancellationToken cancellationToken)
     {
         const string formula = """
                                2+3
@@ -43,108 +43,108 @@ public class ParserTests
                                """;
 
         var expression = new Expression(formula, CultureInfo.InvariantCulture);
-        var result = expression.Evaluate(TestContext.Current.CancellationToken);
+        var result = expression.Evaluate(cancellationToken);
 
-        Assert.Equal(5, result);
+        await Assert.That(result).IsEqualTo(5);
     }
 
-    [Fact]
-    public void RequireClosingAtIdentifiersIssue244()
+    [Test]
+    public async Task RequireClosingAtIdentifiersIssue244(CancellationToken cancellationToken)
     {
         const string formula = "[{Diagnostic}.Data]";
 
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: TestContext.Current.CancellationToken);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: cancellationToken);
 
-        Assert.IsType<Identifier>(logicalExpression);
+        await Assert.That(logicalExpression).IsTypeOf<Identifier>();
 
-        Assert.Equal("{Diagnostic}.Data", ((Identifier)logicalExpression).Name);
+        await Assert.That(((Identifier)logicalExpression).Name).IsEqualTo("{Diagnostic}.Data");
     }
 
-    [Fact]
-    public void AllowCharValues()
+    [Test]
+    public async Task AllowCharValues(CancellationToken cancellationToken)
     {
         const string formula = "'c'";
 
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues, ct: TestContext.Current.CancellationToken);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues, ct: cancellationToken);
 
-        Assert.IsType<ValueExpression>(logicalExpression);
+        await Assert.That(logicalExpression).IsTypeOf<ValueExpression>();
 
-        Assert.Equal('c', ((ValueExpression)logicalExpression).Value);
+        await Assert.That(((ValueExpression)logicalExpression).Value).IsEqualTo('c');
     }
 
-    [InlineData("(1+2)*3", 9)]
-    [InlineData("(8 * 8) + 1", 65)]
-    [InlineData("1 + 1", 2)]
-    [InlineData("-1 - 1", -2)]
-    [Theory]
-    public void ShouldHandleBinaryExpression(string formula, int expectedResult)
+    [Arguments("(1+2)*3", 9)]
+    [Arguments("(8 * 8) + 1", 65)]
+    [Arguments("1 + 1", 2)]
+    [Arguments("-1 - 1", -2)]
+    [Test]
+    public async Task ShouldHandleBinaryExpression(string formula, int expectedResult, CancellationToken cancellationToken)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: TestContext.Current.CancellationToken);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: cancellationToken);
 
-        Assert.IsType<BinaryExpression>(logicalExpression);
+        await Assert.That(logicalExpression).IsTypeOf<BinaryExpression>();
 
         var expression = new Expression(logicalExpression);
 
-        Assert.Equal(expectedResult, expression.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(expression.Evaluate(cancellationToken)).IsEqualTo(expectedResult);
     }
 
-    [InlineData("(1,2,3,4,5)", 5)]
-    [InlineData("()", 0)]
-    [InlineData("('Hello', func())", 2)]
-    [Theory]
-    public void ShouldParseLists(string formula, int arrayExpectedCount)
+    [Arguments("(1,2,3,4,5)", 5)]
+    [Arguments("()", 0)]
+    [Arguments("('Hello', func())", 2)]
+    [Test]
+    public async Task ShouldParseLists(string formula, int arrayExpectedCount, CancellationToken cancellationToken)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: TestContext.Current.CancellationToken);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: cancellationToken);
 
-        Assert.IsType<LogicalExpressionList>(logicalExpression);
+        await Assert.That(logicalExpression).IsTypeOf<LogicalExpressionList>();
 
-        Assert.Equal(arrayExpectedCount, ((LogicalExpressionList)logicalExpression).Count);
+        await Assert.That(((LogicalExpressionList)logicalExpression).Count).IsEqualTo(arrayExpectedCount);
     }
 
-    [InlineData("78b1941f4e7941c9bef656fad7326538")]
-    [InlineData("b1548bd5-2556-4d2a-9f47-bb8d421026dd")]
-    [InlineData("f44e449f-b02f-4f81-96d8-9292c5623b8b")]
-    [InlineData("db6ff6c1-8290-4bdb-8c32-b78f3f2f6231")]
-    [InlineData("e21aefee-8ffe-422c-a03f-7beb60975992")]
-    [InlineData("13f722a3-5139-4eda-bffb-ed32e8cc90d1")]
-    [InlineData("58ede4c6-2323-4b1a-ad66-c062fccb8473")]
-    [InlineData("F6A41126850F41489192C89A949B2392")]
-    [InlineData("E3825D69DAC04CA88D73E8CC3C8ADA2F")]
-    [InlineData("B0D256EB-E88C-4409-A80B-E7341295B9F1")]
-    [InlineData("C785E8B3-D080-45AF-947E-3D8F246788A6")]
-    [Theory]
-    public void ShouldParseGuids(string formula)
+    [Arguments("78b1941f4e7941c9bef656fad7326538")]
+    [Arguments("b1548bd5-2556-4d2a-9f47-bb8d421026dd")]
+    [Arguments("f44e449f-b02f-4f81-96d8-9292c5623b8b")]
+    [Arguments("db6ff6c1-8290-4bdb-8c32-b78f3f2f6231")]
+    [Arguments("e21aefee-8ffe-422c-a03f-7beb60975992")]
+    [Arguments("13f722a3-5139-4eda-bffb-ed32e8cc90d1")]
+    [Arguments("58ede4c6-2323-4b1a-ad66-c062fccb8473")]
+    [Arguments("F6A41126850F41489192C89A949B2392")]
+    [Arguments("E3825D69DAC04CA88D73E8CC3C8ADA2F")]
+    [Arguments("B0D256EB-E88C-4409-A80B-E7341295B9F1")]
+    [Arguments("C785E8B3-D080-45AF-947E-3D8F246788A6")]
+    [Test]
+    public async Task ShouldParseGuids(string formula, CancellationToken cancellationToken)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: TestContext.Current.CancellationToken);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: cancellationToken);
 
-        Assert.IsType<ValueExpression>(logicalExpression);
+        await Assert.That(logicalExpression).IsTypeOf<ValueExpression>();
 
-        Assert.IsType<Guid>(new Expression(logicalExpression).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression(logicalExpression).Evaluate(cancellationToken)).IsTypeOf<Guid>();
     }
 
-    [Fact]
-    public void ShouldParseGuidInsideFunction()
+    [Test]
+    public async Task ShouldParseGuidInsideFunction(CancellationToken cancellationToken)
     {
-        var logicalExpression = LogicalExpressionFactory.Create("getUser(78b1941f4e7941c9bef656fad7326538)", ct: TestContext.Current.CancellationToken);
+        var logicalExpression = LogicalExpressionFactory.Create("getUser(78b1941f4e7941c9bef656fad7326538)", ct: cancellationToken);
 
         if (logicalExpression is Function function)
         {
-            Assert.True(function.Parameters[0] is ValueExpression { Value: Guid });
+            await Assert.That(function.Parameters[0] is ValueExpression { Value: Guid }).IsTrue();
         }
         else
         {
-            Assert.Fail("Logical expression is not a function.");
+            Assert.Fail("Expression is not a Function");
         }
     }
 
-    [Fact]
-    public void OperatorPriorityIssue337()
+    [Test]
+    public async Task OperatorPriorityIssue337(CancellationToken cancellationToken)
     {
-        Assert.True((bool)new Expression("true or true and false").Evaluate(TestContext.Current.CancellationToken)!);
+        await Assert.That((bool)new Expression("true or true and false").Evaluate(cancellationToken)!).IsTrue();
     }
 
-    [Fact]
-    public void ShouldNotFailIssue372()
+    [Test]
+    public async Task ShouldNotFailIssue372()
     {
         var chars = new List<string>();
         for (var c = 'a'; c < 'z'; ++c)
@@ -171,25 +171,25 @@ public class ParserTests
             }
         }
 
-        Assert.Empty(failed);
+        await Assert.That(failed).IsEmpty();
     }
 
-    [Fact]
-    public void ShouldNotFailIssue399()
+    [Test]
+    public async Task ShouldNotFailIssue399(CancellationToken cancellationToken)
     {
         bool exceptionThrown = false;
 
         try
         {
-            var expressionOptions = ExpressionOptions.DecimalAsDefault | ExpressionOptions.NoCache;
+            const ExpressionOptions expressionOptions = ExpressionOptions.DecimalAsDefault | ExpressionOptions.NoCache;
             var expression = new Expression("0.3333333333333333333333 + 1.6666666666666666666667", expressionOptions, CultureInfo.InvariantCulture);
-            var result = expression.Evaluate(TestContext.Current.CancellationToken);
+            var result = expression.Evaluate(cancellationToken);
         }
         catch
         {
             exceptionThrown = true;
         }
 
-        Assert.False(exceptionThrown);
+        await Assert.That(exceptionThrown).IsFalse();
     }
 }

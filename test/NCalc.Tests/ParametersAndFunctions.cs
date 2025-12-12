@@ -1,21 +1,19 @@
 namespace NCalc.Tests;
 
-using Xunit;
-
-[Trait("Category", "Parameters and Functions")]
+[Property("Category", "Parameters and Functions")]
 public class ParametersAndFunctions
 {
-    [Fact]
-    public void ExpressionShouldEvaluateCustomFunctions()
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomFunctions(CancellationToken cancellationToken)
     {
         var e = new Expression("SecretOperation(3, 6)");
 
-        e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate(TestContext.Current.CancellationToken) + (int)args[1].Evaluate(TestContext.Current.CancellationToken);
-        Assert.Equal(9, e.Evaluate(TestContext.Current.CancellationToken));
+        e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate(cancellationToken) + (int)args[1].Evaluate(cancellationToken);
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(9);
     }
 
-    [Fact]
-    public void ExpressionShouldEvaluateCustomFunctionsWithParameters()
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomFunctionsWithParameters(CancellationToken cancellationToken)
     {
         var e = new Expression("SecretOperation([e], 6) + f");
         e.Parameters["e"] = 3;
@@ -23,11 +21,11 @@ public class ParametersAndFunctions
 
         e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
 
-        Assert.Equal(10, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(10);
     }
 
-    [Fact]
-    public void ExpressionShouldEvaluateCustomFunctionsWithSameName()
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomFunctionsWithSameName(CancellationToken cancellationToken)
     {
         var e = new Expression("SecretOperation(3, 6) + SecretOperation(1, 2)");
 
@@ -39,27 +37,27 @@ public class ParametersAndFunctions
 
             if (id != null)
             {
-                if (!d.ContainsKey(id))
+                if (!d.TryGetValue(id, out int value))
                 {
                     d[id] = 3;
                 }
                 else
                 {
-                    d[id]--;
+                    d[id] = --value;
                 }
             }
 
             return (int)args[0].Evaluate() + (int)args[1].Evaluate();
         };
 
-        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
-        Assert.Equal(12, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(12);
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(12);
 
-        Assert.Equal(2, d.FirstOrDefault().Value);
+        await Assert.That(d.FirstOrDefault().Value).IsEqualTo(2);
     }
 
-    [Fact]
-    public void ExpressionShouldEvaluateCustomFunctionsWithEffects()
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomFunctionsWithEffects(CancellationToken cancellationToken)
     {
         var e = new Expression("Repeat([value] > 10, 3)");
 
@@ -72,13 +70,13 @@ public class ParametersAndFunctions
             var r = (bool)args[0].Evaluate();
             if (r)
             {
-                if (!times.ContainsKey(id))
+                if (!times.TryGetValue(id, out int value))
                 {
                     times[id] = t;
                 }
                 else
                 {
-                    times[id]--;
+                    times[id] = --value;
                 }
             }
 
@@ -86,19 +84,19 @@ public class ParametersAndFunctions
         };
         e.Parameters["value"] = 9;
 
-        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(false);
 
         e.Parameters["value"] = 11;
-        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(false);
         e.Parameters["value"] = 12;
-        Assert.Equal(false, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(false);
         e.Parameters["value"] = 13;
-        Assert.Equal(true, e.Evaluate(TestContext.Current.CancellationToken));
-        Assert.Single(times);
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(true);
+        await Assert.That(times).HasSingleItem();
     }
 
-    [Fact]
-    public void ExpressionShouldEvaluateParameters()
+    [Test]
+    public async Task ExpressionShouldEvaluateParameters(CancellationToken cancellationToken)
     {
         var e = new Expression("Round(Pow(Pi, 2) + Pow([Pi Squared], 2) + [X], 2)");
 
@@ -107,11 +105,11 @@ public class ParametersAndFunctions
 
         e.DynamicParameters["Pi"] = _ => 3.14;
 
-        Assert.Equal(117.07, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(117.07);
     }
 
-    [Fact]
-    public void Should_Evaluate_Function_Only_Once_Issue_107()
+    [Test]
+    public async Task Should_Evaluate_Function_Only_Once_Issue_107(CancellationToken cancellationToken)
     {
         var counter = 0;
         var totalCounter = 0;
@@ -123,7 +121,7 @@ public class ParametersAndFunctions
         for (var i = 0; i < 10; i++)
         {
             counter = 0;
-            _ = expression.Evaluate(TestContext.Current.CancellationToken);
+            _ = expression.Evaluate(cancellationToken);
         }
 
         object Expression_EvaluateFunction(ExpressionFunctionData args)
@@ -133,32 +131,32 @@ public class ParametersAndFunctions
             return 1;
         }
 
-        Assert.Equal(10, totalCounter);
+        await Assert.That(totalCounter).IsEqualTo(10);
     }
 
-    [Fact]
-    public void ShouldOverrideExistingFunctions()
+    [Test]
+    public async Task ShouldOverrideExistingFunctions(CancellationToken cancellationToken)
     {
         var e = new Expression("Round(1.99, 2)");
 
-        Assert.Equal(1.99d, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(1.99d);
 
         e.Functions["Round"] = (_) => 3;
 
-        Assert.Equal(3, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(3);
     }
 
-    [Fact]
-    public void ShouldHandleCustomParametersWhenNoSpecificParameterIsDefined()
+    [Test]
+    public async Task ShouldHandleCustomParametersWhenNoSpecificParameterIsDefined(CancellationToken cancellationToken)
     {
         var e = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + 10, 2)");
 
         e.DynamicParameters["Pi"] = _ => 3.14;
-        e.Evaluate(TestContext.Current.CancellationToken);
+        e.Evaluate(cancellationToken);
     }
 
-    [Fact]
-    public void ShouldHandleCustomFunctionsInFunctions()
+    [Test]
+    public async Task ShouldHandleCustomFunctionsInFunctions(CancellationToken cancellationToken)
     {
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
 
@@ -170,42 +168,42 @@ public class ParametersAndFunctions
         e.DynamicParameters["y"] = _ => 2;
         e.DynamicParameters["z"] = _ => 3;
 
-        Assert.Equal(13d, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(13d);
     }
 
-    [Fact]
-    public void CustomFunctionShouldReturnNull()
+    [Test]
+    public async Task CustomFunctionShouldReturnNull(CancellationToken cancellationToken)
     {
         var e = new Expression("SecretOperation(3, 6)");
 
         e.Functions["SecretOperation"] = (_) => null;
 
-        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsNull();
     }
 
-    [Fact]
-    public void CustomParametersShouldReturnNull()
+    [Test]
+    public async Task CustomParametersShouldReturnNull(CancellationToken cancellationToken)
     {
         var e = new Expression("x");
 
         e.DynamicParameters["x"] = _ => null;
 
-        Assert.Null(e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(e.Evaluate(cancellationToken)).IsNull();
     }
 
-    [Theory]
-    [InlineData("notExistingfunction")]
-    [InlineData("andDoThis")]
-    public void ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName)
+    [Test]
+    [Arguments("notExistingfunction")]
+    [Arguments("andDoThis")]
+    public async Task ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName, CancellationToken cancellationToken)
     {
         var expression = new Expression($"{functionName}(3.14)");
         expression.Functions[functionName] = (_) => 1;
 
-        Assert.Equal(1, expression.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(expression.Evaluate(cancellationToken)).IsEqualTo(1);
     }
 
-    [Fact]
-    public void ShouldHandleCaseInsensitiveParameter()
+    [Test]
+    public async Task ShouldHandleCaseInsensitiveParameter(CancellationToken cancellationToken)
     {
         var expression = new Expression("name == 'Beatriz'")
         {
@@ -214,11 +212,11 @@ public class ParametersAndFunctions
                 { "Name", "Beatriz" }
             }
         };
-        Assert.Equal(true, expression.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(expression.Evaluate(cancellationToken)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void GetArgsCount()
+    [Test]
+    public async Task GetArgsCount(CancellationToken cancellationToken)
     {
         int count = 0;
         var expression = new Expression("count(1,2,3)")
@@ -234,22 +232,22 @@ public class ParametersAndFunctions
                 }
             }
         };
-        _ = expression.Evaluate(TestContext.Current.CancellationToken);
-        Assert.Equal(3, count);
+        _ = expression.Evaluate(cancellationToken);
+        await Assert.That(count).IsEqualTo(3);
     }
 
-    [Fact]
-    public void MaxShouldWorkWithUShortAndShortTypes()
+    [Test]
+    public async Task MaxShouldWorkWithUShortAndShortTypes(CancellationToken cancellationToken)
     {
-        var a = ushort.MaxValue;
-        var b = short.MaxValue;
+        const ushort a = ushort.MaxValue;
+        const short b = short.MaxValue;
 
         var expr = new Expression("Max([a], [b])");
         expr.Parameters["a"] = a;
         expr.Parameters["b"] = b;
 
-        var res = expr.Evaluate(TestContext.Current.CancellationToken);
-        int expected = ushort.MaxValue;
-        Assert.Equal(expected, res);
+        var res = expr.Evaluate(cancellationToken);
+        const int expected = ushort.MaxValue;
+        await Assert.That(res).IsEqualTo(expected);
     }
 }
