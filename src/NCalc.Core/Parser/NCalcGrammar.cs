@@ -10,15 +10,15 @@ namespace NCalc.Parser
         public static Parser<long> HecOctBinNumberParser()
         {
             var hexNumber = Terms.Text("0x")
-                .SkipAnd(Terms.AnyOf("0123456789abcdefABCDEF"))
+                .SkipAnd(Terms.AnyOf(Character.HexDigits))
                 .Then(x => Convert.ToInt64(x.ToString(), 16));
 
             var octalNumber = Terms.Text("0o")
-                .SkipAnd(Terms.AnyOf("01234567"))
+                .SkipAnd(Terms.AnyOf(Character.OctalDigits))
                 .Then(x => Convert.ToInt64(x.ToString(), 8));
 
             var binaryNumber = Terms.Text("0b")
-                .SkipAnd(Terms.AnyOf("01"))
+                .SkipAnd(Terms.AnyOf(Character.BinaryDigits))
                 .Then(x => Convert.ToInt64(x.ToString(), 2));
 
             return OneOf(hexNumber, octalNumber, binaryNumber);
