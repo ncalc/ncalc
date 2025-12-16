@@ -90,19 +90,7 @@ public static class LogicalExpressionParser
         // The Deferred helper creates a parser that can be referenced by others before it is defined
         var expression = Deferred<LogicalExpression>();
 
-        var hexNumber = Terms.Text("0x")
-            .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
-            .Then(x => Convert.ToInt64(x.ToString(), 16));
-
-        var octalNumber = Terms.Text("0o")
-            .SkipAnd(Terms.Pattern(c => "01234567".Contains(c)))
-            .Then(x => Convert.ToInt64(x.ToString(), 8));
-
-        var binaryNumber = Terms.Text("0b")
-            .SkipAnd(Terms.Pattern(c => c is '0' or '1'))
-            .Then(x => Convert.ToInt64(x.ToString(), 2));
-
-        var hexOctBinNumber = OneOf(hexNumber, octalNumber, binaryNumber)
+        var hexOctBinNumber = NCalcGrammar.HecOctBinNumberParser()
             .Then<LogicalExpression>(static d =>
             {
                 if (d is > int.MaxValue or < int.MinValue)
@@ -111,20 +99,16 @@ public static class LogicalExpressionParser
                 return new ValueExpression((int)d);
             });
 
-        var nonScientificParser = Not(OneOf(Terms.Text("."), Terms.Text("E", true)));
-
-        var intNumber = Terms.Number<int>(NumberOptions.Integer)
-            .AndSkip(nonScientificParser)
+        var intNumber = NCalcGrammar.IntegerParser()
             .Then<LogicalExpression>(static d => new ValueExpression(d));
 
-        var longNumber = Terms.Number<long>(NumberOptions.Integer)
-            .AndSkip(nonScientificParser)
+        var longNumber = NCalcGrammar.LongParser()
             .Then<LogicalExpression>(static d => new ValueExpression(d));
 
-        var decimalNumber = Terms.Number<decimal>(NumberOptions.Float)
+        var decimalNumber = NCalcGrammar.DecimalParser()
             .Then<LogicalExpression>(static d => new ValueExpression(d));
 
-        var doubleNumber = Terms.Number<double>(NumberOptions.Float)
+        var doubleNumber = NCalcGrammar.DoubleParser()
             .Then<LogicalExpression>(static (ctx, val) =>
             {
                 bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
@@ -152,68 +136,55 @@ public static class LogicalExpressionParser
         });
 
         var argumentSeparatorTerm = Terms.Char(argumentSeparator);
-        var divided = Terms.Text("/");
-        var times = Terms.Text("*");
-        var modulo = Terms.Text("%");
-        var minus = Terms.Text("-");
-        var plus = Terms.Text("+");
+        var divided = NCalcGrammar.DividedParser();
+        var times = NCalcGrammar.TimesParser();
+        var modulo = NCalcGrammar.ModuloParser();
+        var minus = NCalcGrammar.MinusParser();
+        var plus = NCalcGrammar.PlusParser();
 
-        var equal = OneOf(Terms.Text("=="), Terms.Text("="));
-        var notEqual = OneOf(Terms.Text("<>"), Terms.Text("!="));
-        var @in = Terms.Text("in", true);
-        var notIn = Terms.Text("not in", true);
+        var equal = NCalcGrammar.EqualParser();
+        var notEqual = NCalcGrammar.NotEqualParser();
+        var @in = NCalcGrammar.InPrser();
+        var notIn = NCalcGrammar.NotInParser();
 
-        var like = Terms.Text("like", true);
-        var notLike = Terms.Text("not like", true);
+        var like = NCalcGrammar.LikeParser();
+        var notLike = NCalcGrammar.NotLikeParser();
 
-        var greater = Terms.Text(">");
-        var greaterOrEqual = Terms.Text(">=");
-        var lesser = Terms.Text("<");
-        var lesserOrEqual = Terms.Text("<=");
+        var greater = NCalcGrammar.GreaterParser();
+        var greaterOrEqual = NCalcGrammar.GreaterOrEqualParser();
+        var lesser = NCalcGrammar.LesserParser();
+        var lesserOrEqual = NCalcGrammar.LesserOrEqualParser();
 
-        var leftShift = Terms.Text("<<");
-        var rightShift = Terms.Text(">>");
+        var leftShift = NCalcGrammar.LeftShiftParser();
+        var rightShift = NCalcGrammar.RightShiftParser();
 
-        var exponent = Terms.Text("**");
-        var openParen = Terms.Char('(');
-        var closeParen = Terms.Char(')');
-        var openBrace = Terms.Char('[');
-        var closeBrace = Terms.Char(']');
-        var openCurlyBrace = Terms.Char('{');
-        var closeCurlyBrace = Terms.Char('}');
-        var questionMark = Terms.Char('?');
-        var colon = Terms.Char(':');
-        var exclamation = Terms.Char('!');
+        var exponent = NCalcGrammar.ExponentParser();
+        var openParen = NCalcGrammar.OpenParenParser();
+        var closeParen = NCalcGrammar.CloseParenParser();
+        var openBrace = NCalcGrammar.OpenBraceParser();
+        var closeBrace = NCalcGrammar.CloseBraceParser();
+        var openCurlyBrace = NCalcGrammar.OpenCurlyBraceParser();
+        var closeCurlyBrace = NCalcGrammar.CloseCurlyBraceParser();
+        var questionMark = NCalcGrammar.QuestionMarkParser();
+        var colon = NCalcGrammar.ColonParser();
 
-        var identifier = Terms.Identifier();
+        var identifier = NCalcGrammar.IdentifierParser();
 
-        var not = OneOf(
-            Terms.Text("NOT", true).AndSkip(OneOf(Literals.WhiteSpace(), Not(AnyCharBefore(openParen)))),
-            Terms.Text("!"));
-        var and = OneOf(Terms.Text("AND", true), Terms.Text("&&"));
-        var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
+        var not = NCalcGrammar.NotParser();
+        var and = NCalcGrammar.AndParser();
+        var or = NCalcGrammar.OrParser();
 
-        var bitwiseAnd = Terms.Text("&");
-        var bitwiseOr = Terms.Text("|");
-        var bitwiseXOr = Terms.Text("^");
-        var bitwiseNot = Terms.Text("~");
+        var bitwiseAnd = NCalcGrammar.BitwiseAndParser();
+        var bitwiseOr = NCalcGrammar.BitwiseOrParser();
+        var bitwiseXOr = NCalcGrammar.BitwiseXOrParser();
+        var bitwiseNot = NCalcGrammar.BitwiseNotParser();
 
         // "(" expression ")"
         var groupExpression = Between(openParen, expression, closeParen);
 
-        var braceIdentifier = openBrace
-            .SkipAnd(AnyCharBefore(closeBrace, failOnEof: true, consumeDelimiter: true).ElseError("Brace not closed."));
-
-        var curlyBraceIdentifier =
-            openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, failOnEof: true, consumeDelimiter: true)
-                .ElseError("Brace not closed."));
-
         // ("[" | "{") identifier ("]" | "}")
-        var identifierExpression = OneOf(
-                braceIdentifier,
-                curlyBraceIdentifier,
-                identifier)
-            .Then<LogicalExpression>(static x => new Identifier(x.ToString()!));
+        var identifierExpression = NCalcGrammar.IdentifierExpressionParser()
+            .Then<LogicalExpression>(static x => new Identifier(x.ToString()));
 
         // list => "(" (expression (argumentSeparator expression)*)? ")"
         var populatedList =
@@ -221,41 +192,39 @@ public static class LogicalExpressionParser
                     closeParen.ElseError("Parenthesis not closed."))
                 .Then<LogicalExpression>(static values => new LogicalExpressionList(values));
 
-        var emptyList = openParen.AndSkip(closeParen).Then<LogicalExpression>(_ => new LogicalExpressionList());
+        var emptyList = NCalcGrammar.EmptyListParser()
+            .Then<LogicalExpression>(_ => new LogicalExpressionList());
 
         var list = OneOf(emptyList, populatedList);
 
         var function = identifier
             .And(list)
             .Then<LogicalExpression>(static x =>
-                new Function(new Identifier(x.Item1.ToString()!), (LogicalExpressionList)x.Item2));
+                new Function(new Identifier(x.Item1.ToString()), (LogicalExpressionList)x.Item2));
 
-        var booleanTrue = Terms.Text("true", true)
+        var booleanTrue = NCalcGrammar.TrueParser()
             .Then<LogicalExpression>(True);
-        var booleanFalse = Terms.Text("false", true)
+        var booleanFalse = NCalcGrammar.FalseParser()
             .Then<LogicalExpression>(False);
 
-        var singleQuotesStringValue =
-            Terms.String(quotes: StringLiteralQuotes.Single)
-                .Then<LogicalExpression>(static (ctx, value) =>
+        var singleQuotesStringValue = NCalcGrammar.SingleQuoteParser()
+            .Then<LogicalExpression>(static (ctx, value) =>
+            {
+                if (value.Length == 1 &&
+                    ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
                 {
-                    if (value.Length == 1 &&
-                        ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
-                    {
-                        return new ValueExpression(value.Span[0]);
-                    }
+                    return new ValueExpression(value.Span[0]);
+                }
 
-                    return new ValueExpression(value.ToString());
-                });
+                return new ValueExpression(value.ToString());
+            });
 
-        var doubleQuotesStringValue =
-            Terms
-                .String(quotes: StringLiteralQuotes.Double)
-                .Then<LogicalExpression>(static value => new ValueExpression(value.ToString()));
+        var doubleQuotesStringValue = NCalcGrammar.DoubleQuoteParser()
+            .Then<LogicalExpression>(static value => new ValueExpression(value.ToString()));
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
 
-        var charIsNumber = Literals.Pattern(char.IsNumber);
+        var charIsNumber = NCalcGrammar.CharIsNumberParser();
 
         var dateSeparator = cultureInfo.DateTimeFormat.DateSeparator;
         var timeSeparator = cultureInfo.DateTimeFormat.TimeSeparator;
@@ -327,40 +296,17 @@ public static class LogicalExpressionParser
             });
 
         // datetime => '#' dateAndTime | date | time  '#';
-        var dateTime = Terms
-            .Char('#')
+        var dateTime = NCalcGrammar.SharpTermsParser()
             .SkipAnd(OneOf(dateAndTime, date, time))
-            .AndSkip(Literals.Char('#'));
+            .AndSkip(NCalcGrammar.SharpLiteralsParser());
 
-        var isHexDigit = Character.IsHexDigit;
-
-        var eightHexSequence = Terms
-            .Pattern(isHexDigit, 8, 8);
-
-        var fourHexSequence = Terms
-            .Pattern(isHexDigit, 4, 4);
-
-        var twelveHexSequence = Terms
-            .Pattern(isHexDigit, 12, 12);
-
-        var thirtyTwoHexSequence = Terms
-            .Pattern(isHexDigit, 32, 32);
-
-        var guidWithHyphens = eightHexSequence
-                .AndSkip(minus)
-                .And(fourHexSequence)
-                .AndSkip(minus)
-                .And(fourHexSequence)
-                .AndSkip(minus)
-                .And(fourHexSequence)
-                .AndSkip(minus)
-                .And(twelveHexSequence)
+        var guidWithHyphens = NCalcGrammar.GuidWithHyphens()
             .Then<LogicalExpression>(static g =>
                     new ValueExpression(Guid.Parse(g.Item1.ToString() + g.Item2 + g.Item3 + g.Item4 + g.Item5)));
 
-        var guidWithoutHyphens = thirtyTwoHexSequence
+        var guidWithoutHyphens = NCalcGrammar.ThirtyTwoHexSequenceParser()
             .AndSkip(Not(decimalOrDoubleNumber))
-            .Then<LogicalExpression>(static g => new ValueExpression(Guid.Parse(g.ToString()!)));
+            .Then<LogicalExpression>(static g => new ValueExpression(Guid.Parse(g.ToString())));
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
 
@@ -390,7 +336,7 @@ public static class LogicalExpressionParser
             list);
 
         // factorial => primary ( "!" )* ;
-        var factorial = primary.And(ZeroOrMany(exclamation.AndSkip(Not(equal))))
+        var factorial = primary.And(NCalcGrammar.FactorialParser())
             .Then(static x =>
             {
                 var result = x.Item1;
@@ -504,16 +450,11 @@ public static class LogicalExpressionParser
                 : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2))
             .Or(logical);
 
-        var operatorSequence = ternary.LeftAssociative(
-            (OneOrMany(OneOf(
-                    divided, times, modulo, plus,
-                    minus, leftShift, rightShift, greaterOrEqual,
-                    lesserOrEqual, greater, lesser, equal,
-                    notEqual)),
-                static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
+        var operatorSequence = ternary.LeftAssociative((NCalcGrammar.OperatorParser(),
+            static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
-        var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
+        var expressionParser = expression.AndSkip(NCalcGrammar.ZeroOrManyWhiteSpaceParser()).Eof()
             .ElseError(InvalidTokenMessage);
 
         AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
