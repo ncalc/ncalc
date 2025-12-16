@@ -10,21 +10,20 @@ namespace NCalc.Parser
         public static Parser<long> HecOctBinNumberParser()
         {
             var hexNumber = Terms.Text("0x")
-                .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
+                .SkipAnd(Terms.AnyOf("0123456789abcdefABCDEF"))
                 .Then(x => Convert.ToInt64(x.ToString(), 16));
 
             var octalNumber = Terms.Text("0o")
-                .SkipAnd(Terms.Pattern(c => "01234567".Contains(c)))
+                .SkipAnd(Terms.AnyOf("01234567"))
                 .Then(x => Convert.ToInt64(x.ToString(), 8));
 
             var binaryNumber = Terms.Text("0b")
-                .SkipAnd(Terms.Pattern(c => c is '0' or '1'))
+                .SkipAnd(Terms.AnyOf("01"))
                 .Then(x => Convert.ToInt64(x.ToString(), 2));
 
             return OneOf(hexNumber, octalNumber, binaryNumber);
         }
 
-        [GenerateParser]
         public static Parser<string> NonScientificParser() =>
             Not(OneOf(Terms.Text("."), Terms.Text("E", true)));
 
@@ -267,8 +266,6 @@ namespace NCalc.Parser
 
             var equal = EqualParser();
             var notEqual = NotEqualParser();
-            var @in = InPrser();
-            var notIn = NotInParser();
 
             var greater = GreaterParser();
             var greaterOrEqual = GreaterOrEqualParser();
