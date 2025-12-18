@@ -91,11 +91,11 @@ public static class LogicalExpressionParser
         var expression = Deferred<LogicalExpression>();
 
         var hexNumber = Terms.Text("0x")
-            .SkipAnd(Terms.Pattern(Character.HexDigits.Contains))
+            .SkipAnd(Terms.Pattern(c => "0123456789abcdefABCDEF".Contains(c)))
             .Then(x => Convert.ToInt64(x.ToString(), 16));
 
         var octalNumber = Terms.Text("0o")
-            .SkipAnd(Terms.Pattern(Character.OctalDigits.Contains))
+            .SkipAnd(Terms.Pattern(c => "01234567".Contains(c)))
             .Then(x => Convert.ToInt64(x.ToString(), 8));
 
         var binaryNumber = Terms.Text("0b")
