@@ -4,7 +4,6 @@ using Parlot;
 using Parlot.Fluent;
 using Parlot.SourceGenerator;
 using Identifier = NCalc.Domain.Identifier;
-using System.Runtime.CompilerServices;
 
 namespace NCalc.Parser;
 
@@ -25,20 +24,7 @@ public static partial class LogicalExpressionParser
     private const string InvalidTokenMessage = "Invalid token in expression";
 
     [GenerateParser]
-    [IncludeUsings(
-       "NCalc.Domain",
-       "NCalc.Exceptions",
-       "NCalc.Visitors",
-       "System.Globalization",
-       "System.Collections.Concurrent",
-       "System.Runtime.CompilerServices"
-       )]
-    [IncludeFiles(
-       "src/NCalc.Core/Domain/*.cs",
-       "src/NCalc.Core/Exceptions/*.cs",
-       "src/NCalc.Core/Parser/*.cs",
-       "src/NCalc.Core/Visitors/ILogicalExpressionVisitor.cs"
-       )]
+    [IncludeGenerators("PolySharp")]
     private static Parser<LogicalExpression> CreateExpressionParser()
     {
         /*
