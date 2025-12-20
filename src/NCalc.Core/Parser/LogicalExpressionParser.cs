@@ -28,8 +28,8 @@ public static partial class LogicalExpressionParser
         Parser = CreateExpressionParser();
     }
 
-    [GenerateParser]
-    [IncludeGenerators("PolySharp")]
+    //[GenerateParser]
+    //[IncludeGenerators("PolySharp")]
     private static Parser<LogicalExpression> CreateExpressionParser()
     {
         /*
