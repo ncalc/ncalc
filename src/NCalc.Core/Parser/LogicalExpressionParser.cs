@@ -116,7 +116,7 @@ public static partial class LogicalExpressionParser
             return doubleNumber;
         });
 
-        var argumentSeparatorTerm = Select<LogicalExpressionParserContext, char>(ctx =>
+        var argumentSeparatorTerm = Select<LogicalExpressionParserContext, char>(static ctx =>
         {
             var separator = GetSeparatorChar(ctx.ParserOptions.ArgumentSeparator);
             return Terms.Char(separator);
@@ -260,8 +260,11 @@ public static partial class LogicalExpressionParser
         // time => number:number:number{.fractional}
         var timeDefinition = Select<LogicalExpressionParserContext, (TextSpan, TextSpan, TextSpan, TextSpan)>(ctx =>
         {
-            var timeSeparator = ctx.CultureInfo.DateTimeFormat.TimeSeparator;
-            var decimalSeparator = ctx.CultureInfo.NumberFormat.NumberDecimalSeparator;
+            var cultureInfo = ctx.ParserOptions != LogicalExpressionParserOptions.Default
+                ? ctx.ParserOptions.CultureInfo : ctx.CultureInfo;
+
+            var timeSeparator = cultureInfo.DateTimeFormat.TimeSeparator;
+            var decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator;
 
             return charIsNumber
                 .AndSkip(Literals.Text(timeSeparator))
