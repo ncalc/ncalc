@@ -65,10 +65,3 @@ AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
 |------------------ |---------:|----------:|----------:|-----:|-------:|----------:|
 | EvaluateNCalc     | 1.748 us | 0.0174 us | 0.0154 us |    1 | 0.1431 |   2.36 KB |
 | EvaluateDataTable | 4.409 us | 0.0305 us | 0.0238 us |    2 | 0.3357 |   5.58 KB |
-
-# Parlot parser compilation
-
-Parlot parser, which is used as a default parser in NCalc, supports parser compilation. It can improve the performance by 20%. You can find the benchmark results in Parlot [repository](https://github.com/sebastienros/parlot#performance).
-By default, it is disabled in NCalc, you can enable it by using AppContext switch:
-
-`AppContext.SetSwitch("NCalc.EnableParlotParserCompilation", true)`

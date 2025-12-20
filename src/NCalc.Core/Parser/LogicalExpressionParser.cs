@@ -13,7 +13,7 @@ namespace NCalc.Parser;
 public static partial class LogicalExpressionParser
 {
     // Cache for different parser configurations
-    private static Parser<LogicalExpression>? Parser = null;
+    private static readonly Parser<LogicalExpression> Parser;
 
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
@@ -22,6 +22,11 @@ public static partial class LogicalExpressionParser
     private const double MaxDecDouble = (double)decimal.MaxValue;
 
     private const string InvalidTokenMessage = "Invalid token in expression";
+
+    static LogicalExpressionParser()
+    {
+        Parser = CreateExpressionParser();
+    }
 
     [GenerateParser]
     [IncludeGenerators("PolySharp")]
@@ -519,9 +524,7 @@ public static partial class LogicalExpressionParser
         var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
             .ElseError(InvalidTokenMessage);
 
-        AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
-
-        return enableParserCompilation ? expressionParser.Compile() : expressionParser;
+        return expressionParser;
     }
 
     private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
@@ -538,9 +541,7 @@ public static partial class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        var parser = GetOrCreateExpressionParser();
-
-        if (parser.TryParse(context, out var result, out var error))
+        if (Parser.TryParse(context, out var result, out var error))
             return result;
 
         string message;
@@ -550,18 +551,6 @@ public static partial class LogicalExpressionParser
             message = $"Error parsing the expression at position {context.Scanner.Cursor.Position}";
 
         throw new NCalcParserException(message);
-    }
-
-    /// <summary>
-    /// Creates or retrieves a cached expression parser with the specified options.
-    /// </summary>
-    /// <returns>A parser configured with the specified options.</returns>
-    public static Parser<LogicalExpression> GetOrCreateExpressionParser()
-    {
-        if (Parser == null)
-            Parser = CreateExpressionParser();
-
-        return Parser;
     }
 
     /// <summary>
