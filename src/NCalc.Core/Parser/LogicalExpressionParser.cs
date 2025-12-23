@@ -188,7 +188,7 @@ public static partial class LogicalExpressionParser
                 braceIdentifier,
                 curlyBraceIdentifier,
                 identifier)
-            .Then<LogicalExpression>(static x => new Identifier(x.ToString()!));
+            .Then<LogicalExpression>(static x => new Identifier(x.ToString()));
 
         // list => "(" (expression (argumentSeparator expression)*)? ")"
         var populatedList =
@@ -203,7 +203,7 @@ public static partial class LogicalExpressionParser
         var function = identifier
             .And(list)
             .Then<LogicalExpression>(static x =>
-                new Function(new Identifier(x.Item1.ToString()!), (LogicalExpressionList)x.Item2));
+                new Function(new Identifier(x.Item1.ToString()), (LogicalExpressionList)x.Item2));
 
         var booleanTrue = Terms.Text("true", true)
             .Then<LogicalExpression>(True);
@@ -248,10 +248,11 @@ public static partial class LogicalExpressionParser
         // date => number/number/number
         var date = dateDefinition.Then<LogicalExpression>(static (ctx, date) =>
         {
-            var cultureInfo = ((LogicalExpressionParserContext)ctx).CultureInfo;
+            var context = (LogicalExpressionParserContext)ctx;
+            var cultureInfo = context.ParserOptions != LogicalExpressionParserOptions.Default
+                ? context.ParserOptions.CultureInfo : context.CultureInfo;
 
             var dateSeparator = cultureInfo.DateTimeFormat.DateSeparator;
-            var timeSeparator = cultureInfo.DateTimeFormat.TimeSeparator;
 
             if (DateTime.TryParse($"{date.Item1}{dateSeparator}{date.Item2}{dateSeparator}{date.Item3}",
                     cultureInfo, DateTimeStyles.None, out var result))
@@ -311,7 +312,6 @@ public static partial class LogicalExpressionParser
 
                 var dateSeparator = cultureInfo.DateTimeFormat.DateSeparator;
                 var timeSeparator = cultureInfo.DateTimeFormat.TimeSeparator;
-                var decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator;
 
                 if (dateTime.Item2.Item4 == "")
                 {
@@ -323,6 +323,7 @@ public static partial class LogicalExpressionParser
                     }
                 }
 
+                var decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator;
                 if (DateTime.TryParse(
                             @$"{dateTime.Item1.Item1}{dateSeparator}{dateTime.Item1.Item2}{dateSeparator}{dateTime.Item1.Item3} 
                             {dateTime.Item2.Item1}{timeSeparator}{dateTime.Item2.Item2}{timeSeparator}{dateTime.Item2.Item3}{decimalSeparator}{dateTime.Item2.Item4}",
@@ -368,7 +369,7 @@ public static partial class LogicalExpressionParser
 
         var guidWithoutHyphens = thirtyTwoHexSequence
             .AndSkip(Not(decimalOrDoubleNumber))
-            .Then<LogicalExpression>(static g => new ValueExpression(Guid.Parse(g.ToString()!)));
+            .Then<LogicalExpression>(static g => new ValueExpression(Guid.Parse(g.ToString())));
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens);
 
