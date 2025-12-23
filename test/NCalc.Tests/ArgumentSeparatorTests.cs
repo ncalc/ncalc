@@ -102,24 +102,6 @@ public class ArgumentSeparatorTests
     }
 
     [Fact]
-    public void Should_Cache_Parsers_For_Different_Separator_Options()
-    {
-        // Arrange
-        var options1 = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Comma);
-        var options2 = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
-        var options3 = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Comma); // Same as options1
-
-        // Act
-        var parser1 = LogicalExpressionParser.GetOrCreateExpressionParser(options1);
-        var parser2 = LogicalExpressionParser.GetOrCreateExpressionParser(options2);
-        var parser3 = LogicalExpressionParser.GetOrCreateExpressionParser(options3);
-
-        // Assert
-        Assert.NotSame(parser1, parser2); // Different separators should have different parsers
-        Assert.Same(parser1, parser3); // Same options should return cached parser
-    }
-
-    [Fact]
     public void Should_Support_Culture_And_Separator_Combination()
     {
         // Arrange
