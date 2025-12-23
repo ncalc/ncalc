@@ -1,18 +1,19 @@
 using NCalc.Exceptions;
 using NCalc.Parser;
+using System.Threading.Tasks;
 
 namespace NCalc.Tests;
 
 public class ArgumentSeparatorTests
 {
-    [Theory]
-    [InlineData("Max(1, 2)", 2, ArgumentSeparator.Comma)]
-    [InlineData("Max(1; 2)", 2, ArgumentSeparator.Semicolon)]
-    [InlineData("Min(3, 1)", 1, ArgumentSeparator.Comma)]
-    [InlineData("Min(3; 1)", 1, ArgumentSeparator.Semicolon)]
-    [InlineData("Round(3.14159, 2)", 3.14, ArgumentSeparator.Comma)]
-    [InlineData("Round(3.14159; 2)", 3.14, ArgumentSeparator.Semicolon)]
-    public void Should_Parse_Functions_With_Different_Separators(string expression, double expected, ArgumentSeparator separator)
+    [Test]
+    [Arguments("Max(1, 2)", 2, ArgumentSeparator.Comma)]
+    [Arguments("Max(1; 2)", 2, ArgumentSeparator.Semicolon)]
+    [Arguments("Min(3, 1)", 1, ArgumentSeparator.Comma)]
+    [Arguments("Min(3; 1)", 1, ArgumentSeparator.Semicolon)]
+    [Arguments("Round(3.14159, 2)", 3.14, ArgumentSeparator.Comma)]
+    [Arguments("Round(3.14159; 2)", 3.14, ArgumentSeparator.Semicolon)]
+    public async Task Should_Parse_Functions_With_Different_Separators(string expression, double expected, ArgumentSeparator separator, CancellationToken cancellationToken)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(separator);
@@ -23,18 +24,18 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
+        var evaluationResult = new Expression(result).Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(expected, Convert.ToDouble(evaluationResult), 2);
+        await Assert.That(Convert.ToDouble(evaluationResult)).IsEqualTo(expected).Within(2);
     }
 
-    [Theory]
-    [InlineData("if(true, 'yes', 'no')", "yes", ArgumentSeparator.Comma)]
-    [InlineData("if(true; 'yes'; 'no')", "yes", ArgumentSeparator.Semicolon)]
-    [InlineData("if(1 > 2, 10, 20)", 20, ArgumentSeparator.Comma)]
-    [InlineData("if(1 > 2; 10; 20)", 20, ArgumentSeparator.Semicolon)]
-    public void Should_Parse_Conditional_Functions_With_Different_Separators(string expression, object expected, ArgumentSeparator separator)
+    [Test]
+    [Arguments("if(true, 'yes', 'no')", "yes", ArgumentSeparator.Comma)]
+    [Arguments("if(true; 'yes'; 'no')", "yes", ArgumentSeparator.Semicolon)]
+    [Arguments("if(1 > 2, 10, 20)", 20, ArgumentSeparator.Comma)]
+    [Arguments("if(1 > 2; 10; 20)", 20, ArgumentSeparator.Semicolon)]
+    public async Task Should_Parse_Conditional_Functions_With_Different_Separators(string expression, object expected, ArgumentSeparator separator, CancellationToken cancellationToken)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(separator);
@@ -45,18 +46,18 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
+        var evaluationResult = new Expression(result).Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(expected, evaluationResult);
+        await Assert.That(evaluationResult).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("Max(1, 2)", ArgumentSeparator.Semicolon)] // Using comma in expression but semicolon separator
-    [InlineData("Max(1; 2)", ArgumentSeparator.Comma)] // Using semicolon in expression but comma separator
-    [InlineData("Min(1, 2)", ArgumentSeparator.Semicolon)] // Multiple arguments with wrong separator
-    [InlineData("Round(3.14; 2)", ArgumentSeparator.Comma)] // Different function with wrong separator
-    public void Should_Throw_Exception_With_Incorrect_Separator(string expression, ArgumentSeparator separator)
+    [Test]
+    [Arguments("Max(1, 2)", ArgumentSeparator.Semicolon)] // Using comma in expression but semicolon separator
+    [Arguments("Max(1; 2)", ArgumentSeparator.Comma)] // Using semicolon in expression but comma separator
+    [Arguments("Min(1, 2)", ArgumentSeparator.Semicolon)] // Multiple arguments with wrong separator
+    [Arguments("Round(3.14; 2)", ArgumentSeparator.Comma)] // Different function with wrong separator
+    public async Task Should_Throw_Exception_With_Incorrect_SeparatorAsync(string expression, ArgumentSeparator separator)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(separator);
@@ -66,18 +67,18 @@ public class ArgumentSeparatorTests
         };
 
         // Act & Assert
-        Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse(context));
+        await Assert.That(() => LogicalExpressionParser.Parse(context)).ThrowsExactly<NCalcParserException>();
     }
 
-    [Fact]
-    public void Should_Support_Mixed_Separators_In_Different_Parsers()
+    [Test]
+    public async Task Should_Support_Mixed_Separators_In_Different_Parsers(CancellationToken cancellationToken)
     {
         // Arrange
         var commaOptions = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Comma);
         var semicolonOptions = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
 
-        var commaExpression = "Max(1, 2)";
-        var semicolonExpression = "Max(3; 4)";
+        const string commaExpression = "Max(1, 2)";
+        const string semicolonExpression = "Max(3; 4)";
 
         var commaContext = new LogicalExpressionParserContext(commaExpression, ExpressionOptions.None)
         {
@@ -93,16 +94,16 @@ public class ArgumentSeparatorTests
         var commaResult = LogicalExpressionParser.Parse(commaContext);
         var semicolonResult = LogicalExpressionParser.Parse(semicolonContext);
 
-        var commaValue = new Expression(commaResult).Evaluate(TestContext.Current.CancellationToken);
-        var semicolonValue = new Expression(semicolonResult).Evaluate(TestContext.Current.CancellationToken);
+        var commaValue = new Expression(commaResult).Evaluate(cancellationToken);
+        var semicolonValue = new Expression(semicolonResult).Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(2, commaValue);
-        Assert.Equal(4, semicolonValue);
+        await Assert.That(commaValue).IsEqualTo(2);
+        await Assert.That(semicolonValue).IsEqualTo(4);
     }
 
-    [Fact]
-    public void Should_Cache_Parsers_For_Different_Separator_Options()
+    [Test]
+    public async Task Should_Cache_Parsers_For_Different_Separator_Options()
     {
         // Arrange
         var options1 = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Comma);
@@ -115,17 +116,17 @@ public class ArgumentSeparatorTests
         var parser3 = LogicalExpressionParser.GetOrCreateExpressionParser(options3);
 
         // Assert
-        Assert.NotSame(parser1, parser2); // Different separators should have different parsers
-        Assert.Same(parser1, parser3); // Same options should return cached parser
+        await Assert.That(parser2).IsNotSameReferenceAs(parser1); // Different separators should have different parsers
+        await Assert.That(parser3).IsSameReferenceAs(parser1); // Same options should return cached parser
     }
 
-    [Fact]
-    public void Should_Support_Culture_And_Separator_Combination()
+    [Test]
+    public async Task Should_Support_Culture_And_Separator_Combination(CancellationToken cancellationToken)
     {
         // Arrange
         var germanCulture = new CultureInfo("de-DE");
         var options = LogicalExpressionParserOptions.Create(germanCulture, ArgumentSeparator.Semicolon);
-        var expression = "Max(1.5; 2.3)"; // Using dots for decimals to avoid confusion with argument separator
+        const string expression = "Max(1.5; 2.3)"; // Using dots for decimals to avoid confusion with argument separator
 
         var context = new LogicalExpressionParserContext(expression, ExpressionOptions.None)
         {
@@ -134,17 +135,17 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
+        var evaluationResult = new Expression(result).Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(2.3, Convert.ToDouble(evaluationResult), 1);
+        await Assert.That(Convert.ToDouble(evaluationResult)).IsEqualTo(2.3).Within(1);
     }
 
-    [Theory]
-    [InlineData(ArgumentSeparator.Comma)]
-    [InlineData(ArgumentSeparator.Semicolon)]
-    [InlineData(ArgumentSeparator.Colon)]
-    public void Should_Support_Various_Separator_Characters(ArgumentSeparator separator)
+    [Test]
+    [Arguments(ArgumentSeparator.Comma)]
+    [Arguments(ArgumentSeparator.Semicolon)]
+    [Arguments(ArgumentSeparator.Colon)]
+    public async Task Should_Support_Various_Separator_Characters(ArgumentSeparator separator, CancellationToken cancellationToken)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(separator);
@@ -164,15 +165,16 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
+        var evaluationResult = new Expression(result).Evaluate(cancellationToken);
 
         // Assert
-        Assert.True(Math.Abs(Convert.ToDouble(evaluationResult) - 3.0) < 0.0001,
-            $"Expected 3, but got {evaluationResult} (type: {evaluationResult?.GetType()})");
+        await Assert.That(Convert.ToDouble(evaluationResult))
+                             .IsEqualTo(3.0)
+                             .Within(0.0001);
     }
 
-    [Fact]
-    public void Should_Maintain_Backward_Compatibility_With_Default_Comma_Separator()
+    [Test]
+    public async Task Should_Maintain_Backward_Compatibility_With_Default_Comma_Separator(CancellationToken cancellationToken)
     {
         // Arrange
         const string expression = "Max(2, 3)";
@@ -181,15 +183,14 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
+        var evaluationResult = new Expression(result).Evaluate(cancellationToken);
 
         // Assert
-        Assert.True(Math.Abs(Convert.ToDouble(evaluationResult) - 3.0) < 0.0001,
-            $"Expected 3, but got {evaluationResult} (type: {evaluationResult?.GetType()})");
+        await Assert.That(Math.Abs(Convert.ToDouble(evaluationResult))).IsEqualTo(3.0).Within(0.0001);
     }
 
-    [Fact]
-    public void Should_Support_Semicolon_Separator_With_Explicit_Options()
+    [Test]
+    public async Task Should_Support_Semicolon_Separator_With_Explicit_Options(CancellationToken cancellationToken)
     {
         // Arrange
         const string expression = "Max(2; 3)";
@@ -201,19 +202,18 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
+        var evaluationResult = new Expression(result).Evaluate(cancellationToken);
 
         // Assert
-        Assert.True(Math.Abs(Convert.ToDouble(evaluationResult) - 3.0) < 0.0001,
-            $"Expected 3, but got {evaluationResult} (type: {evaluationResult?.GetType()})");
+        await Assert.That(Math.Abs(Convert.ToDouble(evaluationResult))).IsEqualTo(3.0).Within(0.0001);
     }
 
-    [Fact]
-    public void Should_Support_Nested_Functions_With_Custom_Separator()
+    [Test]
+    public async Task Should_Support_Nested_Functions_With_Custom_Separator(CancellationToken cancellationToken)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
-        var expression = "Max(Min(1; 2); Max(3; 4))";
+        const string expression = "Max(Min(1; 2); Max(3; 4))";
 
         var context = new LogicalExpressionParserContext(expression, ExpressionOptions.None)
         {
@@ -222,18 +222,18 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
+        var evaluationResult = new Expression(result).Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(4, evaluationResult);
+        await Assert.That(evaluationResult).IsEqualTo(4);
     }
 
-    [Theory]
-    [InlineData("Max(1 , 2)", ArgumentSeparator.Comma)] // Spaces around separator
-    [InlineData("Max(1 ; 2)", ArgumentSeparator.Semicolon)]
-    [InlineData("Max( 1, 2 )", ArgumentSeparator.Comma)]  // Spaces around arguments
-    [InlineData("Max( 1; 2 )", ArgumentSeparator.Semicolon)]
-    public void Should_Handle_Whitespace_Around_Separators(string expression, ArgumentSeparator separator)
+    [Test]
+    [Arguments("Max(1 , 2)", ArgumentSeparator.Comma)] // Spaces around separator
+    [Arguments("Max(1 ; 2)", ArgumentSeparator.Semicolon)]
+    [Arguments("Max( 1, 2 )", ArgumentSeparator.Comma)]  // Spaces around arguments
+    [Arguments("Max( 1; 2 )", ArgumentSeparator.Semicolon)]
+    public async Task Should_Handle_Whitespace_Around_Separators(string expression, ArgumentSeparator separator, CancellationToken cancellationToken)
     {
         // Arrange
         var options = LogicalExpressionParserOptions.WithArgumentSeparator(separator);
@@ -244,19 +244,19 @@ public class ArgumentSeparatorTests
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
-        var evaluationResult = new Expression(result).Evaluate(TestContext.Current.CancellationToken);
+        var evaluationResult = new Expression(result).Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(2, evaluationResult);
+        await Assert.That(evaluationResult).IsEqualTo(2);
     }
 
-    [Fact]
-    public void Should_Handle_Single_Argument_Functions_Regardless_Of_Separator()
+    [Test]
+    public async Task Should_Handle_Single_Argument_Functions_Regardless_Of_Separator(CancellationToken cancellationToken)
     {
         // Arrange
         var commaOptions = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Comma);
         var semicolonOptions = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
-        var expression = "Abs(-5)"; // Single argument function
+        const string expression = "Abs(-5)"; // Single argument function
 
         var commaContext = new LogicalExpressionParserContext(expression, ExpressionOptions.None)
         {
@@ -272,11 +272,11 @@ public class ArgumentSeparatorTests
         var commaResult = LogicalExpressionParser.Parse(commaContext);
         var semicolonResult = LogicalExpressionParser.Parse(semicolonContext);
 
-        var commaValue = new Expression(commaResult).Evaluate(TestContext.Current.CancellationToken);
-        var semicolonValue = new Expression(semicolonResult).Evaluate(TestContext.Current.CancellationToken);
+        var commaValue = new Expression(commaResult).Evaluate(cancellationToken);
+        var semicolonValue = new Expression(semicolonResult).Evaluate(cancellationToken);
 
         // Assert
-        Assert.Equal(5.0, commaValue);
-        Assert.Equal(5.0, semicolonValue);
+        await Assert.That(commaValue).IsEqualTo(5.0);
+        await Assert.That(semicolonValue).IsEqualTo(5.0);
     }
 }

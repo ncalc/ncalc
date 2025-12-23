@@ -1,8 +1,9 @@
 ﻿#if NET8_0_OR_GREATER
 #nullable enable
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using NCalc.LambdaCompilation;
-
 // ReSharper disable MemberCanBeProtected.Local
 
 namespace NCalc.Tests;
@@ -12,7 +13,6 @@ namespace NCalc.Tests;
 [SuppressMessage("ReSharper", "UnusedMember.Local", Justification = "Reflection")]
 [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Style")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local", Justification = "Reflection")]
-[Trait("Category", "Lambdas")]
 
 public class LambdaTests
 {
@@ -139,147 +139,139 @@ public class LambdaTests
         }
     }
 
-    [Theory]
-    [InlineData("1+2", 3)]
-    [InlineData("1-2", -1)]
-    [InlineData("2*2", 4)]
-    [InlineData("10/2", 5)]
-    [InlineData("7%2", 1)]
-    public void ShouldHandleIntegers(string input, int expected)
+    [Test]
+    [Arguments("1+2", 3)]
+    [Arguments("1-2", -1)]
+    [Arguments("2*2", 4)]
+    [Arguments("10/2", 5)]
+    [Arguments("7%2", 1)]
+    public async Task ShouldHandleIntegers(string input, int expected, CancellationToken cancellationToken)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<int>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<int>(cancellationToken);
 
-        Assert.Equal(sut(), expected);
+        await Assert.That(sut()).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void ShouldHandleParameters()
+    [Test]
+    public async Task ShouldHandleParameters(CancellationToken cancellationToken)
     {
         var expression = new Expression("[FieldA] > 5 && [FieldB] = 'test'");
-        var sut = expression.ToLambda<Context, bool>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<Context, bool>(cancellationToken);
         var context = new Context { FieldA = 7, FieldB = "test" };
 
-        Assert.True(sut(context));
+        await Assert.That(sut(context)).IsTrue();
     }
 
-    [Fact]
-    public void ShouldHandleOverloadingSameParamCount()
+    [Test]
+    public async Task ShouldHandleOverloadingSameParamCount(CancellationToken cancellationToken)
     {
         var expression = new Expression("Test('Hello', ' world!')");
-        var sut = expression.ToLambda<Context, string>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<Context, string>(cancellationToken);
         var context = new Context();
 
-        Assert.Equal("Hello world!", sut(context));
+        await Assert.That(sut(context)).IsEqualTo("Hello world!");
     }
 
-    [Fact]
-    public void ShouldHandleOverloadingDifferentParamCount()
+    [Test]
+    public async Task ShouldHandleOverloadingDifferentParamCount(CancellationToken cancellationToken)
     {
         var expression = new Expression("Test(Test(1, 2), 3, 4)");
-        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<Context, int>(cancellationToken);
         var context = new Context();
 
-        Assert.Equal(10, sut(context));
+        await Assert.That(sut(context)).IsEqualTo(10);
     }
 
-    [Fact]
-    public void ShouldHandleOverloadingObjectParameters()
+    [Test]
+    public async Task ShouldHandleOverloadingObjectParameters(CancellationToken cancellationToken)
     {
         var expression = new Expression("Sum(CreateTestObject1(2), CreateTestObject2(2)) + Sum(CreateTestObject2(1), CreateTestObject1(5))");
-        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<Context, int>(cancellationToken);
         var context = new Context();
 
-        Assert.Equal(10, sut(context));
+        await Assert.That(sut(context)).IsEqualTo(10);
     }
 
-    [Fact]
-    public void ShouldHandleParamsKeyword()
+    [Test]
+    public async Task ShouldHandleParamsKeyword(CancellationToken cancellationToken)
     {
         var expression = new Expression("Sum(Test(1,1),2)");
-        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<Context, int>(cancellationToken);
         var context = new Context();
 
-        Assert.Equal(4, sut(context));
+        await Assert.That(sut(context)).IsEqualTo(4);
     }
 
-    [Fact]
-    public void ShouldHandleMixedParamsKeyword()
+    [Test]
+    public async Task ShouldHandleMixedParamsKeyword(CancellationToken cancellationToken)
     {
         var expression = new Expression("Sum('Your total is: ', Test(1,1), 2, 3)");
-        var sut = expression.ToLambda<Context, string>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<Context, string>(cancellationToken);
         var context = new Context();
 
-        Assert.Equal("Your total is: 7", sut(context));
+        await Assert.That(sut(context)).IsEqualTo("Your total is: 7");
     }
 
-    [Fact]
-    public void ShouldHandleCustomFunctions()
+    [Test]
+    public async Task ShouldHandleCustomFunctions(CancellationToken cancellationToken)
     {
         var expression = new Expression("Test(Test(1, 2), 3)");
-        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<Context, int>(cancellationToken);
         var context = new Context();
 
-        Assert.Equal(6, sut(context));
+        await Assert.That(sut(context)).IsEqualTo(6);
     }
 
-    [Fact]
-    public void ShouldHandleContextInheritance()
+    [Test]
+    public async Task ShouldHandleContextInheritance(CancellationToken cancellationToken)
     {
-        var lambda1 = new Expression("Multiply(5, 2)").ToLambda<SubContext, int>(TestContext.Current.CancellationToken);
-        var lambda2 = new Expression("Test(5, 5)").ToLambda<SubContext, int>(TestContext.Current.CancellationToken);
-        var lambda3 = new Expression("Test(1,2,3,4)").ToLambda<SubContext, int>(TestContext.Current.CancellationToken);
+        var lambda1 = new Expression("Multiply(5, 2)").ToLambda<SubContext, int>(cancellationToken);
+        var lambda2 = new Expression("Test(5, 5)").ToLambda<SubContext, int>(cancellationToken);
+        var lambda3 = new Expression("Test(1,2,3,4)").ToLambda<SubContext, int>(cancellationToken);
         var lambda4 = new Expression("Sum(CreateTestObject1(100), CreateTestObject2(100), CreateTestObject2(100))")
-            .ToLambda<SubContext, int>(TestContext.Current.CancellationToken);
+            .ToLambda<SubContext, int>(cancellationToken);
 
         var context = new SubContext();
-        Assert.Equal(10, lambda1(context));
-        Assert.Equal(5, lambda2(context));
-        Assert.Equal(10, lambda3(context));
-        Assert.Equal(400, lambda4(context));
+        await Assert.That(lambda1(context)).IsEqualTo(10);
+        await Assert.That(lambda2(context)).IsEqualTo(5);
+        await Assert.That(lambda3(context)).IsEqualTo(10);
+        await Assert.That(lambda4(context)).IsEqualTo(400);
     }
 
-    [Theory]
-    [InlineData("Test(1, 1, 1)")]
-    [InlineData("Test(1.0, 1.0, 1.0)")]
-    [InlineData("Test(1.0, 1, 1.0)")]
-    public void ShouldHandleImplicitConversion(string input)
+    [Test]
+    [Arguments("Test(1, 1, 1)")]
+    [Arguments("Test(1.0, 1.0, 1.0)")]
+    [Arguments("Test(1.0, 1, 1.0)")]
+    public async Task ShouldHandleImplicitConversion(string input, CancellationToken cancellationToken)
     {
-        var lambda = new Expression(input).ToLambda<Context, int>(TestContext.Current.CancellationToken);
+        var lambda = new Expression(input).ToLambda<Context, int>(cancellationToken);
 
         var context = new Context();
-        Assert.Equal(3, lambda(context));
+        await Assert.That(lambda(context)).IsEqualTo(3);
     }
 
-    [Fact]
-    public void MissingMethod()
+    [Test]
+    public void MissingMethod(CancellationToken cancellationToken)
     {
         var expression = new Expression("MissingMethod(1)");
-        try
-        {
-            _ = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
-        }
-        catch (MissingMethodException ex)
-        {
-            System.Diagnostics.Debug.Write(ex);
-            Assert.True(true);
-            return;
-        }
-        Assert.True(false);
+
+        Assert.ThrowsExactly<MissingMethodException>(() =>
+            expression.ToLambda<Context, int>(cancellationToken));
     }
 
-    [Fact]
-    public void ShouldHandleTernaryOperator()
+    [Test]
+    public async Task ShouldHandleTernaryOperator(CancellationToken cancellationToken)
     {
         var expression = new Expression("Test(1, 2) = 3 ? 1 : 2");
-        var sut = expression.ToLambda<Context, int>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<Context, int>(cancellationToken);
         var context = new Context();
 
-        Assert.Equal(1, sut(context));
+        await Assert.That(sut(context)).IsEqualTo(1);
     }
 
-    [Fact]
-    public void Issue1()
+    [Test]
+    public async Task Issue1(CancellationToken cancellationToken)
     {
         var expr = new Expression("2 + 2 - a - b - x");
 
@@ -291,110 +283,110 @@ public class LambdaTests
         expr.Parameters["a"] = a;
         expr.Parameters["b"] = b;
 
-        var f = expr.ToLambda<float>(TestContext.Current.CancellationToken); // Here it throws System.ArgumentNullException. Parameter name: expression
-        Assert.Equal(-14, f());
+        var f = expr.ToLambda<float>(cancellationToken); // Here it throws System.ArgumentNullException. Parameter name: expression
+        await Assert.That(f()).IsEqualTo(-14);
     }
 
-    [Theory]
-    [InlineData("if(true, true, false)")]
-    [InlineData("in(3, 1, 2, 3, 4)")]
-    public void ShouldHandleBuiltInFunctions(string input)
+    [Test]
+    [Arguments("if(true, true, false)")]
+    [Arguments("in(3, 1, 2, 3, 4)")]
+    public async Task ShouldHandleBuiltInFunctions(string input, CancellationToken cancellationToken)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
-        Assert.True(sut());
+        var sut = expression.ToLambda<bool>(cancellationToken);
+        await Assert.That(sut()).IsTrue();
     }
 
-    [Theory]
-    [InlineData("Min(CreateTestObject1(1), CreateTestObject1(2))", 1)]
-    [InlineData("Max(CreateTestObject1(1), CreateTestObject1(2))", 2)]
-    [InlineData("Min(1, 2)", 1)]
-    [InlineData("Max(1, 2)", 2)]
-    public void ShouldProritiseContextFunctions(string input, double expected)
+    [Test]
+    [Arguments("Min(CreateTestObject1(1), CreateTestObject1(2))", 1)]
+    [Arguments("Max(CreateTestObject1(1), CreateTestObject1(2))", 2)]
+    [Arguments("Min(1, 2)", 1)]
+    [Arguments("Max(1, 2)", 2)]
+    public async Task ShouldProritiseContextFunctions(string input, double expected, CancellationToken cancellationToken)
     {
         var expression = new Expression(input);
-        var lambda = expression.ToLambda<Context, double>(TestContext.Current.CancellationToken);
+        var lambda = expression.ToLambda<Context, double>(cancellationToken);
         var context = new Context();
         var actual = lambda(context);
-        Assert.Equal(expected, actual);
+        await Assert.That(actual).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("[FieldA] > [FieldC]", true)]
-    [InlineData("[FieldC] > 1.34", true)]
-    [InlineData("[FieldC] > (1.34 * 2) % 3", false)]
-    [InlineData("[FieldE] = 2", true)]
-    [InlineData("[FieldD] > 0", false)]
-    public void ShouldHandleDataConversions(string input, bool expected)
+    [Test]
+    [Arguments("[FieldA] > [FieldC]", true)]
+    [Arguments("[FieldC] > 1.34", true)]
+    [Arguments("[FieldC] > (1.34 * 2) % 3", false)]
+    [Arguments("[FieldE] = 2", true)]
+    [Arguments("[FieldD] > 0", false)]
+    public async Task ShouldHandleDataConversions(string input, bool expected, CancellationToken cancellationToken)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<Context, bool>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<Context, bool>(cancellationToken);
         var context = new Context { FieldA = 7, FieldB = "test", FieldC = 2.4m, FieldE = 2 };
 
-        Assert.Equal(expected, sut(context));
+        await Assert.That(sut(context)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("Min(3,2)", 2)]
-    [InlineData("Min(3.2,6.3)", 3.2)]
-    [InlineData("Max(2.6,9.6)", 9.6)]
-    [InlineData("Max(9,6)", 9.0)]
-    [InlineData("Pow(5,2)", 25)]
-    public void ShouldHandleNumericBuiltInFunctions(string input, double expected)
+    [Test]
+    [Arguments("Min(3,2)", 2)]
+    [Arguments("Min(3.2,6.3)", 3.2)]
+    [Arguments("Max(2.6,9.6)", 9.6)]
+    [Arguments("Max(9,6)", 9.0)]
+    [Arguments("Pow(5,2)", 25)]
+    public async Task ShouldHandleNumericBuiltInFunctions(string input, double expected, CancellationToken cancellationToken)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<object>(TestContext.Current.CancellationToken);
-        Assert.Equal(expected, sut());
+        var sut = expression.ToLambda<object>(cancellationToken);
+        await Assert.That(sut()).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("if(true, 1, 0.0)", 1.0)]
-    [InlineData("if(true, 1.0, 0)", 1.0)]
-    [InlineData("if(true, 1.0, 0.0)", 1.0)]
-    public void ShouldHandleFloatIfFunction(string input, double expected)
+    [Test]
+    [Arguments("if(true, 1, 0.0)", 1.0)]
+    [Arguments("if(true, 1.0, 0)", 1.0)]
+    [Arguments("if(true, 1.0, 0.0)", 1.0)]
+    public async Task ShouldHandleFloatIfFunction(string input, double expected, CancellationToken cancellationToken)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<object>(TestContext.Current.CancellationToken);
-        Assert.Equal(expected, sut());
+        var sut = expression.ToLambda<object>(cancellationToken);
+        await Assert.That(sut()).EqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("if(true, 1, 0)", 1)]
-    public void ShouldHandleIntIfFunction(string input, int expected)
+    [Test]
+    [Arguments("if(true, 1, 0)", 1)]
+    public async Task ShouldHandleIntIfFunction(string input, int expected, CancellationToken cancellationToken)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<object>(TestContext.Current.CancellationToken);
-        Assert.Equal(expected, sut());
+        var sut = expression.ToLambda<object>(cancellationToken);
+        await Assert.That(sut()).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("if(true, 'a', 'b')", "a")]
-    public void ShouldHandleStringIfFunction(string input, string expected)
+    [Test]
+    [Arguments("if(true, 'a', 'b')", "a")]
+    public async Task ShouldHandleStringIfFunctionAsync(string input, string expected, CancellationToken cancellationToken)
     {
         var expression = new Expression(input);
-        var sut = expression.ToLambda<object>(TestContext.Current.CancellationToken);
-        Assert.Equal(expected, sut());
+        var sut = expression.ToLambda<object>(cancellationToken);
+        await Assert.That(sut()).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void ShouldAllowValueTypeContexts()
+    [Test]
+    public async Task ShouldAllowValueTypeContexts(CancellationToken cancellationToken)
     {
         // Arrange
         const decimal expected = 6.908m;
         var expression = new Expression("Foo * 3.14");
-        var sut = expression.ToLambda<FooStruct, decimal>(TestContext.Current.CancellationToken);
+        var sut = expression.ToLambda<FooStruct, decimal>(cancellationToken);
         var context = new FooStruct();
 
         // Act
         var actual = sut(context);
 
         // Assert
-        Assert.Equal(expected, actual);
+        await Assert.That(actual).IsEqualTo(expected);
     }
 
     // https://github.com/sklose/NCalc2/issues/54
-    [Fact]
-    public void Issue54()
+    [Test]
+    public async Task Issue54(CancellationToken cancellationToken)
     {
         // Arrange
         const long expected = 9999999999L;
@@ -402,13 +394,13 @@ public class LambdaTests
         var e = new Expression(expression);
         var context = new object();
 
-        var lambda = e.ToLambda<object, long>(TestContext.Current.CancellationToken);
+        var lambda = e.ToLambda<object, long>(cancellationToken);
 
         // Act
         var actual = lambda(context);
 
         // Assert
-        Assert.Equal(expected, actual);
+        await Assert.That(actual).IsEqualTo(expected);
     }
 
     internal struct FooStruct
@@ -425,8 +417,8 @@ public class LambdaTests
         public double LambdaResult;
     }
 
-    [Fact]
-    public void ExpressionAndLambdaFuncBehaviorMatch()
+    [Test]
+    public async Task ExpressionAndLambdaFuncBehaviorMatch(CancellationToken cancellationToken)
     {
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
@@ -461,7 +453,7 @@ public class LambdaTests
                 currentContext.Func = expressionString;
 
                 var expression = new Expression(expressionString, CultureInfo.InvariantCulture);
-                var lambda = expression.ToLambda<ContextAndResult, double>(TestContext.Current.CancellationToken);
+                var lambda = expression.ToLambda<ContextAndResult, double>(cancellationToken);
 
                 for (var i = 0; i < testValues.Length; ++i)
                 {
@@ -477,7 +469,7 @@ public class LambdaTests
                         expression.Parameters["y"] = currentContext.y;
                     }
 
-                    currentContext.ExpressionResult = (double)expression.Evaluate(TestContext.Current.CancellationToken)!;
+                    currentContext.ExpressionResult = (double)expression.Evaluate(cancellationToken)!;
                     currentContext.LambdaResult = lambda(currentContext);
 
                     testResults.Add(currentContext);
@@ -528,9 +520,9 @@ public class LambdaTests
                         currentContext.Func = expressionString;
 
                         var expression = new Expression(expressionString);
-                        var lambda = expression.ToLambda<double>(TestContext.Current.CancellationToken);
+                        var lambda = expression.ToLambda<double>(cancellationToken);
 
-                        currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate(TestContext.Current.CancellationToken));
+                        currentContext.ExpressionResult = Convert.ToDouble(expression.Evaluate(cancellationToken));
                         currentContext.LambdaResult = lambda();
                         testResults.Add(currentContext);
                     }
@@ -553,13 +545,7 @@ public class LambdaTests
         // Assert
         foreach (var testContext in testResults)
         {
-            Assert.True(IsEqual(testContext.ExpressionResult, testContext.LambdaResult),
-                $"""
-                 context x: {testContext.x},
-                                     func: {testContext.Func},
-                                     Expression result: {testContext.ExpressionResult},
-                                     Lambda result: {testContext.LambdaResult}
-                 """);
+            await Assert.That(IsEqual(testContext.ExpressionResult, testContext.LambdaResult)).IsTrue();
         }
 
         return;
@@ -589,28 +575,28 @@ public class LambdaTests
         public double Log(double val1, double val2) => Math.Sin(val1) + 3;
     }
 
-    [Fact]
-    public void LambdaOverrideMathFunction()
+    [Test]
+    public async Task LambdaOverrideMathFunction(CancellationToken cancellationToken)
     {
         // Arrange
         ContextWithOverridenMethods context = new() { x = 3.5, y = 2.5 };
 
         // Not overriden function
         var expressionAbs = new Expression("Abs(x)");
-        var lambdaAbs = expressionAbs.ToLambda<ContextWithOverridenMethods, double>(TestContext.Current.CancellationToken);
+        var lambdaAbs = expressionAbs.ToLambda<ContextWithOverridenMethods, double>(cancellationToken);
 
         // Overriden functions
         var expressionCos = new Expression("Cos(x)");
         var lambdaCos = expressionCos
-            .ToLambda<ContextWithOverridenMethods, double>(TestContext.Current.CancellationToken);
+            .ToLambda<ContextWithOverridenMethods, double>(cancellationToken);
 
         var expressionLog1 = new Expression("Log(x)");
         var lambdaLog1 = expressionLog1
-            .ToLambda<ContextWithOverridenMethods, double>(TestContext.Current.CancellationToken);
+            .ToLambda<ContextWithOverridenMethods, double>(cancellationToken);
 
         var expressionLog2 = new Expression("Log(x, y)");
         var lambdaLog2 = expressionLog2
-            .ToLambda<ContextWithOverridenMethods, double>(TestContext.Current.CancellationToken);
+            .ToLambda<ContextWithOverridenMethods, double>(cancellationToken);
 
         // Act
         var actualAbs = lambdaAbs(context);
@@ -626,60 +612,60 @@ public class LambdaTests
         var expectedLog2 = context.Log(context.x, context.y);
 
         // Assert
-        Assert.Equal(expectedAbs, actualAbs);
-        Assert.Equal(expectedCos, actualCos);
-        Assert.Equal(expectedLog1, actualLog1);
-        Assert.Equal(expectedLog2, actualLog2);
+        await Assert.That(actualAbs).IsEqualTo(expectedAbs);
+        await Assert.That(actualCos).IsEqualTo(expectedCos);
+        await Assert.That(actualLog1).IsEqualTo(expectedLog1);
+        await Assert.That(actualLog2).IsEqualTo(expectedLog2);
     }
 
-    [Theory]
-    [InlineData(int.MaxValue, '+', int.MaxValue)]
-    [InlineData(int.MinValue, '-', int.MaxValue)]
-    [InlineData(int.MaxValue, '*', int.MaxValue)]
-    public void ShouldHandleOverflowInt(int a, char op, int b)
+    [Test]
+    [Arguments(int.MaxValue, '+', int.MaxValue)]
+    [Arguments(int.MinValue, '-', int.MaxValue)]
+    [Arguments(int.MaxValue, '*', int.MaxValue)]
+    public void ShouldHandleOverflowInt(int a, char op, int b, CancellationToken cancellationToken)
     {
         var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
-        var lambda = e.ToLambda<int>(TestContext.Current.CancellationToken);
+        var lambda = e.ToLambda<int>(cancellationToken);
 
         Assert.Throws<OverflowException>(() => lambda());
     }
 
-    [Fact]
-    public void ShouldAllowPowWithDecimals()
+    [Test]
+    public async Task ShouldAllowPowWithDecimals(CancellationToken cancellationToken)
     {
         var e = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
-        var lambda = e.ToLambda<decimal>(TestContext.Current.CancellationToken);
-        Assert.Equal(9.61m, lambda());
+        var lambda = e.ToLambda<decimal>(cancellationToken);
+        await Assert.That(lambda()).IsEqualTo(9.61m);
     }
 
-    [Fact]
-    public void ShouldUseDecimalsWithDecimalAsDefault()
+    [Test]
+    public async Task ShouldUseDecimalsWithDecimalAsDefault(CancellationToken cancellationToken)
     {
-        decimal val = 3.1m;
+        const decimal val = 3.1m;
 
         // Arrange
         var expressionAbs = new Expression("Abs(x)", ExpressionOptions.DecimalAsDefault);
         expressionAbs.Parameters["x"] = val;
-        var lambdaAbs = expressionAbs.ToLambda<decimal>(TestContext.Current.CancellationToken);
+        var lambdaAbs = expressionAbs.ToLambda<decimal>(cancellationToken);
 
         var expressionCeiling = new Expression("Ceiling(x)", ExpressionOptions.DecimalAsDefault);
         expressionCeiling.Parameters["x"] = val;
-        var lambdaCeiling = expressionCeiling.ToLambda<decimal>(TestContext.Current.CancellationToken);
+        var lambdaCeiling = expressionCeiling.ToLambda<decimal>(cancellationToken);
 
         var expressionFloor = new Expression("Floor(x)", ExpressionOptions.DecimalAsDefault);
         expressionFloor.Parameters["x"] = val;
-        var lambdaFloor = expressionFloor.ToLambda<decimal>(TestContext.Current.CancellationToken);
+        var lambdaFloor = expressionFloor.ToLambda<decimal>(cancellationToken);
 
         var expressionSign = new Expression("Sign(x)", ExpressionOptions.DecimalAsDefault);
         expressionSign.Parameters["x"] = val;
-        var lambdaSign = expressionSign.ToLambda<decimal>(TestContext.Current.CancellationToken);
+        var lambdaSign = expressionSign.ToLambda<decimal>(cancellationToken);
 
         var expressionTruncate = new Expression("Truncate(x)", ExpressionOptions.DecimalAsDefault);
         expressionTruncate.Parameters["x"] = val;
-        var lambdaTruncate = expressionTruncate.ToLambda<decimal>(TestContext.Current.CancellationToken);
+        var lambdaTruncate = expressionTruncate.ToLambda<decimal>(cancellationToken);
 
         // Act
         var actualAbs = lambdaAbs();
@@ -698,20 +684,20 @@ public class LambdaTests
         var expectedTruncate = Math.Truncate(val);
 
         // Assert
-        Assert.Equal(expectedAbs, actualAbs);
-        Assert.Equal(expectedCeiling, actualCeiling);
-        Assert.Equal(expectedFloor, actualFloor);
-        Assert.Equal(expectedSign, actualSign);
-        Assert.Equal(expectedTruncate, actualTruncate);
+        await Assert.That(actualAbs).IsEqualTo(expectedAbs);
+        await Assert.That(actualCeiling).IsEqualTo(expectedCeiling);
+        await Assert.That(actualFloor).IsEqualTo(expectedFloor);
+        await Assert.That(actualSign).IsEqualTo(expectedSign);
+        await Assert.That(actualTruncate).IsEqualTo(expectedTruncate);
     }
 
-    [Theory]
-    [InlineData("test", "%est", true, ExpressionOptions.None)]
-    [InlineData("TEST", "%est", false, ExpressionOptions.None)]
-    [InlineData("TEST", "%est", true, ExpressionOptions.CaseInsensitiveStringComparer)]
-    [InlineData("this is a test", "%is a%", true, ExpressionOptions.None)]
-    [InlineData("this is a test", "%ITS A%", false, ExpressionOptions.None)]
-    public void ShouldHandleLikeOperator(string val, string right, bool expected, ExpressionOptions opts)
+    [Test]
+    [Arguments("test", "%est", true, ExpressionOptions.None)]
+    [Arguments("TEST", "%est", false, ExpressionOptions.None)]
+    [Arguments("TEST", "%est", true, ExpressionOptions.CaseInsensitiveStringComparer)]
+    [Arguments("this is a test", "%is a%", true, ExpressionOptions.None)]
+    [Arguments("this is a test", "%ITS A%", false, ExpressionOptions.None)]
+    public async Task ShouldHandleLikeOperator(string val, string right, bool expected, ExpressionOptions opts, CancellationToken cancellationToken)
     {
         string[] ops = ["like", "not like"];
         // Arrange
@@ -723,27 +709,27 @@ public class LambdaTests
             var expressionLike = new Expression($"x {op} '{right}'", opts);
             expressionLike.Parameters["x"] = val;
 
-            var lambdaAbs = expressionLike.ToLambda<bool>(TestContext.Current.CancellationToken);
+            var lambdaAbs = expressionLike.ToLambda<bool>(cancellationToken);
 
             // Act
             var actualAbs = lambdaAbs();
-            var expectedAbs = expressionLike.Evaluate(TestContext.Current.CancellationToken);
+            var expectedAbs = expressionLike.Evaluate(cancellationToken);
             Console.WriteLine($"Value: {val}, Pattern: {right}, Result: {actualAbs}");
 
             // Assert
-            Assert.Equal(expected, actualAbs);
-            Assert.Equal(expectedAbs, actualAbs);
+            await Assert.That(actualAbs).IsEqualTo(expected);
+            await Assert.That(actualAbs).IsEqualTo((bool)expectedAbs);
         }
     }
 
-    [Theory]
-    [InlineData("test", "'a','test','z'", true, ExpressionOptions.None)]
-    [InlineData("TEST", "'a','test','z'", false, ExpressionOptions.None)]
-    [InlineData("TEST", "'a','test','z'", true, ExpressionOptions.CaseInsensitiveStringComparer)]
-    [InlineData("this", "'this','is','a','test'", true, ExpressionOptions.None)]
-    [InlineData("THIS", "'this','is','a','test'", false, ExpressionOptions.None)]
-    [InlineData("THIS", "'this','is','a','test'", true, ExpressionOptions.CaseInsensitiveStringComparer)]
-    public void ShouldHandleInOperator_String(string val, string list, bool expected, ExpressionOptions opts)
+    [Test]
+    [Arguments("test", "'a','test','z'", true, ExpressionOptions.None)]
+    [Arguments("TEST", "'a','test','z'", false, ExpressionOptions.None)]
+    [Arguments("TEST", "'a','test','z'", true, ExpressionOptions.CaseInsensitiveStringComparer)]
+    [Arguments("this", "'this','is','a','test'", true, ExpressionOptions.None)]
+    [Arguments("THIS", "'this','is','a','test'", false, ExpressionOptions.None)]
+    [Arguments("THIS", "'this','is','a','test'", true, ExpressionOptions.CaseInsensitiveStringComparer)]
+    public async Task ShouldHandleInOperator_String(string val, string list, bool expected, ExpressionOptions opts, CancellationToken cancellationToken)
     {
         string[] ops = ["in", "not in"];
 
@@ -755,84 +741,84 @@ public class LambdaTests
             var expression = new Expression($"x {op} ({list})", opts);
             expression.Parameters["x"] = val;
 
-            var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
+            var lambda = expression.ToLambda<bool>(cancellationToken);
 
             var actual = lambda();
-            var expectedEval = (bool)expression.Evaluate(TestContext.Current.CancellationToken);
+            var expectedEval = (bool)expression.Evaluate(cancellationToken);
 
-            Assert.Equal(exp, actual);
-            Assert.Equal(expectedEval, actual);
+            await Assert.That(actual).IsEqualTo(exp);
+            await Assert.That(actual).IsEqualTo(expectedEval);
         }
     }
 
-    [Theory]
-    [InlineData("test", new[] { "a", "test", "z" }, true)]
-    [InlineData("nope", new[] { "a", "test", "z" }, false)]
-    [InlineData("x",    new string[] { },             false)] // empty list
-    [InlineData("dup",  new[] { "dup", "dup" },       true)]  // duplicates
-    [InlineData("Test", new[] { "a", "test", "z" },   false)] // case sensitivity
-    public void ShouldHandleInOperatorWithVariables_String(string x, string[] y, bool expected)
+    [Test]
+    [Arguments("test", new[] { "a", "test", "z" }, true)]
+    [Arguments("nope", new[] { "a", "test", "z" }, false)]
+    [Arguments("x", new string[] { }, false)] // empty list
+    [Arguments("dup", new[] { "dup", "dup" }, true)]  // duplicates
+    [Arguments("Test", new[] { "a", "test", "z" }, false)] // case sensitivity
+    public async Task ShouldHandleInOperatorWithVariables_String(string x, string[] y, bool expected, CancellationToken cancellationToken)
     {
         var expression = new Expression("x in y", ExpressionOptions.None);
         expression.Parameters["x"] = x;
         expression.Parameters["y"] = y; // string[] is fine
 
-        var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
+        var lambda = expression.ToLambda<bool>(cancellationToken);
 
         var actual = lambda();
-        var expectedEval = (bool)expression.Evaluate(TestContext.Current.CancellationToken);
+        var expectedEval = (bool)expression.Evaluate(cancellationToken);
 
-        Assert.Equal(expected, actual);
-        Assert.Equal(expectedEval, actual);
-}
+        await Assert.That(actual).IsEqualTo(expected);
+        await Assert.That(actual).IsEqualTo(expectedEval);
+    }
 
-    [Theory]
-    [InlineData(3, new[] { 1, 2, 3 }, true)]
-    [InlineData(4, new[] { 1, 2, 3 }, false)]
-    [InlineData(7, new int[] { },     false)] // empty list
-    public void ShouldHandleInOperatorWithVariables_Int(int x, int[] y, bool expected)
+    [Test]
+    [Arguments(3, new[] { 1, 2, 3 }, true)]
+    [Arguments(4, new[] { 1, 2, 3 }, false)]
+    [Arguments(7, new int[] { }, false)] // empty list
+    public async Task ShouldHandleInOperatorWithVariables_Int(int x, int[] y, bool expected, CancellationToken cancellationToken)
     {
         var expression = new Expression("x in y", ExpressionOptions.None);
         expression.Parameters["x"] = x;
         // NCalc is happy with arrays; if needed you can box: y.Cast<object>().ToArray()
         expression.Parameters["y"] = y;
 
-        var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
+        var lambda = expression.ToLambda<bool>(cancellationToken);
 
         var actual = lambda();
 
-        Assert.Equal(expected, actual);
+        await Assert.That(expected).IsEqualTo(actual);
     }
 
-    [Fact]
-    public void ShouldHandleInOperatorWithVariables_ListInt()
+    [Test]
+    public async Task ShouldHandleInOperatorWithVariables_ListInt(CancellationToken cancellationToken)
     {
         var expression = new Expression("x in y", ExpressionOptions.None);
         expression.Parameters["x"] = 3;
         // NCalc is happy with arrays; if needed you can box: y.Cast<object>().ToArray()
         expression.Parameters["y"] = new List<int> { 1, 2, 3 };
 
-        var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
+        var lambda = expression.ToLambda<bool>(cancellationToken);
 
         var actual = lambda();
 
-        Assert.True(actual);
+        await Assert.That(actual).IsTrue();
     }
 
-    [Theory]
-    [InlineData(3.0, new[] { 1.0, 2.0, 3.0 }, true)]
-    [InlineData(3.0, new[] { 1.1, 2.2, 3.3 }, false)]
-    public void ShouldHandleInOperatorWithVariables_Double(double x, double[] y, bool expected)
+    [Test]
+    [Arguments(3.0, new[] { 1.0, 2.0, 3.0 }, true)]
+    [Arguments(3.0, new[] { 1.1, 2.2, 3.3 }, false)]
+    public async Task ShouldHandleInOperatorWithVariables_Double(double x, double[] y, bool expected, CancellationToken cancellationToken)
     {
         var expression = new Expression("x in y", ExpressionOptions.None);
         expression.Parameters["x"] = x;
         expression.Parameters["y"] = y;
 
-        var lambda = expression.ToLambda<bool>(TestContext.Current.CancellationToken);
+        var lambda = expression.ToLambda<bool>(cancellationToken);
 
         var actual = lambda();
 
-        Assert.Equal(expected, actual);
+        await Assert.That(actual).IsEqualTo(expected);
     }
 }
 #endif
