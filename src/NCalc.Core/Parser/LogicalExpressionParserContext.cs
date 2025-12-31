@@ -3,20 +3,16 @@ using Parlot.Fluent;
 
 namespace NCalc.Parser;
 
-public sealed class LogicalExpressionParserContext(string text, ExpressionOptions options, CancellationToken ct = default)
-    : ParseContext(new Scanner(text), false, true, ct)
+public sealed class LogicalExpressionParserContext(string text, ExpressionOptions? options = null, LogicalExpressionParserOptions? parserOptions = null, CancellationToken ct = default)
+    : ParseContext(new Scanner(text), ct)
 {
     /// <summary>
     /// Parser options containing culture info and argument separator settings.
     /// </summary>
-    public LogicalExpressionParserOptions ParserOptions { get; init; } = LogicalExpressionParserOptions.Default;
+    public readonly LogicalExpressionParserOptions ParserOptions = parserOptions ?? LogicalExpressionParserOptions.Default;
 
-    public ExpressionOptions Options { get; } = options;
-
-    public CultureInfo CultureInfo { get; } = CultureInfo.CurrentCulture;
-
-    public LogicalExpressionParserContext(string text, ExpressionOptions options, CultureInfo cultureInfo, CancellationToken ct = default) : this(text, options, ct)
-    {
-        CultureInfo = cultureInfo;
-    }
+    /// <summary>
+    /// Expression options for parsing, like decimal handling.
+    /// </summary>
+    public readonly ExpressionOptions Options = options ?? ExpressionOptions.None;
 }

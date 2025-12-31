@@ -4,6 +4,7 @@ using NCalc.DependencyInjection;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
+using NCalc.Parser;
 using NCalc.Visitors;
 
 namespace NCalc.Tests;
@@ -116,9 +117,9 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomCache : ILogicalExpressionCache
     {
-        public bool TryGetValue(string expression, out LogicalExpression logicalExpression) => throw new NCalcException("Stub method intented for testing.");
+        public bool TryGetValue(LogicalExpressionCacheKey key, out LogicalExpression logicalExpression) => throw new NCalcException("Stub method intented for testing.");
 
-        public void Set(string expression, LogicalExpression logicalExpression)
+        public void Set(LogicalExpressionCacheKey key, LogicalExpression logicalExpression)
         {
         }
     }
