@@ -58,7 +58,7 @@ public class DateTimeTests
 
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
             var expr2 = new Expression("#27.05.2025 12:00:00#");
-            var res2 = expr.Evaluate(TestContext.Current.CancellationToken);
+            var res2 = expr2.Evaluate(TestContext.Current.CancellationToken);
 
             var dt = new DateTime(2025, 05, 27, 12, 0, 0);
 
@@ -84,7 +84,7 @@ public class DateTimeTests
 
             var ruCulture = CultureInfo.GetCultureInfo("ru-RU");
             var expr2 = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None, ruCulture);
-            var res2 = expr.Evaluate(TestContext.Current.CancellationToken);
+            var res2 = expr2.Evaluate(TestContext.Current.CancellationToken);
 
             var dt = new DateTime(2025, 05, 27, 12, 0, 0);
 
