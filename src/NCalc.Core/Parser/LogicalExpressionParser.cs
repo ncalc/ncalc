@@ -577,7 +577,7 @@ public static partial class LogicalExpressionParser
         var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
             .ElseError(InvalidTokenMessage);
 
-        return expressionParser.Compile();
+        return expressionParser;
     }
 
     private static LogicalExpression ThrowUnknownOperatorSequence(LogicalExpression _, LogicalExpression __)
