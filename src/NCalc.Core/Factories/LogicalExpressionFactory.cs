@@ -48,13 +48,13 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
 
     public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
     {
-        var parserContext = new LogicalExpressionParserContext(expression, options, ct);
+        var parserContext = new LogicalExpressionParserContext(expression, options, ct: ct);
         return LogicalExpressionParser.Parse(parserContext);
     }
 
     public static LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
     {
-        var parserContext = new LogicalExpressionParserContext(expression, options, cultureInfo, ct);
+        var parserContext = new LogicalExpressionParserContext(expression, options, LogicalExpressionParserOptions.FromCultureInfo(cultureInfo), ct);
         return LogicalExpressionParser.Parse(parserContext);
     }
 }

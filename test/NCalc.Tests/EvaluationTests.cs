@@ -171,11 +171,8 @@ public class EvaluationTests
     [InlineData("Pow(5;2)", 25d)]
     public void ShouldAllowSemicolonAsArgumentSeparator(string expression, object expected)
     {
-        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
-        var context = new LogicalExpressionParserContext(expression, ExpressionOptions.None)
-        {
-            ParserOptions = options
-        };
+        var options = LogicalExpressionParserOptions.FromArgumentSeparator(ArgumentSeparator.Semicolon);
+        var context = new LogicalExpressionParserContext(expression, ExpressionOptions.None, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
 
