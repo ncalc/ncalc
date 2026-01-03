@@ -8,6 +8,9 @@ using NCalc.Factories;
 
 namespace NCalc.Benchmarks;
 
+[SimpleJob(RuntimeMoniker.Net80)]
+[SimpleJob(RuntimeMoniker.Net10_0)]
+[RankColumn]
 [CategoriesColumn]
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]

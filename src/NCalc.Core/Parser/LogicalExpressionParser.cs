@@ -101,14 +101,6 @@ public static partial class LogicalExpressionParser
 
         var nonScientificParser = Not(OneOf(Terms.Text("."), Terms.Text("E", true)));
 
-        var intNumber = Terms.Number<int>(NumberOptions.Integer)
-            .AndSkip(nonScientificParser)
-            .Then<LogicalExpression>(static d => new ValueExpression(d));
-
-        var longNumber = Terms.Number<long>(NumberOptions.Integer)
-            .AndSkip(nonScientificParser)
-            .Then<LogicalExpression>(static d => new ValueExpression(d));
-
         var decimalNumber = Terms.Number<decimal>(NumberOptions.Float)
             .Then<LogicalExpression>(static d => new ValueExpression(d));
 
@@ -144,7 +136,8 @@ public static partial class LogicalExpressionParser
         var argumentSeparator_Colon = Terms.Char(':');
         var argumentSeparator_Comma = Terms.Char(',');
 
-        var argumentSeparatorDefinition = Select((ctx) => {
+        var argumentSeparatorDefinition = Select((ctx) =>
+        {
             var argumentSeparator = ((LogicalExpressionParserContext)ctx).ParserOptions.ArgumentSeparator;
             return argumentSeparator switch
             {
@@ -216,7 +209,7 @@ public static partial class LogicalExpressionParser
                 braceIdentifier,
                 curlyBraceIdentifier,
                 identifier)
-            .Then<LogicalExpression>(static x => new NCalc.Domain.Identifier(x.ToString()!));
+            .Then<LogicalExpression>(static x => new Domain.Identifier(x.ToString()));
 
         // list => "(" (expression (argumentSeparator expression)*)? ")"
         var populatedList =
@@ -231,7 +224,7 @@ public static partial class LogicalExpressionParser
         var function = identifier
             .And(list)
             .Then<LogicalExpression>(static x =>
-            new NCalc.Domain.Function(new NCalc.Domain.Identifier(x.Item1.ToString()!), (LogicalExpressionList)x.Item2));
+            new Function(new Domain.Identifier(x.Item1.ToString()), (LogicalExpressionList)x.Item2));
 
         var booleanTrue = Terms.Text("true", true)
             .Then<LogicalExpression>(static _ => new ValueExpression(true));
@@ -265,7 +258,8 @@ public static partial class LogicalExpressionParser
         var dateSeparator_Dash = Literals.Text("-");
 
         // Authorized date separators: '-', '.', '/' which are the most commonly used internationally.
-        var dateSeparatorDefinition = Select((ctx) => {
+        var dateSeparatorDefinition = Select((ctx) =>
+        {
             var dateSeparator = ((LogicalExpressionParserContext)ctx).ParserOptions.CultureInfo.DateTimeFormat.DateSeparator;
             return dateSeparator switch
             {
@@ -285,17 +279,17 @@ public static partial class LogicalExpressionParser
         // date => number/number/number
         var date = dateDefinition.Then<LogicalExpression>(static (ctx, date) =>
         {
-            #if NET6_0_OR_GREATER
+#if NET6_0_OR_GREATER
             if (DateTime.TryParse(date.Span, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
             {
                 return new ValueExpression(result);
             }
-            #else
+#else
             if (DateTime.TryParse(date.ToString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
             {
                 return new ValueExpression(result);
             }
-            #endif
+#endif
 
             throw new FormatException("Invalid DateTime format.");
         });
@@ -303,7 +297,8 @@ public static partial class LogicalExpressionParser
         var decimalSeparator_Dot = Literals.Text(".");
         var decimalSeparator_Comma = Literals.Text(",");
 
-        var numberDecimalDefinition = Select((ctx) => {
+        var numberDecimalDefinition = Select((ctx) =>
+        {
             var decimalSeparator = ((LogicalExpressionParserContext)ctx).ParserOptions.CultureInfo.NumberFormat.NumberDecimalSeparator;
             return decimalSeparator switch
             {
@@ -317,7 +312,8 @@ public static partial class LogicalExpressionParser
         var timeSeparator_Dot = Literals.Text(".");
         var timeSeparator_Comma = Literals.Text(",");
 
-        var timeSeparatorDefinition = Select((ctx) => {
+        var timeSeparatorDefinition = Select((ctx) =>
+        {
             var timeSeparator = ((LogicalExpressionParserContext)ctx).ParserOptions.CultureInfo.DateTimeFormat.TimeSeparator;
             return timeSeparator switch
             {
@@ -339,17 +335,17 @@ public static partial class LogicalExpressionParser
         var time = timeDefinition.Then<LogicalExpression>(static (ctx, time) =>
         {
             var cultureInfo = ((LogicalExpressionParserContext)ctx).ParserOptions.CultureInfo;
-            #if NET6_0_OR_GREATER
+#if NET6_0_OR_GREATER
             if (TimeSpan.TryParse(time.Span, cultureInfo, out var result))
             {
                 return new ValueExpression(result);
             }
-            #else
+#else
             if (TimeSpan.TryParse(time.ToString(), cultureInfo, out var result))
             {
                 return new ValueExpression(result);
             }
-            #endif
+#endif
 
             throw new FormatException("Invalid TimeSpan format.");
         });
@@ -360,17 +356,17 @@ public static partial class LogicalExpressionParser
             {
                 var cultureInfo = ((LogicalExpressionParserContext)ctx).ParserOptions.CultureInfo;
 
-                #if NET6_0_OR_GREATER
+#if NET6_0_OR_GREATER
                 if (DateTime.TryParse(dateTime.Span, cultureInfo, DateTimeStyles.None, out var result))
                 {
                     return new ValueExpression(result);
                 }
-                #else
+#else
                 if (DateTime.TryParse(dateTime.ToString(), cultureInfo, DateTimeStyles.None, out var result))
                 {
                     return new ValueExpression(result);
                 }
-                #endif
+#endif
 
                 throw new FormatException("Invalid DateTime format.");
             });
@@ -403,7 +399,7 @@ public static partial class LogicalExpressionParser
 #if NET6_0_OR_GREATER
                 return new ValueExpression(Guid.Parse(g.Span));
 #else
-                return new ValueExpression(Guid.Parse(g.ToString()!));
+                return new ValueExpression(Guid.Parse(g.ToString()));
 #endif
             });
 
@@ -414,7 +410,7 @@ public static partial class LogicalExpressionParser
 #if NET6_0_OR_GREATER
                 return new ValueExpression(Guid.Parse(g.Span));
 #else
-                return new ValueExpression(Guid.Parse(g.ToString()!));
+                return new ValueExpression(Guid.Parse(g.ToString()));
 #endif
             });
 
@@ -581,9 +577,7 @@ public static partial class LogicalExpressionParser
         var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
             .ElseError(InvalidTokenMessage);
 
-        AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
-
-        return enableParserCompilation ? expressionParser.Compile() : expressionParser;
+        return expressionParser.Compile();
     }
 
     private static LogicalExpression ThrowUnknownOperatorSequence(LogicalExpression _, LogicalExpression __)
