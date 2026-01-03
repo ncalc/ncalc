@@ -488,23 +488,16 @@ public static class MathHelper
 
     public static object Factorial(object? result)
     {
-        switch (result)
+        return result switch
         {
-            case int v:
-                return CalculateFactorial(v);
-            case long v:
-                return CalculateFactorial(v);
-            case float v:
-                return CalculateFactorial(v);
-            case double v:
-                return CalculateFactorial(v);
-            case decimal v:
-                return CalculateFactorial(v);
-            case BigInteger v:
-                return CalculateFactorial(v);
-            default:
-                throw new ArgumentException("Unsupported numeric type.", nameof(result));
-        }
+            int v => CalculateFactorial(v),
+            long v => CalculateFactorial(v),
+            float v => CalculateFactorial(v),
+            double v => CalculateFactorial(v),
+            decimal v => CalculateFactorial(v),
+            BigInteger v => CalculateFactorial(v),
+            _ => throw new ArgumentException("Unsupported numeric type.", nameof(result)),
+        };
     }
 
 #if NET
@@ -524,6 +517,9 @@ public static class MathHelper
 #else
     private static dynamic CalculateFactorial(dynamic n)
     {
+        if (n < 0)
+            throw new ArgumentOutOfRangeException(nameof(n));
+
         var r = 1;
 
         for (var i = 1 + 1; i <= n; i++)
