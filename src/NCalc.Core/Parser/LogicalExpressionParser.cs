@@ -279,13 +279,15 @@ public static partial class LogicalExpressionParser
         // date => number/number/number
         var date = dateDefinition.Then<LogicalExpression>(static (ctx, date) =>
         {
+            var cultureInfo = ((LogicalExpressionParserContext)ctx).ParserOptions.CultureInfo;
+
 #if NET6_0_OR_GREATER
-            if (DateTime.TryParse(date.Span, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
+            if (DateTime.TryParse(date.Span, cultureInfo, DateTimeStyles.None, out var result))
             {
                 return new ValueExpression(result);
             }
 #else
-            if (DateTime.TryParse(date.ToString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
+            if (DateTime.TryParse(date.ToString(), cultureInfo, DateTimeStyles.None, out var result))
             {
                 return new ValueExpression(result);
             }
@@ -335,6 +337,7 @@ public static partial class LogicalExpressionParser
         var time = timeDefinition.Then<LogicalExpression>(static (ctx, time) =>
         {
             var cultureInfo = ((LogicalExpressionParserContext)ctx).ParserOptions.CultureInfo;
+
 #if NET6_0_OR_GREATER
             if (TimeSpan.TryParse(time.Span, cultureInfo, out var result))
             {
