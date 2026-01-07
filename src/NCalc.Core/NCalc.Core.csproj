@@ -39,6 +39,6 @@
         <PackageReference Include="ExtendedNumerics.BigDecimal" Version="3003.0.0.346" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.1" />
         <PackageReference Include="Microsoft.Extensions.Logging.TraceSource" Version="10.0.1" />
-        <PackageReference Include="Parlot" Version="1.6.0-preview.7" />
+        <PackageReference Include="Parlot" Version="1.6.0-preview.8" />
     </ItemGroup>
 </Project>
