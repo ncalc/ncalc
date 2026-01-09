@@ -1,5 +1,4 @@
 ﻿using System.Collections.Frozen;
-using NCalc.LambdaCompilation;
 
 namespace NCalc.LambdaCompilation.Reflection;
 
