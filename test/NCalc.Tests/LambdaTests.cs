@@ -95,6 +95,11 @@ public class LambdaTests
             return Math.Min(obj1.Count1, obj2.Count1);
         }
 
+        public double If(bool condition, double trueRes, double falseRes)
+        {
+            return condition ? trueRes : falseRes;
+        }
+
         public class TestObject1
         {
             public int Count1 { get; set; }
@@ -310,9 +315,22 @@ public class LambdaTests
     [InlineData("Max(CreateTestObject1(1), CreateTestObject1(2))", 2)]
     [InlineData("Min(1, 2)", 1)]
     [InlineData("Max(1, 2)", 2)]
+    [InlineData("If(true, 3, 2)", 3)]
     public void ShouldProritiseContextFunctions(string input, double expected)
     {
         var expression = new Expression(input);
+        var lambda = expression.ToLambda<Context, double>(TestContext.Current.CancellationToken);
+        var context = new Context();
+        var actual = lambda(context);
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData("ABS(-1)", 1)]
+    [InlineData("ROUND(1.32, 1)", 1.3)]
+    public void ShouldIgnoreCaseAtBuiltInFunctions(string input, double expected)
+    {
+        var expression = new Expression(input, ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
         var lambda = expression.ToLambda<Context, double>(TestContext.Current.CancellationToken);
         var context = new Context();
         var actual = lambda(context);
@@ -768,9 +786,9 @@ public class LambdaTests
     [Theory]
     [InlineData("test", new[] { "a", "test", "z" }, true)]
     [InlineData("nope", new[] { "a", "test", "z" }, false)]
-    [InlineData("x",    new string[] { },             false)] // empty list
-    [InlineData("dup",  new[] { "dup", "dup" },       true)]  // duplicates
-    [InlineData("Test", new[] { "a", "test", "z" },   false)] // case sensitivity
+    [InlineData("x", new string[] { }, false)] // empty list
+    [InlineData("dup", new[] { "dup", "dup" }, true)]  // duplicates
+    [InlineData("Test", new[] { "a", "test", "z" }, false)] // case sensitivity
     public void ShouldHandleInOperatorWithVariables_String(string x, string[] y, bool expected)
     {
         var expression = new Expression("x in y", ExpressionOptions.None);
@@ -784,12 +802,12 @@ public class LambdaTests
 
         Assert.Equal(expected, actual);
         Assert.Equal(expectedEval, actual);
-}
+    }
 
     [Theory]
     [InlineData(3, new[] { 1, 2, 3 }, true)]
     [InlineData(4, new[] { 1, 2, 3 }, false)]
-    [InlineData(7, new int[] { },     false)] // empty list
+    [InlineData(7, new int[] { }, false)] // empty list
     public void ShouldHandleInOperatorWithVariables_Int(int x, int[] y, bool expected)
     {
         var expression = new Expression("x in y", ExpressionOptions.None);
