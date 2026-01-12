@@ -117,6 +117,7 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
     {
         try
         {
+            Error = null;
             LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
 
             // In case HasErrors() is called multiple times for the same expression
@@ -150,6 +151,8 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
 
         try
         {
+            Error = null;
+
             logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
