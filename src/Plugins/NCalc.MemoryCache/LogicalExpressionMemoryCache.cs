@@ -9,13 +9,13 @@ internal sealed class LogicalExpressionMemoryCache(
     IMemoryCache memoryCache,
     IOptions<LogicalExpressionMemoryCacheOptions> optionsSnapshot) : ILogicalExpressionCache
 {
-    public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)
+    public bool TryGetValue(LogicalExpressionCacheKey key, out LogicalExpression? logicalExpression)
     {
-        return memoryCache.TryGetValue(expression, out logicalExpression);
+        return memoryCache.TryGetValue(key, out logicalExpression);
     }
 
-    public void Set(string expression, LogicalExpression logicalExpression)
+    public void Set(LogicalExpressionCacheKey key, LogicalExpression logicalExpression)
     {
-        memoryCache.Set(expression, logicalExpression, optionsSnapshot.Value.AbsoluteExpirationRelativeToNow);
+        memoryCache.Set(key, logicalExpression, optionsSnapshot.Value.AbsoluteExpirationRelativeToNow);
     }
 }

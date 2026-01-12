@@ -146,16 +146,25 @@ public abstract class ExpressionBase<TExpressionContext> where TExpressionContex
 
         LogicalExpression? logicalExpression = null;
 
-        if (isCacheEnabled && LogicalExpressionCache.TryGetValue(ExpressionString!, out logicalExpression))
-            return logicalExpression!;
+        LogicalExpressionCacheKey? key = isCacheEnabled
+            ? new LogicalExpressionCacheKey(ExpressionString ?? "", Options, CultureInfo.Name, Parser.ArgumentSeparator.Comma)
+            : null;
+
+        if (key is not null && LogicalExpressionCache.TryGetValue(key, out logicalExpression))
+        {
+            return logicalExpression;
+        }
 
         try
         {
             Error = null;
 
             logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
-            if (isCacheEnabled)
-                LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
+
+            if (key is not null && logicalExpression is not null)
+            {
+                LogicalExpressionCache.Set(key, logicalExpression);
+            }
         }
         catch (Exception exception)
         {

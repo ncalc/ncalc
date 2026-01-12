@@ -6,7 +6,7 @@ namespace NCalc.Cache;
 
 public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logger) : ILogicalExpressionCache
 {
-    private readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
+    private readonly ConcurrentDictionary<LogicalExpressionCacheKey, WeakReference<LogicalExpression>> _compiledExpressions = new();
 
     private static readonly LogicalExpressionCache Instance;
 
@@ -17,25 +17,25 @@ public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logge
 
     public static LogicalExpressionCache GetInstance() => Instance;
 
-    public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)
+    public bool TryGetValue(LogicalExpressionCacheKey key, out LogicalExpression? logicalExpression)
     {
         logicalExpression = null;
 
-        if (!_compiledExpressions.TryGetValue(expression, out var wr))
+        if (!_compiledExpressions.TryGetValue(key, out var wr))
             return false;
         if (!wr.TryGetTarget(out logicalExpression))
             return false;
 
-        logger.LogRetrievedFromCache(expression);
+        logger.LogRetrievedFromCache(key.Expression);
 
         return true;
     }
 
-    public void Set(string expression, LogicalExpression logicalExpression)
+    public void Set(LogicalExpressionCacheKey key, LogicalExpression logicalExpression)
     {
-        _compiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
+        _compiledExpressions[key] = new WeakReference<LogicalExpression>(logicalExpression);
         ClearCache();
-        logger.LogAddedToCache(expression);
+        logger.LogAddedToCache(key.Expression);
     }
 
     private void ClearCache()
@@ -47,7 +47,7 @@ public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logge
 
             if (_compiledExpressions.TryRemove(kvp.Key, out _))
             {
-                logger.LogRemovedFromCache(kvp.Key);
+                logger.LogRemovedFromCache(kvp.Key.Expression);
             }
         }
     }

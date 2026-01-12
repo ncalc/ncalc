@@ -46,7 +46,33 @@ public class DateTimeTests
     }
 
     [Fact]
-    public void ShouldHandleRuntimeCultureChange()
+    public void ShouldHandleDateRuntimeCultureChange()
+    {
+        var oldCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+        try
+        {
+            var expr = new Expression("#05/27/2025#", ExpressionOptions.None);
+            var res = expr.Evaluate(TestContext.Current.CancellationToken);
+
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
+            var expr2 = new Expression("#27.05.2025#");
+            var res2 = expr2.Evaluate(TestContext.Current.CancellationToken);
+
+            var dt = new DateTime(2025, 05, 27);
+
+            Assert.Equal(dt, res);
+            Assert.Equal(dt, res2);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = oldCulture;
+        }
+    }
+
+    [Fact]
+    public void ShouldHandleDateTimeRuntimeCultureChange()
     {
         var oldCulture = CultureInfo.CurrentCulture;
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
