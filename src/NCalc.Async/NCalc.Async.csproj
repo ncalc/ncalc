@@ -13,6 +13,10 @@
         <Description>NCalcAsync is a fully async port of the NCalc.NCalc is a fast and lightweight expression evaluator library for .NET, designed for flexibility and high performance. It supports a wide range of mathematical and logical operations. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.</Description>
     </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net10.0'">
+    <PublishTrimmed>true</PublishTrimmed>
+  </PropertyGroup>
+
     <ItemGroup>
         <None Include="../../NCalc.png">
             <Pack>True</Pack>

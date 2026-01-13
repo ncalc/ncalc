@@ -15,6 +15,10 @@
         <RootNamespace>NCalc</RootNamespace>
     </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net10.0'">
+    <PublishTrimmed>true</PublishTrimmed>
+  </PropertyGroup>
+
     <ItemGroup>
         <None Include="../../NCalc.png">
             <Pack>True</Pack>
