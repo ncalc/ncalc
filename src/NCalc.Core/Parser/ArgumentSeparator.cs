@@ -4,15 +4,21 @@ namespace NCalc.Parser;
 /// Defines the available argument separator options for function arguments.
 /// Each option specifies which character should be used to separate arguments in function calls.
 /// </summary>
+[Flags]
 public enum ArgumentSeparator
 {
+    /// <summary>
+    /// Default value, uses comma separator
+    /// </summary>
+    Default = 0,
+
     /// <summary>
     /// Uses semicolon (;) as the argument separator.
     /// This is commonly used in European locales where comma is used as decimal separator.
     /// Example: Max(1; 2; 3)
     /// </summary>
     /// <value>Character: ;</value>
-    Semicolon = 0,
+    Semicolon = 1,
 
     /// <summary>
     /// Uses colon (:) as the argument separator.
@@ -20,7 +26,7 @@ public enum ArgumentSeparator
     /// Example: Max(1:2:3)
     /// </summary>
     /// <value>Character: :</value>
-    Colon = 1,
+    Colon = 2,
 
     /// <summary>
     /// Uses comma (,) as the argument separator.
@@ -28,5 +34,5 @@ public enum ArgumentSeparator
     /// Example: Max(1, 2, 3)
     /// </summary>
     /// <value>Character: ,</value>
-    Comma = 2
+    Comma = 4
 }
