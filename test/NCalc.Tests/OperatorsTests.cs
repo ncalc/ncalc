@@ -107,4 +107,36 @@ public class OperatorsTests
 
         Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken)!);
     }
+
+    [Theory]
+    [InlineData("0 | 0", 0ul)]
+    [InlineData("0 | 1", 1ul)]
+    [InlineData("1 | 0", 1ul)]
+    [InlineData("1 | 1", 1ul)]
+    [InlineData("0 & 0", 0ul)]
+    [InlineData("0 & 1", 0ul)]
+    [InlineData("1 & 0", 0ul)]
+    [InlineData("1 & 1", 1ul)]
+    [InlineData("0 ^ 0", 0ul)]
+    [InlineData("0 ^ 1", 1ul)]
+    [InlineData("1 ^ 0", 1ul)]
+    [InlineData("1 ^ 1", 0ul)]
+    public void ShouldHandleSimpleBitwiseOperations(string expression, ulong expected)
+    {
+        var e = new Expression(expression);
+        var result = e.Evaluate(TestContext.Current.CancellationToken);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("1 = 1 ^ 2 = 2 || 3 = 3", true)]
+    [InlineData("1 = 1 ^ 2 = 2 && 2 = 1", false)]
+    public void ShouldRespectBitwiseOperatorPrecedence(string exp, bool expected)
+    {
+        var e = new Expression(exp);
+        var result = e.Evaluate(TestContext.Current.CancellationToken);
+
+        Assert.Equal(expected, result);
+    }
 }

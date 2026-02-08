@@ -478,23 +478,24 @@ public static class LogicalExpressionParser
                 .And(relational)))
             .Then(ParseBinaryExpression);
 
-        var andTypeParser = and.Then(BinaryExpressionType.And)
-            .Or(bitwiseAnd.Then(BinaryExpressionType.BitwiseAnd));
-
-        var orTypeParser = or.Then(BinaryExpressionType.Or)
-            .Or(bitwiseOr.Then(BinaryExpressionType.BitwiseOr));
-
-        var xorTypeParser = bitwiseXOr.Then(BinaryExpressionType.BitwiseXOr);
-
-        // "and" has higher precedence than "or"
-        var andParser = equality.And(ZeroOrMany(andTypeParser.And(equality)))
+        var bitwiseAndExpression = equality.And(
+            ZeroOrMany(bitwiseAnd.Then(BinaryExpressionType.BitwiseAnd).And(equality)))
             .Then(ParseBinaryExpression);
 
-        var orParser = andParser.And(ZeroOrMany(orTypeParser.And(andParser)))
+        var bitwiseXOrExpression = bitwiseAndExpression.And(
+            ZeroOrMany(bitwiseXOr.Then(BinaryExpressionType.BitwiseXOr).And(bitwiseAndExpression)))
             .Then(ParseBinaryExpression);
 
-        // logical => equality ( ( "and" | "or" | "xor" ) equality )* ;
-        var logical = orParser.And(ZeroOrMany(xorTypeParser.And(orParser)))
+        var bitwiseOrExpression = bitwiseXOrExpression.And(
+            ZeroOrMany(bitwiseOr.Then(BinaryExpressionType.BitwiseOr).And(bitwiseXOrExpression)))
+            .Then(ParseBinaryExpression);
+
+        var andParser = bitwiseOrExpression.And(
+            ZeroOrMany(and.Then(BinaryExpressionType.And).And(bitwiseOrExpression)))
+            .Then(ParseBinaryExpression);
+
+        var logical = andParser.And(
+            ZeroOrMany(or.Then(BinaryExpressionType.Or).And(andParser)))
             .Then(ParseBinaryExpression);
 
         // ternary => logical("?" logical ":" logical) ?
