@@ -494,6 +494,7 @@ public static class LogicalExpressionParser
             ZeroOrMany(and.Then(BinaryExpressionType.And).And(bitwiseOrExpression)))
             .Then(ParseBinaryExpression);
 
+        // logical => equality ( ("&" | "^" | "|" | "and" | "or" ) equality )* ;
         var logical = andParser.And(
             ZeroOrMany(or.Then(BinaryExpressionType.Or).And(andParser)))
             .Then(ParseBinaryExpression);
