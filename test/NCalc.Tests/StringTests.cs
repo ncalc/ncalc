@@ -10,7 +10,7 @@ public class StringTests
     [InlineData("\u0100", @"'\u0100'")]
     public void ShouldHandleUnicode(string expected, string expression)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(expected, expression);
     }
 
     [Theory]
@@ -19,7 +19,7 @@ public class StringTests
     [InlineData("hel\nlo", @"'hel\nlo'")]
     public void ShouldEscapeCharacters(string expected, string expression)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(expected, expression);
     }
 
     [Theory]
@@ -30,7 +30,7 @@ public class StringTests
     public void ShouldHandleStringConcatenation(string expression, object expected)
     {
         var e = new Expression(expression, ExpressionOptions.StringConcat);
-        Assert.Equal(expected, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(expected, e);
     }
 
     [Theory]
@@ -40,6 +40,6 @@ public class StringTests
     public void ShouldHandleStringAddition(string expr)
     {
         var e = new Expression(expr, ExpressionOptions.DecimalAsDefault);
-        Assert.Equal(3m, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(3m, e);
     }
 }
