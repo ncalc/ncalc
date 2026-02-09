@@ -127,7 +127,7 @@ const string expressionString = "{waterLevel} > 4.0";
 
 var logicalExpression = LogicalExpressionFactory.Create(expressionString, ExpressionOptions.NoCache); //Created a BinaryExpression object.
 
-var jsonExpression = JsonSerializer.Serialize(parsedExpression);
+var jsonExpression = JsonSerializer.Serialize(logicalExpression);
 
 var deserializedLogicalExpression = JsonSerializer.Deserialize<LogicalExpression>(jsonExpression); //The object is still a BinaryExpression.
 
