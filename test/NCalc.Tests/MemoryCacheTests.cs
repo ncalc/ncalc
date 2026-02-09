@@ -1,5 +1,4 @@
 ﻿using NCalc.Factories;
-using NCalc.Tests.Fixtures;
 
 namespace NCalc.Tests;
 

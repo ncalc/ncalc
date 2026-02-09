@@ -1,8 +1,4 @@
-using NCalc.Tests.Extensions;
-
 namespace NCalc.Tests;
-
-using Xunit;
 
 [Trait("Category", "Parameters and Functions")]
 public class ParametersAndFunctions

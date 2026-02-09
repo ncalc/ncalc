@@ -2,8 +2,6 @@ using NCalc.Handlers;
 
 namespace NCalc.Tests;
 
-using Xunit;
-
 [Trait("Category", "Event Handlers")]
 public class EventHandlersTests
 {

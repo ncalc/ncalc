@@ -1,5 +1,3 @@
-using NCalc.Tests.Extensions;
-
 namespace NCalc.Tests;
 
 public class FactorialTests

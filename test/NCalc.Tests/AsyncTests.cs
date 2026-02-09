@@ -1,6 +1,5 @@
 ﻿using NCalc.Domain;
 using NCalc.Factories;
-using NCalc.Tests.TestData;
 using Newtonsoft.Json;
 
 namespace NCalc.Tests;

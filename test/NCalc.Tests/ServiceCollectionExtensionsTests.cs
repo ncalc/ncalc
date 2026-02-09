@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using NCalc.Cache;
+﻿using NCalc.Cache;
 using NCalc.DependencyInjection;
 using NCalc.Domain;
 using NCalc.Exceptions;

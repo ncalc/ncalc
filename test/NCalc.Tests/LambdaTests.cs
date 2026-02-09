@@ -1,6 +1,5 @@
 ﻿#if NET8_0_OR_GREATER
 #nullable enable
-using System.Diagnostics.CodeAnalysis;
 using NCalc.LambdaCompilation;
 
 // ReSharper disable MemberCanBeProtected.Local
