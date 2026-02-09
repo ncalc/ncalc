@@ -1,3 +1,5 @@
+using NCalc.Tests.Extensions;
+
 namespace NCalc.Tests;
 
 using Xunit;
@@ -11,7 +13,7 @@ public class ParametersAndFunctions
         var e = new Expression("SecretOperation(3, 6)");
 
         e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate(TestContext.Current.CancellationToken) + (int)args[1].Evaluate(TestContext.Current.CancellationToken);
-        Assert.Equal(9, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(9, e);
     }
 
     [Fact]
@@ -23,7 +25,7 @@ public class ParametersAndFunctions
 
         e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
 
-        Assert.Equal(10, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(10, e);
     }
 
     [Fact]
@@ -107,7 +109,7 @@ public class ParametersAndFunctions
 
         e.DynamicParameters["Pi"] = _ => 3.14;
 
-        Assert.Equal(117.07, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(117.07, e);
     }
 
     [Fact]
@@ -141,11 +143,11 @@ public class ParametersAndFunctions
     {
         var e = new Expression("Round(1.99, 2)");
 
-        Assert.Equal(1.99d, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(1.99d, e);
 
         e.Functions["Round"] = (_) => 3;
 
-        Assert.Equal(3, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(3, e);
     }
 
     [Fact]
@@ -170,7 +172,7 @@ public class ParametersAndFunctions
         e.DynamicParameters["y"] = _ => 2;
         e.DynamicParameters["z"] = _ => 3;
 
-        Assert.Equal(13d, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(13d, e);
     }
 
     [Fact]
@@ -198,23 +200,26 @@ public class ParametersAndFunctions
     [InlineData("andDoThis")]
     public void ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName)
     {
-        var expression = new Expression($"{functionName}(3.14)");
-        expression.Functions[functionName] = (_) => 1;
+        var expression = new Expression($"{functionName}(3.14)")
+        {
+            Functions =
+            {
+                [functionName] = (_) => 1
+            }
+        };
 
-        Assert.Equal(1, expression.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Expression(1, expression);
     }
 
     [Fact]
     public void ShouldHandleCaseInsensitiveParameter()
     {
-        var expression = new Expression("name == 'Beatriz'")
+        var parameters = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase)
         {
-            Parameters = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase)
-            {
-                { "Name", "Beatriz" }
-            }
+            { "Name", "Beatriz" }
         };
-        Assert.Equal(true, expression.Evaluate(TestContext.Current.CancellationToken));
+
+        Assert.Expression(true, "name == 'Beatriz'", parameters);
     }
 
     [Fact]
@@ -241,15 +246,15 @@ public class ParametersAndFunctions
     [Fact]
     public void MaxShouldWorkWithUShortAndShortTypes()
     {
-        var a = ushort.MaxValue;
-        var b = short.MaxValue;
+        const ushort a = ushort.MaxValue;
+        const short b = short.MaxValue;
 
-        var expr = new Expression("Max([a], [b])");
-        expr.Parameters["a"] = a;
-        expr.Parameters["b"] = b;
+        const int expected = ushort.MaxValue;
 
-        var res = expr.Evaluate(TestContext.Current.CancellationToken);
-        int expected = ushort.MaxValue;
-        Assert.Equal(expected, res);
+        Assert.Expression(expected,"Max([a], [b])", new Dictionary<string, object>
+        {
+            ["a"] = a,
+            ["b"] = b
+        });
     }
 }
