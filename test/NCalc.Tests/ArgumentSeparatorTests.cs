@@ -279,4 +279,37 @@ public class ArgumentSeparatorTests
         Assert.Equal(5.0, commaValue);
         Assert.Equal(5.0, semicolonValue);
     }
+
+    [Fact]
+    public void Should_Support_Multiple_Separators_In_One_Parser()
+    {
+        var argumentSeparators = ArgumentSeparator.Comma | ArgumentSeparator.Semicolon;
+         
+        // Arrange
+        var argumentOptions = LogicalExpressionParserOptions.WithArgumentSeparator(argumentSeparators);
+
+        var commaExpression = "Max(1, 2)";
+        var semicolonExpression = "Max(3; 4)";
+
+        var commaContext = new LogicalExpressionParserContext(commaExpression, ExpressionOptions.None)
+        {
+            ParserOptions = argumentOptions
+        };
+
+        var semicolonContext = new LogicalExpressionParserContext(semicolonExpression, ExpressionOptions.None)
+        {
+            ParserOptions = argumentOptions
+        };
+
+        // Act
+        var commaResult = LogicalExpressionParser.Parse(commaContext);
+        var semicolonResult = LogicalExpressionParser.Parse(semicolonContext);
+
+        var commaValue = new Expression(commaResult).Evaluate(TestContext.Current.CancellationToken);
+        var semicolonValue = new Expression(semicolonResult).Evaluate(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(2, commaValue);
+        Assert.Equal(4, semicolonValue);
+    }
 }

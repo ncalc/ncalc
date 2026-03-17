@@ -38,16 +38,40 @@ public static class LogicalExpressionParser
     /// <param name="separator">The ArgumentSeparator enum value.</param>
     /// <returns>The character representation of the separator.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the separator value is not a valid ArgumentSeparator enum value.</exception>
-    private static char GetSeparatorChar(ArgumentSeparator separator)
+    private static char[] GetSeparatorChars(ArgumentSeparator separator)
     {
-        return separator switch
+        var separators = new List<char>();
+
+        if (separator == ArgumentSeparator.Default)
         {
-            ArgumentSeparator.Semicolon => ';',
-            ArgumentSeparator.Colon => ':',
-            ArgumentSeparator.Comma => ',',
-            _ => throw new ArgumentOutOfRangeException(nameof(separator), separator,
-                $"Unhandled ArgumentSeparator value: {separator}")
-        };
+            separators.Add(',');
+        }
+        else
+        {
+            if (separator.HasFlag(ArgumentSeparator.Semicolon))
+                separators.Add(';');
+
+            if (separator.HasFlag(ArgumentSeparator.Comma))
+                separators.Add(',');
+
+            if (separator.HasFlag(ArgumentSeparator.Colon))
+                separators.Add(':');
+        }
+
+        return separators.ToArray();
+    }
+
+    private static Parser<char> CreateSeparatorParser(char[] argumentSeparator)
+    {
+        var parser = Terms.Char(argumentSeparator[0]);
+
+        if (argumentSeparator.Length > 1)
+        {
+            for (int i = 1; i < argumentSeparator.Length; i++)
+                parser = parser.Or(Terms.Char(argumentSeparator[i]));
+        }
+
+        return parser;
     }
 
     /// <summary>
@@ -57,10 +81,10 @@ public static class LogicalExpressionParser
     /// <returns>A new parser configured with the specified options.</returns>
     private static Parser<LogicalExpression> CreateExpressionParser(LogicalExpressionParserOptions options)
     {
-        return CreateExpressionParser(options.CultureInfo, GetSeparatorChar(options.ArgumentSeparator));
+        return CreateExpressionParser(options.CultureInfo, GetSeparatorChars(options.ArgumentSeparator));
     }
 
-    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, char argumentSeparator)
+    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, char[] argumentSeparator)
     {
         /*
          * Grammar:
@@ -151,7 +175,7 @@ public static class LogicalExpressionParser
             return doubleNumber;
         });
 
-        var argumentSeparatorTerm = Terms.Char(argumentSeparator);
+        var argumentSeparatorTerm = CreateSeparatorParser(argumentSeparator);
         var divided = Terms.Text("/");
         var times = Terms.Text("*");
         var modulo = Terms.Text("%");
