@@ -1,9 +1,17 @@
+#if NET
+using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+#endif
 using NCalc.Exceptions;
 using NCalc.Visitors;
 
 namespace NCalc.Domain;
 
 public sealed class ValueExpression : LogicalExpression
+#if NET
+    , IJsonOnDeserialized
+#endif
 {
     public object? Value { get; set; }
     public ValueType Type { get; set; }
@@ -89,6 +97,44 @@ public sealed class ValueExpression : LogicalExpression
         Value = value;
         Type = ValueType.Guid;
     }
+
+#if NET
+    void IJsonOnDeserialized.OnDeserialized()
+    {
+        if (Value is not JsonElement element)
+            return;
+
+        Value = ConvertElementValue(element, Type);
+    }
+
+    private static object? ConvertElementValue(JsonElement element, ValueType type)
+    {
+        if (element.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            return null;
+
+        return type switch
+        {
+            ValueType.Boolean => element.GetBoolean(),
+            ValueType.Integer => element.GetInt64(),
+            ValueType.Float => element.GetDouble(),
+            ValueType.String => element.GetString(),
+            ValueType.Char => ReadChar(element),
+            ValueType.Guid => element.GetGuid(),
+            ValueType.DateTime => element.GetDateTime(),
+            ValueType.TimeSpan => TimeSpan.Parse(element.GetString()!, CultureInfo.InvariantCulture),
+            _ => throw new NCalcException($"This value type could not be handled: {type}")
+        };
+    }
+
+    private static char ReadChar(JsonElement element)
+    {
+        var value = element.GetString();
+        if (value is null || value.Length != 1)
+            throw new NCalcException("Serialized char values must be a one-character string.");
+
+        return value[0];
+    }
+#endif
 
     public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default)
     {
