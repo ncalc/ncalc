@@ -23,7 +23,10 @@ public static class AssertExtensions
 
         public static void Expression(object expected, Expression expression)
         {
-            Assert.Equal(expected, expression.Evaluate(TestContext.Current.CancellationToken));
+            if (!Equals(expected, expression.Evaluate(CancellationToken.None)))
+            {
+                Assert.Fail("Expression assertion failed.");
+            }
         }
     }
 }

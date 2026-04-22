@@ -1,141 +1,143 @@
+using System.Threading.Tasks;
+
 namespace NCalc.Tests;
 
-[Trait("Category", "Evaluations")]
+[Property("Category", "Evaluations")]
 public class LikeOperatorTests
 {
-    [Fact]
-    public void ShouldMatchSingleCharacterUsingLike()
+    [Test]
+    public async Task ShouldMatchSingleCharacterUsingLike()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C";
 
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B2C'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B2C'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void ShouldNotMatchWhenSingleCharacterDoesNotMatch()
+    [Test]
+    public async Task ShouldNotMatchWhenSingleCharacterDoesNotMatch()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C";
 
-        Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_12C'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_12C'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(false);
     }
 
-    [Fact]
-    public void ShouldMatchAtStartUsingSingleCharacterWildcard()
+    [Test]
+    public async Task ShouldMatchAtStartUsingSingleCharacterWildcard()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "X12345";
 
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '_12345'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '_12345'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void ShouldMatchAtEndUsingMultipleCharactersWildcard()
+    [Test]
+    public async Task ShouldMatchAtEndUsingMultipleCharactersWildcard()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABCX23YZ";
 
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE 'ABCX__YZ'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'ABCX__YZ'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void ShouldMatchMultipleWildcardsInString()
+    [Test]
+    public async Task ShouldMatchMultipleWildcardsInString()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C3D";
 
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B_C_D'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B_C_D'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void ShouldNotMatchWhenStringLengthDiffers()
+    [Test]
+    public async Task ShouldNotMatchWhenStringLengthDiffers()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC";
 
-        Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(false);
     }
 
-    [Fact]
-    public void ShouldEvaluateLikeOperatorWithWildcardAtEnd()
+    [Test]
+    public async Task ShouldEvaluateLikeOperatorWithWildcardAtEnd()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void ShouldEvaluateLikeOperatorWithWildcardAtStart()
+    [Test]
+    public async Task ShouldEvaluateLikeOperatorWithWildcardAtStart()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC66";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '%66'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '%66'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void ShouldEvaluateLikeOperatorWithWildcardAtBothEnds()
+    [Test]
+    public async Task ShouldEvaluateLikeOperatorWithWildcardAtBothEnds()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC66XYZ";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '%66%'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '%66%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void ShouldEvaluateLikeOperatorWithExactMatch()
+    [Test]
+    public async Task ShouldEvaluateLikeOperatorWithExactMatch()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void ShouldEvaluateLikeOperatorWithNoMatch()
+    [Test]
+    public async Task ShouldEvaluateLikeOperatorWithNoMatch()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "77ABC";
-        Assert.Equal(false, new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(false);
     }
 
-    [Fact]
-    public void ShouldEvaluateNotLikeOperator()
+    [Test]
+    public async Task ShouldEvaluateNotLikeOperator()
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "77ABC";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} NOT LIKE '66%'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} NOT LIKE '66%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
-    public void LikeOperatorShouldRespectStringComparer()
+    [Test]
+    public async Task LikeOperatorShouldRespectStringComparer()
     {
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
-        Assert.Equal(true, new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 
-    [Fact]
+    [Test]
     public async Task LikeOperatorShouldWorkAsync()
     {
         AsyncExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        Assert.Equal(true, await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
-            .EvaluateAsync(TestContext.Current.CancellationToken));
-        Assert.Equal(true, await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
-            .EvaluateAsync(TestContext.Current.CancellationToken));
+        await Assert.That(await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+            .EvaluateAsync(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
+            .EvaluateAsync(CancellationToken.None)).IsEqualTo(true);
     }
 }

@@ -4,14 +4,15 @@ using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Visitors;
+using System.Threading.Tasks;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "DependencyInjection")]
+[Property("Category", "DependencyInjection")]
 public class ServiceCollectionExtensionsTests
 {
-    [Fact]
-    public void AddNCalc_ShouldRegisterServices()
+    [Test]
+    public async Task AddNCalc_ShouldRegisterServices()
     {
         var services = new ServiceCollection();
 
@@ -19,15 +20,15 @@ public class ServiceCollectionExtensionsTests
 
         var serviceProvider = services.BuildServiceProvider();
 
-        Assert.NotNull(serviceProvider.GetService<IExpressionFactory>());
-        Assert.NotNull(serviceProvider.GetService<ILogicalExpressionCache>());
-        Assert.NotNull(serviceProvider.GetService<ILogicalExpressionFactory>());
-        Assert.NotNull(serviceProvider.GetService<IEvaluationVisitorFactory>());
-        Assert.NotNull(serviceProvider.GetService<IAsyncEvaluationVisitorFactory>());
+        await Assert.That(serviceProvider.GetService<IExpressionFactory>()).IsNotNull();
+        await Assert.That(serviceProvider.GetService<ILogicalExpressionCache>()).IsNotNull();
+        await Assert.That(serviceProvider.GetService<ILogicalExpressionFactory>()).IsNotNull();
+        await Assert.That(serviceProvider.GetService<IEvaluationVisitorFactory>()).IsNotNull();
+        await Assert.That(serviceProvider.GetService<IAsyncEvaluationVisitorFactory>()).IsNotNull();
     }
 
-    [Fact]
-    public void WithExpressionFactory_ShouldReplaceExpressionFactory()
+    [Test]
+    public async Task WithExpressionFactory_ShouldReplaceExpressionFactory()
     {
         var services = new ServiceCollection();
 
@@ -37,11 +38,11 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         var factory = serviceProvider.GetService<IExpressionFactory>();
-        Assert.IsType<CustomExpressionFactory>(factory);
+        await Assert.That(factory).IsTypeOf<CustomExpressionFactory>();
     }
 
-    [Fact]
-    public void WithCache_ShouldReplaceCache()
+    [Test]
+    public async Task WithCache_ShouldReplaceCache()
     {
         var services = new ServiceCollection();
 
@@ -51,11 +52,11 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         var cache = serviceProvider.GetService<ILogicalExpressionCache>();
-        Assert.IsType<CustomCache>(cache);
+        await Assert.That(cache).IsTypeOf<CustomCache>();
     }
 
-    [Fact]
-    public void WithLogicalExpressionFactory_ShouldReplaceFactory()
+    [Test]
+    public async Task WithLogicalExpressionFactory_ShouldReplaceFactory()
     {
         var services = new ServiceCollection();
 
@@ -65,11 +66,11 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         var factory = serviceProvider.GetService<ILogicalExpressionFactory>();
-        Assert.IsType<CustomLogicalExpressionFactory>(factory);
+        await Assert.That(factory).IsTypeOf<CustomLogicalExpressionFactory>();
     }
 
-    [Fact]
-    public void WithEvaluationService_ShouldReplaceEvaluationService()
+    [Test]
+    public async Task WithEvaluationService_ShouldReplaceEvaluationService()
     {
         var services = new ServiceCollection();
 
@@ -82,11 +83,11 @@ public class ServiceCollectionExtensionsTests
         var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
 
         var exp = expFactory.Create("42");
-        Assert.Equal("The answer", exp.Evaluate(TestContext.Current.CancellationToken));
-        Assert.IsType<CustomEvaluationVisitorFactory>(customVisitorFactory);
+        await Assert.That(exp.Evaluate(CancellationToken.None)).IsEqualTo("The answer");
+        await Assert.That(customVisitorFactory).IsTypeOf<CustomEvaluationVisitorFactory>();
     }
 
-    [Fact]
+    [Test]
     public async Task WithAsyncEvaluationService_ShouldReplaceEvaluationService()
     {
         var services = new ServiceCollection();
@@ -100,8 +101,8 @@ public class ServiceCollectionExtensionsTests
         var expFactory = serviceProvider.GetRequiredService<IAsyncExpressionFactory>();
 
         var exp = expFactory.Create("42");
-        Assert.Equal("The answer", await exp.EvaluateAsync(TestContext.Current.CancellationToken));
-        Assert.IsType<CustomAsyncEvaluationVisitorFactory>(customVisitorFactory);
+        await Assert.That(await exp.EvaluateAsync(CancellationToken.None)).IsEqualTo("The answer");
+        await Assert.That(customVisitorFactory).IsTypeOf<CustomAsyncEvaluationVisitorFactory>();
     }
 
     #region Custom Implementations Stubs

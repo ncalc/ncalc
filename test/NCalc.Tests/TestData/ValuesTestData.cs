@@ -13,4 +13,6 @@ public class ValuesTestData : TheoryData<string, object>
         Add("'true'", "true");
         Add("'azerty'", "azerty");
     }
+
+    public static IEnumerable<object[]> GetEnumerator() => new ValuesTestData().Rows;
 }

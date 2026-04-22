@@ -1,22 +1,23 @@
 ﻿using NCalc.Domain;
 using NCalc.Factories;
-using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using System.Threading.Tasks;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "Async")]
+[Property("Category", "Async")]
 public class AsyncTests
 {
-    [Theory]
-    [ClassData(typeof(EvaluationTestData))]
+    [Test]
+    [MethodDataSource(typeof(EvaluationTestData), "GetEnumerator")]
     public async Task ShouldEvaluateAsync(string expression, object expected)
     {
         var e =  new AsyncExpression(expression);
-        var res = await e.EvaluateAsync(TestContext.Current.CancellationToken);
-        Assert.Equal(expected, res);
+        var res = await e.EvaluateAsync(CancellationToken.None);
+        await Assert.That(res).IsEqualTo(expected);
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldEvaluateAsyncFunction()
     {
         var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
@@ -28,11 +29,11 @@ public class AsyncTests
             return "FOO";
         };
 
-        var result = await expression.EvaluateAsync(TestContext.Current.CancellationToken);
-        Assert.Equal(true, result);
+        var result = await expression.EvaluateAsync(CancellationToken.None);
+        await Assert.That(result).IsEqualTo(true);
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldEvaluateAsyncParameter()
     {
         var expression = new AsyncExpression("(a + b) == 'Leo'");
@@ -43,11 +44,11 @@ public class AsyncTests
             return "L";
         };
 
-        var result = await expression.EvaluateAsync(TestContext.Current.CancellationToken);
-        Assert.Equal(true, result);
+        var result = await expression.EvaluateAsync(CancellationToken.None);
+        await Assert.That(result).IsEqualTo(true);
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldEvaluateAsyncFunctionHandler()
     {
         var expression = new AsyncExpression("database_operation('SELECT FOO') == 'FOO'");
@@ -62,11 +63,11 @@ public class AsyncTests
             }
         };
 
-        var result = await expression.EvaluateAsync(TestContext.Current.CancellationToken);
-        Assert.Equal(true, result);
+        var result = await expression.EvaluateAsync(CancellationToken.None);
+        await Assert.That(result).IsEqualTo(true);
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldEvaluateAsyncParameterHandler()
     {
         var expression = new AsyncExpression("(a + b) == 'Leo'");
@@ -81,11 +82,11 @@ public class AsyncTests
             return default;
         };
 
-        var result = await expression.EvaluateAsync(TestContext.Current.CancellationToken);
-        Assert.Equal(true, result);
+        var result = await expression.EvaluateAsync(CancellationToken.None);
+        await Assert.That(result).IsEqualTo(true);
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldEvaluateArrayParameters()
     {
         var e = new AsyncExpression("x * x", ExpressionOptions.IterateParameters)
@@ -96,72 +97,67 @@ public class AsyncTests
             }
         };
 
-        var result = (IList<object>)await e.EvaluateAsync(TestContext.Current.CancellationToken);
+        var result = (IList<object>)await e.EvaluateAsync(CancellationToken.None);
 
-        Assert.NotNull(result);
-        Assert.Equal(0, result[0]);
-        Assert.Equal(1, result[1]);
-        Assert.Equal(4, result[2]);
-        Assert.Equal(9, result[3]);
-        Assert.Equal(16, result[4]);
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result[0]).IsEqualTo(0);
+        await Assert.That(result[1]).IsEqualTo(1);
+        await Assert.That(result[2]).IsEqualTo(4);
+        await Assert.That(result[3]).IsEqualTo(9);
+        await Assert.That(result[4]).IsEqualTo(16);
     }
 
-    [Theory]
-    [ClassData(typeof(BuiltInFunctionsTestData))]
+    [Test]
+    [MethodDataSource(typeof(BuiltInFunctionsTestData), "GetEnumerator")]
     public async Task ShouldHandleBuiltInFunctions(string expression, object expected, double? tolerance)
     {
         var e = new AsyncExpression(expression);
-        var result = await e.EvaluateAsync(TestContext.Current.CancellationToken);
+        var result = await e.EvaluateAsync(CancellationToken.None);
 
         if (tolerance.HasValue)
         {
-            Assert.Equal((double)expected, (double)result, precision: 15);
+            // TODO: TUnit migration - xUnit Assert.Equal had additional argument(s) (precision: 15) that could not be converted.
+            await Assert.That((double)result).IsEqualTo((double)expected);
         }
         else
         {
-            Assert.Equal(expected, result);
+            await Assert.That(result).IsEqualTo(expected);
         }
     }
 
-    [Theory]
-    [ClassData(typeof(ValuesTestData))]
+    [Test]
+    [MethodDataSource(typeof(ValuesTestData), "GetEnumerator")]
     public async Task ShouldParseValues(string input, object expectedValue)
     {
         var expression = new AsyncExpression(input);
-        var result = await expression.EvaluateAsync(TestContext.Current.CancellationToken);
+        var result = await expression.EvaluateAsync(CancellationToken.None);
 
         if (expectedValue is double expectedDouble)
         {
-            Assert.Equal(expectedDouble, (double)result, precision: 15);
+            // TODO: TUnit migration - xUnit Assert.Equal had additional argument(s) (precision: 15) that could not be converted.
+            await Assert.That((double)result).IsEqualTo(expectedDouble);
         }
         else
         {
-            Assert.Equal(expectedValue, result);
+            await Assert.That(result).IsEqualTo(expectedValue);
         }
     }
 
-    [Theory]
-    [ClassData(typeof(NullCheckTestData))]
+    [Test]
+    [MethodDataSource(typeof(NullCheckTestData), "GetEnumerator")]
     public async Task ShouldAllowOperatorsWithNulls(string expression, object expected)
     {
         var e = new AsyncExpression(expression, ExpressionOptions.AllowNullParameter);
-        Assert.Equal(expected, await e.EvaluateAsync(TestContext.Current.CancellationToken));
+        await Assert.That(await e.EvaluateAsync(CancellationToken.None)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [ClassData(typeof(WaterLevelCheckTestData))]
+    [Test]
+    [MethodDataSource(typeof(WaterLevelCheckTestData), "GetEnumerator")]
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
-        var compiled = LogicalExpressionFactory.Create(expression, ct: TestContext.Current.CancellationToken);
-        var serialized = JsonConvert.SerializeObject(compiled, new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.All // We need this to allow serializing abstract classes
-        });
-
-        var deserialized = JsonConvert.DeserializeObject<LogicalExpression>(serialized, new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.All
-        });
+        var compiled = LogicalExpressionFactory.Create(expression, ct: CancellationToken.None);
+        var serialized = JsonSerializer.Serialize(compiled);
+        var deserialized = JsonSerializer.Deserialize<LogicalExpression>(serialized);
 
         var exp = new AsyncExpression(deserialized, ExpressionOptions.NoCache)
         {
@@ -174,7 +170,7 @@ public class AsyncTests
         object evaluated;
         try
         {
-            evaluated = await exp.EvaluateAsync(TestContext.Current.CancellationToken);
+            evaluated = await exp.EvaluateAsync(CancellationToken.None);
         }
         catch
         {
@@ -182,21 +178,21 @@ public class AsyncTests
         }
 
         // Assert
-        Assert.Equal(expected, evaluated);
+        await Assert.That(evaluated).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("1a + ]", true)]
-    [InlineData("sergio +", true)]
-    [InlineData("42 == 42", false)]
-    public void HasErrorsIssue239(string expressionString, bool hasError)
+    [Test]
+    [Arguments("1a + ]", true)]
+    [Arguments("sergio +", true)]
+    [Arguments("42 == 42", false)]
+    public async Task HasErrorsIssue239(string expressionString, bool hasError)
     {
         var expression = new AsyncExpression(expressionString);
-        Assert.Equal(hasError, expression.HasErrors(TestContext.Current.CancellationToken));
+        await Assert.That(expression.HasErrors(CancellationToken.None)).IsEqualTo(hasError);
     }
 
-    [Fact]
-    public void ShouldEvaluateSubExpressionsAsync()
+    [Test]
+    public async Task ShouldEvaluateSubExpressionsAsync()
     {
         var volume = new Expression("[surface] * h");
         var surface = new Expression("[l] * [L]");
@@ -205,20 +201,20 @@ public class AsyncTests
         surface.Parameters["l"] = 1;
         surface.Parameters["L"] = 2;
 
-        Assert.Equal(6, volume.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(volume.Evaluate(CancellationToken.None)).IsEqualTo(6);
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldEvaluateTernaryAsync()
     {
         var e = new AsyncExpression("1 == 1 ? 42 : 3/0");
-        Assert.Equal(42, await e.EvaluateAsync(TestContext.Current.CancellationToken));
+        await Assert.That(await e.EvaluateAsync(CancellationToken.None)).IsEqualTo(42);
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldEvaluatePowAsync()
     {
         var e = new AsyncExpression("2**2");
-        Assert.Equal(4d, await e.EvaluateAsync(TestContext.Current.CancellationToken));
+        await Assert.That(await e.EvaluateAsync(CancellationToken.None)).IsEqualTo(4d);
     }
 }
