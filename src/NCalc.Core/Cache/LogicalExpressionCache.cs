@@ -5,9 +5,10 @@ using NCalc.Logging;
 
 namespace NCalc.Cache;
 
-public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logger) : ILogicalExpressionCache
+public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache>? logger = null) : ILogicalExpressionCache
 {
     private readonly ConcurrentDictionary<string, WeakReference<LogicalExpression>> _compiledExpressions = new();
+    private readonly ILogger<LogicalExpressionCache> _logger = logger ?? NullLogger<LogicalExpressionCache>.Instance;
 
     private static readonly LogicalExpressionCache Instance;
 
@@ -27,7 +28,7 @@ public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logge
         if (!wr.TryGetTarget(out logicalExpression))
             return false;
 
-        logger.LogRetrievedFromCache(expression);
+        _logger.LogRetrievedFromCache(expression);
 
         return true;
     }
@@ -36,7 +37,7 @@ public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logge
     {
         _compiledExpressions[expression] = new WeakReference<LogicalExpression>(logicalExpression);
         ClearCache();
-        logger.LogAddedToCache(expression);
+        _logger.LogAddedToCache(expression);
     }
 
     private void ClearCache()
@@ -48,7 +49,7 @@ public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logge
 
             if (_compiledExpressions.TryRemove(kvp.Key, out _))
             {
-                logger.LogRemovedFromCache(kvp.Key);
+                _logger.LogRemovedFromCache(kvp.Key);
             }
         }
     }

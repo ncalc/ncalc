@@ -10,8 +10,9 @@ namespace NCalc.Factories;
 /// <summary>
 /// Class responsible to create <see cref="LogicalExpression"/> objects. Parlot is used for parsing strings.
 /// </summary>
-public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> logger) : ILogicalExpressionFactory
+public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory>? logger = null) : ILogicalExpressionFactory
 {
+    private readonly ILogger<LogicalExpressionFactory> _logger = logger ?? NullLogger<LogicalExpressionFactory>.Instance;
     private static readonly LogicalExpressionFactory Instance;
 
     static LogicalExpressionFactory()
@@ -29,7 +30,7 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
         catch (Exception exception)
         {
-            logger.LogErrorCreatingLogicalExpression(exception, expression);
+            _logger.LogErrorCreatingLogicalExpression(exception, expression);
             throw new NCalcParserException("Error parsing the expression.", exception);
         }
     }
@@ -42,7 +43,7 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
         }
         catch (Exception exception)
         {
-            logger.LogErrorCreatingLogicalExpression(exception, expression);
+            _logger.LogErrorCreatingLogicalExpression(exception, expression);
             throw new NCalcParserException("Error parsing the expression.", exception);
         }
     }
