@@ -1,39 +1,41 @@
-﻿namespace NCalc.Tests
+﻿using System.Threading.Tasks;
+
+namespace NCalc.Tests
 {
     public class ReuseExpressionTest
     {
-        [Fact]
-        public void ShouldAllowReuseAfterFail()
+        [Test]
+        public async Task ShouldAllowReuseAfterFail()
         {
             var e = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None, CultureInfo.InvariantCulture);
 
             try
             {
-                e.Evaluate(TestContext.Current.CancellationToken);
-                Assert.Fail("The expression should fail with specified culture and format");
+                e.Evaluate(CancellationToken.None);
+                Assert.Fail("Assertion failure");
             }
             catch (Exception)
             {
-                Assert.True(e.HasErrors(TestContext.Current.CancellationToken));
+                await Assert.That(e.HasErrors(CancellationToken.None)).IsTrue();
 
                 e.CultureInfo = CultureInfo.GetCultureInfo("ru-RU");
 
-                var res = e.Evaluate(TestContext.Current.CancellationToken);
+                var res = e.Evaluate(CancellationToken.None);
 
                 var expected = new DateTime(2025, 05, 27, 12, 0, 0);
-                Assert.Equal(expected, res);
-                Assert.False(e.HasErrors(TestContext.Current.CancellationToken));
+                await Assert.That(res).IsEqualTo(expected);
+                await Assert.That(e.HasErrors(CancellationToken.None)).IsFalse();
             }
         }
 
-        [Fact]
-        public void HasErrorsShouldReturnCorrectResultAfterFail()
+        [Test]
+        public async Task HasErrorsShouldReturnCorrectResultAfterFail()
         {
             var e = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None, CultureInfo.InvariantCulture);
-            Assert.True(e.HasErrors(TestContext.Current.CancellationToken));
+            await Assert.That(e.HasErrors(CancellationToken.None)).IsTrue();
 
             e.CultureInfo = CultureInfo.GetCultureInfo("ru-RU");
-            Assert.False(e.HasErrors(TestContext.Current.CancellationToken));
+            await Assert.That(e.HasErrors(CancellationToken.None)).IsFalse();
         }
     }
 }

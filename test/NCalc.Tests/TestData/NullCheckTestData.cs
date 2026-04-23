@@ -10,4 +10,6 @@ public class NullCheckTestData : TheoryData<string, object>
         Add("if((5 * null > 0), 1, 2)", 2);
         Add("if((5 % null > 0), 1, 2)", 2);
     }
+
+    public static IEnumerable<object[]> GetEnumerator() => new NullCheckTestData().Rows;
 }
