@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NCalc.Domain;
 using NCalc.Logging;
 
@@ -12,7 +13,7 @@ public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logge
 
     static LogicalExpressionCache()
     {
-        Instance = new LogicalExpressionCache(DefaultLoggerFactory.Value.CreateLogger<LogicalExpressionCache>());
+        Instance = new LogicalExpressionCache(NullLoggerFactory.Instance.CreateLogger<LogicalExpressionCache>());
     }
 
     public static LogicalExpressionCache GetInstance() => Instance;

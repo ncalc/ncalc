@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Logging;
@@ -15,7 +16,7 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> l
 
     static LogicalExpressionFactory()
     {
-        Instance = new LogicalExpressionFactory(DefaultLoggerFactory.Value.CreateLogger<LogicalExpressionFactory>());
+        Instance = new LogicalExpressionFactory(NullLoggerFactory.Instance.CreateLogger<LogicalExpressionFactory>());
     }
 
     public static LogicalExpressionFactory GetInstance() => Instance;
