@@ -1,9 +1,6 @@
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css");
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap");
 
 :root {
-    --jj-font-sans: "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --jj-font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
     --jj-radius-lg: 1rem;
     --jj-radius-md: 0.75rem;
     --jj-radius-sm: 0.5rem;
@@ -12,8 +9,6 @@
 }
 
 [data-bs-theme="light"] {
-    --bs-body-font-family: var(--jj-font-sans);
-    --bs-font-monospace: var(--jj-font-mono);
     --bs-body-bg: #eef0f5;
     --bs-body-color: #27283a;
     --bs-secondary-color: #66697c;
@@ -36,8 +31,6 @@
 }
 
 [data-bs-theme="dark"] {
-    --bs-body-font-family: var(--jj-font-sans);
-    --bs-font-monospace: var(--jj-font-mono);
     --bs-body-bg: #0f1219;
     --bs-body-color: #d9dded;
     --bs-secondary-color: #9aa2bc;
@@ -64,7 +57,6 @@ html {
 }
 
 body {
-    font-family: var(--jj-font-sans);
     font-size: 1rem;
     line-height: 1.49;
     background-color: var(--jj-page-bg);
