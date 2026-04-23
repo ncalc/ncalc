@@ -1,17 +1,11 @@
-#if NET
-using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-#endif
 using NCalc.Exceptions;
 using NCalc.Visitors;
 
 namespace NCalc.Domain;
 
-public sealed class ValueExpression : LogicalExpression
-#if NET
-    , IJsonOnDeserialized
-#endif
+public sealed class ValueExpression : LogicalExpression , IJsonOnDeserialized
 {
     public object? Value { get; set; }
     public ValueType Type { get; set; }
@@ -98,7 +92,6 @@ public sealed class ValueExpression : LogicalExpression
         Type = ValueType.Guid;
     }
 
-#if NET
     void IJsonOnDeserialized.OnDeserialized()
     {
         if (Value is not JsonElement element)
@@ -134,7 +127,6 @@ public sealed class ValueExpression : LogicalExpression
 
         return value[0];
     }
-#endif
 
     public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default)
     {
