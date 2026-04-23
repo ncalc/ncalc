@@ -1,50 +1,96 @@
-- name: Intro  
+- name: Intro
+  icon: fa-solid fa-house
   href: index.md
-- name: Functions
-  href: functions.md
-- name: Operators
-  href: operators.md
-- name: Values
-  href: values.md
-- name: Parameters
-  href: parameters.md
-- name: Expression Context
-  href: expression_context.md
-- name: Handling Errors
-  href: handling_errors.md
-- name: Case Sensitivity
-  href: case_sensitivity.md
-- name: Overflow Protection
-  href: overflow_protection.md
-- name: String Concatenation
-  href: string_concatenation.md
-- name: Strict Type Matching
-  href: strict_type_matching.md
-- name: Async Support
-  href: async.md
-- name: Caching
-  href: caching.md
-- name: Cancellation Token Support
-  href: cancellation.md
-- name: Logging
-  href: logging.md
-- name: Lambda Compilation
-  href: lambda_compilation.md
-- name: Dependency Injection
-  href: dependency_injection.md
-- name: Overriding Evaluation Behavior
-  href: overriding_evaluation.md
-- name: Plugins
+- name: Language
+  icon: fa-solid fa-calculator
+  href: language/index.md
   items:
-    - name: ANTLR
-      href: plugins/antlr.md
-    - name: Memory Cache
-      href: plugins/memory_cache.md
-- name: Architecture
-  href: architecture.md
-- name: Benchmarks
-  href: benchmarks.md
-- name: Changelog
-  href: changelog.md
-- name: Publishing a New Release
-  href: new_release.md
+    - name: Functions
+      icon: fa-solid fa-function
+      href: language/functions.md
+    - name: Operators
+      icon: fa-solid fa-calculator
+      href: language/operators.md
+    - name: Values
+      icon: fa-solid fa-tag
+      href: language/values.md
+    - name: Parameters
+      icon: fa-solid fa-sliders
+      href: language/parameters.md
+- name: Evaluation
+  icon: fa-solid fa-sliders
+  href: evaluation/index.md
+  items:
+    - name: Expression Context
+      icon: fa-solid fa-layer-group
+      href: evaluation/expression_context.md
+    - name: Handling Errors
+      icon: fa-solid fa-triangle-exclamation
+      href: evaluation/handling_errors.md
+    - name: Case Sensitivity
+      icon: fa-solid fa-font
+      href: evaluation/case_sensitivity.md
+    - name: Overflow Protection
+      icon: fa-solid fa-shield-halved
+      href: evaluation/overflow_protection.md
+    - name: String Concatenation
+      icon: fa-solid fa-link
+      href: evaluation/string_concatenation.md
+    - name: Strict Type Matching
+      icon: fa-solid fa-equals
+      href: evaluation/strict_type_matching.md
+- name: Runtime
+  icon: fa-solid fa-gauge-high
+  href: runtime/index.md
+  items:
+    - name: Async Support
+      icon: fa-solid fa-bolt
+      href: runtime/async.md
+    - name: Caching
+      icon: fa-solid fa-database
+      href: runtime/caching.md
+    - name: Cancellation Token Support
+      icon: fa-solid fa-ban
+      href: runtime/cancellation.md
+    - name: Logging
+      icon: fa-solid fa-file-lines
+      href: runtime/logging.md
+- name: Extensibility
+  icon: fa-solid fa-puzzle-piece
+  href: extensibility/index.md
+  items:
+    - name: Lambda Compilation
+      icon: fa-solid fa-code-branch
+      href: extensibility/lambda_compilation.md
+    - name: Dependency Injection
+      icon: fa-solid fa-puzzle-piece
+      href: extensibility/dependency_injection.md
+    - name: Overriding Evaluation Behavior
+      icon: fa-solid fa-wrench
+      href: extensibility/overriding_evaluation.md
+    - name: Plugins
+      icon: fa-solid fa-plug
+      href: extensibility/plugins/index.md
+      items:
+        - name: ANTLR
+          icon: fa-solid fa-code
+          href: extensibility/plugins/antlr.md
+        - name: Memory Cache
+          icon: fa-solid fa-memory
+          href: extensibility/plugins/memory_cache.md
+- name: Project
+  icon: fa-solid fa-diagram-project
+  href: project/index.md
+  items:
+    - name: Architecture
+      icon: fa-solid fa-diagram-project
+      href: project/architecture.md
+    - name: Benchmarks
+      icon: fa-solid fa-gauge-high
+      href: project/benchmarks.md
+    - name: Changelog
+      icon: fa-solid fa-clock-rotate-left
+      href: project/changelog.md
+    - name: Publishing a New Release
+      icon: fa-solid fa-rocket
+      href: project/new_release.md

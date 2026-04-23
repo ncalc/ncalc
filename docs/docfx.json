@@ -70,7 +70,7 @@
     "template": [
       "default",
       "modern",
-      "ncalc"
+      "themes/ncalc"
     ],
     "postProcessors": [ "ExtractSearchIndex" ],
     "noLangKeyword": false,

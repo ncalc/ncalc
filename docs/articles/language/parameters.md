@@ -120,4 +120,4 @@ var parameters = expression.GetParametersNames();
 ```
 
 ## Case Sensitivity
-See [case_sensitivity](case_sensitivity.md) for more info.
+See [case_sensitivity](../evaluation/case_sensitivity.md) for more info.

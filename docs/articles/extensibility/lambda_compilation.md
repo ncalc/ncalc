@@ -49,4 +49,4 @@ Since v5.5 by default NCalc using a [FastExpressionCompiler](https://github.com/
 
 ## Performance
 You should cache the result of <xref:NCalc.Expression.ToLambda``1>. The evaluation is indeed faster, but the compilation of the lambda is slow.
-See [benchmarks](benchmarks.md) for more info.
+See [benchmarks](../project/benchmarks.md) for more info.

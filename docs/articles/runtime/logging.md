@@ -21,6 +21,6 @@ These switches provide flexibility, allowing you to control where logging data i
 
 #### Dependency Injection
 
-NCalc leverages [`NCalc.DependencyInjection`](dependency_injection.md) to integrate with the .NET dependency injection (DI) system. This
+NCalc leverages [`NCalc.DependencyInjection`](../extensibility/dependency_injection.md) to integrate with the .NET dependency injection (DI) system. This
 means you can easily inject any `ILoggerProvider` into NCalc. For more detailed information about logging with `Microsoft.Extensions.Logging` using DI, please refer to
 the [official Microsoft documentation](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging).
