@@ -28,8 +28,6 @@ public static class ServiceCollectionExtensions
 
         public NCalcServiceBuilder AddNCalc()
         {
-            services.AddLogging();
-
             services.AddFactories();
 
             services.AddCache();
