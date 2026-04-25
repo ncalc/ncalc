@@ -51,7 +51,7 @@ takes a <xref:System.String> as parameter.
 Then the method <xref:NCalc.Expression.Evaluate> is called to parse the <xref:System.String> and returns the actual
 value represented by the <xref:System.String>.
 
-To create expressions you can combine several [Operators](operators.md) and [Values](values.md).
+To create expressions you can combine several [Operators](../language/operators.md) and [Values](../language/values.md).
 
 ## Learn More
 For additional information on the technique we used to create this library please read [this

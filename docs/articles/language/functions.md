@@ -60,4 +60,4 @@ expression.EvaluateFunction += delegate(string name, FunctionArgs args)
 ```
 
 ## Case Sensitivity
-See [case_sensitivity](case_sensitivity.md) for more info.
+See [case_sensitivity](../evaluation/case_sensitivity.md) for more info.

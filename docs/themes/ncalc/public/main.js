@@ -1,0 +1,3 @@
+export default {
+  defaultTheme: "light"
+}

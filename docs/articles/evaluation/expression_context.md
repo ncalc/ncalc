@@ -1,8 +1,8 @@
 # Expression Context
 
-<xref:NCalc.ExpressionContext> (or <xref:NCalc.AsyncExpressionContext>) at [NCalcAsync](async.md), is the class
-responsible for storing contextual data of the expression, like [parameters](parameters.md)
-and [functions](functions.md).
+<xref:NCalc.ExpressionContext> (or <xref:NCalc.AsyncExpressionContext>) at [NCalcAsync](../runtime/async.md), is the class
+responsible for storing contextual data of the expression, like [parameters](../language/parameters.md)
+and [functions](../language/functions.md).
 
 ## Creating a context
 
@@ -30,7 +30,7 @@ var expression = new Expression("ABS(42)", newContext);
 
 ## Using a single context for all expressions
 You can optimize your system to use a single context instance for all expressions.
-The example below use [DI](dependency_injection.md) for creating a singleton instance.
+The example below use [DI](../extensibility/dependency_injection.md) for creating a singleton instance.
 
 ```csharp
 ///At Program.cs:
