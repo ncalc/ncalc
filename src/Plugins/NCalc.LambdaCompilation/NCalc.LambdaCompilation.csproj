@@ -19,6 +19,6 @@
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="FastExpressionCompiler" Version="5.3.0" />
+        <PackageReference Include="FastExpressionCompiler" Version="5.4.1" />
     </ItemGroup>
 </Project>

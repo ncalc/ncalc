@@ -89,5 +89,10 @@ public enum ExpressionOptions
     /// <summary>
     /// Uses long instead of integer as default integral data type.
     /// </summary>
-    LongAsDefault = 1 << 16
+    LongAsDefault = 1 << 16,
+
+    /// <summary>
+    /// Converts null or empty string values to 0 during arithmetic operations.
+    /// </summary>
+    ArithmeticNullOrEmptyStringAsZero = 1 << 17
 }

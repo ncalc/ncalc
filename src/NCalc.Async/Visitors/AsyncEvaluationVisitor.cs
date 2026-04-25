@@ -46,7 +46,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                        Convert.ToBoolean(await right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Div:
-                return MathHelper.Divide(await left.Value, await right.Value, context);
+                return Div(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.Equal:
                 return Compare(await left.Value, await right.Value, ComparisonType.Equal);
@@ -67,16 +67,16 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 return Compare(await left.Value, await right.Value, ComparisonType.NotEqual);
 
             case BinaryExpressionType.Minus:
-                return MathHelper.Subtract(await left.Value, await right.Value, context);
+                return Minus(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.Modulo:
-                return MathHelper.Modulo(await left.Value, await right.Value, context);
+                return Modulo(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.Plus:
                 return Plus(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.Times:
-                return MathHelper.Multiply(await left.Value, await right.Value, context);
+                return Times(await left.Value, await right.Value, context);
 
             case BinaryExpressionType.BitwiseAnd:
                 return Convert.ToUInt64(await left.Value, context.CultureInfo) &

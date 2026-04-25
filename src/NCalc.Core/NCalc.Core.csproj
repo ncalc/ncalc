@@ -21,13 +21,14 @@
         </None>
 		<None Include="README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' != 'net8.0'">
-        <PackageReference Include="System.Collections.Immutable" Version="10.0.0" />
+    <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
+        <PackageReference Include="System.Collections.Immutable" Version="10.0.7" />
+        <PackageReference Include="System.Text.Json" Version="10.0.7" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-        <PackageReference Include="System.ValueTuple" Version="4.6.1" />
+        <PackageReference Include="System.ValueTuple" Version="4.6.2" />
         <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     </ItemGroup>
 
@@ -36,9 +37,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ExtendedNumerics.BigDecimal" Version="3001.1.0.233" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.TraceSource" Version="10.0.0" />
-        <PackageReference Include="Parlot" Version="1.5.6" />
+        <PackageReference Include="ExtendedNumerics.BigDecimal" Version="3003.0.0.346" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
+        <PackageReference Include="Parlot" Version="1.5.7" />
     </ItemGroup>
 </Project>

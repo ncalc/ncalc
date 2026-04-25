@@ -11,4 +11,6 @@ public class WaterLevelCheckTestData : TheoryData<string, bool, double>
         Add("(3 < waterlevel AND 5 >= waterlevel)", true, 3.1);
         Add("(3.2 < waterlevel AND 5.3 >= waterlevel)", true, 4);
     }
+
+    public static IEnumerable<object[]> GetEnumerator() => new WaterLevelCheckTestData().Rows;
 }

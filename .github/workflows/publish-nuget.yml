@@ -7,38 +7,55 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write 
+      contents: read
+
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
-    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout source
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
+
     - name: Restore dependencies
       run: dotnet restore
+
     - name: Build
       run: dotnet build -c Release --no-restore 
+
     - name: Test
       run: dotnet test -c Release --no-build --verbosity detailed
+
     - name: Pack unsigned
       run: dotnet pack -c Release --no-build -p:PublicRelease=true
+
     - name: Pack signed
       run: dotnet pack -c SignedRelease -p:PublicRelease=true
+
+    - name: NuGet login (OIDC)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }}
+
     - name: Publish packages
       run: |
-          dotnet nuget push src/NCalc.Core/bin/Release/NCalc.Core*.nupkg --api-key "${{ secrets.NUGET_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push src/NCalc.Sync/bin/Release/NCalcSync*.nupkg --api-key "${{ secrets.NUGET_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push src/NCalc.Sync/bin/SignedRelease/NCalcSync*.nupkg --api-key "${{ secrets.NUGET_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push src/NCalc.Async/bin/Release/NCalcAsync*.nupkg --api-key "${{ secrets.NUGET_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push src/NCalc.DependencyInjection/bin/Release/NCalc.DependencyInjection*.nupkg --api-key "${{ secrets.NUGET_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push src/Plugins/NCalc.MemoryCache/bin/Release/NCalc.MemoryCache*.nupkg --api-key "${{ secrets.NUGET_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push src/Plugins/NCalc.LambdaCompilation/bin/Release/NCalc.LambdaCompilation*.nupkg --api-key "${{ secrets.NUGET_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push src/Plugins/NCalc.Antlr/bin/Release/NCalc.Antlr*.nupkg --api-key "${{ secrets.NUGET_API_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-
+          dotnet nuget push src/NCalc.Core/bin/Release/NCalc.Core*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.Sync/bin/Release/NCalcSync*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.Sync/bin/SignedRelease/NCalcSync*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.Async/bin/Release/NCalcAsync*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/NCalc.DependencyInjection/bin/Release/NCalc.DependencyInjection*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/Plugins/NCalc.MemoryCache/bin/Release/NCalc.MemoryCache*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/Plugins/NCalc.LambdaCompilation/bin/Release/NCalc.LambdaCompilation*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/Plugins/NCalc.Antlr/bin/Release/NCalc.Antlr*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

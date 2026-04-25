@@ -20,6 +20,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
     private readonly ExpressionOptions _options;
     private readonly bool _ordinalStringComparer;
     private readonly bool _caseInsensitiveStringComparer;
+    private readonly bool _ignoreCaseAtBuiltInFunctions;
     private readonly bool _checked;
 
     private static readonly MethodInfo StringComparerEqualsMethod =
@@ -34,6 +35,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         _ordinalStringComparer = _options.HasFlag(ExpressionOptions.OrdinalStringComparer);
         _checked = _options.HasFlag(ExpressionOptions.OverflowProtection);
         _caseInsensitiveStringComparer = _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
+        _ignoreCaseAtBuiltInFunctions = _options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
     }
 
     public LambdaExpressionVisitor(IDictionary<string, object?> parameters, ExpressionOptions options) : this(options)
@@ -117,55 +119,31 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             args[i] = function.Parameters[i].Accept(this, ct);
         }
 
-        var functionName = function.Identifier.Name.ToUpperInvariant();
-        if (functionName == "IF")
-        {
-            var numberTypePriority = new[] { typeof(double), typeof(float), typeof(long), typeof(int), typeof(short) };
-            var index1 = Array.IndexOf(numberTypePriority, args[1].Type);
-            var index2 = Array.IndexOf(numberTypePriority, args[2].Type);
-            if (index1 >= 0 && index2 >= 0 && index1 != index2)
-            {
-                args[1] = LinqExpression.Convert(args[1], numberTypePriority[Math.Min(index1, index2)]);
-                args[2] = LinqExpression.Convert(args[2], numberTypePriority[Math.Min(index1, index2)]);
-            }
-
-            return LinqExpression.Condition(args[0], args[1], args[2]);
-        }
-
-        if (functionName == "IN")
-        {
-            var items = LinqExpression.NewArrayInit(args[0].Type,
-                new ArraySegment<LinqExpression>(args, 1, args.Length - 1));
-            var smi = typeof(Array).GetMethod("IndexOf", [typeof(Array), typeof(object)]);
-            var r = LinqExpression.Call(smi!, LinqExpression.Convert(items, typeof(Array)),
-                LinqExpression.Convert(args[0], typeof(object)));
-            return LinqExpression.GreaterThanOrEqual(r, LinqExpression.Constant(0));
-        }
-
-        //Context methods take precedence over built-in functions because they're user-customizable.
+        // Context methods take precedence over built-in functions because they're user-customizable.
         var mi = FindMethod(function.Identifier.Name, args);
         if (mi != null)
-        {
             return LinqExpression.Call(_context, mi.MethodInfo, mi.PreparedArguments);
-        }
 
         Linq.UnaryExpression arg0;
         Linq.UnaryExpression arg1;
 
+        var comparisonType = _ignoreCaseAtBuiltInFunctions ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var functionName = function.Identifier.Name;
+
         switch (functionName)
         {
             // Exceptional handling
-            case "MAX":
+            case var s when string.Equals(s, "Max", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
                 return LinqExpression.Condition(LinqExpression.GreaterThan(arg0, arg1), arg0, arg1);
-            case "MIN":
+            case var s when string.Equals(s, "Min", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
                 arg0 = LinqExpression.Convert(args[0], typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
                 return LinqExpression.Condition(LinqExpression.LessThan(arg0, arg1), arg0, arg1);
-            case "POW":
+            case var s when string.Equals(s, "Pow", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
 
                 if (_options == ExpressionOptions.DecimalAsDefault)
@@ -188,7 +166,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 arg1 = LinqExpression.Convert(args[1], typeof(double));
 
                 return LinqExpression.Power(arg0, arg1);
-            case "ROUND":
+            case var s when string.Equals(s, "Round", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
 
                 if (_options == ExpressionOptions.DecimalAsDefault)
@@ -201,14 +179,37 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 var rounding = (_options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero
                     ? MidpointRounding.AwayFromZero
                     : MidpointRounding.ToEven;
-                return LinqExpression.Call(MathFunctionHelper.Functions["ROUND"].First().MethodInfo, arg0, arg1,
+                return LinqExpression.Call(MathFunctionHelper.Functions["Round"].First().MethodInfo, arg0, arg1,
                     LinqExpression.Constant(rounding));
+            case var s when string.Equals(s, "if", comparisonType):
+                var numberTypePriority = new[] { typeof(double), typeof(float), typeof(long), typeof(int), typeof(short) };
+                var index1 = Array.IndexOf(numberTypePriority, args[1].Type);
+                var index2 = Array.IndexOf(numberTypePriority, args[2].Type);
+                if (index1 >= 0 && index2 >= 0 && index1 != index2)
+                {
+                    args[1] = LinqExpression.Convert(args[1], numberTypePriority[Math.Min(index1, index2)]);
+                    args[2] = LinqExpression.Convert(args[2], numberTypePriority[Math.Min(index1, index2)]);
+                }
+
+                return LinqExpression.Condition(args[0], args[1], args[2]);
+
+            case var s when string.Equals(s, "in", comparisonType):
+                var items = LinqExpression.NewArrayInit(args[0].Type,
+                    new ArraySegment<LinqExpression>(args, 1, args.Length - 1));
+                var smi = typeof(Array).GetMethod("IndexOf", [typeof(Array), typeof(object)]);
+                var r = LinqExpression.Call(smi!, LinqExpression.Convert(items, typeof(Array)),
+                    LinqExpression.Convert(args[0], typeof(object)));
+                return LinqExpression.GreaterThanOrEqual(r, LinqExpression.Constant(0));
 
             default:
                 // Regular handling
-                if (MathFunctionHelper.Functions.TryGetValue(functionName, out var f))
+                var kvp = MathFunctionHelper.Functions
+                    .FirstOrDefault(_ => string.Equals(functionName, _.Key, comparisonType));
+
+                if (kvp.Key != null)
                 {
                     MathMethodInfo func;
+                    var f = kvp.Value;
 
                     if (_options == ExpressionOptions.DecimalAsDefault && f.Any(_ => _.DecimalSupport))
                         func = f.First(_ => _.DecimalSupport);

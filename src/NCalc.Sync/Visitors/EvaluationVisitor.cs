@@ -41,7 +41,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                        Convert.ToBoolean(right.Value, context.CultureInfo);
 
             case BinaryExpressionType.Div:
-                return MathHelper.Divide(left.Value, right.Value, context);
+                return Div(left.Value, right.Value, context);
 
             case BinaryExpressionType.Equal:
                 return Compare(left.Value, right.Value, ComparisonType.Equal);
@@ -62,16 +62,16 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
                 return Compare(left.Value, right.Value, ComparisonType.NotEqual);
 
             case BinaryExpressionType.Minus:
-                return MathHelper.Subtract(left.Value, right.Value, context);
+                return Minus(left.Value, right.Value, context);
 
             case BinaryExpressionType.Modulo:
-                return MathHelper.Modulo(left.Value, right.Value, context);
+                return Modulo(left.Value, right.Value, context);
 
             case BinaryExpressionType.Plus:
                 return Plus(left.Value, right.Value, context);
 
             case BinaryExpressionType.Times:
-                return MathHelper.Multiply(left.Value, right.Value, context);
+                return Times(left.Value, right.Value, context);
 
             case BinaryExpressionType.BitwiseAnd:
                 return Convert.ToUInt64(left.Value, context.CultureInfo) &

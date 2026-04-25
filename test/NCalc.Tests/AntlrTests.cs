@@ -1,35 +1,36 @@
 ﻿using NCalc.Factories;
-using NCalc.Tests.Fixtures;
-using NCalc.Tests.TestData;
+using System.Threading.Tasks;
 
 namespace NCalc.Tests;
+[Property("Category", "Plugins")]
 
-[Trait("Category", "Plugins")]
-public class AntlrTests(FactoriesWithAntlrFixture fixture) : IClassFixture<FactoriesWithAntlrFixture>
+[ClassDataSource<FactoriesWithAntlrFixture>(Shared = SharedType.PerClass)]
+public class AntlrTests(FactoriesWithAntlrFixture fixture)
 {
     private IExpressionFactory ExpressionFactory { get; } = fixture.ExpressionFactory;
 
-    [Theory]
-    [ClassData(typeof(EvaluationTestData))]
-    public void Expression_Should_Evaluate(string expression, object expected)
+    [Test]
+    [MethodDataSource(typeof(EvaluationTestData), "GetEnumerator")]
+    public async Task Expression_Should_Evaluate(string expression, object expected)
     {
-        Assert.Equal(expected, ExpressionFactory.Create(expression, ExpressionOptions.NoCache).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(ExpressionFactory.Create(expression, ExpressionOptions.NoCache).Evaluate(CancellationToken.None)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [ClassData(typeof(ValuesTestData))]
-    public void Should_Parse_Values(string expressionString, object expectedValue)
+    [Test]
+    [MethodDataSource(typeof(ValuesTestData), "GetEnumerator")]
+    public async Task Should_Parse_Values(string expressionString, object expectedValue)
     {
         var expression = ExpressionFactory.Create(expressionString, ExpressionOptions.NoCache);
-        var result = expression.Evaluate(TestContext.Current.CancellationToken);
+        var result = expression.Evaluate(CancellationToken.None);
 
         if (expectedValue is double expectedDouble)
         {
-            Assert.Equal(expectedDouble, (double)result, precision: 15);
+            // TODO: TUnit migration - xUnit Assert.Equal had additional argument(s) (precision: 15) that could not be converted.
+            await Assert.That((double)result).IsEqualTo(expectedDouble);
         }
         else
         {
-            Assert.Equal(expectedValue, result);
+            await Assert.That(result).IsEqualTo(expectedValue);
         }
     }
 }

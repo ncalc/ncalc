@@ -15,6 +15,8 @@ public class EvaluationTestData : TheoryData<string, object>
         Add("3 > 2 and 1 <= (3-2)", true);
         Add("3 % 2 != 10 % 3", false);
     }
+
+    public static IEnumerable<object[]> GetEnumerator() => new EvaluationTestData().Rows;
 }
 
 public class ValuesEvaluationTestData : TheoryData<string, object>
@@ -30,4 +32,6 @@ public class ValuesEvaluationTestData : TheoryData<string, object>
         Add("'true'", "true");
         Add("'azerty'", "azerty");
     }
+
+    public static IEnumerable<object[]> GetEnumerator() => new ValuesEvaluationTestData().Rows;
 }

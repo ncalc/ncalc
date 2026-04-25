@@ -30,4 +30,6 @@ public class BuiltInFunctionsTestData : TheoryData<string, object, double?>
         Add("Max(1,10)", 10, null);
         Add("Min(1,10)", 1, null);
     }
+
+    public static IEnumerable<object[]> GetEnumerator() => new BuiltInFunctionsTestData().Rows;
 }
