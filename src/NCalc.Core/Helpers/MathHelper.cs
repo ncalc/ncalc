@@ -9,45 +9,71 @@ namespace NCalc.Helpers;
 /// </summary>
 public static class MathHelper
 {
-    // unchecked
-    private static readonly Func<dynamic, dynamic, object> AddFunc = (a, b) => a + b;
-    private static readonly Func<dynamic, dynamic, object> SubtractFunc = (a, b) => a - b;
-    private static readonly Func<dynamic, dynamic, object> MultiplyFunc = (a, b) => a * b;
-    private static readonly Func<dynamic, dynamic, object> DivideFunc = (a, b) => a / b;
-    private static readonly Func<dynamic, dynamic, object> ModuloFunc = (a, b) => a % b;
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 
-    // checked
-    private static readonly Func<dynamic, dynamic, object> AddFuncChecked = (a, b) =>
+    private static Func<object, object, object> GetAddFunc(MathHelperOptions options)
     {
-        var res = checked(a + b);
-        CheckOverflow(res);
+        if (options.IsDynamicCodeSupported)
+        {
+            return options.OverflowProtection ? BinaryOperatorsJIT.AddFuncChecked : BinaryOperatorsJIT.AddFunc;
+        }
+        else
+        {
+            return options.OverflowProtection ? BinaryOperatorsAOT.AddFuncChecked : BinaryOperatorsAOT.AddFunc;
+        }
+    }
 
-        return res;
-    };
-
-    private static readonly Func<dynamic, dynamic, object> SubtractFuncChecked = (a, b) =>
+    private static Func<object, object, object> GetSubtractFunc(MathHelperOptions options)
     {
-        var res = checked(a - b);
-        CheckOverflow(res);
+        if (options.IsDynamicCodeSupported)
+        {
+            return options.OverflowProtection ? BinaryOperatorsJIT.SubtractFuncChecked : BinaryOperatorsJIT.SubtractFunc;
+        }
+        else
+        {
+            return options.OverflowProtection ? BinaryOperatorsAOT.SubtractFuncChecked : BinaryOperatorsAOT.SubtractFunc;
+        }
+    }
 
-        return res;
-    };
-
-    private static readonly Func<dynamic, dynamic, object> MultiplyFuncChecked = (a, b) =>
+    private static Func<object, object, object> GetMultiplyFunc(MathHelperOptions options)
     {
-        var res = checked(a * b);
-        CheckOverflow(res);
+        if (options.IsDynamicCodeSupported)
+        {
+            return options.OverflowProtection ? BinaryOperatorsJIT.MultiplyFuncChecked : BinaryOperatorsJIT.MultiplyFunc;
+        }
+        else
+        {
+            return options.OverflowProtection ? BinaryOperatorsAOT.MultiplyFuncChecked : BinaryOperatorsAOT.MultiplyFunc;
+        }
+    }
 
-        return res;
-    };
-
-    private static readonly Func<dynamic, dynamic, object> DivideFuncChecked = (a, b) =>
+    private static Func<object, object, object> GetDivideFunc(MathHelperOptions options)
     {
-        var res = checked(a / b);
-        CheckOverflow(res);
+        if (options.IsDynamicCodeSupported)
+        {
+            return options.OverflowProtection ? BinaryOperatorsJIT.DivideFuncChecked : BinaryOperatorsJIT.DivideFunc;
+        }
+        else
+        {
+            return options.OverflowProtection ? BinaryOperatorsAOT.DivideFuncChecked : BinaryOperatorsAOT.DivideFunc;
+        }
+    }
 
-        return res;
-    };
+    private static Func<object, object, object> GetModuloFunc(MathHelperOptions options)
+    {
+        if (options.IsDynamicCodeSupported)
+        {
+            return BinaryOperatorsJIT.ModuloFunc;
+        }
+        else
+        {
+            return BinaryOperatorsAOT.ModuloFunc;
+        }
+    }
+
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
 
     public static object? Add(object? a, object? b)
     {
@@ -62,7 +88,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var func = options.OverflowProtection ? AddFuncChecked : AddFunc;
+        var func = GetAddFunc(options);
         return ExecuteOperation(a, b, options.CultureInfo, func);
     }
 
@@ -79,7 +105,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var func = options.OverflowProtection ? SubtractFuncChecked : SubtractFunc;
+        var func = GetSubtractFunc(options);
         return ExecuteOperation(a, b, options.CultureInfo, func);
     }
 
@@ -96,7 +122,7 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var func = options.OverflowProtection ? MultiplyFuncChecked : MultiplyFunc;
+        var func = GetMultiplyFunc(options);
         return ExecuteOperation(a, b, options.CultureInfo, func);
     }
 
@@ -116,7 +142,7 @@ public static class MathHelper
         if (!(TypeHelper.IsReal(a) || TypeHelper.IsReal(b)))
             a = Convert.ToDouble(a, options.CultureInfo);
 
-        var func = options.OverflowProtection ? DivideFuncChecked : DivideFunc;
+        var func = GetDivideFunc(options);
         return ExecuteOperation(a, b, options.CultureInfo, func);
     }
 
@@ -133,7 +159,8 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        return ExecuteOperation(a, b, options.CultureInfo, ModuloFunc);
+        var func = GetModuloFunc(options);
+        return ExecuteOperation(a, b, options.CultureInfo, func);
     }
 
     public static object? Max(object a, object b)

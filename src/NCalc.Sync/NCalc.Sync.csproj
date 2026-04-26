@@ -13,7 +13,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Platforms>AnyCPU</Platforms>
         <RootNamespace>NCalc</RootNamespace>
-    </PropertyGroup>
+    </PropertyGroup>  
 
     <ItemGroup>
         <None Include="../../NCalc.png">

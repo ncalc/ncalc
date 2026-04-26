@@ -4,6 +4,12 @@ namespace NCalc.Helpers;
 
 public readonly struct MathHelperOptions(CultureInfo cultureInfo, ExpressionOptions options)
 {
+#if NET8_0_OR_GREATER
+    public readonly bool IsDynamicCodeSupported { get; } = System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported;
+#else
+    public readonly bool IsDynamicCodeSupported { get; } = true;
+#endif
+
     public CultureInfo CultureInfo { get; } = cultureInfo;
 
     public bool AllowBooleanCalculation
