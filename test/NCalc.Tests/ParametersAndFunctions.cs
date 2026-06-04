@@ -6,7 +6,7 @@ namespace NCalc.Tests;
 public class ParametersAndFunctions
 {
     [Test]
-    public void ExpressionShouldEvaluateCustomFunctions()
+    public async Task ExpressionShouldEvaluateCustomFunctions()
     {
         var e = new Expression("SecretOperation(3, 6)")
         {
@@ -16,11 +16,11 @@ public class ParametersAndFunctions
             }
         };
 
-        Assert.Expression(9, e);
+        await Assert.That(e).Expression().IsEqualTo(9);
     }
 
     [Test]
-    public void ExpressionShouldEvaluateCustomFunctionsWithParameters()
+    public async Task ExpressionShouldEvaluateCustomFunctionsWithParameters()
     {
         var e = new Expression("SecretOperation([e], 6) + f")
         {
@@ -35,7 +35,7 @@ public class ParametersAndFunctions
             }
         };
 
-        Assert.Expression(10, e);
+        await Assert.That(e).Expression().IsEqualTo(10);
     }
 
     [Test]
@@ -98,19 +98,19 @@ public class ParametersAndFunctions
         };
         e.Parameters["value"] = 9;
 
-        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(e).Expression().IsEqualTo(false);
 
         e.Parameters["value"] = 11;
-        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(e).Expression().IsEqualTo(false);
         e.Parameters["value"] = 12;
-        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(e).Expression().IsEqualTo(false);
         e.Parameters["value"] = 13;
-        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(e).Expression().IsEqualTo(true);
         await Assert.That(times).HasSingleItem();
     }
 
     [Test]
-    public void ExpressionShouldEvaluateParameters()
+    public async Task ExpressionShouldEvaluateParameters()
     {
         var e = new Expression("Round(Pow(Pi, 2) + Pow([Pi Squared], 2) + [X], 2)");
 
@@ -119,7 +119,7 @@ public class ParametersAndFunctions
 
         e.DynamicParameters["Pi"] = _ => 3.14;
 
-        Assert.Expression(117.07, e);
+        await Assert.That(e).Expression().IsEqualTo(117.07);
     }
 
     [Test]
@@ -149,15 +149,15 @@ public class ParametersAndFunctions
     }
 
     [Test]
-    public void ShouldOverrideExistingFunctions()
+    public async Task ShouldOverrideExistingFunctions()
     {
         var e = new Expression("Round(1.99, 2)");
 
-        Assert.Expression(1.99d, e);
+        await Assert.That(e).Expression().IsEqualTo(1.99d);
 
         e.Functions["Round"] = (_) => 3;
 
-        Assert.Expression(3, e);
+        await Assert.That(e).Expression().IsEqualTo(3);
     }
 
     [Test]
@@ -170,7 +170,7 @@ public class ParametersAndFunctions
     }
 
     [Test]
-    public void ShouldHandleCustomFunctionsInFunctions()
+    public async Task ShouldHandleCustomFunctionsInFunctions()
     {
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
 
@@ -182,7 +182,7 @@ public class ParametersAndFunctions
         e.DynamicParameters["y"] = _ => 2;
         e.DynamicParameters["z"] = _ => 3;
 
-        Assert.Expression(13d, e);
+        await Assert.That(e).Expression().IsEqualTo(13d);
     }
 
     [Test]
@@ -208,7 +208,7 @@ public class ParametersAndFunctions
     [Test]
     [Arguments("notExistingfunction")]
     [Arguments("andDoThis")]
-    public void ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName)
+    public async Task ShouldTreatOperatorsWithoutWhitespaceAsFunctionName(string functionName)
     {
         var expression = new Expression($"{functionName}(3.14)")
         {
@@ -218,18 +218,18 @@ public class ParametersAndFunctions
             }
         };
 
-        Assert.Expression(1, expression);
+        await Assert.That(expression).Expression().IsEqualTo(1);
     }
 
     [Test]
-    public void ShouldHandleCaseInsensitiveParameter()
+    public async Task ShouldHandleCaseInsensitiveParameter()
     {
         var parameters = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase)
         {
             { "Name", "Beatriz" }
         };
 
-        Assert.Expression(true, "name == 'Beatriz'", parameters);
+        await Assert.That("name == 'Beatriz'").Expression(parameters).IsEqualTo(true);
     }
 
     [Test]
@@ -254,17 +254,17 @@ public class ParametersAndFunctions
     }
 
     [Test]
-    public void MaxShouldWorkWithUShortAndShortTypes()
+    public async Task MaxShouldWorkWithUShortAndShortTypes()
     {
         const ushort a = ushort.MaxValue;
         const short b = short.MaxValue;
 
         const int expected = ushort.MaxValue;
 
-        Assert.Expression(expected,"Max([a], [b])", new Dictionary<string, object>
+        await Assert.That("Max([a], [b])").Expression(new Dictionary<string, object>
         {
             ["a"] = a,
             ["b"] = b
-        });
+        }).IsEqualTo(expected);
     }
 }

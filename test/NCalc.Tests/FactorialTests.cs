@@ -3,44 +3,44 @@ namespace NCalc.Tests;
 public class FactorialTests
 {
     [Test]
-    public void Factorial_Of_Zero()
+    public async Task Factorial_Of_Zero()
     {
-        Assert.Expression(1, "0!");
+        await Assert.That("0!").Expression().IsEqualTo(1);
     }
 
     [Test]
-    public void Factorial_Of_Positive_Number()
+    public async Task Factorial_Of_Positive_Number()
     {
-        Assert.Expression(120, "5!");
+        await Assert.That("5!").Expression().IsEqualTo(120);
     }
 
     [Test]
-    public void Multiple_Factorials()
+    public async Task Multiple_Factorials()
     {
-        Assert.Expression(720, "3!!");
+        await Assert.That("3!!").Expression().IsEqualTo(720);
     }
 
     [Test]
-    public void Factorial_With_Addition()
+    public async Task Factorial_With_Addition()
     {
-        Assert.Expression(8, "3! + 2");
+        await Assert.That("3! + 2").Expression().IsEqualTo(8);
     }
 
     [Test]
-    public void Factorial_With_Exponential()
+    public async Task Factorial_With_Exponential()
     {
-        Assert.Expression(36d, "3! ** 2");
+        await Assert.That("3! ** 2").Expression().IsEqualTo(36d);
     }
 
     [Test]
-    public void Factorial_In_Parentheses()
+    public async Task Factorial_In_Parentheses()
     {
-        Assert.Expression(25, "(4)! + 1");
+        await Assert.That("(4)! + 1").Expression().IsEqualTo(25);
     }
 
     [Test]
-    public void Complex_Expression()
+    public async Task Complex_Expression()
     {
-        Assert.Expression(14, "2 + 3! * 2");
+        await Assert.That("2 + 3! * 2").Expression().IsEqualTo(14);
     }
 }

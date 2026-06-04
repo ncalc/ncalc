@@ -1,32 +1,51 @@
+#nullable enable
+using TUnit.Assertions.Core;
+using TUnit.Assertions.Sources;
+
 namespace NCalc.Tests.Extensions;
 
 public static class AssertExtensions
 {
-    extension(Assert)
+    public sealed class ExpressionValueAssertion(AssertionContext<object?> context) : ValueAssertion<object?>(context);
+
+    extension(IAssertionSource<Expression> source)
     {
-        public static void Expression(object expected, string expression)
+        public ExpressionValueAssertion Expression()
         {
-            var expressionObject = new Expression(expression);
+            source.Context.ExpressionBuilder.Append(".Expression()");
 
-            Assert.Expression(expected, expressionObject);
+            return new ExpressionValueAssertion(
+                source.Context.Map<object?>(async expression =>
+                {
+                    if (expression != null)
+                        return await expression.EvaluateAsync(CancellationToken.None);
+
+                    return null;
+                }));
+        }
+    }
+
+    extension(IAssertionSource<string> source)
+    {
+        public ExpressionValueAssertion Expression()
+        {
+            source.Context.ExpressionBuilder.Append(".Expression()");
+
+            return new ExpressionValueAssertion(
+                source.Context.Map<object?>(async expressionText =>
+                    await new Expression(expressionText).EvaluateAsync(CancellationToken.None)));
         }
 
-        public static void Expression(object expected, string expression, Dictionary<string, object> parameters)
+        public ExpressionValueAssertion Expression(IDictionary<string, object?> parameters)
         {
-            var expressionObject = new Expression(expression, new ExpressionContext
-            {
-                StaticParameters = parameters
-            });
+            source.Context.ExpressionBuilder.Append(".Expression(parameters)");
 
-            Assert.Expression(expected, expressionObject);
-        }
-
-        public static void Expression(object expected, Expression expression)
-        {
-            if (!Equals(expected, expression.Evaluate(CancellationToken.None)))
-            {
-                Assert.Fail("Expression assertion failed.");
-            }
+            return new ExpressionValueAssertion(
+                source.Context.Map<object?>(async expressionText =>
+                    await new Expression(expressionText, new ExpressionContext
+                    {
+                        StaticParameters = parameters
+                    }).EvaluateAsync(CancellationToken.None)));
         }
     }
 }
