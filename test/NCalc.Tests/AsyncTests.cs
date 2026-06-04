@@ -1,7 +1,6 @@
 ﻿using NCalc.Domain;
 using NCalc.Factories;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-using System.Threading.Tasks;
 
 namespace NCalc.Tests;
 
@@ -48,15 +47,20 @@ public class AsyncTests
             }
         };
 
-        var result = await expression.EvaluateAsync(CancellationToken.None);
-        await Assert.That(result).IsEqualTo(true);
+        var result = (bool?)await expression.EvaluateAsync(CancellationToken.None);
+        await Assert.That(result).IsTrue();
     }
 
     [Test]
     public async Task ShouldEvaluateAsyncParameterHandler()
     {
-        var expression = new Expression("(a + b) == 'Leo'");
-        expression.Parameters["b"] = new Expression("'eo'");
+        var expression = new Expression("(a + b) == 'Leo'")
+        {
+            Parameters =
+            {
+                ["b"] = new Expression("'eo'")
+            }
+        };
         expression.EvaluateParameter += (name, args) =>
         {
             if (name == "a")
@@ -65,8 +69,8 @@ public class AsyncTests
             }
         };
 
-        var result = await expression.EvaluateAsync(CancellationToken.None);
-        await Assert.That(result).IsEqualTo(true);
+        var result = (bool?)await expression.EvaluateAsync(CancellationToken.None);
+        await Assert.That(result).IsTrue();
     }
 
     [Test]
