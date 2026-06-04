@@ -24,7 +24,7 @@ public class ServiceCollectionExtensionsTests
         await Assert.That(serviceProvider.GetService<ILogicalExpressionCache>()).IsNotNull();
         await Assert.That(serviceProvider.GetService<ILogicalExpressionFactory>()).IsNotNull();
         await Assert.That(serviceProvider.GetService<IEvaluationVisitorFactory>()).IsNotNull();
-        await Assert.That(serviceProvider.GetService<IAsyncEvaluationVisitorFactory>()).IsNotNull();
+        await Assert.That(serviceProvider.GetService<IEvaluationVisitorFactory>()).IsNotNull();
     }
 
     [Test]
@@ -83,26 +83,8 @@ public class ServiceCollectionExtensionsTests
         var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
 
         var exp = expFactory.Create("42");
-        await Assert.That(exp.Evaluate(CancellationToken.None)).IsEqualTo("The answer");
-        await Assert.That(customVisitorFactory).IsTypeOf<CustomEvaluationVisitorFactory>();
-    }
-
-    [Test]
-    public async Task WithAsyncEvaluationService_ShouldReplaceEvaluationService()
-    {
-        var services = new ServiceCollection();
-
-        services.AddNCalc()
-            .WithAsyncEvaluationVisitorFactory<CustomAsyncEvaluationVisitorFactory>();
-
-        var serviceProvider = services.BuildServiceProvider();
-
-        var customVisitorFactory = serviceProvider.GetService<IAsyncEvaluationVisitorFactory>();
-        var expFactory = serviceProvider.GetRequiredService<IAsyncExpressionFactory>();
-
-        var exp = expFactory.Create("42");
         await Assert.That(await exp.EvaluateAsync(CancellationToken.None)).IsEqualTo("The answer");
-        await Assert.That(customVisitorFactory).IsTypeOf<CustomAsyncEvaluationVisitorFactory>();
+        await Assert.That(customVisitorFactory).IsTypeOf<CustomEvaluationVisitorFactory>();
     }
 
     #region Custom Implementations Stubs
@@ -133,10 +115,10 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
     {
-        public override object Visit(ValueExpression expression, CancellationToken ct = default)
+        public override ValueTask<object> Visit(ValueExpression expression, CancellationToken ct = default)
         {
             if (expression.Value is 42)
-                return "The answer";
+                return ValueTask.FromResult<object>("The answer");
 
             return base.Visit(expression, ct);
         }
@@ -147,25 +129,6 @@ public class ServiceCollectionExtensionsTests
         public EvaluationVisitor Create(ExpressionContext context)
         {
             return new CustomVisitor(context);
-        }
-    }
-
-    private class CustomAsyncVisitor(AsyncExpressionContext context) : AsyncEvaluationVisitor(context)
-    {
-        public override ValueTask<object> Visit(ValueExpression expression, CancellationToken ct = default)
-        {
-            if (expression.Value is 42)
-                return new("The answer");
-
-            return base.Visit(expression, ct);
-        }
-    }
-
-    private class CustomAsyncEvaluationVisitorFactory : IAsyncEvaluationVisitorFactory
-    {
-        public AsyncEvaluationVisitor Create(AsyncExpressionContext context)
-        {
-            return new CustomAsyncVisitor(context);
         }
     }
 

@@ -7,12 +7,12 @@ namespace NCalc.Helpers;
 /// <summary>
 /// Provides helper methods for evaluating expressions.
 /// </summary>
-public static class EvaluationHelper<TExpressionContext> where TExpressionContext : ExpressionContextBase
+public static class EvaluationHelper
 {
     private static (object? Left, object? Right) ConvertArithmeticNullOrEmptyStringsAsZero(
         object? leftValue,
         object? rightValue,
-        TExpressionContext context)
+        ExpressionContext context)
     {
         if (!context.Options.HasFlag(ExpressionOptions.ArithmeticNullOrEmptyStringAsZero))
             return (leftValue, rightValue);
@@ -33,7 +33,7 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
     /// <param name="rightValue">The right operand.</param>
     /// <param name="context">The evaluation context.</param>
     /// <returns>The result of the addition or string concatenation.</returns>
-    public static object? Plus(object? leftValue, object? rightValue, TExpressionContext context)
+    public static object? Plus(object? leftValue, object? rightValue, ExpressionContext context)
     {
         if (context.Options.HasFlag(ExpressionOptions.StringConcat))
             return string.Concat(
@@ -60,25 +60,25 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
         }
     }
 
-        public static object? Minus(object? leftValue, object? rightValue, TExpressionContext context)
+        public static object? Minus(object? leftValue, object? rightValue, ExpressionContext context)
         {
             (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, context);
             return MathHelper.Subtract(leftValue, rightValue, context);
         }
 
-        public static object? Times(object? leftValue, object? rightValue, TExpressionContext context)
+        public static object? Times(object? leftValue, object? rightValue, ExpressionContext context)
         {
             (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, context);
             return MathHelper.Multiply(leftValue, rightValue, context);
         }
 
-        public static object? Div(object? leftValue, object? rightValue, TExpressionContext context)
+        public static object? Div(object? leftValue, object? rightValue, ExpressionContext context)
         {
             (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, context);
             return MathHelper.Divide(leftValue, rightValue, context);
         }
 
-        public static object? Modulo(object? leftValue, object? rightValue, TExpressionContext context)
+        public static object? Modulo(object? leftValue, object? rightValue, ExpressionContext context)
         {
             (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, context);
             return MathHelper.Modulo(leftValue, rightValue, context);
@@ -92,7 +92,7 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
         /// <param name="context">The evaluation context.</param>
         /// <returns>True if the left value is contained within the right value, otherwise false.</returns>
         /// <exception cref="NCalcEvaluationException">Thrown when the right value is not an enumerable or a string.</exception>
-        public static bool In(object? rightValue, object? leftValue, TExpressionContext context)
+        public static bool In(object? rightValue, object? leftValue, ExpressionContext context)
         {
             return rightValue switch
             {
@@ -105,7 +105,7 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
             };
         }
 
-        private static bool Contains(object? leftValue, string rightValue, TExpressionContext context)
+        private static bool Contains(object? leftValue, string rightValue, ExpressionContext context)
         {
             if (leftValue is not string && context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion))
             {
@@ -120,7 +120,7 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
             return rightValue.Contains(leftValueString);
         }
 
-        private static bool Contains(object? leftValue, IEnumerable<object?> rightValue, TExpressionContext context)
+        private static bool Contains(object? leftValue, IEnumerable<object?> rightValue, ExpressionContext context)
         {
             var rightArray = rightValue as object[] ?? rightValue.ToArray();
 
@@ -141,7 +141,7 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
                 noStringTypeCoercion ? EqualityComparer<object?>.Default : StringCoercionComparer.Default);
         }
 
-        private static bool Contains(object? leftValue, IEnumerable rightValue, TExpressionContext context)
+        private static bool Contains(object? leftValue, IEnumerable rightValue, ExpressionContext context)
         {
             if (rightValue == null)
                 return false;
@@ -191,7 +191,7 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
         /// <param name="context">The evaluation context.</param>
         /// <returns>The result of the unary operation.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the unary expression type is unknown.</exception>
-        public static object? Unary(UnaryExpression expression, object? result, TExpressionContext context)
+        public static object? Unary(UnaryExpression expression, object? result, ExpressionContext context)
         {
             return expression.Type switch
             {
@@ -216,7 +216,7 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
         /// <remarks>
         /// The comparison is case-insensitive if the <see cref="ExpressionOptions.CaseInsensitiveStringComparer"/> flag is set in the <paramref name="context"/>.
         /// </remarks>
-        public static bool Like(object? leftValue, object? rightValue, TExpressionContext context)
+        public static bool Like(object? leftValue, object? rightValue, ExpressionContext context)
         {
             if (leftValue == null || rightValue == null)
                 return false;

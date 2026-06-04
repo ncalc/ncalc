@@ -61,8 +61,8 @@ public static class ServiceCollectionExtensions
         {
             services.AddScoped<IExpressionFactory, ExpressionFactory>();
             services.AddScoped<IEvaluationVisitorFactory, EvaluationVisitorFactory>();
-            services.AddScoped<IAsyncEvaluationVisitorFactory, AsyncEvaluationVisitorFactory>();
-            services.AddScoped<IAsyncExpressionFactory, AsyncExpressionFactory>();
+            services.AddScoped<IEvaluationVisitorFactory, EvaluationVisitorFactory>();
+            services.AddScoped<IExpressionFactory, ExpressionFactory>();
 
             services.AddSingleton<ILogicalExpressionFactory>(_ => LogicalExpressionFactory.GetInstance());
         }

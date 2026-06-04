@@ -1,8 +1,8 @@
 # Expression Context
 
-<xref:NCalc.ExpressionContext> (or <xref:NCalc.AsyncExpressionContext>) at [NCalcAsync](../runtime/async.md), is the class
-responsible for storing contextual data of the expression, like [parameters](../language/parameters.md)
-and [functions](../language/functions.md).
+<xref:NCalc.ExpressionContext> is the class responsible for storing contextual data of the expression, like
+[parameters](../language/parameters.md), [functions](../language/functions.md), and async callbacks used by
+[EvaluateAsync](../runtime/async.md).
 
 ## Creating a context
 

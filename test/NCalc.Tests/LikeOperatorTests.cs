@@ -133,11 +133,11 @@ public class LikeOperatorTests
     [Test]
     public async Task LikeOperatorShouldWorkAsync()
     {
-        AsyncExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
+        ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        await Assert.That(await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+        await Assert.That(await new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
             .EvaluateAsync(CancellationToken.None)).IsEqualTo(true);
-        await Assert.That(await new AsyncExpression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
+        await Assert.That(await new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
             .EvaluateAsync(CancellationToken.None)).IsEqualTo(true);
     }
 }

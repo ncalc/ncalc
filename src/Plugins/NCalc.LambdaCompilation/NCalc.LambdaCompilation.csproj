@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\NCalc.Sync\NCalc.Sync.csproj" />
+      <ProjectReference Include="..\..\NCalc.Core\NCalc.Core.csproj" />
     </ItemGroup>
     
     <ItemGroup>

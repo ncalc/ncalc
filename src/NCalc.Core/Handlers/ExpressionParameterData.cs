@@ -1,4 +1,4 @@
-namespace NCalc;
+namespace NCalc.Handlers;
 
 public class ExpressionParameterData(Guid id, ExpressionContext context, CancellationToken ct)
 {

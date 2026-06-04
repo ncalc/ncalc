@@ -23,17 +23,6 @@ public class NCalcServiceBuilder(IServiceCollection services)
         return this;
     }
 
-    public NCalcServiceBuilder WithAsyncExpressionFactory<
-        #if NET
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        #endif
-        TAsyncExpressionFactory>()
-        where TAsyncExpressionFactory : class, IAsyncExpressionFactory
-    {
-        Services.ReplaceScoped<IAsyncExpressionFactory, TAsyncExpressionFactory>();
-        return this;
-    }
-
     public NCalcServiceBuilder WithCache<
         #if NET
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
@@ -63,17 +52,6 @@ public class NCalcServiceBuilder(IServiceCollection services)
         where TEvaluationVisitorFactory : class, IEvaluationVisitorFactory
     {
         Services.ReplaceTransient<IEvaluationVisitorFactory, TEvaluationVisitorFactory>();
-        return this;
-    }
-
-    public NCalcServiceBuilder WithAsyncEvaluationVisitorFactory<
-        #if NET
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        #endif
-        TAsyncEvaluationVisitorFactory>()
-        where TAsyncEvaluationVisitorFactory : class, IAsyncEvaluationVisitorFactory
-    {
-        Services.ReplaceTransient<IAsyncEvaluationVisitorFactory, TAsyncEvaluationVisitorFactory>();
         return this;
     }
 }

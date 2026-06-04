@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using NCalc.Handlers;
 
 namespace NCalc.Tests;
 
@@ -8,20 +8,32 @@ public class ParametersAndFunctions
     [Test]
     public void ExpressionShouldEvaluateCustomFunctions()
     {
-        var e = new Expression("SecretOperation(3, 6)");
+        var e = new Expression("SecretOperation(3, 6)")
+        {
+            Functions =
+            {
+                ["SecretOperation"] = (args) => (int)args[0].Evaluate(CancellationToken.None) + (int)args[1].Evaluate(CancellationToken.None)
+            }
+        };
 
-        e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate(CancellationToken.None) + (int)args[1].Evaluate(CancellationToken.None);
         Assert.Expression(9, e);
     }
 
     [Test]
     public void ExpressionShouldEvaluateCustomFunctionsWithParameters()
     {
-        var e = new Expression("SecretOperation([e], 6) + f");
-        e.Parameters["e"] = 3;
-        e.Parameters["f"] = 1;
-
-        e.Functions["SecretOperation"] = (args) => (int)args[0].Evaluate() + (int)args[1].Evaluate();
+        var e = new Expression("SecretOperation([e], 6) + f")
+        {
+            Parameters =
+            {
+                ["e"] = 3,
+                ["f"] = 1
+            },
+            Functions =
+            {
+                ["SecretOperation"] = (args) => (int)args[0].Evaluate() + (int)args[1].Evaluate()
+            }
+        };
 
         Assert.Expression(10, e);
     }

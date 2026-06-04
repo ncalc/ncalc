@@ -1,4 +1,4 @@
-namespace NCalc;
+namespace NCalc.Handlers;
 
 public class ExpressionFunctionData(Guid id, Expression[] arguments, ExpressionContext context, CancellationToken ct) : IEnumerable<Expression>
 {
