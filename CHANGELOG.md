@@ -1,3 +1,75 @@
+# 5.13.0
+* Arithmetic null or empty string as zero by @gumbarros in https://github.com/ncalc/ncalc/pull/546
+* Support for multiple argument separators in expression by @Bykiev in https://github.com/ncalc/ncalc/pull/541
+* Migrate unit tests to TUnit by @gumbarros in https://github.com/ncalc/ncalc/pull/553
+* Breaking change: Switch to `NullLoggerFactory` as default logger by @gumbarros in https://github.com/ncalc/ncalc/pull/554
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/556
+* New docs layout by @gumbarros in https://github.com/ncalc/ncalc/pull/555
+* Added basic AOT functionality by @vpenades in https://github.com/ncalc/ncalc/pull/523
+
+# 5.12.0
+* Update Parlot parser (v1.5.7) by @Bykiev in https://github.com/ncalc/ncalc/pull/534
+* Fix DateTime tests by @Bykiev in https://github.com/ncalc/ncalc/pull/535
+* Fix reusing expression with different options by @Bykiev in https://github.com/ncalc/ncalc/pull/537
+* Update .net packages by @Bykiev in https://github.com/ncalc/ncalc/pull/543
+* Fix incorrect bitwise operator precedence by @Bykiev in https://github.com/ncalc/ncalc/pull/542
+* Lambdas - allow to override if, in functions. Support for `ExpressionOptions.IgnoreCaseAtBuiltInFunctions` by @Bykiev in https://github.com/ncalc/ncalc/pull/536
+* Added `Assert.Expression` extension to unit tests by @gumbarros in https://github.com/ncalc/ncalc/pull/544
+* Fix json serialisation example by @joriszwart in https://github.com/ncalc/ncalc/pull/545
+* Arithmetic null or empty string as zero by @gumbarros in https://github.com/ncalc/ncalc/pull/546
+
+## New Contributors
+* @joriszwart made their first contribution in #545
+
+# 5.11.0
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/525
+* Disable parser loop detection by @Bykiev in https://github.com/ncalc/ncalc/pull/527
+* Replace hex and octal digits with Character by @Bykiev in https://github.com/ncalc/ncalc/pull/528
+
+# 5.10.0
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/525
+* Disable parser loop detection by @Bykiev in https://github.com/ncalc/ncalc/pull/527
+* Replace hex and octal digits with Character by @Bykiev in https://github.com/ncalc/ncalc/pull/528
+
+# 5.9.0
+* Throw InvalidOperationException instead of RuntimeBinderException by @Bykiev in https://github.com/ncalc/ncalc/pull/495
+* Update to .net 10 by @Bykiev in https://github.com/ncalc/ncalc/pull/496
+* Refactor null and type checks into `HasNullOrTypeConflict` by @gumbarros in https://github.com/ncalc/ncalc/pull/500
+* Extract non-scientific parser by @Bykiev in https://github.com/ncalc/ncalc/pull/503
+* Simplify things by @Bykiev in https://github.com/ncalc/ncalc/pull/504
+* Remove OR parser in NOT parser by @Bykiev in https://github.com/ncalc/ncalc/pull/507
+* Remove obsolete Like(string value, string pattern, ExpressionContextB… by @Bykiev in https://github.com/ncalc/ncalc/pull/509
+* Optimize In.Contains method by @Bykiev in https://github.com/ncalc/ncalc/pull/510
+* Refactor `EvaluationHelper` to support generic type context by @gumbarros in https://github.com/ncalc/ncalc/pull/512
+* Update to C# 14. by @gumbarros in https://github.com/ncalc/ncalc/pull/513
+* Add CancellationToken support by @Bykiev in https://github.com/ncalc/ncalc/pull/508
+* Parlot v1.5.6 by @Bykiev in https://github.com/ncalc/ncalc/pull/517
+* Add factorial unary expression support by @gumbarros in https://github.com/ncalc/ncalc/pull/519
+
+# 5.8.0
+* Mark functions in SerializationVistor as virtual by @randellhodges in https://github.com/ncalc/ncalc/pull/477
+* Add support for parsing milliseconds in time part by @Bykiev in https://github.com/ncalc/ncalc/pull/475
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/476, https://github.com/ncalc/ncalc/pull/482, https://github.com/ncalc/ncalc/pull/492
+* docs: Fix broken link in `architecture.md` by @axunonb in https://github.com/ncalc/ncalc/pull/485
+* Fix function with parameters serialization by @Bykiev in https://github.com/ncalc/ncalc/pull/480
+* Add `LongAsDefault` option by @Bykiev in https://github.com/ncalc/ncalc/pull/484
+* Update benchmark results by @Bykiev in https://github.com/ncalc/ncalc/pull/488
+* Improve double parser by @Bykiev in https://github.com/ncalc/ncalc/pull/486
+* Add support for using IN operator with IEnumerable by @Bykiev in https://github.com/ncalc/ncalc/pull/491
+* Fix inequality comparer with StrictTypeMatching by @Bykiev in https://github.com/ncalc/ncalc/pull/489
+
+## Breaking Changes
+* Allow math operations with ulong types by @Bykiev in https://github.com/ncalc/ncalc/pull/481
+
+This change can cause upcasting types in some cases. Also after theese changes an operator overload can be used for any types. For example, subtracting 2 dates will return a `TimeSpan` value, in previous versions the `InvalidOperationException` was thrown.
+
+# 5.7.0
+* Improve MathHelper performance by @Bykiev in https://github.com/ncalc/ncalc/pull/457
+* Use static lambdas in parser where possible by @Bykiev in https://github.com/ncalc/ncalc/pull/461
+* Lambda compilation missing support for IN/NOT IN operators by @zkenda in https://github.com/ncalc/ncalc/pull/464
+* Lambda compilation missing support for LIKE/NOT LIKE operators by @zkenda in https://github.com/ncalc/ncalc/pull/463
+* Add dynamic argument separator support for function arguments by @attiqeurrehman in https://github.com/ncalc/ncalc/pull/467
+
 # 5.6.0
 * Improve SerializationVisitor perf by @Bykiev in https://github.com/ncalc/ncalc/pull/451
 * Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/452
