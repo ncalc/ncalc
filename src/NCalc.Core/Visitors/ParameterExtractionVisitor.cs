@@ -1,6 +1,4 @@
-﻿using NCalc.Domain;
-
-namespace NCalc.Visitors;
+﻿namespace NCalc.Visitors;
 
 /// <summary>
 /// Visitor dedicated to extract <see cref="Identifier"/> names from a <see cref="LogicalExpression"/>.

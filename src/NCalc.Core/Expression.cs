@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using NCalc.Cache;
-using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Handlers;

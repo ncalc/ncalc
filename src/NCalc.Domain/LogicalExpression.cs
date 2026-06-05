@@ -1,10 +1,9 @@
-#if NET
-using System.Text.Json.Serialization;
-#endif
+
 using System.Diagnostics.Contracts;
+using System.Text.Json.Serialization;
 using NCalc.Visitors;
 
-namespace NCalc.Domain;
+namespace NCalc;
 
 /// <summary>
 /// Represents an abstract syntax tree (AST) node for logical expressions.
@@ -21,12 +20,6 @@ namespace NCalc.Domain;
 #endif
 public abstract class LogicalExpression
 {
-    public override string ToString()
-    {
-        var serializer = new SerializationVisitor();
-        return Accept(serializer).TrimEnd(' ');
-    }
-
     [Pure]
     public abstract T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default);
 }

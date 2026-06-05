@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using NCalc.Domain;
 using NCalc.Exceptions;
 
 namespace NCalc.Helpers;

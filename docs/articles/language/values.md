@@ -8,9 +8,9 @@ A value is a terminal token representing a concrete element. This can be:
 - A <xref:System.Boolean>
 - A <xref:System.String>
 - A <xref:System.Char>
-- A <xref:NCalc.Domain.Function>
-- An <xref:NCalc.Domain.Identifier> (parameter)
-- A <xref:NCalc.Domain.LogicalExpressionList>  (List of other expressions)
+- A <xref:NCalc.Function>
+- An <xref:NCalc.Identifier> (parameter)
+- A <xref:NCalc.LogicalExpressionList>  (List of other expressions)
 
 ## Integers
 

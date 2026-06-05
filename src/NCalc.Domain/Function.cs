@@ -1,6 +1,6 @@
 using NCalc.Visitors;
 
-namespace NCalc.Domain;
+namespace NCalc;
 
 public sealed class Function(Identifier identifier, LogicalExpressionList parameters) : LogicalExpression
 {

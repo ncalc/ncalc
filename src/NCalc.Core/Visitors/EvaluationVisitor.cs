@@ -1,11 +1,8 @@
-﻿using NCalc.Domain;
-using NCalc.Exceptions;
+﻿using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using static NCalc.Helpers.TypeHelper;
 using static NCalc.Helpers.EvaluationHelper;
-using BinaryExpression = NCalc.Domain.BinaryExpression;
-using UnaryExpression = NCalc.Domain.UnaryExpression;
 
 namespace NCalc.Visitors;
 

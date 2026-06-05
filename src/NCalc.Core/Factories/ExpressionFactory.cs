@@ -1,5 +1,4 @@
 ﻿using NCalc.Cache;
-using NCalc.Domain;
 
 namespace NCalc.Factories;
 

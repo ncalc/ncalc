@@ -94,7 +94,7 @@ public class OperatorsTests
     {
         var logicalExpression = LogicalExpressionFactory.Create(expression: "1 ^ 2", ct: CancellationToken.None);
 
-        var serializedString = logicalExpression.ToString();
+        var serializedString = logicalExpression.ToExpressionString();
 
         await Assert.That(serializedString).IsEqualTo("1 ^ 2");
         await Assert.That(new Expression(logicalExpression).Evaluate(CancellationToken.None)).IsEqualTo(3UL);

@@ -1,3 +1,4 @@
+// ReSharper disable once CheckNamespace
 namespace NCalc.Exceptions;
 
 public sealed class NCalcParserException : NCalcException

@@ -56,7 +56,7 @@ object pool to re-use expression objects.
 
 Use this method to specify a custom implementation of <xref:NCalc.Cache.ILogicalExpressionCache>. This cache is used to
 store and
-retrieve parsed <xref:NCalc.Domain.LogicalExpression> objects.
+retrieve parsed <xref:NCalc.LogicalExpression> objects.
 
 **Example:**
 
@@ -68,7 +68,7 @@ services.AddNCalc()
 ### `WithLogicalExpressionFactory`
 Use this method to specify a custom implementation of <xref:NCalc.Factories.ILogicalExpressionFactory>. This factory is
 responsible for creating
-<xref:NCalc.Domain.LogicalExpression> objects. These objects represent a parsed string into an expression. You can for
+<xref:NCalc.LogicalExpression> objects. These objects represent a parsed string into an expression. You can for
 example create a custom parser using another library instead of [Parlot](https://github.com/sebastienros/parlot) and
 implement this interface.
 
