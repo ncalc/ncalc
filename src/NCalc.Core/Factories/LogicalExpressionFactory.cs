@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using NCalc.Domain;
 using NCalc.Exceptions;
+using NCalc.Extensions;
 using NCalc.Logging;
 using NCalc.Parser;
 
@@ -50,13 +50,12 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory>? 
 
     public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
     {
-        var parserContext = new LogicalExpressionParserContext(expression, options, ct);
-        return LogicalExpressionParser.Parse(parserContext);
+        return Create(expression, CultureInfo.CurrentUICulture, options, ct);
     }
 
     public static LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
     {
-        var parserContext = new LogicalExpressionParserContext(expression, options, cultureInfo, ct);
+        var parserContext = new LogicalExpressionParserContext(expression, LogicalExpressionParserOptions.Create(options, cultureInfo), ct);
         return LogicalExpressionParser.Parse(parserContext);
     }
 }

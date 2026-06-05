@@ -137,6 +137,16 @@ expression.Parameters = new Dictionary<string, object> {
 var result = expression.Evaluate();
 ```
 
+To convert a parsed `LogicalExpression` back to NCalc source text, use the explicit extension API:
+
+```c#
+using NCalc.Extensions;
+
+var expressionText = logicalExpression.ToExpressionString();
+```
+
+`LogicalExpression` does not override `ToString()` for expression serialization.
+
 **Caching**
 
 NCalc automatically cache the parsing of strings using a [`ConcurrentDictionary`](https://learn.microsoft.com/pt-br/dotnet/api/system.collections.concurrent.concurrentdictionary-2).

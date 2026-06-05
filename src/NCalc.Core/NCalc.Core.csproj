@@ -22,9 +22,7 @@
         <PackageReference Include="System.Collections.Immutable" Version="10.0.7" />    
     </ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'netstandard2.0'">		
-		<PackageReference Include="System.Text.Json" Version="10.0.7" />
-	</ItemGroup>
+
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -40,5 +38,8 @@
         <PackageReference Include="ExtendedNumerics.BigDecimal" Version="3003.0.0.346" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
         <PackageReference Include="Parlot" Version="1.5.7" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\NCalc.Parser\NCalc.Parser.csproj" />
     </ItemGroup>
 </Project>

@@ -86,11 +86,11 @@ public class ExtractionTests
     public async Task ShouldGetNestedFunctionsIssue334()
     {
         const string expressionText = "[a] + GetTimeValue(if([c] > [d]; test([e] > 0; [g]; [h]); [f]); 1; 'sec')";
-        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
-        var context = new LogicalExpressionParserContext(expressionText, ExpressionOptions.None)
+        var options = new LogicalExpressionParserOptions
         {
-            ParserOptions = options
+            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
         };
+        var context = new LogicalExpressionParserContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression);

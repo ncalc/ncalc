@@ -1,4 +1,3 @@
-using NCalc.Domain;
 using NCalc.Factories;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using System.Threading.Tasks;
@@ -52,42 +51,42 @@ public class SerializationTests
     public async Task Binary_Expression_Serialization_Test()
     {
         await Assert.That(new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false))
-        .ToString()).IsEqualTo("True and False");
-        await Assert.That(new BinaryExpression(BinaryExpressionType.Div, new ValueExpression(1), new ValueExpression(2)).ToString()).IsEqualTo("1 / 2");
+        .ToExpressionString()).IsEqualTo("True and False");
+        await Assert.That(new BinaryExpression(BinaryExpressionType.Div, new ValueExpression(1), new ValueExpression(2)).ToExpressionString()).IsEqualTo("1 / 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.Equal, new ValueExpression(1), new ValueExpression(2))
-                .ToString()).IsEqualTo("1 = 2");
+                .ToExpressionString()).IsEqualTo("1 = 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.Greater, new ValueExpression(1), new ValueExpression(2))
-                .ToString()).IsEqualTo("1 > 2");
+                .ToExpressionString()).IsEqualTo("1 > 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.GreaterOrEqual, new ValueExpression(1), new ValueExpression(2))
-                .ToString()).IsEqualTo("1 >= 2");
+                .ToExpressionString()).IsEqualTo("1 >= 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.Lesser, new ValueExpression(1), new ValueExpression(2))
-                .ToString()).IsEqualTo("1 < 2");
+                .ToExpressionString()).IsEqualTo("1 < 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.LesserOrEqual, new ValueExpression(1), new ValueExpression(2))
-                .ToString()).IsEqualTo("1 <= 2");
+                .ToExpressionString()).IsEqualTo("1 <= 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.Minus, new ValueExpression(1), new ValueExpression(2))
-                .ToString()).IsEqualTo("1 - 2");
+                .ToExpressionString()).IsEqualTo("1 - 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.Modulo, new ValueExpression(1), new ValueExpression(2))
-                .ToString()).IsEqualTo("1 % 2");
+                .ToExpressionString()).IsEqualTo("1 % 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.NotEqual, new ValueExpression(1), new ValueExpression(2))
-                .ToString()).IsEqualTo("1 != 2");
+                .ToExpressionString()).IsEqualTo("1 != 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.Or, new ValueExpression(true), new ValueExpression(false))
-                .ToString()).IsEqualTo("True or False");
-        await Assert.That(new BinaryExpression(BinaryExpressionType.Plus, new ValueExpression(1), new ValueExpression(2)).ToString()).IsEqualTo("1 + 2");
+                .ToExpressionString()).IsEqualTo("True or False");
+        await Assert.That(new BinaryExpression(BinaryExpressionType.Plus, new ValueExpression(1), new ValueExpression(2)).ToExpressionString()).IsEqualTo("1 + 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.Times, new ValueExpression(1), new ValueExpression(2))
-                .ToString()).IsEqualTo("1 * 2");
+                .ToExpressionString()).IsEqualTo("1 * 2");
     }
 
     [Test]
     public async Task Unary_Expression_Serialization_Test()
     {
         await Assert.That(new UnaryExpression(UnaryExpressionType.Negate,
-                    new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true),
+                new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true),
                         new ValueExpression(false)))
-                .ToString()).IsEqualTo("-(True and False)");
+                .ToExpressionString()).IsEqualTo("-(True and False)");
         await Assert.That(new UnaryExpression(UnaryExpressionType.Not,
                     new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true),
                         new ValueExpression(false)))
-                .ToString()).IsEqualTo("!(True and False)");
+                .ToExpressionString()).IsEqualTo("!(True and False)");
     }
 
     [Test]
@@ -97,23 +96,23 @@ public class SerializationTests
             new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false)),
             new UnaryExpression(UnaryExpressionType.Negate,
                 new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false)))
-        ]).ToString()).IsEqualTo("test(True and False, -(True and False))");
+        ]).ToExpressionString()).IsEqualTo("test(True and False, -(True and False))");
 
         await Assert.That(new Function(new Identifier("Sum"), [
             new BinaryExpression(BinaryExpressionType.Plus, new ValueExpression(1), new ValueExpression(2))
-        ]).ToString()).IsEqualTo("Sum(1 + 2)");
+        ]).ToExpressionString()).IsEqualTo("Sum(1 + 2)");
     }
 
     [Test]
     public async Task Value_Serialization_Test()
     {
-        await Assert.That(new ValueExpression(true).ToString()).IsEqualTo("True");
-        await Assert.That(new ValueExpression(false).ToString()).IsEqualTo("False");
-        await Assert.That(new ValueExpression(1).ToString()).IsEqualTo("1");
-        await Assert.That(new ValueExpression(1.234).ToString()).IsEqualTo("1.234");
-        await Assert.That(new ValueExpression("hello").ToString()).IsEqualTo("'hello'");
-        await Assert.That(new ValueExpression('c').ToString()).IsEqualTo("'c'");
-        await Assert.That(new ValueExpression(new DateTime(2009, 1, 1)).ToString()).IsEqualTo("#" + new DateTime(2009, 1, 1) + "#");
+        await Assert.That(new ValueExpression(true).ToExpressionString()).IsEqualTo("True");
+        await Assert.That(new ValueExpression(false).ToExpressionString()).IsEqualTo("False");
+        await Assert.That(new ValueExpression(1).ToExpressionString()).IsEqualTo("1");
+        await Assert.That(new ValueExpression(1.234).ToExpressionString()).IsEqualTo("1.234");
+        await Assert.That(new ValueExpression("hello").ToExpressionString()).IsEqualTo("'hello'");
+        await Assert.That(new ValueExpression('c').ToExpressionString()).IsEqualTo("'c'");
+        await Assert.That(new ValueExpression(new DateTime(2009, 1, 1)).ToExpressionString()).IsEqualTo("#" + new DateTime(2009, 1, 1) + "#");
     }
 
     [Test]
@@ -121,10 +120,10 @@ public class SerializationTests
     {
         var trueArrayExpression = new LogicalExpressionList([new ValueExpression(true)]);
         var helloWorldArrayExpression = new LogicalExpressionList([new ValueExpression("Hello"), new ValueExpression("World")]);
-        await Assert.That(trueArrayExpression.ToString()).IsEqualTo("(True)");
-        await Assert.That(helloWorldArrayExpression.ToString()).IsEqualTo("('Hello','World')");
-        await Assert.That(new LogicalExpressionList([]).ToString()).IsEqualTo("()");
-        await Assert.That(new LogicalExpressionList([trueArrayExpression, helloWorldArrayExpression]).ToString()).IsEqualTo("((True),('Hello','World'))");
+        await Assert.That(trueArrayExpression.ToExpressionString()).IsEqualTo("(True)");
+        await Assert.That(helloWorldArrayExpression.ToExpressionString()).IsEqualTo("('Hello','World')");
+        await Assert.That(new LogicalExpressionList([]).ToExpressionString()).IsEqualTo("()");
+        await Assert.That(new LogicalExpressionList([trueArrayExpression, helloWorldArrayExpression]).ToExpressionString()).IsEqualTo("((True),('Hello','World'))");
     }
 
     [Test]
@@ -135,7 +134,7 @@ public class SerializationTests
         expr.Parameters["b"] = 10;
         expr.Evaluate(CancellationToken.None);
 
-        var exprString = expr.LogicalExpression.ToString();
+        var exprString = expr.LogicalExpression.ToExpressionString();
         await Assert.That(exprString).IsEqualTo("Max([a], [b])");
     }
 }

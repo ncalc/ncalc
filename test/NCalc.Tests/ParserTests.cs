@@ -1,5 +1,4 @@
-﻿using NCalc.Domain;
-using NCalc.Factories;
+﻿using NCalc.Factories;
 using NCalc.Parser;
 using System.Threading.Tasks;
 
@@ -163,7 +162,7 @@ public class ParserTests
         {
             try
             {
-                var context = new LogicalExpressionParserContext(c, ExpressionOptions.None);
+                var context = new LogicalExpressionParserContext(c);
                 LogicalExpressionParser.Parse(context);
             }
             catch (Exception)

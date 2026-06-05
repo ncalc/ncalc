@@ -1,5 +1,4 @@
 ﻿using Antlr4.Runtime;
-using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
 

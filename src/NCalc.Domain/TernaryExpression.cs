@@ -1,6 +1,6 @@
 ﻿using NCalc.Visitors;
 
-namespace NCalc.Domain;
+namespace NCalc;
 
 public sealed class TernaryExpression(
     LogicalExpression leftExpression,

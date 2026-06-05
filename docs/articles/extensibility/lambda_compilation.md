@@ -2,7 +2,7 @@
 
 Using the concept
 of [lambda compilation](https://learn.microsoft.com/en-us/dotnet/api/system.linq.expressions.expression-1.compile?view=net-8.0),
-NCalc can convert a <xref:NCalc.Domain.LogicalExpression> object to an anonymous function.
+NCalc can convert a <xref:NCalc.LogicalExpression> object to an anonymous function.
 Using this you can write complex functions and even have greater performance when evaluating the expression.
 
 Especial thanks to the [NCalc2 fork](https://github.com/sklose/NCalc2) for the original implementation.

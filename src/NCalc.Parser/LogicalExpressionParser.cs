@@ -1,8 +1,6 @@
-using NCalc.Domain;
 using NCalc.Exceptions;
 using Parlot;
 using Parlot.Fluent;
-using Identifier = NCalc.Domain.Identifier;
 
 namespace NCalc.Parser;
 
@@ -38,23 +36,23 @@ public static class LogicalExpressionParser
     /// <param name="separator">The ArgumentSeparator enum value.</param>
     /// <returns>The character representation of the separator.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the separator value is not a valid ArgumentSeparator enum value.</exception>
-    private static char[] GetSeparatorChars(ArgumentSeparator separator)
+    private static char[] GetSeparatorChars(LogicalExpressionArgumentSeparator separator)
     {
         var separators = new List<char>();
 
-        if (separator == ArgumentSeparator.Default)
+        if (separator == LogicalExpressionArgumentSeparator.Default)
         {
             separators.Add(',');
         }
         else
         {
-            if (separator.HasFlag(ArgumentSeparator.Semicolon))
+            if (separator.HasFlag(LogicalExpressionArgumentSeparator.Semicolon))
                 separators.Add(';');
 
-            if (separator.HasFlag(ArgumentSeparator.Comma))
+            if (separator.HasFlag(LogicalExpressionArgumentSeparator.Comma))
                 separators.Add(',');
 
-            if (separator.HasFlag(ArgumentSeparator.Colon))
+            if (separator.HasFlag(LogicalExpressionArgumentSeparator.Colon))
                 separators.Add(':');
         }
 
@@ -151,7 +149,7 @@ public static class LogicalExpressionParser
         var doubleNumber = Terms.Number<double>(NumberOptions.Float)
             .Then<LogicalExpression>(static (ctx, val) =>
             {
-                bool useDecimal = ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.DecimalAsDefault);
+                bool useDecimal = ((LogicalExpressionParserContext)ctx).ParserOptions.DecimalAsDefault;
                 if (useDecimal)
                 {
                     if (val > MaxDecDouble)
@@ -169,7 +167,7 @@ public static class LogicalExpressionParser
         var decimalOrDouble = OneOf(decimalNumber, doubleNumber);
         var decimalOrDoubleNumber = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
         {
-            if (ctx.Options.HasFlag(ExpressionOptions.DecimalAsDefault))
+            if (ctx.ParserOptions.DecimalAsDefault)
                 return decimalOrDouble;
 
             return doubleNumber;
@@ -264,7 +262,7 @@ public static class LogicalExpressionParser
                 .Then<LogicalExpression>(static (ctx, value) =>
                 {
                     if (value.Length == 1 &&
-                        ((LogicalExpressionParserContext)ctx).Options.HasFlag(ExpressionOptions.AllowCharValues))
+                        ((LogicalExpressionParserContext)ctx).ParserOptions.AllowCharValues)
                     {
                         return new ValueExpression(value.Span[0]);
                     }
@@ -392,7 +390,7 @@ public static class LogicalExpressionParser
 
         var integralNumber = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
         {
-            if (ctx.Options.HasFlag(ExpressionOptions.LongAsDefault))
+            if (ctx.ParserOptions.LongAsDefault)
                 return longNumber;
 
             return intOrLong;
@@ -547,13 +545,6 @@ public static class LogicalExpressionParser
         return enableParserCompilation ? expressionParser.Compile() : expressionParser;
     }
 
-    private static Parser<LogicalExpression> GetOrCreateExpressionParser(CultureInfo cultureInfo)
-    {
-        // Use implicit conversion to convert CultureInfo to LogicalExpressionParserOptions
-        LogicalExpressionParserOptions options = cultureInfo;
-        return GetOrCreateExpressionParser(options);
-    }
-
     private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
     {
         var result = x.Item1;
@@ -568,9 +559,7 @@ public static class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParserContext context)
     {
-        var parser = context.ParserOptions != LogicalExpressionParserOptions.Default
-            ? GetOrCreateExpressionParser(context.ParserOptions)
-            : GetOrCreateExpressionParser(context.CultureInfo);
+        var parser =  GetOrCreateExpressionParser(context.ParserOptions);
 
         if (parser.TryParse(context, out var result, out var error))
             return result;

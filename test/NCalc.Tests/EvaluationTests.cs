@@ -172,11 +172,12 @@ public class EvaluationTests
     [Arguments("Pow(5;2)", 25d)]
     public async Task ShouldAllowSemicolonAsArgumentSeparator(string expression, object expected)
     {
-        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
-        var context = new LogicalExpressionParserContext(expression, ExpressionOptions.None)
+        var options = new LogicalExpressionParserOptions
         {
-            ParserOptions = options
+            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
         };
+
+        var context = new LogicalExpressionParserContext(expression, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
 

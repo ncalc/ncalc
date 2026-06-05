@@ -2,6 +2,7 @@
 
 global using System.Diagnostics.CodeAnalysis;
 global using Microsoft.Extensions.DependencyInjection;
+global using NCalc.Extensions;
 global using NCalc.Tests.Extensions;
 global using NCalc.Tests.Fixtures;
 global using NCalc.Tests.TestData;

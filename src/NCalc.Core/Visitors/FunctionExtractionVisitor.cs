@@ -1,5 +1,3 @@
-using NCalc.Domain;
-
 namespace NCalc.Visitors;
 
 /// <summary>

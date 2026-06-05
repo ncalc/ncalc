@@ -3,21 +3,21 @@ using System.Threading.Tasks;
 
 namespace NCalc.Tests;
 
-public class ExpressionSeparatorIntegrationTests
+public class ExpressionSeparatorTests
 {
     [Test]
-    [Arguments("Max(1, 2)", 2, ArgumentSeparator.Comma)]
-    [Arguments("Max(1; 2)", 2, ArgumentSeparator.Semicolon)]
-    [Arguments("Min(5, 3)", 3, ArgumentSeparator.Comma)]
-    [Arguments("Min(5; 3)", 3, ArgumentSeparator.Semicolon)]
-    public async Task Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, ArgumentSeparator separator)
+    [Arguments("Max(1, 2)", 2, LogicalExpressionArgumentSeparator.Comma)]
+    [Arguments("Max(1; 2)", 2, LogicalExpressionArgumentSeparator.Semicolon)]
+    [Arguments("Min(5, 3)", 3, LogicalExpressionArgumentSeparator.Comma)]
+    [Arguments("Min(5; 3)", 3, LogicalExpressionArgumentSeparator.Semicolon)]
+    public async Task Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, LogicalExpressionArgumentSeparator separator)
     {
         // Arrange
-        var options = LogicalExpressionParserOptions.WithArgumentSeparator(separator);
-        var context = new LogicalExpressionParserContext(expressionText, ExpressionOptions.None)
+        var options = new LogicalExpressionParserOptions
         {
-            ParserOptions = options
+            ArgumentSeparator = separator
         };
+        var context = new LogicalExpressionParserContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
 
@@ -33,13 +33,13 @@ public class ExpressionSeparatorIntegrationTests
     public async Task Expression_Should_Work_With_Custom_Functions_And_Separators()
     {
         // Arrange
-        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
+        var options = new LogicalExpressionParserOptions
+        {
+            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+        };
         const string expressionText = "CustomAdd(10; 20)";
 
-        var context = new LogicalExpressionParserContext(expressionText, ExpressionOptions.None)
-        {
-            ParserOptions = options
-        };
+        var context = new LogicalExpressionParserContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression);
@@ -64,13 +64,14 @@ public class ExpressionSeparatorIntegrationTests
     public async Task Expression_Should_Handle_Parameters_With_Custom_Separators()
     {
         // Arrange
-        var options = LogicalExpressionParserOptions.WithArgumentSeparator(ArgumentSeparator.Semicolon);
+        var options = new LogicalExpressionParserOptions
+        {
+            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+        };
+
         const string expressionText = "Max(x; y)";
 
-        var context = new LogicalExpressionParserContext(expressionText, ExpressionOptions.None)
-        {
-            ParserOptions = options
-        };
+        var context = new LogicalExpressionParserContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression)

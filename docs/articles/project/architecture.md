@@ -9,28 +9,56 @@ A["1+1"] -->|Parsing| B("new BinaryExpression(new ValueExpression(1), new ValueE
 B --> |Evaluation|2
 ```
 
+## Domain
+
+The `NCalc.Domain` assembly contains the expression tree model and the visitor contract:
+
+- <xref:NCalc.LogicalExpression> and concrete nodes such as <xref:NCalc.BinaryExpression>, <xref:NCalc.Function>,
+  <xref:NCalc.Identifier>, <xref:NCalc.LogicalExpressionList>, and <xref:NCalc.ValueExpression>.
+- <xref:NCalc.Visitors.ILogicalExpressionVisitor`1>, used by evaluation, extraction, serialization, and extension
+  visitors.
+
+
 ## Parsing
 
 Parsing is the process of analyzing the input expression and converting it into a structured format that can be easily
 evaluated. We use [Parlot](https://github.com/sebastienros/parlot) to handle parsing, but you can use any parser you
 want if you implement the interface <xref:NCalc.Factories.ILogicalExpressionFactory>.
 For our example, "1+1", the parsing step converts the string into an abstract syntax tree (AST).
-This tree is made up of different types of expressions, such as binary expressions, value expressions our even
+This tree is made up of different types of expressions, such as binary expressions, value expressions, or even
 functions.
-Our AST is represented by <xref:NCalc.Domain.LogicalExpression> class.
+Our AST is represented by the <xref:NCalc.LogicalExpression> class.
+
+Parsing is isolated in the `NCalc.Parser` assembly. It contains the default Parlot parser, the parser context, parser
+options, and argument separator configuration. The parser depends only on the AST contracts from `NCalc.Domain`.
+`NCalc.Core` uses the parser through <xref:NCalc.Factories.ILogicalExpressionFactory>, so applications can keep using
+<xref:NCalc.Expression> without referencing parser internals directly.
 
 ## Evaluation
 
 Evaluation refers to the process of determining the value of an expression. We use the visitor pattern at evaluation.
 This pattern allows you to add new operations to existing object structures without modifying those structures.
-With the method <xref:NCalc.Domain.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVisitor{``0})> is possible to accept any kind of visitor that
+With the method <xref:NCalc.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVisitor{``0})> is possible to accept any kind of visitor that
 implements <xref:NCalc.Visitors.ILogicalExpressionVisitor`1>. Example implementations
 include <xref:NCalc.Visitors.EvaluationVisitor> that returns a <xref:System.Object>
 and <xref:NCalc.Visitors.SerializationVisitor> that converts the AST into a <xref:System.String>.
 
 If you are creating your custom implementation, beware it should be stateless to be easier to debug and read. This is
 enforced by the [PureAttribute](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.contracts.pureattribute0) and generic return at
-the <xref:NCalc.Domain.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVisitor{``0})> method.
+the <xref:NCalc.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVisitor{``0})> method.
+
+## Expression Serialization
+
+`LogicalExpression` does not override <xref:System.Object.ToString>. To convert an expression tree back to NCalc source
+text, use the explicit extension API <xref:NCalc.Extensions.LogicalExpressionExtensions.ToExpressionString(NCalc.LogicalExpression,System.Threading.CancellationToken)>.
+This API delegates to <xref:NCalc.Visitors.SerializationVisitor>.
+
+```csharp
+using NCalc.Extensions;
+
+var logicalExpression = LogicalExpressionFactory.Create("1 + 2");
+var expressionText = logicalExpression.ToExpressionString();
+```
 
 ## <xref:NCalc.Expression> Class
 

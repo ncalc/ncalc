@@ -1,6 +1,4 @@
-﻿using NCalc.Domain;
-
-namespace NCalc.Factories;
+﻿namespace NCalc.Factories;
 
 public interface IExpressionFactory
 {

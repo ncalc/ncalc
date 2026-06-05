@@ -1,6 +1,4 @@
-﻿using NCalc.Domain;
-
-namespace NCalc.Cache;
+﻿namespace NCalc.Cache;
 
 public interface ILogicalExpressionCache
 {

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using NCalc.Exceptions;
 using NCalc.Visitors;
 
-namespace NCalc.Domain;
+namespace NCalc;
 
 public sealed class ValueExpression : LogicalExpression , IJsonOnDeserialized
 {

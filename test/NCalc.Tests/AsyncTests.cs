@@ -1,5 +1,4 @@
-﻿using NCalc.Domain;
-using NCalc.Factories;
+﻿using NCalc.Factories;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NCalc.Tests;

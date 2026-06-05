@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NCalc.Cache.Configuration;
-using NCalc.Domain;
 
 namespace NCalc.Cache;
 

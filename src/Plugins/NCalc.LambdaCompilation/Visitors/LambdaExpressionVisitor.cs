@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ExtendedNumerics;
-using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Helpers;
 using NCalc.LambdaCompilation.Reflection;
