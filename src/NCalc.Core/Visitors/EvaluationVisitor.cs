@@ -27,88 +27,90 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     public virtual async ValueTask<object?> Visit(BinaryExpression expression, CancellationToken ct = default)
     {
-        var left = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.LeftExpression, ct),
-            LazyThreadSafetyMode.None);
-        var right = new Lazy<ValueTask<object?>>(() => EvaluateAsync(expression.RightExpression, ct),
-            LazyThreadSafetyMode.None);
+        if (expression.Type == BinaryExpressionType.And)
+        {
+            return Convert.ToBoolean(await EvaluateAsync(expression.LeftExpression, ct), context.CultureInfo) &&
+                   Convert.ToBoolean(await EvaluateAsync(expression.RightExpression, ct), context.CultureInfo);
+        }
+
+        if (expression.Type == BinaryExpressionType.Or)
+        {
+            return Convert.ToBoolean(await EvaluateAsync(expression.LeftExpression, ct), context.CultureInfo) ||
+                   Convert.ToBoolean(await EvaluateAsync(expression.RightExpression, ct), context.CultureInfo);
+        }
+
+        var left = await EvaluateAsync(expression.LeftExpression, ct);
+        var right = await EvaluateAsync(expression.RightExpression, ct);
 
         switch (expression.Type)
         {
-            case BinaryExpressionType.And:
-                return Convert.ToBoolean(await left.Value, context.CultureInfo) &&
-                       Convert.ToBoolean(await right.Value, context.CultureInfo);
-
-            case BinaryExpressionType.Or:
-                return Convert.ToBoolean(await left.Value, context.CultureInfo) ||
-                       Convert.ToBoolean(await right.Value, context.CultureInfo);
-
             case BinaryExpressionType.Div:
-                return Div(await left.Value, await right.Value, context);
+                return Div(left, right, context);
 
             case BinaryExpressionType.Equal:
-                return Compare(await left.Value, await right.Value, ComparisonType.Equal);
+                return Compare(left, right, ComparisonType.Equal);
 
             case BinaryExpressionType.Greater:
-                return Compare(await left.Value, await right.Value, ComparisonType.Greater);
+                return Compare(left, right, ComparisonType.Greater);
 
             case BinaryExpressionType.GreaterOrEqual:
-                return Compare(await left.Value, await right.Value, ComparisonType.GreaterOrEqual);
+                return Compare(left, right, ComparisonType.GreaterOrEqual);
 
             case BinaryExpressionType.Lesser:
-                return Compare(await left.Value, await right.Value, ComparisonType.Lesser);
+                return Compare(left, right, ComparisonType.Lesser);
 
             case BinaryExpressionType.LesserOrEqual:
-                return Compare(await left.Value, await right.Value, ComparisonType.LesserOrEqual);
+                return Compare(left, right, ComparisonType.LesserOrEqual);
 
             case BinaryExpressionType.NotEqual:
-                return Compare(await left.Value, await right.Value, ComparisonType.NotEqual);
+                return Compare(left, right, ComparisonType.NotEqual);
 
             case BinaryExpressionType.Minus:
-                return Minus(await left.Value, await right.Value, context);
+                return Minus(left, right, context);
 
             case BinaryExpressionType.Modulo:
-                return Modulo(await left.Value, await right.Value, context);
+                return Modulo(left, right, context);
 
             case BinaryExpressionType.Plus:
-                return Plus(await left.Value, await right.Value, context);
+                return Plus(left, right, context);
 
             case BinaryExpressionType.Times:
-                return Times(await left.Value, await right.Value, context);
+                return Times(left, right, context);
 
             case BinaryExpressionType.BitwiseAnd:
-                return Convert.ToUInt64(await left.Value, context.CultureInfo) &
-                       Convert.ToUInt64(await right.Value, context.CultureInfo);
+                return Convert.ToUInt64(left, context.CultureInfo) &
+                       Convert.ToUInt64(right, context.CultureInfo);
 
             case BinaryExpressionType.BitwiseOr:
-                return Convert.ToUInt64(await left.Value, context.CultureInfo) |
-                       Convert.ToUInt64(await right.Value, context.CultureInfo);
+                return Convert.ToUInt64(left, context.CultureInfo) |
+                       Convert.ToUInt64(right, context.CultureInfo);
 
             case BinaryExpressionType.BitwiseXOr:
-                return Convert.ToUInt64(await left.Value, context.CultureInfo) ^
-                       Convert.ToUInt64(await right.Value, context.CultureInfo);
+                return Convert.ToUInt64(left, context.CultureInfo) ^
+                       Convert.ToUInt64(right, context.CultureInfo);
 
             case BinaryExpressionType.LeftShift:
-                return Convert.ToUInt64(await left.Value, context.CultureInfo) <<
-                       Convert.ToInt32(await right.Value, context.CultureInfo);
+                return Convert.ToUInt64(left, context.CultureInfo) <<
+                       Convert.ToInt32(right, context.CultureInfo);
 
             case BinaryExpressionType.RightShift:
-                return Convert.ToUInt64(await left.Value, context.CultureInfo) >>
-                       Convert.ToInt32(await right.Value, context.CultureInfo);
+                return Convert.ToUInt64(left, context.CultureInfo) >>
+                       Convert.ToInt32(right, context.CultureInfo);
 
             case BinaryExpressionType.Exponentiation:
-                return MathHelper.Pow(await left.Value, await right.Value, context);
+                return MathHelper.Pow(left, right, context);
 
             case BinaryExpressionType.In:
-                return In(await right.Value, await left.Value, context);
+                return In(right, left, context);
 
             case BinaryExpressionType.NotIn:
-                return !In(await right.Value, await left.Value, context);
+                return !In(right, left, context);
 
             case BinaryExpressionType.Like:
-                return Like(await left.Value, await right.Value, context);
+                return Like(left, right, context);
 
             case BinaryExpressionType.NotLike:
-                return !Like(await left.Value, await right.Value, context);
+                return !Like(left, right, context);
         }
 
         return null;
