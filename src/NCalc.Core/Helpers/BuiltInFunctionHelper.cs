@@ -1,10 +1,11 @@
+using System.Linq.Expressions;
 using NCalc.Exceptions;
 
 namespace NCalc.Helpers;
 
-public static class AsyncBuiltInFunctionHelper
+public static class BuiltInFunctionHelper
 {
-    public static async ValueTask<object?> EvaluateAsync(string functionName, AsyncExpression[] arguments, AsyncExpressionContext context, CancellationToken ct = default)
+    public static async ValueTask<object?> EvaluateAsync(string functionName, Expression[] arguments, ExpressionContext context, CancellationToken ct = default)
     {
         var caseInsensitive = context.Options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
         var comparison = caseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;

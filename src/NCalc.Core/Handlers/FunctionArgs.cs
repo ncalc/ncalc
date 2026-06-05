@@ -2,7 +2,6 @@ namespace NCalc.Handlers;
 
 public class FunctionArgs(Guid id, Expression[] parameters, CancellationToken ct) : EventArgs
 {
-    private object? _result;
     public Guid Id { get; } = id;
 
     public Expression[] Parameters { get; } = parameters;
@@ -11,22 +10,22 @@ public class FunctionArgs(Guid id, Expression[] parameters, CancellationToken ct
 
     public object? Result
     {
-        get => _result;
+        get;
         set
         {
-            _result = value;
+            field = value;
             HasResult = true;
         }
     }
 
     public bool HasResult { get; private set; }
 
-    public object?[] EvaluateParameters(CancellationToken ct)
+    public async ValueTask<object?[]> EvaluateParametersAsync(CancellationToken ct = default)
     {
         var values = new object?[Parameters.Length];
         for (var i = 0; i < values.Length; i++)
         {
-            values[i] = Parameters[i].Evaluate(ct);
+            values[i] = await Parameters[i].EvaluateAsync(ct);
         }
 
         return values;

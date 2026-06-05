@@ -33,15 +33,12 @@ For additional information on the technique we used to create this framework ple
 If you want to evaluate simple expressions:
 
 ```
-dotnet add package NCalcSync 
+dotnet add package NCalc.Core
 ```
 
-Want `async` support at your functions and parameters?
+> [!IMPORTANT]
+> `NCalcSync` and `NCalcAsync` are obsolete and only redirects to `NCalc.Core`. Use `NCalc.Core` directly for the shared expression engine.
 
-```
-dotnet add package NCalcAsync 
-
-```
 
 Want to use lambda compilation?
 

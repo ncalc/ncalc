@@ -3,7 +3,7 @@ using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using static NCalc.Helpers.TypeHelper;
-using static NCalc.Helpers.EvaluationHelper<NCalc.AsyncExpressionContext>;
+using static NCalc.Helpers.EvaluationHelper;
 using BinaryExpression = NCalc.Domain.BinaryExpression;
 using UnaryExpression = NCalc.Domain.UnaryExpression;
 
@@ -13,7 +13,7 @@ namespace NCalc.Visitors;
 /// Class responsible to asynchronous evaluating <see cref="LogicalExpression"/> objects into CLR objects.
 /// </summary>
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
-public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalExpressionVisitor<ValueTask<object?>>
+public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor<ValueTask<object?>>
 {
     public virtual async ValueTask<object?> Visit(TernaryExpression expression, CancellationToken ct = default)
     {
@@ -128,41 +128,46 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
     public virtual async ValueTask<object?> Visit(Function function, CancellationToken ct = default)
     {
         var argsCount = function.Parameters.Count;
-        var args = new AsyncExpression[argsCount];
+        var args = new Expression[argsCount];
 
         // Don't call parameters right now, instead let the function do it as needed.
         // Some parameters shouldn't be called, for instance, in a if(), the "not" value might be a division by zero
         // Evaluating every value could produce unexpected behaviour
         for (var i = 0; i < argsCount; i++)
         {
-            args[i] = new AsyncExpression(function.Parameters[i], context);
+            args[i] = new Expression(function.Parameters[i], context);
         }
 
         var functionName = function.Identifier.Name;
-        var functionArgs = new AsyncFunctionArgs(function.Identifier.Id, args, ct);
+        var functionArgs = new FunctionArgs(function.Identifier.Id, args, ct);
+
+        // ReSharper disable once MethodHasAsyncOverload
+        OnEvaluateFunction(functionName, functionArgs);
+
+        if (functionArgs.HasResult)
+            return functionArgs.Result;
 
         await OnEvaluateFunctionAsync(functionName, functionArgs);
 
         if (functionArgs.HasResult)
-        {
             return functionArgs.Result;
-        }
 
         if (context.Functions.TryGetValue(functionName, out var expressionFunction))
-        {
-            return await expressionFunction(new AsyncExpressionFunctionData(function.Identifier.Id, args, context, ct));
-        }
+            return expressionFunction(new ExpressionFunctionData(function.Identifier.Id, args, context, ct));
 
-        return await AsyncBuiltInFunctionHelper.EvaluateAsync(functionName, args, context, ct);
+        if (context.AsyncFunctions.TryGetValue(functionName, out var asyncExpressionFunction))
+            return await asyncExpressionFunction(new ExpressionFunctionData(function.Identifier.Id, args, context, ct));
+
+        return await BuiltInFunctionHelper.EvaluateAsync(functionName, args, context, ct);
     }
 
     public virtual async ValueTask<object?> Visit(Identifier identifier, CancellationToken ct = default)
     {
         var identifierName = identifier.Name;
 
-        var parameterArgs = new AsyncParameterArgs(identifier.Id, ct);
+        var parameterArgs = new ParameterArgs(identifier.Id, ct);
 
-        await OnEvaluateParameterAsync(identifierName, parameterArgs);
+        OnEvaluateParameter(identifierName, parameterArgs);
 
         if (parameterArgs.HasResult)
         {
@@ -171,7 +176,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
         if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
         {
-            if (parameter is AsyncExpression expression)
+            if (parameter is Expression expression)
             {
                 //Share the parameters with child expression.
                 foreach (var p in context.StaticParameters)
@@ -180,8 +185,8 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
                 foreach (var p in context.DynamicParameters)
                     expression.DynamicParameters[p.Key] = p.Value;
 
-                expression.EvaluateFunctionAsync += context.AsyncEvaluateFunctionHandler;
-                expression.EvaluateParameterAsync += context.AsyncEvaluateParameterHandler;
+                expression.EvaluateFunction += context.EvaluateFunctionHandler;
+                expression.EvaluateParameter += context.EvaluateParameterHandler;
 
                 return await expression.EvaluateAsync(ct);
             }
@@ -191,7 +196,7 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
-            return await dynamicParameter(new AsyncExpressionParameterData(identifier.Id, context, ct));
+            return dynamicParameter(new ExpressionParameterData(identifier.Id, context, ct));
         }
 
         throw new NCalcParameterNotDefinedException(identifierName);
@@ -230,14 +235,19 @@ public class AsyncEvaluationVisitor(AsyncExpressionContext context) : ILogicalEx
         };
     }
 
-    protected ValueTask OnEvaluateFunctionAsync(string name, AsyncFunctionArgs args)
+    protected Task OnEvaluateFunctionAsync(string name, FunctionArgs args)
     {
-        return context.AsyncEvaluateFunctionHandler?.Invoke(name, args) ?? default;
+        return context.EvaluateAsyncFunctionHandler?.Invoke(name, args) ?? Task.CompletedTask;
     }
 
-    protected ValueTask OnEvaluateParameterAsync(string name, AsyncParameterArgs args)
+    protected void OnEvaluateFunction(string name, FunctionArgs args)
     {
-        return context.AsyncEvaluateParameterHandler?.Invoke(name, args) ?? default;
+        context.EvaluateFunctionHandler?.Invoke(name, args);
+    }
+
+    protected void OnEvaluateParameter(string name, ParameterArgs args)
+    {
+        context.EvaluateParameterHandler?.Invoke(name, args);
     }
 
     protected ValueTask<object?> EvaluateAsync(LogicalExpression expression, CancellationToken ct = default)

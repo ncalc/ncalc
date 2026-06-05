@@ -11,10 +11,10 @@ Subscribers are responsible for honoring the token inside their handlers.
 ```csharp
 var cts = new CancellationTokenSource();
 
-var expression = new AsyncExpression("getUserName(1) == 'admin'");
-expression.Functions["getUserName"] = async args =>
+var expression = new Expression("getUserName(1) == 'admin'");
+expression.AsyncFunctions["getUserName"] = async args =>
 {
-    var id = (int)(await args[0].EvaluateAsync(args.CancellationToken)!)!;
+    var id = Convert.ToInt32(await args[0].EvaluateAsync(args.CancellationToken));
 
     args.CancellationToken.ThrowIfCancellationRequested();
 
@@ -26,7 +26,7 @@ expression.Functions["getUserName"] = async args =>
         .FirstAsync(args.CancellationToken);
 };
 
-var result = await expression.EvaluateAsync(args.CancellationToken);
+var result = await expression.EvaluateAsync(cts.Token);
 ```
 
 ### Learn more about cancellation tokens

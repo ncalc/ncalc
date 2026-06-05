@@ -457,12 +457,12 @@ public class MathsTests
     [Arguments("'' % 2", 0)]
     [Arguments("null % 2", 0)]
     [Arguments("'' + ''", 0)]
-    public void ShouldUseArithmeticNullOrEmptyStringAsZero(string expressionString, object expected)
+    public async Task ShouldUseArithmeticNullOrEmptyStringAsZero(string expressionString, object expected)
     {
         const ExpressionOptions options = ExpressionOptions.ArithmeticNullOrEmptyStringAsZero | ExpressionOptions.AllowNullParameter | ExpressionOptions.NoCache;
         var expression = new Expression(expressionString, options);
 
-        Assert.Expression(expected, expression);
+        await Assert.That(expression).Expression().IsEqualTo(expected);
     }
 
     [Test]
