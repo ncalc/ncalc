@@ -17,6 +17,12 @@
     <File Path=".github/workflows/build-test.yml" />
     <File Path=".github/workflows/publish-nuget.yml" />
   </Folder>
+  <Folder Name="/0. Solution Items/Obsolete/">
+    <Project Path="src/NCalc.Async/NCalc.Async.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
+    <Project Path="src/NCalc.Sync/NCalc.Sync.csproj" />
+  </Folder>
   <Folder Name="/0. Solution Items/Src/">
     <File Path="src/Directory.Build.props" />
   </Folder>
@@ -44,13 +50,9 @@
     <Project Path="test/NCalc.Play/NCalc.Play.csproj" />
     <Project Path="test/NCalc.Tests/NCalc.Tests.csproj" />
   </Folder>
-  <Project Path="src/NCalc.Async/NCalc.Async.csproj">
-    <BuildType Solution="SignedRelease|*" Project="Debug" />
-  </Project>
   <Project Path="src/NCalc.Core/NCalc.Core.csproj">
     <BuildType Solution="SignedRelease|*" Project="Debug" />
   </Project>
-  <Project Path="src/NCalc.Sync/NCalc.Sync.csproj" />
   <Properties Name="TestCaseManagementSettings" Scope="PostLoad">
     <Property Name="CategoryFile" Value="NCalc.vsmdi" />
   </Properties>
