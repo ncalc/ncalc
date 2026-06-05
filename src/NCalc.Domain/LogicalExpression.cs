@@ -8,7 +8,6 @@ namespace NCalc;
 /// <summary>
 /// Represents an abstract syntax tree (AST) node for logical expressions.
 /// </summary>
-#if NET
 [JsonPolymorphic]
 [JsonDerivedType(typeof(BinaryExpression), typeDiscriminator: "binary")]
 [JsonDerivedType(typeof(Function), typeDiscriminator: "function")]
@@ -17,7 +16,6 @@ namespace NCalc;
 [JsonDerivedType(typeof(TernaryExpression), typeDiscriminator: "ternary")]
 [JsonDerivedType(typeof(UnaryExpression), typeDiscriminator: "unary")]
 [JsonDerivedType(typeof(ValueExpression), typeDiscriminator: "value")]
-#endif
 public abstract class LogicalExpression
 {
     [Pure]
