@@ -11,7 +11,7 @@ Tests and development utilities live in `test/`: `NCalc.Tests` contains the auto
 
 - `dotnet restore NCalc.slnx`: restores all solution dependencies.
 - `dotnet build NCalc.slnx`: builds all projects using the pinned .NET SDK from `global.json`.
-- `dotnet test test/NCalc.Tests/NCalc.Tests.csproj`: runs the TUnit test suite through Microsoft.Testing.Platform.
+- `dotnet test --project test/NCalc.Tests/NCalc.Tests.csproj`: runs the TUnit test suite through Microsoft.Testing.Platform. The newer `dotnet test` CLI used here requires the project to be passed with `--project`.
 - `dotnet tool update -g docfx` then `docfx docs/docfx.json --serve`: builds and serves documentation locally.
 
 ## Coding Style & Naming Conventions
@@ -20,7 +20,9 @@ Use C# with 4-space indentation, spaces instead of tabs, sorted `System` directi
 
 ## Testing Guidelines
 
-Tests use TUnit in `test/NCalc.Tests`. Add tests near the feature area being changed, and place reusable fixtures or data in `Fixtures/` or `TestData/` when appropriate. Prefer behavior-focused test names beginning with `Should...` when adding new cases. Run `dotnet test test/NCalc.Tests/NCalc.Tests.csproj` before submitting changes; run the full solution build when public APIs, package projects, or plugins are touched.
+Tests use TUnit in `test/NCalc.Tests` and run through Microsoft.Testing.Platform. Add tests near the feature area being changed, and place reusable fixtures or data in `Fixtures/` or `TestData/` when appropriate. Prefer behavior-focused test names beginning with `Should...` when adding new cases. Run `dotnet test --project test/NCalc.Tests/NCalc.Tests.csproj` before submitting changes; run the full solution build when public APIs, package projects, or plugins are touched.
+
+Do not use the usual VSTest-style `--filter` option with this test project; it is reported as an unknown option. To inspect available tests, use `dotnet test --project test/NCalc.Tests/NCalc.Tests.csproj --list-tests --no-progress`. For focused runs, use Microsoft.Testing.Platform/TUnit-supported filters such as `--treenode-filter` or `--filter-uid`, and confirm the command runs a non-zero number of tests.
 
 ## Commit & Pull Request Guidelines
 
