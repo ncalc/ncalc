@@ -52,7 +52,7 @@ Unary operators operate on a single operand.
 **Examples:**
 ```csharp
 not true // Evaluates to false
-!(1 != 2) // Evaluates to true
+!(1 != 2) // Evaluates to false
 3!        // Evaluates to 6 (3*2*1)
 ```
 
@@ -194,4 +194,3 @@ Bitwise operators perform bitwise operations on integers.
 ```csharp
 2 >> 3
 ```
-

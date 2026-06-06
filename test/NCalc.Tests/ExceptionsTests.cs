@@ -19,6 +19,20 @@ public class ExceptionsTests
     }
 
     [Test]
+    [Arguments("()>0.")]
+    [Arguments("009&()")]
+    [Arguments("0000000000000000<<()")]
+    [Arguments("(' (' +'2(' , 2)/--1")]
+    [Arguments("!() --19")]
+    public async Task Should_Wrap_Invalid_Cast_During_Evaluation(string expression)
+    {
+        var exception = Assert.Throws<NCalcEvaluationException>(() => new Expression(expression)
+            .Evaluate(CancellationToken.None));
+
+        await Assert.That(exception.InnerException).IsTypeOf<InvalidCastException>();
+    }
+
+    [Test]
     [Arguments(". + 2")]
     [Arguments("(3 + 2")]
     [Arguments("42a")]
