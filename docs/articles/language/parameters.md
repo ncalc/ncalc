@@ -89,7 +89,7 @@ foreach (var result in (IList)expression.Evaluate())
 ## Using Event Handlers
 You can also use event handlers to handle parameters.
 ```csharp
-expression.EvaluateParameter += delegate(string name, ParameterArgs args)
+expression.EvaluateParameter += delegate(string name, ParameterEventArgs args)
 {
     if (name == "Pi")
         args.Result = 3.14;
