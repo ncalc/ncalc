@@ -7,6 +7,21 @@ namespace NCalc.Tests;
 public class ParametersAndFunctions
 {
     [Test]
+    public async Task ShouldInitializeExpressionContextDictionaries()
+    {
+        var context = new ExpressionContext(
+            new Dictionary<string, object> { ["staticValue"] = 1 },
+            new Dictionary<string, ExpressionParameter> { ["dynamicValue"] = _ => 2 },
+            new Dictionary<string, ExpressionFunction> { ["Custom"] = _ => 3 },
+            new Dictionary<string, AsyncExpressionFunction> { ["AsyncCustom"] = async _ => await Task.FromResult(4) });
+
+        var expression = new Expression("staticValue + dynamicValue + Custom() + AsyncCustom()", context);
+        var result = await expression.EvaluateAsync(CancellationToken.None);
+
+        await Assert.That(result).IsEqualTo(10);
+    }
+
+    [Test]
     public async Task ExpressionShouldEvaluateCustomFunctions()
     {
         var e = new Expression("SecretOperation(3, 6)")
