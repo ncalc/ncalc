@@ -1,8 +1,8 @@
 namespace NCalc.Handlers;
 
-public class ParameterData(Guid id, ExpressionContext context, CancellationToken ct)
+public class ParameterData(Guid id, ExpressionContext context, CancellationToken cancellationToken)
 {
     public Guid Id { get; } = id;
     public ExpressionContext Context { get; } = context;
-    public CancellationToken CancellationToken { get; } = ct;
+    public CancellationToken CancellationToken { get; } = cancellationToken;
 }

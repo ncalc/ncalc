@@ -106,20 +106,20 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomLogicalExpressionFactory : ILogicalExpressionFactory
     {
-        public LogicalExpression Create(string expression, ExpressionOptions options, CancellationToken ct = default) => throw new NCalcException("Stub method intented for testing.");
+        public LogicalExpression Create(string expression, ExpressionOptions options, CancellationToken cancellationToken = default) => throw new NCalcException("Stub method intented for testing.");
 
-        public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
+        public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken cancellationToken = default)
             => throw new NCalcException("Stub method intented for testing.");
     }
 
     private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
     {
-        public override ValueTask<object> Visit(ValueExpression expression, CancellationToken ct = default)
+        public override ValueTask<object> Visit(ValueExpression expression, CancellationToken cancellationToken = default)
         {
             if (expression.Value is 42)
                 return ValueTask.FromResult<object>("The answer");
 
-            return base.Visit(expression, ct);
+            return base.Visit(expression, cancellationToken);
         }
     }
 

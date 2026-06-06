@@ -9,7 +9,7 @@ namespace NCalc.Antlr;
 /// </summary>
 public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
 {
-    public LogicalExpression Create(string expression, ExpressionOptions options, CancellationToken ct)
+    public LogicalExpression Create(string expression, ExpressionOptions options, CancellationToken cancellationToken)
     {
         LogicalExpression logicalExpression;
         var lexer = new NCalcLexer(new AntlrInputStream(expression));
@@ -56,8 +56,8 @@ public sealed class AntlrLogicalExpressionFactory : ILogicalExpressionFactory
         return logicalExpression;
     }
 
-    public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
+    public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken cancellationToken = default)
     {
-        return Create(expression, options, ct);
+        return Create(expression, options, cancellationToken);
     }
 }

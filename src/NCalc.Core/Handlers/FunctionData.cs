@@ -2,14 +2,14 @@ using NCalc.Extensions;
 
 namespace NCalc.Handlers;
 
-public class FunctionData(Guid id, LogicalExpressionList arguments, ExpressionContext context, CancellationToken ct) : IList<LogicalExpression>
+public class FunctionData(Guid id, LogicalExpressionList arguments, ExpressionContext context, CancellationToken cancellationToken) : IList<LogicalExpression>
 {
     private LogicalExpressionList Arguments { get; } = arguments;
 
     public Guid Id { get; } = id;
 
     public ExpressionContext Context { get; } = context;
-    public CancellationToken CancellationToken { get; } = ct;
+    public CancellationToken CancellationToken { get; } = cancellationToken;
 
     public LogicalExpression this[int index]
     {

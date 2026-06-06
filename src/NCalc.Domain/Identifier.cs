@@ -7,8 +7,8 @@ public sealed class Identifier(string name) : LogicalExpression
     public Guid Id { get; } = Guid.NewGuid();
     public string Name { get; set; } = name;
 
-    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken cancellationToken = default)
     {
-        return visitor.Visit(this, ct);
+        return visitor.Visit(this, cancellationToken);
     }
 }

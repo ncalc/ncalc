@@ -6,11 +6,11 @@ namespace NCalc.Visitors;
 /// <typeparam name="T">The type of result returned from each visit method.</typeparam>
 public interface ILogicalExpressionVisitor<out T>
 {
-    T Visit(TernaryExpression expression, CancellationToken ct = default);
-    T Visit(BinaryExpression expression, CancellationToken ct = default);
-    T Visit(UnaryExpression expression, CancellationToken ct = default);
-    T Visit(ValueExpression expression, CancellationToken ct = default);
-    T Visit(Function function, CancellationToken ct = default);
-    T Visit(Identifier identifier, CancellationToken ct = default);
-    T Visit(LogicalExpressionList list, CancellationToken ct = default);
+    T Visit(TernaryExpression expression, CancellationToken cancellationToken = default);
+    T Visit(BinaryExpression expression, CancellationToken cancellationToken = default);
+    T Visit(UnaryExpression expression, CancellationToken cancellationToken = default);
+    T Visit(ValueExpression expression, CancellationToken cancellationToken = default);
+    T Visit(Function function, CancellationToken cancellationToken = default);
+    T Visit(Identifier identifier, CancellationToken cancellationToken = default);
+    T Visit(LogicalExpressionList list, CancellationToken cancellationToken = default);
 }

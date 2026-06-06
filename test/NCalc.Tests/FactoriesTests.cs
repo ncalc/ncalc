@@ -19,7 +19,7 @@ public class FactoriesTests(FactoriesFixture fixture)
     [Test]
     public async Task Logical_Expression_From_Factory_Should_Evaluate()
     {
-        await Assert.That(_expressionFactory.Create(_logicalExpressionFactory.Create("2+2", ct: CancellationToken.None))
+        await Assert.That(_expressionFactory.Create(_logicalExpressionFactory.Create("2+2", cancellationToken: CancellationToken.None))
             .Evaluate(CancellationToken.None)).IsEqualTo(4);
     }
 }

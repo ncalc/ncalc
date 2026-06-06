@@ -11,7 +11,7 @@ public class OperatorsTests
     [Arguments("not true")]
     public async Task Should_Evaluate_Not_Unary_Operator(string expression)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(expression, ct: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create(expression, cancellationToken: CancellationToken.None);
         var expr = new Expression(logicalExpression);
         await Assert.That((bool)expr.Evaluate(CancellationToken.None)!).IsFalse();
     }
@@ -92,7 +92,7 @@ public class OperatorsTests
     [Test]
     public async Task Should_Use_Correct_BitwiseXOr_133()
     {
-        var logicalExpression = LogicalExpressionFactory.Create(expression: "1 ^ 2", ct: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create(expression: "1 ^ 2", cancellationToken: CancellationToken.None);
 
         var serializedString = logicalExpression.ToExpressionString();
 

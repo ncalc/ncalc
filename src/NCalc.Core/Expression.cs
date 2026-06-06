@@ -193,9 +193,9 @@ public class Expression
     /// </summary>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public object? Evaluate(CancellationToken ct = default)
+    public object? Evaluate(CancellationToken cancellationToken = default)
     {
-        var valueTask = EvaluateAsync(ct);
+        var valueTask = EvaluateAsync(cancellationToken);
 
         if (valueTask.IsCompletedSuccessfully)
             return valueTask.Result;
@@ -206,12 +206,12 @@ public class Expression
     /// <summary>
     /// Asynchronously evaluates the logical expression.
     /// </summary>
-    /// <param name="ct">Cancellation token</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public async ValueTask<object?> EvaluateAsync(CancellationToken ct = default)
+    public async ValueTask<object?> EvaluateAsync(CancellationToken cancellationToken = default)
     {
-        LogicalExpression ??= GetLogicalExpression(ct);
+        LogicalExpression ??= GetLogicalExpression(cancellationToken);
 
         if (Error is not null)
             throw Error;
@@ -220,14 +220,14 @@ public class Expression
         {
             // If array evaluation, execute the same expression multiple times
             if (Options.HasFlag(ExpressionOptions.IterateParameters))
-                return await IterateParametersAsync(ct).ConfigureAwait(false);
+                return await IterateParametersAsync(cancellationToken).ConfigureAwait(false);
 
             var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
 
             if (LogicalExpression is null)
                 return null;
 
-            return await LogicalExpression.Accept(evaluationVisitor, ct).ConfigureAwait(false);
+            return await LogicalExpression.Accept(evaluationVisitor, cancellationToken).ConfigureAwait(false);
         }
         catch (InvalidCastException exception)
         {
@@ -235,7 +235,7 @@ public class Expression
         }
     }
 
-    private async ValueTask<object?> IterateParametersAsync(CancellationToken ct)
+    private async ValueTask<object?> IterateParametersAsync(CancellationToken cancellationToken)
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
@@ -245,7 +245,7 @@ public class Expression
             return null;
 
         if (size == null)
-            return await LogicalExpression.Accept(evaluationVisitor, ct);
+            return await LogicalExpression.Accept(evaluationVisitor, cancellationToken);
 
         var results = new List<object?>();
 
@@ -257,7 +257,7 @@ public class Expression
                 Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            results.Add(await LogicalExpression.Accept(evaluationVisitor, ct));
+            results.Add(await LogicalExpression.Accept(evaluationVisitor, cancellationToken));
         }
 
         return results;
@@ -266,38 +266,38 @@ public class Expression
     /// <summary>
     /// Returns a list with all parameter names from the expression.
     /// </summary>
-    /// <param name="ct">Cancellation token</param>
-    public List<string> GetParameterNames(CancellationToken ct = default)
+    /// <param name="cancellationToken">Cancellation token</param>
+    public List<string> GetParameterNames(CancellationToken cancellationToken = default)
     {
         var parameterExtractionVisitor = new ParameterExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
-        return LogicalExpression.Accept(parameterExtractionVisitor, ct);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
+        return LogicalExpression.Accept(parameterExtractionVisitor, cancellationToken);
     }
 
     /// <summary>
     /// Returns a list with all function names from the expression.
     /// </summary>
-    /// <param name="ct">Cancellation token</param>
-    public List<string> GetFunctionNames(CancellationToken ct = default)
+    /// <param name="cancellationToken">Cancellation token</param>
+    public List<string> GetFunctionNames(CancellationToken cancellationToken = default)
     {
         var functionExtractionVisitor = new FunctionExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
-        return LogicalExpression.Accept(functionExtractionVisitor, ct);
+        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
+        return LogicalExpression.Accept(functionExtractionVisitor, cancellationToken);
     }
 
     /// <summary>
     /// Create the LogicalExpression in order to check syntax errors.
     /// If errors are detected, the Error property contains the exception.
     /// </summary>
-    /// <param name="ct">Cancellation token</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if the expression syntax is correct, otherwise False.</returns>
     [MemberNotNullWhen(true, nameof(Error))]
-    public bool HasErrors(CancellationToken ct = default)
+    public bool HasErrors(CancellationToken cancellationToken = default)
     {
         try
         {
             Error = null;
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
+            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
 
             // In case HasErrors() is called multiple times for the same expression
             return LogicalExpression != null && Error != null;
@@ -309,7 +309,7 @@ public class Expression
         }
     }
 
-    public LogicalExpression? GetLogicalExpression(CancellationToken ct = default)
+    public LogicalExpression? GetLogicalExpression(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(ExpressionString))
         {
@@ -332,7 +332,7 @@ public class Expression
         {
             Error = null;
 
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, ct);
+            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
             if (isCacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
         }
@@ -344,9 +344,9 @@ public class Expression
         return logicalExpression;
     }
 
-    public string ToExpressionString(bool evaluateParameters = false, CancellationToken ct = default)
+    public string ToExpressionString(bool evaluateParameters = false, CancellationToken cancellationToken = default)
     {
-        var logicalExpression = GetLogicalExpression(ct);
+        var logicalExpression = GetLogicalExpression(cancellationToken);
 
         if (Error is not null)
             throw Error;
@@ -355,8 +355,8 @@ public class Expression
             return string.Empty;
 
         if (!evaluateParameters)
-            return logicalExpression.ToExpressionString(ct);
+            return logicalExpression.ToExpressionString(cancellationToken);
 
-        return logicalExpression.Accept(new ParameterSubstitutionVisitor(Context), ct).TrimEnd();
+        return logicalExpression.Accept(new ParameterSubstitutionVisitor(Context), cancellationToken).TrimEnd();
     }
 }

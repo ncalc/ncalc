@@ -11,7 +11,7 @@ public class SerializationTests
     [MethodDataSource(typeof(WaterLevelCheckTestData), "GetEnumerator")]
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
-        var compiled = LogicalExpressionFactory.Create(expression, ct: CancellationToken.None);
+        var compiled = LogicalExpressionFactory.Create(expression, cancellationToken: CancellationToken.None);
         var serialized = JsonSerializer.Serialize(compiled);
         var deserialized = JsonSerializer.Deserialize<LogicalExpression>(serialized);
 
@@ -41,7 +41,7 @@ public class SerializationTests
     [Test]
     public async Task SystemTextJsonPolymorphicSerializeAndDeserializeShouldWork()
     {
-        var expression = LogicalExpressionFactory.Create("1 == 1", ct: CancellationToken.None);
+        var expression = LogicalExpressionFactory.Create("1 == 1", cancellationToken: CancellationToken.None);
         var expressionJson = JsonSerializer.Serialize(expression);
         await Assert.That(JsonSerializer.Deserialize<LogicalExpression>(expressionJson) is BinaryExpression).IsTrue();
     }
@@ -169,7 +169,7 @@ public class SerializationTests
 
         var expression = new Expression("[ValueA] + [ValueB]", context);
 
-        await Assert.That(expression.ToExpressionString(evaluateParameters: true, ct: CancellationToken.None)).IsEqualTo("10 + 15");
+        await Assert.That(expression.ToExpressionString(evaluateParameters: true, cancellationToken: CancellationToken.None)).IsEqualTo("10 + 15");
     }
 
     [Test]
