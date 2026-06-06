@@ -5,6 +5,7 @@ using NCalc.Factories;
 namespace NCalc.Tests;
 
 [Property("Category", "Cache")]
+[NotInParallel]
 public class LogicalExpressionCacheTests
 {
     [Test]

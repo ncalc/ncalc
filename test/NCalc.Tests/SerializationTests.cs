@@ -137,4 +137,70 @@ public class SerializationTests
         var exprString = expr.LogicalExpression.ToExpressionString();
         await Assert.That(exprString).IsEqualTo("Max([a], [b])");
     }
+
+    [Test]
+    public async Task ShouldSerializeExpressionWithParameterValues()
+    {
+        var expression = new Expression("[ValueA] + [ValueB]");
+        expression.Parameters["ValueA"] = 10;
+        expression.Parameters["ValueB"] = 15;
+
+        await Assert.That(expression.ToExpressionString(evaluateParameters: true)).IsEqualTo("10 + 15");
+    }
+
+    [Test]
+    public async Task ShouldNotSerializeExpressionWithParameterValuesByDefault()
+    {
+        var expression = new Expression("[ValueA] + [ValueB]");
+        expression.Parameters["ValueA"] = 10;
+        expression.Parameters["ValueB"] = 15;
+
+        await Assert.That(expression.ToExpressionString()).IsEqualTo("([ValueA]) + ([ValueB])");
+    }
+
+    [Test]
+    public async Task ShouldSerializeLogicalExpressionWithContextParameterValues()
+    {
+        var context = new ExpressionContext(new Dictionary<string, object>
+        {
+            ["ValueA"] = 10,
+            ["ValueB"] = 15
+        });
+
+        var expression = new Expression("[ValueA] + [ValueB]", context);
+
+        await Assert.That(expression.ToExpressionString(evaluateParameters: true, ct: CancellationToken.None)).IsEqualTo("10 + 15");
+    }
+
+    [Test]
+    public async Task ShouldSerializeExpressionWithDynamicParameterValues()
+    {
+        var expression = new Expression("[ValueA] + [ValueB]")
+        {
+            Parameters =
+            {
+                ["ValueA"] = 10
+            },
+            DynamicParameters =
+            {
+                ["ValueB"] = _ => 15
+            }
+        };
+
+        await Assert.That(expression.ToExpressionString(evaluateParameters: true)).IsEqualTo("10 + 15");
+    }
+
+    [Test]
+    public async Task ShouldKeepUnknownParametersWhenSerializingWithParameterValues()
+    {
+        var expression = new Expression("[ValueA] + [ValueB]")
+        {
+            Parameters =
+            {
+                ["ValueA"] = 10
+            }
+        };
+
+        await Assert.That(expression.ToExpressionString(evaluateParameters: true)).IsEqualTo("10 + [ValueB]");
+    }
 }
