@@ -17,4 +17,11 @@
       <PackageReference Include="Parlot" Version="1.5.7" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="../../NCalc.png">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+    </ItemGroup>
+
 </Project>
