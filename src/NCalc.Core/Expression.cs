@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using NCalc.Cache;
 using NCalc.Exceptions;
+using NCalc.Extensions;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
@@ -228,11 +229,7 @@ public class Expression
 
             return await LogicalExpression.Accept(evaluationVisitor, ct).ConfigureAwait(false);
         }
-        catch (NCalcException)
-        {
-            throw;
-        }
-        catch (Exception exception)
+        catch (InvalidCastException exception)
         {
             throw new NCalcEvaluationException("Error evaluating expression.", exception);
         }
@@ -345,5 +342,21 @@ public class Expression
         }
 
         return logicalExpression;
+    }
+
+    public string ToExpressionString(bool evaluateParameters = false, CancellationToken ct = default)
+    {
+        var logicalExpression = GetLogicalExpression(ct);
+
+        if (Error is not null)
+            throw Error;
+
+        if (logicalExpression is null)
+            return string.Empty;
+
+        if (!evaluateParameters)
+            return logicalExpression.ToExpressionString(ct);
+
+        return logicalExpression.Accept(new ParameterSubstitutionVisitor(Context), ct).TrimEnd();
     }
 }

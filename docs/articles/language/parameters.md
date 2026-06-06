@@ -47,6 +47,24 @@ expression.DynamicParameters["Pi"] = _ => {
 };
 ```
 
+## Serializing expressions with parameter values
+
+To inspect the expression text with known parameters replaced by their current values, use the
+<xref:NCalc.Expression.ToExpressionString(System.Boolean,System.Threading.CancellationToken)>
+method with `evaluateParameters` set to `true`.
+
+```csharp
+var expression = new Expression("[ValueA] + [ValueB]");
+expression.Parameters["ValueA"] = 10;
+expression.Parameters["ValueB"] = 15;
+
+var expressionText = expression.ToExpressionString(evaluateParameters: true);
+// 10 + 15
+```
+
+Parameters that cannot be resolved are left in the output, for example `10 + [ValueB]`.
+Function calls are preserved as function calls, with any known parameter arguments substituted.
+
 ## Square brackets parameters
 
 Parameters in between square brackets can contain special characters like spaces, dots, and also start with digits.
