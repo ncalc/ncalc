@@ -1,20 +1,35 @@
 ﻿## Caching
 
-When <xref:NCalc.Expression.Evaluate> is called on an expression, it is parsed once. If the same expression is reused the parse is not executed again. Thus, you can reuse <xref:NCalc.Expression>  instances by changing the parameters, and you will gain in performance because only the traversal of the expression tree will be done.
+When <xref:NCalc.Expression.Evaluate> is called on an expression, it is parsed once. If the same expression is reused, parsing is skipped and only the expression tree is evaluated again.
 
-Moreover, each parsed expression is cached internally, which means you don't even have to care about reusing an <xref:NCalc.Expression> instance, the framework will do it for you.
-The cache is automatically cleaned like the GC does when an Expression is no more used, or memory is needed (i.e. using [WeakReference<LogicalExpression>](https://learn.microsoft.com/en-us/dotnet/api/system.weakreference-1?view=net-8.0)).
+Each parsed expression is cached internally, which means you do not need to manually reuse an <xref:NCalc.Expression> instance for the parser cache to help.
 
-You can disable this behavior at the framework level by adding <xref:NCalc.ExpressionOptions.NoCache> at your [global expression context](../evaluation/expression_context.md).
+The default cache now keeps strong references and evicts the least recently used entries when it reaches its capacity. This is more predictable than a weak-reference cache and avoids scanning the whole dictionary on every insert.
 
-```c#
+You can disable caching at the framework level by adding <xref:NCalc.ExpressionOptions.NoCache> at your [global expression context](../evaluation/expression_context.md).
+
+```csharp
 MyContext.Value.Options = ExpressionOptions.NoCache;
 ```
 
-You can also tell a specific <xref:NCalc.Expression> instance not to be taken from the cache.
+You can also tell a specific <xref:NCalc.Expression> instance not to use the cache.
 
-```c#
+```csharp
 var expression = new Expression("1 + 1", ExpressionOptions.NoCache);
 ```
 
+## Default cache size
+
+The default cache size is `128` entries.
+
+If you are on modern .NET runtimes (.NET 8+) you can override it before the first expression is parsed by setting an `AppContext` value:
+
+```csharp
+AppContext.SetData("NCalc.LogicalExpressionCache.DefaultCapacity", "256");
+```
+
+The value must be a positive integer string. Set it during application startup so the default singleton cache picks it up before first use.
+
 You can customize the cache implementation using [Dependency Injection](../extensibility/dependency_injection.md).
+
+If you need expiration control or want the cache to be governed by `IMemoryCache`, use the [Memory Cache plugin](../extensibility/plugins/memory_cache.md) instead of the built-in cache.

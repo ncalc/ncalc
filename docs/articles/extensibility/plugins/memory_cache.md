@@ -2,7 +2,7 @@
 
 ## Introduction
 
-If you want to use [IMemoryCache](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.imemorycache) to cache the parsing of expressions, you can use this plugin. The advantage of this plugin is that you can set a custom cache expiration.
+If you want to use [IMemoryCache](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.imemorycache) to cache the parsing of expressions, you can use this plugin. This is the better option when you want explicit cache expiration, eviction policy control, or a cache that is managed by the application's `IMemoryCache` infrastructure instead of the built-in default cache.
 
 ## Installation and Usage
 
