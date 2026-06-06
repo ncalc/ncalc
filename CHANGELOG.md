@@ -1,3 +1,30 @@
+# 6.0.0
+
+* Unify sync and async paths into NCalc.Core by @gumbarros in https://github.com/ncalc/ncalc/pull/559
+* Refactor: Split parser and domain into dedicated assemblies by @gumbarros in https://github.com/ncalc/ncalc/pull/560
+* Refactor `EvaluationVisitor` removing `Lazy` to optimize binary expression handling. by @gumbarros in https://github.com/ncalc/ncalc/pull/561
+* Refactor function and parameter events to not depend on `Expression` and better handle null parameter. by @gumbarros in https://github.com/ncalc/ncalc/pull/562
+* Improve default expression cache by @gumbarros in https://github.com/ncalc/ncalc/pull/563
+* Fix minor docs issue at operators.md. This closes #549 by @gumbarros in https://github.com/ncalc/ncalc/pull/564
+* Wrap evaluation exceptions at `NCalcEvaluationException` by @gumbarros in https://github.com/ncalc/ncalc/pull/565
+* Add new constructors overloads to `ExpressionContext.cs`.  by @gumbarros in https://github.com/ncalc/ncalc/pull/566
+* Added `ToExpressionString` and `ParameterSubstitutionVisitor` by @gumbarros in https://github.com/ncalc/ncalc/pull/567
+* Rename `CancellationToken` parameters from ct to cancellationToken to align with Microsoft naming conventions. by @gumbarros in https://github.com/ncalc/ncalc/pull/568
+
+## Breaking Changes
+* Public domain types moved out of the `NCalc.Domain` namespace and into `NCalc`. For example, use `NCalc.LogicalExpression`, `NCalc.BinaryExpression`, `NCalc.Function`, and `NCalc.ValueExpression` instead of `NCalc.Domain.*`.
+* Parser types now live in the new `NCalc.Parser` assembly. Projects that use parser APIs directly must reference `NCalc.Parser` and `NCalc.Domain` in addition to `NCalc.Core` when those assemblies are not brought in transitively.
+* `ArgumentSeparator` was renamed to `LogicalExpressionArgumentSeparator`. `LogicalExpressionParserOptions` no longer exposes `Default`, `WithCultureInfo`, `WithArgumentSeparator`, `Create`, or the implicit `CultureInfo` conversion; use object initialization or the new constructors instead.
+* Sync and async evaluation were unified in `NCalc.Core`. `AsyncExpression`, `AsyncExpressionContext`, `IAsyncExpressionFactory`, `AsyncExpressionFactory`, `IAsyncEvaluationVisitorFactory`, `AsyncEvaluationVisitorFactory`, and `AsyncEvaluationVisitor` were removed; use `Expression`, `ExpressionContext`, `IExpressionFactory`, `IEvaluationVisitorFactory`, and `Expression.EvaluateAsync` instead.
+* Async DI customization methods were removed from `NCalcServiceBuilder`: use `WithExpressionFactory` and `WithEvaluationVisitorFactory` instead of `WithAsyncExpressionFactory` and `WithAsyncEvaluationVisitorFactory`.
+* Function and parameter callback delegates and argument types now use unified types in `NCalc.Handlers`. `FunctionArgs`, `ParameterArgs`, `ExpressionFunctionData`, `ExpressionParameterData`, `AsyncFunctionArgs`, `AsyncParameterArgs`, `AsyncExpressionFunctionData`, and `AsyncExpressionParameterData` were replaced by `FunctionEventArgs`, `ParameterEventArgs`, `FunctionData`, and `ParameterData`.
+* Function callback arguments no longer expose arrays of nested `Expression` or `AsyncExpression` instances. `FunctionData` exposes `LogicalExpression` arguments and provides `Evaluate(index)` / `EvaluateAsync(index)` helpers for evaluating them with the current `ExpressionContext`.
+* `AsyncExpressionFunction` now returns `Task<object?>` and receives `FunctionData`. `AsyncExpressionParameter` was removed; dynamic parameters now use `ExpressionParameter`.
+* `ExpressionBase<TExpressionContext>` and `ExpressionContextBase` were removed. Custom expression types should derive from or compose `Expression` and use `ExpressionContext`.
+* `LogicalExpression.ToString()` no longer serializes the expression tree. Use `ToExpressionString()` from `NCalc.Extensions` when an expression string representation is required.
+* Public `CancellationToken` parameter names were renamed from `ct` to `cancellationToken`. Calls that use named arguments must be updated.
+* Evaluation failures may now be wrapped in `NCalcEvaluationException`; inspect `InnerException` for the original exception.
+
 # 5.13.0
 * Arithmetic null or empty string as zero by @gumbarros in https://github.com/ncalc/ncalc/pull/546
 * Support for multiple argument separators in expression by @Bykiev in https://github.com/ncalc/ncalc/pull/541
