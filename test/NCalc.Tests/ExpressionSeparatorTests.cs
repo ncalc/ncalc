@@ -1,5 +1,4 @@
 using NCalc.Parser;
-using System.Threading.Tasks;
 
 namespace NCalc.Tests;
 
@@ -46,10 +45,10 @@ public class ExpressionSeparatorTests
 
         expression.EvaluateFunction += (name, args) =>
         {
-            if (name == "CustomAdd" && args.Parameters.Length == 2)
+            if (name == "CustomAdd" && args.Parameters.Count == 2)
             {
-                args.Result = Convert.ToDouble(args.Parameters[0].Evaluate(args.CancellationToken)) +
-                    Convert.ToDouble(args.Parameters[1].Evaluate(args.CancellationToken));
+                args.Result = Convert.ToDouble(args.Parameters.Evaluate(0)) +
+                    Convert.ToDouble(args.Parameters.Evaluate(1));
             }
         };
 

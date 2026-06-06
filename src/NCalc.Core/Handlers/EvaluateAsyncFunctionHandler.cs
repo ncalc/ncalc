@@ -1,3 +1,3 @@
 namespace NCalc.Handlers;
 
-public delegate Task EvaluateAsyncFunctionHandler(string name, FunctionArgs args);
+public delegate Task EvaluateAsyncFunctionHandler(string name, FunctionEventArgs args);

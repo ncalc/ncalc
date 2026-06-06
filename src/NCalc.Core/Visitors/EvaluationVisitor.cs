@@ -126,19 +126,12 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     public virtual async ValueTask<object?> Visit(Function function, CancellationToken ct = default)
     {
-        var argsCount = function.Parameters.Count;
-        var args = new Expression[argsCount];
-
         // Don't call parameters right now, instead let the function do it as needed.
         // Some parameters shouldn't be called, for instance, in a if(), the "not" value might be a division by zero
         // Evaluating every value could produce unexpected behaviour
-        for (var i = 0; i < argsCount; i++)
-        {
-            args[i] = new Expression(function.Parameters[i], context);
-        }
-
         var functionName = function.Identifier.Name;
-        var functionArgs = new FunctionArgs(function.Identifier.Id, args, ct);
+        var functionData = new FunctionData(function.Identifier.Id, function.Parameters, context, ct);
+        var functionArgs = new FunctionEventArgs(functionData);
 
         // ReSharper disable once MethodHasAsyncOverload
         OnEvaluateFunction(functionName, functionArgs);
@@ -152,26 +145,24 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             return functionArgs.Result;
 
         if (context.Functions.TryGetValue(functionName, out var expressionFunction))
-            return expressionFunction(new ExpressionFunctionData(function.Identifier.Id, args, context, ct));
+            return expressionFunction(functionData);
 
         if (context.AsyncFunctions.TryGetValue(functionName, out var asyncExpressionFunction))
-            return await asyncExpressionFunction(new ExpressionFunctionData(function.Identifier.Id, args, context, ct));
+            return await asyncExpressionFunction(functionData);
 
-        return await BuiltInFunctionHelper.EvaluateAsync(functionName, args, context, ct);
+        return await BuiltInFunctionHelper.EvaluateAsync(functionName, functionData);
     }
 
     public virtual async ValueTask<object?> Visit(Identifier identifier, CancellationToken ct = default)
     {
         var identifierName = identifier.Name;
 
-        var parameterArgs = new ParameterArgs(identifier.Id, ct);
+        var parameterArgs = new ParameterEventArgs(identifier.Id, ct);
 
         OnEvaluateParameter(identifierName, parameterArgs);
 
         if (parameterArgs.HasResult)
-        {
             return parameterArgs.Result;
-        }
 
         if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
         {
@@ -194,9 +185,10 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         }
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
-        {
-            return dynamicParameter(new ExpressionParameterData(identifier.Id, context, ct));
-        }
+            return dynamicParameter(new ParameterData(identifier.Id, context, ct));
+
+        if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) && context.Options.HasFlag(ExpressionOptions.AllowNullParameter))
+            return null;
 
         throw new NCalcParameterNotDefinedException(identifierName);
     }
@@ -234,17 +226,17 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         };
     }
 
-    protected Task OnEvaluateFunctionAsync(string name, FunctionArgs args)
+    protected Task OnEvaluateFunctionAsync(string name, FunctionEventArgs args)
     {
         return context.EvaluateAsyncFunctionHandler?.Invoke(name, args) ?? Task.CompletedTask;
     }
 
-    protected void OnEvaluateFunction(string name, FunctionArgs args)
+    protected void OnEvaluateFunction(string name, FunctionEventArgs args)
     {
         context.EvaluateFunctionHandler?.Invoke(name, args);
     }
 
-    protected void OnEvaluateParameter(string name, ParameterArgs args)
+    protected void OnEvaluateParameter(string name, ParameterEventArgs args)
     {
         context.EvaluateParameterHandler?.Invoke(name, args);
     }

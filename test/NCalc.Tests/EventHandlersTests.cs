@@ -1,3 +1,4 @@
+using NCalc.Extensions;
 using NCalc.Handlers;
 using System.Threading.Tasks;
 
@@ -15,8 +16,8 @@ public class EventHandlersTests
         {
             if (name == "SecretOperation")
             {
-                args.Result = (int)args.Parameters[0].Evaluate(args.CancellationToken) +
-                    (int)args.Parameters[1].Evaluate(args.CancellationToken);
+                args.Result = (int)args.Parameters[0].Evaluate(args.Context, args.CancellationToken) +
+                    (int)args.Parameters[1].Evaluate(args.Context, args.CancellationToken);
             }
         };
 
@@ -33,7 +34,7 @@ public class EventHandlersTests
         e.EvaluateFunction += (name, args) =>
         {
             if (name == "SecretOperation")
-                args.Result = (int)args.Parameters[0].Evaluate(args.CancellationToken) + (int)args.Parameters[1].Evaluate(args.CancellationToken);
+                args.Result = (int)args.Parameters.Evaluate(0) + (int)args.Parameters[1].Evaluate(args.Parameters.Context, args.CancellationToken);
         };
 
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(10);
@@ -72,7 +73,7 @@ public class EventHandlersTests
             _ = expression.Evaluate(CancellationToken.None);
         }
 
-        void Expression_EvaluateFunction(string name, FunctionArgs args)
+        void Expression_EvaluateFunction(string name, FunctionEventArgs args)
         {
             if (name != "MyFunc")
                 return;
@@ -127,10 +128,10 @@ public class EventHandlersTests
                     arg.Result = 1;
                     break;
                 case "func2":
-                    arg.Result = 2 * Convert.ToDouble(arg.Parameters[0].Evaluate(arg.CancellationToken));
+                    arg.Result = 2 * Convert.ToDouble(arg.Parameters[0].Evaluate(arg.Context, arg.CancellationToken));
                     break;
                 case "func3":
-                    arg.Result = 3 * Convert.ToDouble(arg.Parameters[0].Evaluate(arg.CancellationToken));
+                    arg.Result = 3 * Convert.ToDouble(arg.Parameters[0].Evaluate(arg.Context, arg.CancellationToken));
                     break;
             }
         };
@@ -237,8 +238,8 @@ public class EventHandlersTests
                     }
                 }
 
-                args.Result = (int)args.Parameters[0].Evaluate(args.CancellationToken) +
-                    (int)args.Parameters[1].Evaluate(args.CancellationToken);
+                args.Result = (int)args.Parameters[0].Evaluate(args.Context, args.CancellationToken) +
+                    (int)args.Parameters[1].Evaluate(args.Context, args.CancellationToken);
             }
         };
 
@@ -260,8 +261,8 @@ public class EventHandlersTests
             var id = name;
             if (name == "Repeat")
             {
-                var t = (int)args.Parameters[1].Evaluate(args.CancellationToken) - 1;
-                var r = (bool)args.Parameters[0].Evaluate(args.CancellationToken);
+                var t = (int)args.Parameters[1].Evaluate(args.Context, args.CancellationToken) - 1;
+                var r = (bool)args.Parameters[0].Evaluate(args.Context, args.CancellationToken);
                 if (r && id != null)
                 {
                     if (!times.ContainsKey(id))

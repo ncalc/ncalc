@@ -215,9 +215,6 @@ public class Expression
         if (Error is not null)
             throw Error;
 
-        if (Options.HasFlag(ExpressionOptions.AllowNullParameter))
-            Context.StaticParameters["null"] = null;
-
         // If array evaluation, execute the same expression multiple times
         if (Options.HasFlag(ExpressionOptions.IterateParameters))
             return IterateParametersAsync(ct);

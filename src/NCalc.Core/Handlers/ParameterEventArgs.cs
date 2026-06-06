@@ -1,6 +1,6 @@
 namespace NCalc.Handlers;
 
-public class ParameterArgs(Guid id, CancellationToken ct) : EventArgs
+public class ParameterEventArgs(Guid id, CancellationToken ct) : EventArgs
 {
     public Guid Id { get; } = id;
     public CancellationToken CancellationToken { get; } = ct;

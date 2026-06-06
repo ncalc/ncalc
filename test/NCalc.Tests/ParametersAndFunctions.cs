@@ -1,3 +1,4 @@
+using NCalc.Extensions;
 using NCalc.Handlers;
 
 namespace NCalc.Tests;
@@ -12,7 +13,7 @@ public class ParametersAndFunctions
         {
             Functions =
             {
-                ["SecretOperation"] = (args) => (int)args[0].Evaluate(CancellationToken.None) + (int)args[1].Evaluate(CancellationToken.None)
+                ["SecretOperation"] = (args) => (int)args[0].Evaluate(args.Context, CancellationToken.None) + (int)args[1].Evaluate(args.Context, CancellationToken.None)
             }
         };
 
@@ -31,7 +32,7 @@ public class ParametersAndFunctions
             },
             Functions =
             {
-                ["SecretOperation"] = (args) => (int)args[0].Evaluate() + (int)args[1].Evaluate()
+                ["SecretOperation"] = (args) => (int)args[0].Evaluate(args.Context) + (int)args[1].Evaluate(args.Context)
             }
         };
 
@@ -61,7 +62,7 @@ public class ParametersAndFunctions
                 }
             }
 
-            return (int)args[0].Evaluate() + (int)args[1].Evaluate();
+            return (int)args[0].Evaluate(args.Context) + (int)args[1].Evaluate(args.Context);
         };
 
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(12);
@@ -80,8 +81,8 @@ public class ParametersAndFunctions
         var times = new Dictionary<string, int>();
         e.Functions[id] = (args) =>
         {
-            var t = (int)args[1].Evaluate() - 1;
-            var r = (bool)args[0].Evaluate();
+            var t = (int)args[1].Evaluate(args.Context) - 1;
+            var r = (bool)args[0].Evaluate(args.Context);
             if (r)
             {
                 if (!times.ContainsKey(id))
@@ -138,7 +139,7 @@ public class ParametersAndFunctions
             _ = expression.Evaluate(CancellationToken.None);
         }
 
-        object Expression_EvaluateFunction(ExpressionFunctionData args)
+        object Expression_EvaluateFunction(FunctionData args)
         {
             counter++;
             totalCounter++;
@@ -175,8 +176,8 @@ public class ParametersAndFunctions
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
 
         e.Functions["func1"] = (_) => 1;
-        e.Functions["func2"] = (arg) => 2 * Convert.ToDouble(arg[0].Evaluate());
-        e.Functions["func3"] = (arg) => 3 * Convert.ToDouble(arg[0].Evaluate());
+        e.Functions["func2"] = (arg) => 2 * Convert.ToDouble(arg[0].Evaluate(arg.Context));
+        e.Functions["func3"] = (arg) => 3 * Convert.ToDouble(arg[0].Evaluate(arg.Context));
 
         e.DynamicParameters["x"] = _ => 1;
         e.DynamicParameters["y"] = _ => 2;
