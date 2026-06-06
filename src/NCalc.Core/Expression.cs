@@ -208,23 +208,34 @@ public class Expression
     /// <param name="ct">Cancellation token</param>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public ValueTask<object?> EvaluateAsync(CancellationToken ct = default)
+    public async ValueTask<object?> EvaluateAsync(CancellationToken ct = default)
     {
         LogicalExpression ??= GetLogicalExpression(ct);
 
         if (Error is not null)
             throw Error;
 
-        // If array evaluation, execute the same expression multiple times
-        if (Options.HasFlag(ExpressionOptions.IterateParameters))
-            return IterateParametersAsync(ct);
+        try
+        {
+            // If array evaluation, execute the same expression multiple times
+            if (Options.HasFlag(ExpressionOptions.IterateParameters))
+                return await IterateParametersAsync(ct).ConfigureAwait(false);
 
-        var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+            var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
 
-        if (LogicalExpression is null)
-            return new ValueTask<object?>();
+            if (LogicalExpression is null)
+                return null;
 
-        return LogicalExpression.Accept(evaluationVisitor, ct);
+            return await LogicalExpression.Accept(evaluationVisitor, ct).ConfigureAwait(false);
+        }
+        catch (NCalcException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new NCalcEvaluationException("Error evaluating expression.", exception);
+        }
     }
 
     private async ValueTask<object?> IterateParametersAsync(CancellationToken ct)
