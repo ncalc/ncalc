@@ -53,7 +53,7 @@ public class ParserTests
     {
         const string formula = "[{Diagnostic}.Data]";
 
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, cancellationToken: CancellationToken.None);
 
         await Assert.That(logicalExpression).IsTypeOf<Identifier>();
 
@@ -65,7 +65,7 @@ public class ParserTests
     {
         const string formula = "'c'";
 
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues, ct: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues, cancellationToken: CancellationToken.None);
 
         await Assert.That(logicalExpression).IsTypeOf<ValueExpression>();
 
@@ -79,7 +79,7 @@ public class ParserTests
     [Test]
     public async Task ShouldHandleBinaryExpression(string formula, int expectedResult)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, cancellationToken: CancellationToken.None);
 
         await Assert.That(logicalExpression).IsTypeOf<BinaryExpression>();
 
@@ -94,7 +94,7 @@ public class ParserTests
     [Test]
     public async Task ShouldParseLists(string formula, int arrayExpectedCount)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, cancellationToken: CancellationToken.None);
 
         await Assert.That(logicalExpression).IsTypeOf<LogicalExpressionList>();
 
@@ -115,7 +115,7 @@ public class ParserTests
     [Test]
     public async Task ShouldParseGuids(string formula)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ct: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, cancellationToken: CancellationToken.None);
 
         await Assert.That(logicalExpression).IsTypeOf<ValueExpression>();
 
@@ -125,7 +125,7 @@ public class ParserTests
     [Test]
     public async Task ShouldParseGuidInsideFunction()
     {
-        var logicalExpression = LogicalExpressionFactory.Create("getUser(78b1941f4e7941c9bef656fad7326538)", ct: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create("getUser(78b1941f4e7941c9bef656fad7326538)", cancellationToken: CancellationToken.None);
 
         if (logicalExpression is Function function)
         {

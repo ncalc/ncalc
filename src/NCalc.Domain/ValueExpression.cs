@@ -128,8 +128,8 @@ public sealed class ValueExpression : LogicalExpression , IJsonOnDeserialized
         return value[0];
     }
 
-    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken cancellationToken = default)
     {
-        return visitor.Visit(this, ct);
+        return visitor.Visit(this, cancellationToken);
     }
 }

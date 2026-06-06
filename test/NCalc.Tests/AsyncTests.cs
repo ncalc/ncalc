@@ -141,7 +141,7 @@ public class AsyncTests
     [MethodDataSource(typeof(WaterLevelCheckTestData), "GetEnumerator")]
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
-        var compiled = LogicalExpressionFactory.Create(expression, ct: CancellationToken.None);
+        var compiled = LogicalExpressionFactory.Create(expression, cancellationToken: CancellationToken.None);
         var serialized = JsonSerializer.Serialize(compiled);
         var deserialized = JsonSerializer.Deserialize<LogicalExpression>(serialized);
 

@@ -75,8 +75,8 @@ public sealed class LogicalExpressionList : LogicalExpression, IList<LogicalExpr
         _list.RemoveAt(index);
     }
 
-    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken cancellationToken = default)
     {
-        return visitor.Visit(this, ct);
+        return visitor.Visit(this, cancellationToken);
     }
 }

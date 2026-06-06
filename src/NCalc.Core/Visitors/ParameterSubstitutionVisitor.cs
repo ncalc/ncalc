@@ -8,26 +8,26 @@ namespace NCalc.Visitors;
 /// </summary>
 public class ParameterSubstitutionVisitor(ExpressionContext context) : SerializationVisitor
 {
-    public override string Visit(Identifier identifier, CancellationToken ct = default)
+    public override string Visit(Identifier identifier, CancellationToken cancellationToken = default)
     {
-        if (TryEvaluateIdentifier(identifier, ct, out var value))
-            return SerializeValue(value, ct);
+        if (TryEvaluateIdentifier(identifier, cancellationToken, out var value))
+            return SerializeValue(value, cancellationToken);
 
-        return base.Visit(identifier, ct);
+        return base.Visit(identifier, cancellationToken);
     }
 
-    protected override string EncapsulateNoValue(LogicalExpression expression, CancellationToken ct = default)
+    protected override string EncapsulateNoValue(LogicalExpression expression, CancellationToken cancellationToken = default)
     {
         if (expression is Identifier identifier)
-            return $"{Visit(identifier, ct).TrimEnd()} ";
+            return $"{Visit(identifier, cancellationToken).TrimEnd()} ";
 
-        return base.EncapsulateNoValue(expression, ct);
+        return base.EncapsulateNoValue(expression, cancellationToken);
     }
 
-    private bool TryEvaluateIdentifier(Identifier identifier, CancellationToken ct, out object? value)
+    private bool TryEvaluateIdentifier(Identifier identifier, CancellationToken cancellationToken, out object? value)
     {
         var identifierName = identifier.Name;
-        var parameterArgs = new ParameterEventArgs(identifier.Id, ct);
+        var parameterArgs = new ParameterEventArgs(identifier.Id, cancellationToken);
 
         context.EvaluateParameterHandler?.Invoke(identifierName, parameterArgs);
 
@@ -42,7 +42,7 @@ public class ParameterSubstitutionVisitor(ExpressionContext context) : Serializa
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
         {
-            value = dynamicParameter(new ParameterData(identifier.Id, context, ct));
+            value = dynamicParameter(new ParameterData(identifier.Id, context, cancellationToken));
             return true;
         }
 
@@ -57,7 +57,7 @@ public class ParameterSubstitutionVisitor(ExpressionContext context) : Serializa
         return false;
     }
 
-    private string SerializeValue(object? value, CancellationToken ct)
+    private string SerializeValue(object? value, CancellationToken cancellationToken)
     {
         while (true)
         {
@@ -66,11 +66,11 @@ public class ParameterSubstitutionVisitor(ExpressionContext context) : Serializa
 
             if (value is Expression expression)
             {
-                value = expression.Evaluate(ct);
+                value = expression.Evaluate(cancellationToken);
                 continue;
             }
 
-            return new ValueExpression(value).Accept(this, ct).TrimEnd(' ');
+            return new ValueExpression(value).Accept(this, cancellationToken).TrimEnd(' ');
         }
     }
 }

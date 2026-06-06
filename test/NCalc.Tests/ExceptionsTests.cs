@@ -88,19 +88,19 @@ public class ExceptionsTests
     [Test]
     public async Task Should_Throw_Exception_On_Lexer_Errors_Issue_6()
     {
-        Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#t -chers", ct: CancellationToken.None));
+        Assert.Throws<NCalcParserException>(() => LogicalExpressionFactory.Create("#t -chers", cancellationToken: CancellationToken.None));
 
         var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
         string dateStr = $"#13{dateSeparator}13{dateSeparator}2222#";
         var invalidDateException = Assert.Throws<FormatException>(() =>
-            LogicalExpressionFactory.Create(dateStr, ct: CancellationToken.None));
+            LogicalExpressionFactory.Create(dateStr, cancellationToken: CancellationToken.None));
         await Assert.That(invalidDateException).IsTypeOf<FormatException>();
 
         //At v4, DateTime is better handled, and this should no longer cause errors.
         // https://github.com/ncalc/ncalc-async/issues/6
         try
         {
-            LogicalExpressionFactory.Create("Format(\"{0:(###) ###-####}\", \"9999999999\")", ct: CancellationToken.None);
+            LogicalExpressionFactory.Create("Format(\"{0:(###) ###-####}\", \"9999999999\")", cancellationToken: CancellationToken.None);
         }
         catch
         {

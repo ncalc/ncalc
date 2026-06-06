@@ -6,17 +6,17 @@ public static class LogicalExpressionExtensions
 {
     extension(LogicalExpression expression)
     {
-        public ValueTask<object?> EvaluateAsync(ExpressionContext context, CancellationToken ct = default)
+        public ValueTask<object?> EvaluateAsync(ExpressionContext context, CancellationToken cancellationToken = default)
         {
 #if NET
             ArgumentNullException.ThrowIfNull(expression);
 #endif
-            return expression.Accept(new EvaluationVisitor(context), ct);
+            return expression.Accept(new EvaluationVisitor(context), cancellationToken);
         }
 
-        public object? Evaluate(ExpressionContext context, CancellationToken ct = default)
+        public object? Evaluate(ExpressionContext context, CancellationToken cancellationToken = default)
         {
-            var valueTask = expression.EvaluateAsync(context, ct);
+            var valueTask = expression.EvaluateAsync(context, cancellationToken);
 
             if (valueTask.IsCompletedSuccessfully)
                 return valueTask.Result;
@@ -24,12 +24,12 @@ public static class LogicalExpressionExtensions
             return valueTask.AsTask().GetAwaiter().GetResult();
         }
 
-        public string ToExpressionString(CancellationToken ct = default)
+        public string ToExpressionString(CancellationToken cancellationToken = default)
         {
 #if NET
             ArgumentNullException.ThrowIfNull(expression);
 #endif
-            return expression.Accept(new SerializationVisitor(), ct).TrimEnd();
+            return expression.Accept(new SerializationVisitor(), cancellationToken).TrimEnd();
         }
     }
 }

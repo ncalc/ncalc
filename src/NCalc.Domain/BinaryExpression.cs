@@ -13,8 +13,8 @@ public sealed class BinaryExpression(
 
     public BinaryExpressionType Type { get; set; } = type;
 
-    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken ct = default)
+    public override T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken cancellationToken = default)
     {
-        return visitor.Visit(this, ct);
+        return visitor.Visit(this, cancellationToken);
     }
 }
