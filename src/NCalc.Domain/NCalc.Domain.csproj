@@ -14,4 +14,11 @@
         <PackageReference Include="System.Text.Json" Version="10.0.7" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="../../NCalc.png">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+    </ItemGroup>
+
 </Project>
