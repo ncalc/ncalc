@@ -37,15 +37,52 @@ public static partial class TypeHelper
         };
     }
 
-    public static int CompareUsingMostPreciseType(object? a, object? b, ComparisonOptions options)
+    public static ComparisonResult CompareUsingMostPreciseType(object? a, object? b, ComparisonOptions options)
     {
         var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
+
+        if (mpt == typeof(double))
+        {
+            var left = Convert.ToDouble(a, options.CultureInfo);
+            var right = Convert.ToDouble(b, options.CultureInfo);
+
+            if (double.IsNaN(left) || double.IsNaN(right))
+                return ComparisonResult.Unordered;
+
+            return left.CompareTo(right) switch
+            {
+                < 0 => ComparisonResult.Less,
+                > 0 => ComparisonResult.Greater,
+                _ => ComparisonResult.Equal
+            };
+        }
+
+        if (mpt == typeof(float))
+        {
+            var left = Convert.ToSingle(a, options.CultureInfo);
+            var right = Convert.ToSingle(b, options.CultureInfo);
+
+            if (float.IsNaN(left) || float.IsNaN(right))
+                return ComparisonResult.Unordered;
+
+            return left.CompareTo(right) switch
+            {
+                < 0 => ComparisonResult.Less,
+                > 0 => ComparisonResult.Greater,
+                _ => ComparisonResult.Equal
+            };
+        }
 
         var aValue = a != null ? Convert.ChangeType(a, mpt, options.CultureInfo) : null;
         var bValue = b != null ? Convert.ChangeType(b, mpt, options.CultureInfo) : null;
 
         var comparer = GetStringComparer(options);
 
-        return comparer.Compare(aValue, bValue);
+        return comparer.Compare(aValue, bValue) switch
+        {
+            < 0 => ComparisonResult.Less,
+            > 0 => ComparisonResult.Greater,
+            _ => ComparisonResult.Equal
+        };
     }
 }

@@ -205,7 +205,7 @@ public static class BuiltInFunctionHelper
             var parameter = await functionData.EvaluateAsync(0);
             for (var i = 1; i < functionData.Count; i++)
             {
-                if (TypeHelper.CompareUsingMostPreciseType(parameter, await functionData.EvaluateAsync(i), context) == 0)
+                if (TypeHelper.CompareUsingMostPreciseType(parameter, await functionData.EvaluateAsync(i), context) == ComparisonResult.Equal)
                     return true;
             }
 
