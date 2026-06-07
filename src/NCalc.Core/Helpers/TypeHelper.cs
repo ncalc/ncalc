@@ -154,19 +154,7 @@ public static class TypeHelper
         };
     }
 
-    public static int CompareUsingMostPreciseType(object? a, object? b, ComparisonOptions options)
-    {
-        var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
-
-        var aValue = a != null ? Convert.ChangeType(a, mpt, options.CultureInfo) : null;
-        var bValue = b != null ? Convert.ChangeType(b, mpt, options.CultureInfo) : null;
-
-        var comparer = GetStringComparer(options);
-
-        return comparer.Compare(aValue, bValue);
-    }
-
-    public static bool CompareUsingMostPreciseType(object? a, object? b, ComparisonType comparisonType, ComparisonOptions options)
+    public static ComparisonResult CompareUsingMostPreciseType(object? a, object? b, ComparisonOptions options)
     {
         var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
 
@@ -175,15 +163,14 @@ public static class TypeHelper
             var left = Convert.ToDouble(a, options.CultureInfo);
             var right = Convert.ToDouble(b, options.CultureInfo);
 
-            return comparisonType switch
+            if (double.IsNaN(left) || double.IsNaN(right))
+                return ComparisonResult.Unordered;
+
+            return left.CompareTo(right) switch
             {
-                ComparisonType.Equal => left == right,
-                ComparisonType.Greater => left > right,
-                ComparisonType.GreaterOrEqual => left >= right,
-                ComparisonType.Lesser => left < right,
-                ComparisonType.LesserOrEqual => left <= right,
-                ComparisonType.NotEqual => left != right,
-                _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
+                < 0 => ComparisonResult.Less,
+                > 0 => ComparisonResult.Greater,
+                _ => ComparisonResult.Equal
             };
         }
 
@@ -192,29 +179,27 @@ public static class TypeHelper
             var left = Convert.ToSingle(a, options.CultureInfo);
             var right = Convert.ToSingle(b, options.CultureInfo);
 
-            return comparisonType switch
+            if (float.IsNaN(left) || float.IsNaN(right))
+                return ComparisonResult.Unordered;
+
+            return left.CompareTo(right) switch
             {
-                ComparisonType.Equal => left == right,
-                ComparisonType.Greater => left > right,
-                ComparisonType.GreaterOrEqual => left >= right,
-                ComparisonType.Lesser => left < right,
-                ComparisonType.LesserOrEqual => left <= right,
-                ComparisonType.NotEqual => left != right,
-                _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
+                < 0 => ComparisonResult.Less,
+                > 0 => ComparisonResult.Greater,
+                _ => ComparisonResult.Equal
             };
         }
 
-        var result = CompareUsingMostPreciseType(a, b, options);
+        var aValue = a != null ? Convert.ChangeType(a, mpt, options.CultureInfo) : null;
+        var bValue = b != null ? Convert.ChangeType(b, mpt, options.CultureInfo) : null;
 
-        return comparisonType switch
+        var comparer = GetStringComparer(options);
+
+        return comparer.Compare(aValue, bValue) switch
         {
-            ComparisonType.Equal => result == 0,
-            ComparisonType.Greater => result > 0,
-            ComparisonType.GreaterOrEqual => result >= 0,
-            ComparisonType.Lesser => result < 0,
-            ComparisonType.LesserOrEqual => result <= 0,
-            ComparisonType.NotEqual => result != 0,
-            _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
+            < 0 => ComparisonResult.Less,
+            > 0 => ComparisonResult.Greater,
+            _ => ComparisonResult.Equal
         };
     }
 

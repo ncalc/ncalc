@@ -212,7 +212,18 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         if (HasNullOrTypeConflict(a, b, context.Options))
             return comparisonType == ComparisonType.NotEqual;
 
-        return CompareUsingMostPreciseType(a, b, comparisonType, context);
+        var result = CompareUsingMostPreciseType(a, b, context);
+
+        return comparisonType switch
+        {
+            ComparisonType.Equal => result == ComparisonResult.Equal,
+            ComparisonType.Greater => result == ComparisonResult.Greater,
+            ComparisonType.GreaterOrEqual => result is ComparisonResult.Greater or ComparisonResult.Equal,
+            ComparisonType.Lesser => result == ComparisonResult.Less,
+            ComparisonType.LesserOrEqual => result is ComparisonResult.Less or ComparisonResult.Equal,
+            ComparisonType.NotEqual => result != ComparisonResult.Equal,
+            _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
+        };
     }
 
     protected Task OnEvaluateFunctionAsync(string name, FunctionEventArgs args)
