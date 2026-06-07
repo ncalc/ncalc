@@ -131,17 +131,18 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
 
         builder.AppendLine("    public static bool IsReal(object? value)");
         builder.AppendLine("    {");
+        builder.AppendLine("        switch (value)");
+        builder.AppendLine("        {");
 
         foreach (var type in realTypes)
         {
-            builder.AppendLine($"        if (value is {type.Keyword})");
-            builder.AppendLine("        {");
-            builder.AppendLine("            return true;");
-            builder.AppendLine("        }");
-            builder.AppendLine();
+            builder.AppendLine($"            case {type.Keyword}:");
         }
 
-        builder.AppendLine("        return false;");
+        builder.AppendLine("                return true;");
+        builder.AppendLine("            default:");
+        builder.AppendLine("                return false;");
+        builder.AppendLine("        }");
         builder.AppendLine("    }");
         builder.AppendLine();
     }
@@ -152,17 +153,18 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
 
         builder.AppendLine("    public static bool IsUnsignedType(object? value)");
         builder.AppendLine("    {");
+        builder.AppendLine("        switch (value)");
+        builder.AppendLine("        {");
 
         foreach (var type in unsignedTypes)
         {
-            builder.AppendLine($"        if (value is {type.Keyword})");
-            builder.AppendLine("        {");
-            builder.AppendLine("            return true;");
-            builder.AppendLine("        }");
-            builder.AppendLine();
+            builder.AppendLine($"            case {type.Keyword}:");
         }
 
-        builder.AppendLine("        return false;");
+        builder.AppendLine("                return true;");
+        builder.AppendLine("            default:");
+        builder.AppendLine("                return false;");
+        builder.AppendLine("        }");
         builder.AppendLine("    }");
         builder.AppendLine();
     }
@@ -171,17 +173,22 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
     {
         builder.AppendLine("    public static TypeCode TypeCodeExpandBits(TypeCode typeCode)");
         builder.AppendLine("    {");
+        builder.AppendLine("        switch (typeCode)");
+        builder.AppendLine("        {");
 
         foreach (var group in metadata.TypeCodeExpandBitsTypes.GroupBy(type => type.ExpandBitsTypeCode))
         {
-            builder.AppendLine($"        if ({GenerateTypeCodeComparisonExpression("typeCode", group)})");
-            builder.AppendLine("        {");
-            builder.AppendLine($"            return {group.Key};");
-            builder.AppendLine("        }");
-            builder.AppendLine();
+            foreach (var type in group)
+            {
+                builder.AppendLine($"            case {type.TypeCode}:");
+            }
+
+            builder.AppendLine($"                return {group.Key};");
         }
 
-        builder.AppendLine("        return TypeCode.Empty;");
+        builder.AppendLine("            default:");
+        builder.AppendLine("                return TypeCode.Empty;");
+        builder.AppendLine("        }");
         builder.AppendLine("    }");
         builder.AppendLine();
     }
@@ -191,12 +198,5 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
         return types.Length == 0
             ? "false"
             : string.Join(" || ", types.Select(type => $"{parameterName} == typeof({type})"));
-    }
-
-    private static string GenerateTypeCodeComparisonExpression(
-        string parameterName,
-        IEnumerable<NumericTypeDefinition> types)
-    {
-        return string.Join(" || ", types.Select(type => $"{parameterName} == {type.TypeCode}"));
     }
 }
