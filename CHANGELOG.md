@@ -1,3 +1,8 @@
+# 6.1.0
+
+* Refactor math numeric helpers into source generators by @gumbarros in https://github.com/ncalc/ncalc/pull/570
+* Fix IEEE-754 NaN comparisons and unary negation semantics by @gumbarros in https://github.com/ncalc/ncalc/pull/571
+
 # 6.0.0
 
 * Unify sync and async paths into NCalc.Core by @gumbarros in https://github.com/ncalc/ncalc/pull/559
