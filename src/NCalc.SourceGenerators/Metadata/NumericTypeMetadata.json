@@ -1,0 +1,122 @@
+{
+  "builtInTypeOrder": [
+    "decimal",
+    "double",
+    "float",
+    "long",
+    "ulong",
+    "int",
+    "uint",
+    "short",
+    "ushort",
+    "byte",
+    "sbyte",
+    "char",
+    "bool",
+    "string",
+    "object"
+  ],
+  "numberPrecedence": [
+    "decimal",
+    "double",
+    "float",
+    "ulong",
+    "long",
+    "uint",
+    "int",
+    "ushort",
+    "short",
+    "byte",
+    "sbyte"
+  ],
+  "types": [
+    {
+      "keyword": "byte",
+      "typeCode": "TypeCode.Byte",
+      "isUnsigned": true,
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.Int32",
+      "implicitConversions": [ "short", "ushort", "int", "uint", "long", "ulong", "float", "double", "decimal" ]
+    },
+    {
+      "keyword": "sbyte",
+      "typeCode": "TypeCode.SByte",
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.Int32",
+      "implicitConversions": [ "short", "int", "long", "float", "double", "decimal" ]
+    },
+    {
+      "keyword": "short",
+      "typeCode": "TypeCode.Int16",
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.Int32",
+      "implicitConversions": [ "int", "long", "float", "double", "decimal" ]
+    },
+    {
+      "keyword": "ushort",
+      "typeCode": "TypeCode.UInt16",
+      "isUnsigned": true,
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.Int32",
+      "implicitConversions": [ "int", "uint", "long", "ulong", "float", "double", "decimal" ]
+    },
+    {
+      "keyword": "int",
+      "typeCode": "TypeCode.Int32",
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.Int64",
+      "implicitConversions": [ "long", "float", "double", "decimal" ]
+    },
+    {
+      "keyword": "uint",
+      "typeCode": "TypeCode.UInt32",
+      "isUnsigned": true,
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.Int64",
+      "implicitConversions": [ "long", "ulong", "float", "double", "decimal" ]
+    },
+    {
+      "keyword": "long",
+      "typeCode": "TypeCode.Int64",
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.UInt64",
+      "implicitConversions": [ "float", "double", "decimal" ]
+    },
+    {
+      "keyword": "ulong",
+      "typeCode": "TypeCode.UInt64",
+      "isUnsigned": true,
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.UInt64",
+      "implicitConversions": [ "float", "double", "decimal" ]
+    },
+    {
+      "keyword": "float",
+      "typeCode": "TypeCode.Single",
+      "isReal": true,
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.Double",
+      "implicitConversions": [ "double" ]
+    },
+    {
+      "keyword": "double",
+      "typeCode": "TypeCode.Double",
+      "isReal": true,
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.Double"
+    },
+    {
+      "keyword": "decimal",
+      "typeCode": "TypeCode.Decimal",
+      "isReal": true,
+      "supportsBinaryOperators": true,
+      "expandBitsTypeCode": "TypeCode.Double"
+    },
+    {
+      "keyword": "char",
+      "typeCode": "TypeCode.Char",
+      "expandBitsTypeCode": "TypeCode.Int32",
+      "implicitConversions": [ "ushort", "int", "uint", "long", "ulong", "float", "double", "decimal" ]
+    }
+  ]
+}

@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using ExtendedNumerics;
-using Microsoft.CSharp.RuntimeBinder;
 
 namespace NCalc.Helpers;
 
@@ -9,72 +8,6 @@ namespace NCalc.Helpers;
 /// </summary>
 public static class MathHelper
 {
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-
-    private static Func<object, object, object> GetAddFunc(MathHelperOptions options)
-    {
-        if (options.IsDynamicCodeSupported)
-        {
-            return options.OverflowProtection ? BinaryOperatorsJIT.AddFuncChecked : BinaryOperatorsJIT.AddFunc;
-        }
-        else
-        {
-            return options.OverflowProtection ? BinaryOperatorsAOT.AddFuncChecked : BinaryOperatorsAOT.AddFunc;
-        }
-    }
-
-    private static Func<object, object, object> GetSubtractFunc(MathHelperOptions options)
-    {
-        if (options.IsDynamicCodeSupported)
-        {
-            return options.OverflowProtection ? BinaryOperatorsJIT.SubtractFuncChecked : BinaryOperatorsJIT.SubtractFunc;
-        }
-        else
-        {
-            return options.OverflowProtection ? BinaryOperatorsAOT.SubtractFuncChecked : BinaryOperatorsAOT.SubtractFunc;
-        }
-    }
-
-    private static Func<object, object, object> GetMultiplyFunc(MathHelperOptions options)
-    {
-        if (options.IsDynamicCodeSupported)
-        {
-            return options.OverflowProtection ? BinaryOperatorsJIT.MultiplyFuncChecked : BinaryOperatorsJIT.MultiplyFunc;
-        }
-        else
-        {
-            return options.OverflowProtection ? BinaryOperatorsAOT.MultiplyFuncChecked : BinaryOperatorsAOT.MultiplyFunc;
-        }
-    }
-
-    private static Func<object, object, object> GetDivideFunc(MathHelperOptions options)
-    {
-        if (options.IsDynamicCodeSupported)
-        {
-            return options.OverflowProtection ? BinaryOperatorsJIT.DivideFuncChecked : BinaryOperatorsJIT.DivideFunc;
-        }
-        else
-        {
-            return options.OverflowProtection ? BinaryOperatorsAOT.DivideFuncChecked : BinaryOperatorsAOT.DivideFunc;
-        }
-    }
-
-    private static Func<object, object, object> GetModuloFunc(MathHelperOptions options)
-    {
-        if (options.IsDynamicCodeSupported)
-        {
-            return BinaryOperatorsJIT.ModuloFunc;
-        }
-        else
-        {
-            return BinaryOperatorsAOT.ModuloFunc;
-        }
-    }
-
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-
     public static object? Add(object? a, object? b)
     {
         return Add(a, b, CultureInfo.CurrentCulture);
@@ -88,8 +21,8 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var func = GetAddFunc(options);
-        return ExecuteOperation(a, b, options.CultureInfo, func);
+        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        return BinaryOperators.Add(a, b, options.OverflowProtection);
     }
 
     public static object? Subtract(object? a, object? b)
@@ -105,8 +38,8 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var func = GetSubtractFunc(options);
-        return ExecuteOperation(a, b, options.CultureInfo, func);
+        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        return BinaryOperators.Subtract(a, b, options.OverflowProtection);
     }
 
     public static object? Multiply(object? a, object? b)
@@ -122,8 +55,8 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var func = GetMultiplyFunc(options);
-        return ExecuteOperation(a, b, options.CultureInfo, func);
+        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        return BinaryOperators.Multiply(a, b, options.OverflowProtection);
     }
 
     public static object? Divide(object? a, object? b)
@@ -142,8 +75,8 @@ public static class MathHelper
         if (!(TypeHelper.IsReal(a) || TypeHelper.IsReal(b)))
             a = Convert.ToDouble(a, options.CultureInfo);
 
-        var func = GetDivideFunc(options);
-        return ExecuteOperation(a, b, options.CultureInfo, func);
+        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        return BinaryOperators.Divide(a, b, options.OverflowProtection);
     }
 
     public static object? Modulo(object? a, object? b)
@@ -159,8 +92,8 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options);
         b = ConvertIfNeeded(b, options);
 
-        var func = GetModuloFunc(options);
-        return ExecuteOperation(a, b, options.CultureInfo, func);
+        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        return BinaryOperators.Modulo(a, b);
     }
 
     public static object? Max(object a, object b)
@@ -487,30 +420,6 @@ public static class MathHelper
             char ch => Convert.ToInt32(ch.ToString(), options.CultureInfo),
             _ => Convert.ToInt32(value, options.CultureInfo)
         };
-    }
-
-    private static object ExecuteOperation(object a, object b, CultureInfo culture, Func<object, object, object> func)
-    {
-        ConvertToHighestPrecision(ref a, ref b, culture);
-
-        try
-        {
-            return func(a, b);
-        }
-        catch (RuntimeBinderException ex)
-        {
-            throw new InvalidOperationException(ex.Message, ex);
-        }
-    }
-
-    private static void CheckOverflow(dynamic value)
-    {
-        switch (value)
-        {
-            case double doubleVal when double.IsInfinity(doubleVal):
-            case float floatValue when float.IsInfinity(floatValue):
-                throw new OverflowException("Arithmetic operation resulted in an overflow");
-        }
     }
 
     public static object Factorial(object? result)
