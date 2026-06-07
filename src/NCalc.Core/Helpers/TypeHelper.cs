@@ -166,7 +166,7 @@ public static class TypeHelper
         return comparer.Compare(aValue, bValue);
     }
 
-    public static bool CompareUsingMostPreciseTypeForComparison(object? a, object? b, ComparisonType comparisonType, ComparisonOptions options)
+    public static bool CompareUsingMostPreciseType(object? a, object? b, ComparisonType comparisonType, ComparisonOptions options)
     {
         var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
 
