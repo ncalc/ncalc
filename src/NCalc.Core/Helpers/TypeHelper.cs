@@ -166,6 +166,58 @@ public static class TypeHelper
         return comparer.Compare(aValue, bValue);
     }
 
+    public static bool CompareUsingMostPreciseTypeForComparison(object? a, object? b, ComparisonType comparisonType, ComparisonOptions options)
+    {
+        var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
+
+        if (mpt == typeof(double))
+        {
+            var left = Convert.ToDouble(a, options.CultureInfo);
+            var right = Convert.ToDouble(b, options.CultureInfo);
+
+            return comparisonType switch
+            {
+                ComparisonType.Equal => left == right,
+                ComparisonType.Greater => left > right,
+                ComparisonType.GreaterOrEqual => left >= right,
+                ComparisonType.Lesser => left < right,
+                ComparisonType.LesserOrEqual => left <= right,
+                ComparisonType.NotEqual => left != right,
+                _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
+            };
+        }
+
+        if (mpt == typeof(float))
+        {
+            var left = Convert.ToSingle(a, options.CultureInfo);
+            var right = Convert.ToSingle(b, options.CultureInfo);
+
+            return comparisonType switch
+            {
+                ComparisonType.Equal => left == right,
+                ComparisonType.Greater => left > right,
+                ComparisonType.GreaterOrEqual => left >= right,
+                ComparisonType.Lesser => left < right,
+                ComparisonType.LesserOrEqual => left <= right,
+                ComparisonType.NotEqual => left != right,
+                _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
+            };
+        }
+
+        var result = CompareUsingMostPreciseType(a, b, options);
+
+        return comparisonType switch
+        {
+            ComparisonType.Equal => result == 0,
+            ComparisonType.Greater => result > 0,
+            ComparisonType.GreaterOrEqual => result >= 0,
+            ComparisonType.Lesser => result < 0,
+            ComparisonType.LesserOrEqual => result <= 0,
+            ComparisonType.NotEqual => result != 0,
+            _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
+        };
+    }
+
     public static TypeCode TypeCodeExpandBits(TypeCode typeCode)
     {
         return typeCode switch

@@ -203,4 +203,27 @@ public class AsyncTests
         var e = new Expression("2**2");
         await Assert.That(await e.EvaluateAsync(CancellationToken.None)).IsEqualTo(4d);
     }
+
+    [Test]
+    public async Task Should_Use_IEEE754_Semantics_For_NaN_Comparisons_Async()
+    {
+        var expression = new Expression("amount != amount")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        };
+
+        await Assert.That(await new Expression("amount < 0")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        }.EvaluateAsync(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(await new Expression("(0.0 / 0.0) == (0.0 / 0.0)").EvaluateAsync(CancellationToken.None))
+            .IsEqualTo(false);
+    }
 }
