@@ -51,6 +51,11 @@
     <Project Path="test/NCalc.Play/NCalc.Play.csproj" />
     <Project Path="test/NCalc.Tests/NCalc.Tests.csproj" />
   </Folder>
+  <Folder Name="/4. Source Generators/">
+    <Project Path="src/NCalc.SourceGenerators/NCalc.SourceGenerators.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
+  </Folder>
   <Project Path="src/NCalc.Core/NCalc.Core.csproj">
     <BuildType Solution="SignedRelease|*" Project="Debug" />
   </Project>
@@ -58,9 +63,6 @@
     <BuildType Solution="SignedRelease|*" Project="Debug" />
   </Project>
   <Project Path="src/NCalc.Parser/NCalc.Parser.csproj">
-    <BuildType Solution="SignedRelease|*" Project="Debug" />
-  </Project>
-  <Project Path="src/NCalc.SourceGenerators/NCalc.SourceGenerators.csproj">
     <BuildType Solution="SignedRelease|*" Project="Debug" />
   </Project>
   <Properties Name="TestCaseManagementSettings" Scope="PostLoad">
