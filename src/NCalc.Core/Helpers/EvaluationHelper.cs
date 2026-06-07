@@ -195,7 +195,12 @@ public static class EvaluationHelper
             return expression.Type switch
             {
                 UnaryExpressionType.Not => !Convert.ToBoolean(result, context.CultureInfo),
-                UnaryExpressionType.Negate => MathHelper.Subtract(0, result, context),
+                UnaryExpressionType.Negate => result switch
+                {
+                    double doubleValue => -doubleValue,
+                    float floatValue => -floatValue,
+                    _ => MathHelper.Subtract(0, result, context)
+                },
                 UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, context.CultureInfo),
                 UnaryExpressionType.Positive => result,
                 UnaryExpressionType.Factorial => MathHelper.Factorial(result),

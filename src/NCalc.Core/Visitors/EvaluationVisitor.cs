@@ -216,12 +216,12 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
         return comparisonType switch
         {
-            ComparisonType.Equal => result == 0,
-            ComparisonType.Greater => result > 0,
-            ComparisonType.GreaterOrEqual => result >= 0,
-            ComparisonType.Lesser => result < 0,
-            ComparisonType.LesserOrEqual => result <= 0,
-            ComparisonType.NotEqual => result != 0,
+            ComparisonType.Equal => result is ComparisonResult.Equal,
+            ComparisonType.Greater => result is ComparisonResult.Greater,
+            ComparisonType.GreaterOrEqual => result is ComparisonResult.Greater or ComparisonResult.Equal,
+            ComparisonType.Lesser => result is ComparisonResult.Less,
+            ComparisonType.LesserOrEqual => result is ComparisonResult.Less or ComparisonResult.Equal,
+            ComparisonType.NotEqual => result is not ComparisonResult.Equal,
             _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
         };
     }

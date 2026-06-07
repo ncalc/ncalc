@@ -140,4 +140,68 @@ public class OperatorsTests
 
         await Assert.That(result).IsEqualTo(expected);
     }
+
+    [Test]
+    public async Task Should_Use_IEEE754_Semantics_For_DoubleNaN_Comparisons()
+    {
+        var expression = new Expression("amount < 0")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression("amount <= amount")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        }.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression("amount == amount")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        }.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression("amount != amount")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        }.Evaluate(CancellationToken.None)).IsEqualTo(true);
+    }
+
+    [Test]
+    public async Task Should_Use_IEEE754_Semantics_For_Computed_And_FloatNaN_Comparisons()
+    {
+        await Assert.That(new Expression("(0.0 / 0.0) < 0").Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression("(0.0 / 0.0) != (0.0 / 0.0)").Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("amount <= 0")
+        {
+            Parameters =
+            {
+                ["amount"] = float.NaN
+            }
+        }.Evaluate(CancellationToken.None)).IsEqualTo(false);
+    }
+
+    [Test]
+    public async Task Should_Preserve_Signed_Zero_For_Unary_Negation()
+    {
+        var expression = new Expression("-amount")
+        {
+            Parameters =
+            {
+                ["amount"] = 0.0
+            }
+        };
+
+        await Assert.That(BitConverter.DoubleToInt64Bits((double)expression.Evaluate(CancellationToken.None)!))
+            .IsEqualTo(BitConverter.DoubleToInt64Bits(-0.0d));
+    }
 }
