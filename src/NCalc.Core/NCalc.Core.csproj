@@ -41,5 +41,6 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\NCalc.Parser\NCalc.Parser.csproj" />
+      <ProjectReference Include="..\NCalc.SourceGenerators\NCalc.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
     </ItemGroup>
 </Project>
