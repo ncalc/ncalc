@@ -47,19 +47,6 @@ If you are creating your custom implementation, beware it should be stateless to
 enforced by the [PureAttribute](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.contracts.pureattribute0) and generic return at
 the <xref:NCalc.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVisitor{``0})> method.
 
-## Expression Serialization
-
-`LogicalExpression` does not override <xref:System.Object.ToString>. To convert an expression tree back to NCalc source
-text, use the explicit extension API <xref:NCalc.Extensions.LogicalExpressionExtensions.ToExpressionString(NCalc.LogicalExpression,System.Threading.CancellationToken)>.
-This API delegates to <xref:NCalc.Visitors.SerializationVisitor>.
-
-```csharp
-using NCalc.Extensions;
-
-var logicalExpression = LogicalExpressionFactory.Create("1 + 2");
-var expressionText = logicalExpression.ToExpressionString();
-```
-
 ## <xref:NCalc.Expression> Class
 
 This is the main class of NCalc. It abstracts the process of parsing and evaluating the string.
