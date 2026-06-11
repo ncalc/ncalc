@@ -1,3 +1,8 @@
+# 6.1.1
+* Fix factorial input bounds and overflow handling by @gumbarros in https://github.com/ncalc/ncalc/pull/575
+
+Especial thanks to [@pawlos](https:///www.github.com/pawlos) for reporting the issue with great details.
+
 # 6.1.0
 
 * Refactor math numeric helpers into source generators by @gumbarros in https://github.com/ncalc/ncalc/pull/570
