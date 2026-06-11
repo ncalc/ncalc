@@ -96,7 +96,7 @@ configuration, check the [docs](https://ncalc.github.io/ncalc).
 Open an [issue](https://github.com/ncalc/ncalc/issues/new/choose) for bugs or usage problems. Include the expression,
 the expected result, the actual result, and your NCalc version.
 
-<!--  I'm not giving supoort on discord anymore, please open a issue. If you want to be a mod please contact me (@gumbarros)
+<!--  I'm not giving supoort on discord anymore, please open a issue.
 <!--  For discussion, support, and project news, join the [Discord server](https://discord.gg/TeJkmXbqFk). -->
 
 ## Learn More
