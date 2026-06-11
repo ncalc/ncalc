@@ -8,6 +8,8 @@ namespace NCalc.Helpers;
 /// </summary>
 public static class MathHelper
 {
+    private const int MaxFactorialInput = 170;
+
     public static object? Add(object? a, object? b)
     {
         return Add(a, b, CultureInfo.CurrentCulture);
@@ -426,22 +428,132 @@ public static class MathHelper
     {
         return result switch
         {
-            int v => CalculateFactorial(v),
-            long v => CalculateFactorial(v),
-            float v => CalculateFactorial(v),
-            double v => CalculateFactorial(v),
-            decimal v => CalculateFactorial(v),
-            BigInteger v => CalculateFactorial(v),
+#if NET
+            int v => CalculateFactorial(ValidateFactorialInput(v)),
+            long v => CalculateFactorial(ValidateFactorialInput(v)),
+            float v => CalculateFactorial(ValidateFactorialInput(v)),
+            double v => CalculateFactorial(ValidateFactorialInput(v)),
+            decimal v => CalculateFactorial(ValidateFactorialInput(v)),
+            BigInteger v => CalculateFactorial(ValidateFactorialInput(v)),
+#else
+            int v => CalculateFactorial(ValidateFactorialInput(v)),
+            long v => CalculateFactorial(ValidateFactorialInput(v)),
+            float v => CalculateFactorial(ValidateFactorialInput(v)),
+            double v => CalculateFactorial(ValidateFactorialInput(v)),
+            decimal v => CalculateFactorial(ValidateFactorialInput(v)),
+            BigInteger v => CalculateFactorial(ValidateFactorialInput(v)),
+#endif
             _ => throw new ArgumentException("Unsupported numeric type.", nameof(result)),
         };
     }
 
 #if NET
-    private static T CalculateFactorial<T>(T n) where T : INumber<T>
+    private static T ValidateFactorialInput<T>(T n) where T : INumber<T>
     {
         if (n < T.Zero)
             throw new ArgumentOutOfRangeException(nameof(n));
 
+        if (n > T.CreateChecked(MaxFactorialInput))
+        {
+            throw new ArgumentOutOfRangeException(nameof(n),
+                $"Factorial input must be less than or equal to {MaxFactorialInput}.");
+        }
+
+        return n;
+    }
+
+    private static float ValidateFactorialInput(float n)
+    {
+        if (float.IsNaN(n) || float.IsInfinity(n))
+            throw new ArgumentOutOfRangeException(nameof(n));
+
+        return ValidateFactorialInput<float>(n);
+    }
+
+    private static double ValidateFactorialInput(double n)
+    {
+        if (double.IsNaN(n) || double.IsInfinity(n))
+            throw new ArgumentOutOfRangeException(nameof(n));
+
+        return ValidateFactorialInput<double>(n);
+    }
+#else
+    private static int ValidateFactorialInput(int n)
+    {
+        if (n < 0)
+            throw new ArgumentOutOfRangeException(nameof(n));
+
+        if (n > MaxFactorialInput)
+            throw new ArgumentOutOfRangeException(nameof(n),
+                $"Factorial input must be less than or equal to {MaxFactorialInput}.");
+
+        return n;
+    }
+
+    private static long ValidateFactorialInput(long n)
+    {
+        if (n < 0)
+            throw new ArgumentOutOfRangeException(nameof(n));
+
+        if (n > MaxFactorialInput)
+            throw new ArgumentOutOfRangeException(nameof(n),
+                $"Factorial input must be less than or equal to {MaxFactorialInput}.");
+
+        return n;
+    }
+
+    private static float ValidateFactorialInput(float n)
+    {
+        if (float.IsNaN(n) || float.IsInfinity(n) || n < 0)
+            throw new ArgumentOutOfRangeException(nameof(n));
+
+        if (n > MaxFactorialInput)
+            throw new ArgumentOutOfRangeException(nameof(n),
+                $"Factorial input must be less than or equal to {MaxFactorialInput}.");
+
+        return n;
+    }
+
+    private static double ValidateFactorialInput(double n)
+    {
+        if (double.IsNaN(n) || double.IsInfinity(n) || n < 0)
+            throw new ArgumentOutOfRangeException(nameof(n));
+
+        if (n > MaxFactorialInput)
+            throw new ArgumentOutOfRangeException(nameof(n),
+                $"Factorial input must be less than or equal to {MaxFactorialInput}.");
+
+        return n;
+    }
+
+    private static decimal ValidateFactorialInput(decimal n)
+    {
+        if (n < 0)
+            throw new ArgumentOutOfRangeException(nameof(n));
+
+        if (n > MaxFactorialInput)
+            throw new ArgumentOutOfRangeException(nameof(n),
+                $"Factorial input must be less than or equal to {MaxFactorialInput}.");
+
+        return n;
+    }
+
+    private static BigInteger ValidateFactorialInput(BigInteger n)
+    {
+        if (n < BigInteger.Zero)
+            throw new ArgumentOutOfRangeException(nameof(n));
+
+        if (n > MaxFactorialInput)
+            throw new ArgumentOutOfRangeException(nameof(n),
+                $"Factorial input must be less than or equal to {MaxFactorialInput}.");
+
+        return n;
+    }
+#endif
+
+#if NET
+    private static T CalculateFactorial<T>(T n) where T : INumber<T>
+    {
         var one = T.One;
         var r = one;
 
@@ -453,9 +565,6 @@ public static class MathHelper
 #else
     private static dynamic CalculateFactorial(dynamic n)
     {
-        if (n < 0)
-            throw new ArgumentOutOfRangeException(nameof(n));
-
         var r = 1;
 
         for (var i = 1 + 1; i <= n; i++)

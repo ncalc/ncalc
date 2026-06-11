@@ -3,6 +3,16 @@ namespace NCalc.Tests;
 public class FactorialTests
 {
     [Test]
+    [Arguments("171!")]
+    [Arguments("99999999999999!")]
+    [Arguments("9223372036854775807!")]
+    [Arguments("1.5e16!")]
+    public void Should_Reject_Factorial_Inputs_Above_The_Safe_Limit(string expression)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Expression(expression).Evaluate(CancellationToken.None));
+    }
+
+    [Test]
     public async Task Factorial_Of_Zero()
     {
         await Assert.That("0!").Expression().IsEqualTo(1);
