@@ -194,3 +194,38 @@ Bitwise operators perform bitwise operations on integers.
 ```csharp
 2 >> 3
 ```
+
+## Using Binary Evaluation Handlers
+
+You can intercept binary operators before NCalc applies its built-in evaluation rules by subscribing to
+<xref:NCalc.Expression.EvaluateBinary>. This event uses the <xref:NCalc.Handlers.EvaluateBinaryHandler> delegate and
+receives a <xref:NCalc.Handlers.BinaryEventArgs> instance.
+
+`BinaryEventArgs` exposes:
+
+* `BinaryExpression` to inspect the operator kind.
+* `LeftValue()` and `RightValue()` to lazily evaluate operands only when needed.
+* `Result` to provide a custom value and stop the default operator evaluation.
+
+```csharp
+var expression = new Expression("((1 + 2 + 3) * 2) * 2");
+
+expression.EvaluateBinary += args =>
+{
+    if (args.BinaryExpression.Type == BinaryExpressionType.Plus)
+    {
+        args.Result = (int)args.LeftValue()! + (int)args.RightValue()! + 1;
+    }
+
+    if (args.BinaryExpression.Type == BinaryExpressionType.Times)
+    {
+        args.Result = string.Concat(
+            Enumerable.Repeat(args.LeftValue()!.ToString(), (int)args.RightValue()!));
+    }
+};
+
+var result = expression.Evaluate();
+// "8888"
+```
+
+If you do not assign `args.Result`, NCalc continues with the built-in implementation for that operator.
