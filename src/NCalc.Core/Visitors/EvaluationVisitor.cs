@@ -27,20 +27,28 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     public virtual async ValueTask<object?> Visit(BinaryExpression expression, CancellationToken cancellationToken = default)
     {
+        var binaryEventArgs = new BinaryEventArgs(expression, this, cancellationToken);
+        if (context.EvaluateBinaryHandler != null)
+        {
+            OnEvaluateBinary(binaryEventArgs);
+
+            if (binaryEventArgs.HasResult)
+                return binaryEventArgs.Result;
+        }
+
         if (expression.Type == BinaryExpressionType.And)
         {
-            return Convert.ToBoolean(await EvaluateAsync(expression.LeftExpression, cancellationToken), context.CultureInfo) &&
-                   Convert.ToBoolean(await EvaluateAsync(expression.RightExpression, cancellationToken), context.CultureInfo);
+            return Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), context.CultureInfo) &&
+                   Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), context.CultureInfo);
         }
 
         if (expression.Type == BinaryExpressionType.Or)
         {
-            return Convert.ToBoolean(await EvaluateAsync(expression.LeftExpression, cancellationToken), context.CultureInfo) ||
-                   Convert.ToBoolean(await EvaluateAsync(expression.RightExpression, cancellationToken), context.CultureInfo);
+            return Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), context.CultureInfo) || Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), context.CultureInfo);
         }
 
-        var left = await EvaluateAsync(expression.LeftExpression, cancellationToken);
-        var right = await EvaluateAsync(expression.RightExpression, cancellationToken);
+        var left = await binaryEventArgs.LeftValueAsync();
+        var right = await binaryEventArgs.RightValueAsync();
 
         switch (expression.Type)
         {
@@ -235,7 +243,10 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     {
         context.EvaluateFunctionHandler?.Invoke(name, args);
     }
-
+    protected void OnEvaluateBinary(BinaryEventArgs args)
+    {
+        context.EvaluateBinaryHandler?.Invoke(args);
+    }
     protected void OnEvaluateParameter(string name, ParameterEventArgs args)
     {
         context.EvaluateParameterHandler?.Invoke(name, args);
