@@ -30,7 +30,16 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var binaryEventArgs = new BinaryEventArgs(expression, this, cancellationToken);
         if (context.EvaluateBinaryHandler != null)
         {
+            // ReSharper disable once MethodHasAsyncOverload
             OnEvaluateBinary(binaryEventArgs);
+
+            if (binaryEventArgs.HasResult)
+                return binaryEventArgs.Result;
+        }
+
+        if (context.EvaluateBinaryAsyncHandler != null)
+        {
+            await OnEvaluateBinaryAsync(binaryEventArgs);
 
             if (binaryEventArgs.HasResult)
                 return binaryEventArgs.Result;
@@ -246,6 +255,10 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     protected void OnEvaluateBinary(BinaryEventArgs args)
     {
         context.EvaluateBinaryHandler?.Invoke(args);
+    }
+    protected Task OnEvaluateBinaryAsync(BinaryEventArgs args)
+    {
+        return context.EvaluateBinaryAsyncHandler?.Invoke(args) ?? Task.CompletedTask;
     }
     protected void OnEvaluateParameter(string name, ParameterEventArgs args)
     {

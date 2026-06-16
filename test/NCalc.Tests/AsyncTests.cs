@@ -73,6 +73,24 @@ public class AsyncTests
     }
 
     [Test]
+    public async Task ShouldEvaluateAsyncBinaryHandler()
+    {
+        var expression = new Expression("1 + 2");
+
+        expression.EvaluateBinaryAsync += async args =>
+        {
+            if (args.BinaryExpression.Type != BinaryExpressionType.Plus)
+                return;
+
+            await Task.Delay(1, args.CancellationToken);
+            args.Result = (int)(await args.LeftValueAsync())! + (int)(await args.RightValueAsync())! + 10;
+        };
+
+        var result = await expression.EvaluateAsync(CancellationToken.None);
+        await Assert.That(result).IsEqualTo(13);
+    }
+
+    [Test]
     public async Task ShouldEvaluateArrayParameters()
     {
         var e = new Expression("x * x", ExpressionOptions.IterateParameters)
