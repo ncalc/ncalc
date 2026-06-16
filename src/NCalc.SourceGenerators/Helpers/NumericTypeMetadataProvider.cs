@@ -27,7 +27,6 @@ internal static class NumericTypeMetadataProvider
             throw new InvalidOperationException($"Unable to find embedded resource '{ResourceName}'.");
         }
 
-        // Alterado aqui: passando o Context gerado por Source Generator
         return JsonSerializer.Deserialize(stream, MetadataJsonContext.Default.NumericTypeMetadata)
                ?? throw new InvalidOperationException("Unable to read numeric type metadata.");
     }
