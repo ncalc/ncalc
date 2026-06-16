@@ -10,6 +10,8 @@ public record ExpressionContext
     public IDictionary<string, ExpressionFunction> Functions { get; set; }
     public IDictionary<string, AsyncExpressionFunction> AsyncFunctions { get; set; }
 
+    public EvaluateBinaryHandler? EvaluateBinaryHandler { get; set; }
+    public EvaluateBinaryAsyncHandler? EvaluateBinaryAsyncHandler { get; set; }
     public EvaluateParameterHandler? EvaluateParameterHandler { get; set; }
     public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
     public EvaluateAsyncFunctionHandler? EvaluateAsyncFunctionHandler { get; set; }

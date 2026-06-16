@@ -44,6 +44,23 @@ public class Expression
     }
 
     /// <summary>
+    /// Event triggered to handle binary evaluation.
+    /// </summary>
+    public event EvaluateBinaryHandler EvaluateBinary
+    {
+        add => Context.EvaluateBinaryHandler += value;
+        remove => Context.EvaluateBinaryHandler -= value;
+    }
+    /// <summary>
+    /// Event triggered to handle binary evaluation.
+    /// </summary>
+    public event EvaluateBinaryAsyncHandler EvaluateBinaryAsync
+    {
+        add => Context.EvaluateBinaryAsyncHandler+= value;
+        remove => Context.EvaluateBinaryAsyncHandler -= value;
+    }
+
+    /// <summary>
     /// Event triggered to handle async function evaluation.
     /// </summary>
     public event EvaluateAsyncFunctionHandler EvaluateAsyncFunction

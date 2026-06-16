@@ -290,4 +290,59 @@ public class EventHandlersTests
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(true);
         await Assert.That(times).HasSingleItem();
     }
+
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomBinaryHandler()
+    {
+        var e = new Expression("((1+2+3)*2)*2");
+
+        e.EvaluateBinary += args => 
+        {
+            if (args.BinaryExpression.Type == BinaryExpressionType.Plus)
+            {
+                args.Result = (int)args.LeftValue() + (int)args.RightValue() + 1;
+            }
+            if (args.BinaryExpression.Type == BinaryExpressionType.Times)
+            {
+                var s = new StringBuilder();
+                for (var i = 0; i < (int)args.RightValue(); i++)
+                {
+                    s.Append(args.LeftValue());
+                }
+                args.Result = s.ToString();
+            }
+        };
+
+        var async = await e.EvaluateAsync();
+        await Assert.That(async).IsEqualTo("88");
+    }
+
+    private record Dummy(int Value)
+    {
+        public int Value { get; } = Value;
+    }
+    [Test]
+    public async Task ExpressionShouldEvaluateCustomBinaryCustomTypes()
+    {
+        var e = new Expression("[A]*[B]");
+
+        e.Parameters["A"] = new Dummy(10);
+        e.Parameters["B"] = 12;
+        e.EvaluateBinaryAsync += async args =>
+        {
+            if (args.BinaryExpression.Type == BinaryExpressionType.Times)
+            {
+                var left = await args.LeftValueAsync();
+                if (left is Dummy l) left = l.Value;
+
+                var right = await args.RightValueAsync();
+                if (right is Dummy r) right = r.Value;
+
+                args.Result = Convert.ToDecimal(left) * Convert.ToDecimal(right);
+            }
+        };
+
+        var async = await e.EvaluateAsync();
+        await Assert.That(async).IsEqualTo(120m);
+    }
 }
