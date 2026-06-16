@@ -314,7 +314,7 @@ public class EventHandlersTests
         };
 
         var async = await e.EvaluateAsync();
-        await Assert.That(async).IsEqualTo("88");
+        await Assert.That(async).IsEqualTo("8888");
     }
 
     private record Dummy(int Value)
