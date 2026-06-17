@@ -235,11 +235,11 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     }
     protected Task OnEvaluateBinaryAsync(BinaryEventArgs args)
     {
-        context.EvaluateBinaryAsyncHandler?.Invoke(args);
+        context.EvaluateAsyncBinaryHandler?.Invoke(args);
         if (args.HasResult)
             return Task.CompletedTask;
 
-        return context.EvaluateBinaryAsyncHandler?.Invoke(args) ?? Task.CompletedTask;
+        return context.EvaluateAsyncBinaryHandler?.Invoke(args) ?? Task.CompletedTask;
     }
     protected void OnEvaluateParameter(string name, ParameterEventArgs args)
     {

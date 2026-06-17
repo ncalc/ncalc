@@ -56,8 +56,8 @@ public class Expression
     /// </summary>
     public event EvaluateBinaryAsyncHandler EvaluateBinaryAsync
     {
-        add => Context.EvaluateBinaryAsyncHandler+= value;
-        remove => Context.EvaluateBinaryAsyncHandler -= value;
+        add => Context.EvaluateAsyncBinaryHandler+= value;
+        remove => Context.EvaluateAsyncBinaryHandler -= value;
     }
 
     /// <summary>
