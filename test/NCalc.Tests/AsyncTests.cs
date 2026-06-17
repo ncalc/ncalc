@@ -51,6 +51,30 @@ public class AsyncTests
     }
 
     [Test]
+    public async Task ShouldPreferSyncFunctionHandlerOverAsyncFunctionHandler()
+    {
+        var expression = new Expression("database_operation('SELECT FOO') == 'FOO'");
+        var asyncHandlerCalled = false;
+
+        expression.EvaluateFunction += (name, args) =>
+        {
+            if (name == "database_operation")
+                args.Result = "FOO";
+        };
+
+        expression.EvaluateAsyncFunction += (_, _) =>
+        {
+            asyncHandlerCalled = true;
+            return Task.CompletedTask;
+        };
+
+        var result = (bool?)await expression.EvaluateAsync(CancellationToken.None);
+
+        await Assert.That(result).IsTrue();
+        await Assert.That(asyncHandlerCalled).IsFalse();
+    }
+
+    [Test]
     public async Task ShouldEvaluateAsyncParameterHandler()
     {
         var expression = new Expression("(a + b) == 'Leo'")
@@ -88,6 +112,30 @@ public class AsyncTests
 
         var result = await expression.EvaluateAsync(CancellationToken.None);
         await Assert.That(result).IsEqualTo(13);
+    }
+
+    [Test]
+    public async Task ShouldPreferSyncBinaryHandlerOverAsyncBinaryHandler()
+    {
+        var expression = new Expression("1 + 2");
+        var asyncHandlerCalled = false;
+
+        expression.EvaluateBinary += args =>
+        {
+            if (args.BinaryExpression.Type == BinaryExpressionType.Plus)
+                args.Result = 10;
+        };
+
+        expression.EvaluateBinaryAsync += _ =>
+        {
+            asyncHandlerCalled = true;
+            return Task.CompletedTask;
+        };
+
+        var result = await expression.EvaluateAsync(CancellationToken.None);
+
+        await Assert.That(result).IsEqualTo(10);
+        await Assert.That(asyncHandlerCalled).IsFalse();
     }
 
     [Test]

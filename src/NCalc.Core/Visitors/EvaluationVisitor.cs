@@ -28,22 +28,10 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     public virtual async ValueTask<object?> Visit(BinaryExpression expression, CancellationToken cancellationToken = default)
     {
         var binaryEventArgs = new BinaryEventArgs(expression, this, cancellationToken);
-        if (context.EvaluateBinaryHandler != null)
-        {
-            // ReSharper disable once MethodHasAsyncOverload
-            OnEvaluateBinary(binaryEventArgs);
+        await OnEvaluateBinaryAsync(binaryEventArgs);
 
-            if (binaryEventArgs.HasResult)
-                return binaryEventArgs.Result;
-        }
-
-        if (context.EvaluateBinaryAsyncHandler != null)
-        {
-            await OnEvaluateBinaryAsync(binaryEventArgs);
-
-            if (binaryEventArgs.HasResult)
-                return binaryEventArgs.Result;
-        }
+        if (binaryEventArgs.HasResult)
+            return binaryEventArgs.Result;
 
         if (expression.Type == BinaryExpressionType.And)
         {
@@ -150,12 +138,6 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var functionData = new FunctionData(function.Identifier.Id, function.Parameters, context, cancellationToken);
         var functionArgs = new FunctionEventArgs(functionData);
 
-        // ReSharper disable once MethodHasAsyncOverload
-        OnEvaluateFunction(functionName, functionArgs);
-
-        if (functionArgs.HasResult)
-            return functionArgs.Result;
-
         await OnEvaluateFunctionAsync(functionName, functionArgs);
 
         if (functionArgs.HasResult)
@@ -245,19 +227,18 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     protected Task OnEvaluateFunctionAsync(string name, FunctionEventArgs args)
     {
-        return context.EvaluateAsyncFunctionHandler?.Invoke(name, args) ?? Task.CompletedTask;
-    }
-
-    protected void OnEvaluateFunction(string name, FunctionEventArgs args)
-    {
         context.EvaluateFunctionHandler?.Invoke(name, args);
-    }
-    protected void OnEvaluateBinary(BinaryEventArgs args)
-    {
-        context.EvaluateBinaryHandler?.Invoke(args);
+        if (args.HasResult)
+            return Task.CompletedTask;
+
+        return context.EvaluateAsyncFunctionHandler?.Invoke(name, args) ?? Task.CompletedTask;
     }
     protected Task OnEvaluateBinaryAsync(BinaryEventArgs args)
     {
+        context.EvaluateBinaryAsyncHandler?.Invoke(args);
+        if (args.HasResult)
+            return Task.CompletedTask;
+
         return context.EvaluateBinaryAsyncHandler?.Invoke(args) ?? Task.CompletedTask;
     }
     protected void OnEvaluateParameter(string name, ParameterEventArgs args)
