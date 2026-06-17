@@ -239,7 +239,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         if (args.HasResult)
             return Task.CompletedTask;
 
-        return context.EvaluateAsyncBinaryHandler?.Invoke(args) ?? Task.CompletedTask;
+        return context.EvaluateBinaryAsyncHandler?.Invoke(args) ?? Task.CompletedTask;
     }
     protected void OnEvaluateParameter(string name, ParameterEventArgs args)
     {
