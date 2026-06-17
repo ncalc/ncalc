@@ -264,7 +264,7 @@ public class Expression
         if (size == null)
             return await LogicalExpression.Accept(evaluationVisitor, cancellationToken);
 
-        var results = new List<object?>();
+        var results = new List<object?>(size.Value);
 
         for (var i = 0; i < size; i++)
         {
