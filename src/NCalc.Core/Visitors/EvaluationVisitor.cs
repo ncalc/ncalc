@@ -235,7 +235,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     }
     protected Task OnEvaluateBinaryAsync(BinaryEventArgs args)
     {
-        context.EvaluateAsyncBinaryHandler?.Invoke(args);
+        context.EvaluateBinaryHandler?.Invoke(args);
         if (args.HasResult)
             return Task.CompletedTask;
 
