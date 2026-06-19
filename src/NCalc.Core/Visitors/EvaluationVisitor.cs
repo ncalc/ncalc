@@ -1,8 +1,6 @@
-﻿using NCalc.Exceptions;
-using NCalc.Handlers;
+﻿using NCalc.Handlers;
 using NCalc.Helpers;
 using static NCalc.Helpers.EvaluationHelper;
-using static NCalc.Helpers.TypeHelper;
 
 namespace NCalc.Visitors;
 
@@ -44,78 +42,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         var left = binaryEventArgs.LeftValue();
         var right = binaryEventArgs.RightValue();
 
-        switch (expression.Type)
-        {
-            case BinaryExpressionType.Div:
-                return Div(left, right, context);
-
-            case BinaryExpressionType.Equal:
-                return Compare(left, right, ComparisonType.Equal);
-
-            case BinaryExpressionType.Greater:
-                return Compare(left, right, ComparisonType.Greater);
-
-            case BinaryExpressionType.GreaterOrEqual:
-                return Compare(left, right, ComparisonType.GreaterOrEqual);
-
-            case BinaryExpressionType.Lesser:
-                return Compare(left, right, ComparisonType.Lesser);
-
-            case BinaryExpressionType.LesserOrEqual:
-                return Compare(left, right, ComparisonType.LesserOrEqual);
-
-            case BinaryExpressionType.NotEqual:
-                return Compare(left, right, ComparisonType.NotEqual);
-
-            case BinaryExpressionType.Minus:
-                return Minus(left, right, context);
-
-            case BinaryExpressionType.Modulo:
-                return Modulo(left, right, context);
-
-            case BinaryExpressionType.Plus:
-                return Plus(left, right, context);
-
-            case BinaryExpressionType.Times:
-                return Times(left, right, context);
-
-            case BinaryExpressionType.BitwiseAnd:
-                return Convert.ToUInt64(left, context.CultureInfo) &
-                       Convert.ToUInt64(right, context.CultureInfo);
-
-            case BinaryExpressionType.BitwiseOr:
-                return Convert.ToUInt64(left, context.CultureInfo) |
-                       Convert.ToUInt64(right, context.CultureInfo);
-
-            case BinaryExpressionType.BitwiseXOr:
-                return Convert.ToUInt64(left, context.CultureInfo) ^
-                       Convert.ToUInt64(right, context.CultureInfo);
-
-            case BinaryExpressionType.LeftShift:
-                return Convert.ToUInt64(left, context.CultureInfo) <<
-                       Convert.ToInt32(right, context.CultureInfo);
-
-            case BinaryExpressionType.RightShift:
-                return Convert.ToUInt64(left, context.CultureInfo) >>
-                       Convert.ToInt32(right, context.CultureInfo);
-
-            case BinaryExpressionType.Exponentiation:
-                return MathHelper.Pow(left, right, context);
-
-            case BinaryExpressionType.In:
-                return In(right, left, context);
-
-            case BinaryExpressionType.NotIn:
-                return !In(right, left, context);
-
-            case BinaryExpressionType.Like:
-                return Like(left, right, context);
-
-            case BinaryExpressionType.NotLike:
-                return !Like(left, right, context);
-        }
-
-        return null;
+        return EvaluationVisitorHelper.EvaluateBinary(expression.Type, left, right, context);
     }
 
     public virtual object? Visit(UnaryExpression expression, CancellationToken cancellationToken = default)
@@ -150,42 +77,9 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     public virtual object? Visit(Identifier identifier, CancellationToken cancellationToken = default)
     {
-        var identifierName = identifier.Name;
+        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, cancellationToken);
 
-        var parameterArgs = new ParameterEventArgs(identifier.Id, cancellationToken);
-
-        OnEvaluateParameter(identifierName, parameterArgs);
-
-        if (parameterArgs.HasResult)
-            return parameterArgs.Result;
-
-        if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
-        {
-            if (parameter is Expression expression)
-            {
-                //Share the parameters with child expression.
-                foreach (var p in context.StaticParameters)
-                    expression.Parameters[p.Key] = p.Value;
-
-                foreach (var p in context.DynamicParameters)
-                    expression.DynamicParameters[p.Key] = p.Value;
-
-                expression.EvaluateFunction += context.EvaluateFunctionHandler;
-                expression.EvaluateParameter += context.EvaluateParameterHandler;
-
-                return expression.Evaluate(cancellationToken);
-            }
-
-            return parameter;
-        }
-
-        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
-            return dynamicParameter(new ParameterData(identifier.Id, context, cancellationToken));
-
-        if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) && context.Options.HasFlag(ExpressionOptions.AllowNullParameter))
-            return null;
-
-        throw new NCalcParameterNotDefinedException(identifierName);
+        return value is Expression expression ? expression.Evaluate(cancellationToken) : value;
     }
 
     public virtual object? Visit(ValueExpression expression, CancellationToken cancellationToken = default) => expression.Value;
@@ -204,21 +98,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
 
     protected bool Compare(object? a, object? b, ComparisonType comparisonType)
     {
-        if (HasNullOrTypeConflict(a, b, context.Options))
-            return comparisonType == ComparisonType.NotEqual;
-
-        var result = CompareUsingMostPreciseType(a, b, context);
-
-        return comparisonType switch
-        {
-            ComparisonType.Equal => result is ComparisonResult.Equal,
-            ComparisonType.Greater => result is ComparisonResult.Greater,
-            ComparisonType.GreaterOrEqual => result is ComparisonResult.Greater or ComparisonResult.Equal,
-            ComparisonType.Lesser => result is ComparisonResult.Less,
-            ComparisonType.LesserOrEqual => result is ComparisonResult.Less or ComparisonResult.Equal,
-            ComparisonType.NotEqual => result is not ComparisonResult.Equal,
-            _ => throw new ArgumentOutOfRangeException(nameof(comparisonType), comparisonType, null)
-        };
+        return EvaluationVisitorHelper.Compare(a, b, comparisonType, context);
     }
 
     protected void OnEvaluateFunction(string name, FunctionEventArgs args)
@@ -229,10 +109,5 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
     protected void OnEvaluateBinary(BinaryEventArgs args)
     {
         context.EvaluateBinaryHandler?.Invoke(args);
-    }
-
-    protected void OnEvaluateParameter(string name, ParameterEventArgs args)
-    {
-        context.EvaluateParameterHandler?.Invoke(name, args);
     }
 }

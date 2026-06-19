@@ -9,12 +9,12 @@ namespace NCalc.Handlers;
 public class BinaryEventArgs(
     BinaryExpression expression,
     ILogicalExpressionVisitor<object?> syncVisitor,
-    ILogicalExpressionVisitor<ValueTask<object?>> asyncVisitor,
+    ILogicalExpressionVisitor<Task<object?>> asyncVisitor,
     CancellationToken cancellationToken)
     : EventArgs
 {
     private readonly ILogicalExpressionVisitor<object?>? _syncVisitor = syncVisitor;
-    private readonly ILogicalExpressionVisitor<ValueTask<object?>>? _asyncVisitor = asyncVisitor;
+    private readonly ILogicalExpressionVisitor<Task<object?>>? _asyncVisitor = asyncVisitor;
 
     /// <summary>
     /// Gets or sets the evaluation result of the binary expression.
@@ -55,7 +55,7 @@ public class BinaryEventArgs(
     /// <summary>
     /// Lazily evaluates and returns the left side expression. Resolved only once.
     /// </summary>
-    public async ValueTask<object?> LeftValueAsync()
+    public async Task<object?> LeftValueAsync()
     {
         if (_asyncVisitor is null)
             throw new NCalcEvaluationException("Asynchronous binary value evaluation is not available in this context.");
@@ -74,7 +74,7 @@ public class BinaryEventArgs(
 
         return _rightResolvedValue = BinaryExpression.RightExpression.Accept(_syncVisitor!, CancellationToken);
     }
-    public async ValueTask<object?> RightValueAsync()
+    public async Task<object?> RightValueAsync()
     {
         if (_asyncVisitor is null)
             throw new NCalcEvaluationException("Asynchronous binary value evaluation is not available in this context.");

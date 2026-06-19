@@ -8,13 +8,13 @@ public class FunctionData(
     LogicalExpressionList arguments,
     ExpressionContext context,
     ILogicalExpressionVisitor<object?> syncVisitor,
-    ILogicalExpressionVisitor<ValueTask<object?>>? asyncVisitor,
+    ILogicalExpressionVisitor<Task<object?>>? asyncVisitor,
     CancellationToken cancellationToken)
     : IList<LogicalExpression>
 {
     private LogicalExpressionList Arguments { get; } = arguments;
     private ILogicalExpressionVisitor<object?> SyncVisitor { get; } = syncVisitor;
-    private ILogicalExpressionVisitor<ValueTask<object?>>? AsyncVisitor { get; } = asyncVisitor;
+    private ILogicalExpressionVisitor<Task<object?>>? AsyncVisitor { get; } = asyncVisitor;
 
     public Guid Id { get; } = id;
 
@@ -27,7 +27,7 @@ public class FunctionData(
         set => Arguments[index] = value;
     }
 
-    public ValueTask<object?> EvaluateAsync(int index)
+    public Task<object?> EvaluateAsync(int index)
     {
         if (AsyncVisitor is null)
             throw new NCalcEvaluationException(
