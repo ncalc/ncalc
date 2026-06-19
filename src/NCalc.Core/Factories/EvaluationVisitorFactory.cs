@@ -8,4 +8,9 @@ public sealed class EvaluationVisitorFactory : IEvaluationVisitorFactory
     {
         return new EvaluationVisitor(context);
     }
+
+    public AsyncEvaluationVisitor CreateAsync(ExpressionContext context)
+    {
+        return new AsyncEvaluationVisitor(context);
+    }
 }

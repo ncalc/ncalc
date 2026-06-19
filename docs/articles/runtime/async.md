@@ -1,10 +1,39 @@
 ﻿# Async Support
 
-NCalc supports asynchronous evaluation through `Expression.EvaluateAsync`. Unlike popular belief, `async` is not faster than `sync`, but scales better.
-It's recommended to use `async` if your expression is doing any CPU or IO bound work in a dynamic function or parameter, so your UI does not freeze or your web server can keep handling other work.
+NCalc supports asynchronous evaluation through `Expression.EvaluateAsync`.
+Async evaluation is meant for expressions that call asynchronous custom code, such as database queries, HTTP APIs,
+file operations, queues, or other I/O-bound work.
+
+`async` is not faster than synchronous execution. It usually adds a small amount of overhead, but lets the caller release
+the current thread while waiting for I/O. For CPU-bound workloads, especially workloads that evaluate many expressions or
+call many custom functions, prefer `Expression.Evaluate`.
 Learn more about `async` [in this article](https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-scenarios).
 
-# Usage
+## Choosing Evaluate or EvaluateAsync
+
+NCalc keeps the synchronous and asynchronous evaluation paths separate:
+
+| API | Use when | Custom callbacks used |
+| --- | --- | --- |
+| `Evaluate()` | The expression is CPU-bound or all custom work is synchronous. | `Functions`, `EvaluateFunction`, `EvaluateBinary`, `EvaluateParameter` |
+| `EvaluateAsync()` | The expression may call async custom functions or async binary handlers. | Sync callbacks first, then async callbacks when needed |
+
+This split avoids sync-over-async in `Evaluate()`. In other words, synchronous evaluation does not block on
+`Task`/`ValueTask` returned by async callbacks. That keeps CPU-bound workloads close to the performance profile of a
+fully synchronous evaluator.
+
+Async callbacks registered on an expression do not change normal synchronous evaluation:
+
+- `Evaluate()` does not invoke `AsyncFunctions`.
+- `Evaluate()` does not invoke `EvaluateAsyncFunction`.
+- `Evaluate()` does not invoke `EvaluateBinaryAsync`.
+- If a function only exists in `AsyncFunctions`, `Evaluate()` treats it like an unknown function and the normal function-not-found behavior applies.
+- If both sync and async handlers are registered, `Evaluate()` uses only the sync handlers.
+
+Use `EvaluateAsync()` whenever the expression is expected to use async callbacks.
+
+## Usage
+
 ```csharp
 var expression = new Expression("database_operation('SELECT FOO') == 'FOO'");
 
@@ -20,42 +49,27 @@ var result = await expression.EvaluateAsync();
 Debug.Assert((bool)result!);
 ```
 
-## Async Binary Handlers
+## Async Function Handlers
 
-Binary operators can also be overridden during async evaluation through
-<xref:NCalc.Expression.EvaluateBinaryAsync>, which uses the
-<xref:NCalc.Handlers.EvaluateBinaryAsyncHandler> delegate.
-
-The handler receives <xref:NCalc.Handlers.BinaryEventArgs>, so you can lazily evaluate operands with
-`LeftValueAsync()` and `RightValueAsync()` and then assign `Result` to bypass the built-in operator behavior.
+`EvaluateAsyncFunction` is only used by `EvaluateAsync()`. During async evaluation, NCalc invokes
+`EvaluateFunction` first. If the synchronous handler sets `Result`, the async handler is skipped. If the synchronous
+handler does not set `Result`, NCalc invokes `EvaluateAsyncFunction`.
 
 ```csharp
-var expression = new Expression("[A] * [B]");
+var expression = new Expression("database_operation('SELECT FOO') == 'FOO'");
 
-expression.Parameters["A"] = new Dummy(10);
-expression.Parameters["B"] = 12;
-
-expression.EvaluateBinaryAsync += async args =>
+expression.EvaluateAsyncFunction += async (name, args) =>
 {
-    if (args.BinaryExpression.Type != BinaryExpressionType.Times)
+    if (name != "database_operation")
         return;
 
-    var left = await args.LeftValueAsync();
-    if (left is Dummy leftDummy)
-        left = leftDummy.Value;
-
-    var right = await args.RightValueAsync();
-    if (right is Dummy rightDummy)
-        right = rightDummy.Value;
-
-    args.Result = Convert.ToDecimal(left) * Convert.ToDecimal(right);
+    await Task.Delay(100, args.CancellationToken);
+    args.Result = "FOO";
 };
 
 var result = await expression.EvaluateAsync();
-Debug.Assert((decimal)result! == 120m);
-
-private record Dummy(int Value);
+Debug.Assert((bool)result!);
 ```
 
-When both handlers are registered, NCalc evaluates `EvaluateBinary` first and then `EvaluateBinaryAsync`. If neither
-handler sets `Result`, the built-in operator implementation runs as usual.
+Calling `Evaluate()` for the same expression does not invoke `EvaluateAsyncFunction`. Register a synchronous
+`EvaluateFunction` handler or a `Functions` entry if the expression must also work through `Evaluate()`.

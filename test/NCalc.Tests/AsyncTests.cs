@@ -51,6 +51,21 @@ public class AsyncTests
     }
 
     [Test]
+    public async Task ShouldIgnoreAsyncFunctionHandlerDuringSyncEvaluation()
+    {
+        var expression = new Expression("Abs(-1)");
+        var asyncHandlerCalled = false;
+        expression.EvaluateAsyncFunction += (_, _) =>
+        {
+            asyncHandlerCalled = true;
+            return Task.CompletedTask;
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(1d);
+        await Assert.That(asyncHandlerCalled).IsFalse();
+    }
+
+    [Test]
     public async Task ShouldPreferSyncFunctionHandlerOverAsyncFunctionHandler()
     {
         var expression = new Expression("database_operation('SELECT FOO') == 'FOO'");
@@ -112,6 +127,22 @@ public class AsyncTests
 
         var result = await expression.EvaluateAsync(CancellationToken.None);
         await Assert.That(result).IsEqualTo(13);
+    }
+
+    [Test]
+    public async Task ShouldIgnoreAsyncBinaryHandlerDuringSyncEvaluation()
+    {
+        var expression = new Expression("1 + 2");
+        var asyncHandlerCalled = false;
+
+        expression.EvaluateBinaryAsync += _ =>
+        {
+            asyncHandlerCalled = true;
+            return Task.CompletedTask;
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(3);
+        await Assert.That(asyncHandlerCalled).IsFalse();
     }
 
     [Test]

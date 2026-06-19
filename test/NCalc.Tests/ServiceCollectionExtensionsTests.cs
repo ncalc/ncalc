@@ -82,7 +82,8 @@ public class ServiceCollectionExtensionsTests
         var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
 
         var exp = expFactory.Create("42");
-        await Assert.That(await exp.EvaluateAsync(CancellationToken.None)).IsEqualTo("The answer");
+        await Assert.That(exp.Evaluate(CancellationToken.None)).IsEqualTo("The answer");
+        await Assert.That(await exp.EvaluateAsync(CancellationToken.None)).IsEqualTo("The answer async");
         await Assert.That(customVisitorFactory).IsTypeOf<CustomEvaluationVisitorFactory>();
     }
 
@@ -112,12 +113,23 @@ public class ServiceCollectionExtensionsTests
             => throw new NCalcException("Stub method intented for testing.");
     }
 
-    private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
+    private class CustomSyncVisitor(ExpressionContext context) : EvaluationVisitor(context)
     {
-        public override ValueTask<object> Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+        public override object? Visit(ValueExpression expression, CancellationToken cancellationToken = default)
         {
             if (expression.Value is 42)
-                return ValueTask.FromResult<object>("The answer");
+                return "The answer";
+
+            return base.Visit(expression, cancellationToken);
+        }
+    }
+
+    private class CustomAsyncVisitor(ExpressionContext context) : AsyncEvaluationVisitor(context)
+    {
+        public override ValueTask<object?> Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+        {
+            if (expression.Value is 42)
+                return ValueTask.FromResult<object?>("The answer async");
 
             return base.Visit(expression, cancellationToken);
         }
@@ -127,7 +139,12 @@ public class ServiceCollectionExtensionsTests
     {
         public EvaluationVisitor Create(ExpressionContext context)
         {
-            return new CustomVisitor(context);
+            return new CustomSyncVisitor(context);
+        }
+
+        public AsyncEvaluationVisitor CreateAsync(ExpressionContext context)
+        {
+            return new CustomAsyncVisitor(context);
         }
     }
 

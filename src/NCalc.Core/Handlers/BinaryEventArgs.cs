@@ -1,3 +1,4 @@
+using NCalc.Exceptions;
 using NCalc.Visitors;
 
 namespace NCalc.Handlers;
@@ -5,8 +6,16 @@ namespace NCalc.Handlers;
 /// <summary>
 /// Provides data for binary expression evaluation events.
 /// </summary>
-public class BinaryEventArgs(BinaryExpression expression, ILogicalExpressionVisitor<ValueTask<object?>> visitor, CancellationToken cancellationToken) : EventArgs
+public class BinaryEventArgs(
+    BinaryExpression expression,
+    ILogicalExpressionVisitor<object?> syncVisitor,
+    ILogicalExpressionVisitor<ValueTask<object?>> asyncVisitor,
+    CancellationToken cancellationToken)
+    : EventArgs
 {
+    private readonly ILogicalExpressionVisitor<object?>? _syncVisitor = syncVisitor;
+    private readonly ILogicalExpressionVisitor<ValueTask<object?>>? _asyncVisitor = asyncVisitor;
+
     /// <summary>
     /// Gets or sets the evaluation result of the binary expression.
     /// </summary>
@@ -39,11 +48,8 @@ public class BinaryEventArgs(BinaryExpression expression, ILogicalExpressionVisi
     {
         if (_leftResolvedValue != null)
             return _leftResolvedValue;
-        var valueTask = BinaryExpression.LeftExpression.Accept(visitor, CancellationToken);
-        if (valueTask.IsCompletedSuccessfully)
-            return _leftResolvedValue = valueTask.Result;
 
-        return _leftResolvedValue = valueTask.AsTask().GetAwaiter().GetResult();
+        return _leftResolvedValue = BinaryExpression.LeftExpression.Accept(_syncVisitor!, CancellationToken);
     }
 
     /// <summary>
@@ -51,7 +57,10 @@ public class BinaryEventArgs(BinaryExpression expression, ILogicalExpressionVisi
     /// </summary>
     public async ValueTask<object?> LeftValueAsync()
     {
-        _leftResolvedValue ??= await BinaryExpression.LeftExpression.Accept(visitor, CancellationToken);
+        if (_asyncVisitor is null)
+            throw new NCalcEvaluationException("Asynchronous binary value evaluation is not available in this context.");
+
+        _leftResolvedValue ??= await BinaryExpression.LeftExpression.Accept(_asyncVisitor, CancellationToken);
 
         return _leftResolvedValue;
     }
@@ -63,15 +72,14 @@ public class BinaryEventArgs(BinaryExpression expression, ILogicalExpressionVisi
         if (_rightResolvedValue != null)
             return _rightResolvedValue;
 
-        var valueTask = BinaryExpression.RightExpression.Accept(visitor, CancellationToken);
-        if (valueTask.IsCompletedSuccessfully)
-            return _rightResolvedValue = valueTask.Result;
-
-        return _rightResolvedValue = valueTask.AsTask().GetAwaiter().GetResult();
+        return _rightResolvedValue = BinaryExpression.RightExpression.Accept(_syncVisitor!, CancellationToken);
     }
     public async ValueTask<object?> RightValueAsync()
     {
-        _rightResolvedValue ??= await BinaryExpression.RightExpression.Accept(visitor, CancellationToken);
+        if (_asyncVisitor is null)
+            throw new NCalcEvaluationException("Asynchronous binary value evaluation is not available in this context.");
+
+        _rightResolvedValue ??= await BinaryExpression.RightExpression.Accept(_asyncVisitor, CancellationToken);
 
         return _rightResolvedValue;
     }

@@ -212,12 +212,28 @@ public class Expression
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public object? Evaluate(CancellationToken cancellationToken = default)
     {
-        var valueTask = EvaluateAsync(cancellationToken);
+        LogicalExpression ??= GetLogicalExpression(cancellationToken);
 
-        if (valueTask.IsCompletedSuccessfully)
-            return valueTask.Result;
+        if (Error is not null)
+            throw Error;
 
-        return valueTask.AsTask().GetAwaiter().GetResult();
+        try
+        {
+            // If array evaluation, execute the same expression multiple times
+            if (Options.HasFlag(ExpressionOptions.IterateParameters))
+                return IterateParameters(cancellationToken);
+
+            var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+
+            if (LogicalExpression is null)
+                return null;
+
+            return LogicalExpression.Accept(evaluationVisitor, cancellationToken);
+        }
+        catch (InvalidCastException exception)
+        {
+            throw new NCalcEvaluationException("Error evaluating expression.", exception);
+        }
     }
 
     /// <summary>
@@ -239,7 +255,7 @@ public class Expression
             if (Options.HasFlag(ExpressionOptions.IterateParameters))
                 return await IterateParametersAsync(cancellationToken).ConfigureAwait(false);
 
-            var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+            var evaluationVisitor = EvaluationVisitorFactory.CreateAsync(Context);
 
             if (LogicalExpression is null)
                 return null;
@@ -256,7 +272,7 @@ public class Expression
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
-        var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+        var evaluationVisitor = EvaluationVisitorFactory.CreateAsync(Context);
 
         if (LogicalExpression is null)
             return null;
@@ -275,6 +291,34 @@ public class Expression
             }
 
             results.Add(await LogicalExpression.Accept(evaluationVisitor, cancellationToken));
+        }
+
+        return results;
+    }
+
+    private object? IterateParameters(CancellationToken cancellationToken)
+    {
+        var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
+
+        var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+
+        if (LogicalExpression is null)
+            return null;
+
+        if (size == null)
+            return LogicalExpression.Accept(evaluationVisitor, cancellationToken);
+
+        var results = new List<object?>(size.Value);
+
+        for (var i = 0; i < size; i++)
+        {
+            foreach (var kvp in parameterEnumerators)
+            {
+                kvp.Value.MoveNext();
+                Parameters[kvp.Key] = kvp.Value.Current;
+            }
+
+            results.Add(LogicalExpression.Accept(evaluationVisitor, cancellationToken));
         }
 
         return results;

@@ -1,10 +1,20 @@
-using NCalc.Extensions;
+using NCalc.Exceptions;
+using NCalc.Visitors;
 
 namespace NCalc.Handlers;
 
-public class FunctionData(Guid id, LogicalExpressionList arguments, ExpressionContext context, CancellationToken cancellationToken) : IList<LogicalExpression>
+public class FunctionData(
+    Guid id,
+    LogicalExpressionList arguments,
+    ExpressionContext context,
+    ILogicalExpressionVisitor<object?> syncVisitor,
+    ILogicalExpressionVisitor<ValueTask<object?>>? asyncVisitor,
+    CancellationToken cancellationToken)
+    : IList<LogicalExpression>
 {
     private LogicalExpressionList Arguments { get; } = arguments;
+    private ILogicalExpressionVisitor<object?> SyncVisitor { get; } = syncVisitor;
+    private ILogicalExpressionVisitor<ValueTask<object?>>? AsyncVisitor { get; } = asyncVisitor;
 
     public Guid Id { get; } = id;
 
@@ -19,17 +29,16 @@ public class FunctionData(Guid id, LogicalExpressionList arguments, ExpressionCo
 
     public ValueTask<object?> EvaluateAsync(int index)
     {
-        return Arguments[index].EvaluateAsync(Context, CancellationToken);
+        if (AsyncVisitor is null)
+            throw new NCalcEvaluationException(
+                "Asynchronous binary value evaluation is not available in this context.");
+
+        return Arguments[index].Accept(AsyncVisitor, CancellationToken);
     }
 
     public object? Evaluate(int index)
     {
-        var valueTask = EvaluateAsync(index);
-
-        if(valueTask.IsCompletedSuccessfully)
-            return valueTask.Result;
-
-        return valueTask.AsTask().GetAwaiter().GetResult();
+        return Arguments[index].Accept(SyncVisitor, CancellationToken);
     }
 
     public void Add(LogicalExpression item) => Arguments.Add(item);
