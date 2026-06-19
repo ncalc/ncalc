@@ -6,7 +6,7 @@ public static class LogicalExpressionExtensions
 {
     extension(LogicalExpression expression)
     {
-        public ValueTask<object?> EvaluateAsync(ExpressionContext context, CancellationToken cancellationToken = default)
+        public Task<object?> EvaluateAsync(ExpressionContext context, CancellationToken cancellationToken = default)
         {
             return expression.Accept(new AsyncEvaluationVisitor(context), cancellationToken);
         }

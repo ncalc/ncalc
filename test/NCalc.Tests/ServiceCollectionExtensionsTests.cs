@@ -126,10 +126,10 @@ public class ServiceCollectionExtensionsTests
 
     private class CustomAsyncVisitor(ExpressionContext context) : AsyncEvaluationVisitor(context)
     {
-        public override ValueTask<object?> Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+        public override Task<object?> Visit(ValueExpression expression, CancellationToken cancellationToken = default)
         {
             if (expression.Value is 42)
-                return ValueTask.FromResult<object?>("The answer async");
+                return Task.FromResult<object?>("The answer async");
 
             return base.Visit(expression, cancellationToken);
         }
