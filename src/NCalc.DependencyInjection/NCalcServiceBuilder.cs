@@ -43,15 +43,4 @@ public class NCalcServiceBuilder(IServiceCollection services)
         Services.ReplaceSingleton<ILogicalExpressionFactory, TLogicalExpressionFactory>();
         return this;
     }
-
-    public NCalcServiceBuilder WithEvaluationVisitorFactory<
-        #if NET
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        #endif
-        TEvaluationVisitorFactory>()
-        where TEvaluationVisitorFactory : class, IEvaluationVisitorFactory
-    {
-        Services.ReplaceTransient<IEvaluationVisitorFactory, TEvaluationVisitorFactory>();
-        return this;
-    }
 }
