@@ -19,5 +19,5 @@ namespace NCalc;
 public abstract class LogicalExpression
 {
     [Pure]
-    public abstract T Accept<T>(ILogicalExpressionVisitor<T> visitor, CancellationToken cancellationToken = default);
+    public abstract T Accept<T>(ILogicalExpressionVisitor<T> visitor);
 }

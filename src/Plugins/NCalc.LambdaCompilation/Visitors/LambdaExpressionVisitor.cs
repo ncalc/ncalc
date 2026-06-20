@@ -47,19 +47,19 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         _context = context;
     }
 
-    public LinqExpression Visit(TernaryExpression expression, CancellationToken cancellationToken = default)
+    public LinqExpression Visit(TernaryExpression expression)
     {
-        var conditional = expression.LeftExpression.Accept(this, cancellationToken);
-        var ifTrue = expression.MiddleExpression.Accept(this, cancellationToken);
-        var ifFalse = expression.RightExpression.Accept(this, cancellationToken);
+        var conditional = expression.LeftExpression.Accept(this);
+        var ifTrue = expression.MiddleExpression.Accept(this);
+        var ifFalse = expression.RightExpression.Accept(this);
 
         return LinqExpression.Condition(conditional, ifTrue, ifFalse);
     }
 
-    public LinqExpression Visit(BinaryExpression expression, CancellationToken cancellationToken = default)
+    public LinqExpression Visit(BinaryExpression expression)
     {
-        var left = expression.LeftExpression.Accept(this, cancellationToken);
-        var right = expression.RightExpression.Accept(this, cancellationToken);
+        var left = expression.LeftExpression.Accept(this);
+        var right = expression.RightExpression.Accept(this);
 
         return expression.Type switch
         {
@@ -91,9 +91,9 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         };
     }
 
-    public LinqExpression Visit(UnaryExpression expression, CancellationToken cancellationToken = default)
+    public LinqExpression Visit(UnaryExpression expression)
     {
-        var operand = expression.Expression.Accept(this, cancellationToken);
+        var operand = expression.Expression.Accept(this);
 
         return expression.Type switch
         {
@@ -105,17 +105,17 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         };
     }
 
-    public LinqExpression Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+    public LinqExpression Visit(ValueExpression expression)
     {
         return LinqExpression.Constant(expression.Value);
     }
 
-    public LinqExpression Visit(Function function, CancellationToken cancellationToken = default)
+    public LinqExpression Visit(Function function)
     {
         var args = new LinqExpression[function.Parameters.Count];
         for (var i = 0; i < function.Parameters.Count; i++)
         {
-            args[i] = function.Parameters[i].Accept(this, cancellationToken);
+            args[i] = function.Parameters[i].Accept(this);
         }
 
         // Context methods take precedence over built-in functions because they're user-customizable.
@@ -236,7 +236,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         }
     }
 
-    public LinqExpression Visit(Identifier identifier, CancellationToken cancellationToken = default)
+    public LinqExpression Visit(Identifier identifier)
     {
         var identifierName = identifier.Name;
 
@@ -251,11 +251,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         return LinqExpression.PropertyOrField(_context, identifierName);
     }
 
-    public LinqExpression Visit(LogicalExpressionList list, CancellationToken cancellationToken = default)
+    public LinqExpression Visit(LogicalExpressionList list)
     {
         var newList = LinqExpression.New(typeof(List<object>));
         return LinqExpression.ListInit(newList,
-            list.Select(e => LinqExpression.Convert(e.Accept(this, cancellationToken), typeof(object)))
+            list.Select(e => LinqExpression.Convert(e.Accept(this), typeof(object)))
         );
     }
 

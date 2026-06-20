@@ -133,36 +133,36 @@ public class ServiceCollectionExtensionsTests
             LogicalExpression = logicalExpression;
         }
 
-        protected override EvaluationVisitor CreateEvaluationVisitor()
+        protected override EvaluationVisitor CreateEvaluationVisitor(CancellationToken cancellationToken = default)
         {
-            return new CustomSyncVisitor(Context);
+            return new CustomSyncVisitor(Context, cancellationToken);
         }
 
-        protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor()
+        protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(CancellationToken cancellationToken = default)
         {
-            return new CustomAsyncVisitor(Context);
+            return new CustomAsyncVisitor(Context, cancellationToken);
         }
     }
 
-    private class CustomSyncVisitor(ExpressionContext context) : EvaluationVisitor(context)
+    private class CustomSyncVisitor(ExpressionContext context, CancellationToken cancellationToken) : EvaluationVisitor(context, cancellationToken)
     {
-        public override object Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+        public override object Visit(ValueExpression expression)
         {
             if (expression.Value is 42)
                 return "The answer";
 
-            return base.Visit(expression, cancellationToken);
+            return base.Visit(expression);
         }
     }
 
-    private class CustomAsyncVisitor(ExpressionContext context) : AsyncEvaluationVisitor(context)
+    private class CustomAsyncVisitor(ExpressionContext context, CancellationToken cancellationToken) : AsyncEvaluationVisitor(context, cancellationToken)
     {
-        public override Task<object> Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+        public override Task<object> Visit(ValueExpression expression)
         {
             if (expression.Value is 42)
                 return Task.FromResult<object>("The answer async");
 
-            return base.Visit(expression, cancellationToken);
+            return base.Visit(expression);
         }
     }
 

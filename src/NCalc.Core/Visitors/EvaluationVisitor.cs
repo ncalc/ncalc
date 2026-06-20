@@ -8,20 +8,22 @@ namespace NCalc.Visitors;
 /// Class responsible to synchronously evaluating <see cref="LogicalExpression"/> objects into CLR objects.
 /// </summary>
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
-public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor<object?>
+public class EvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<object?>
 {
-    public virtual object? Visit(TernaryExpression expression, CancellationToken cancellationToken = default)
+    protected CancellationToken CancellationToken { get; } = cancellationToken;
+
+    public virtual object? Visit(TernaryExpression expression)
     {
-        var left = Convert.ToBoolean(expression.LeftExpression.Accept(this, cancellationToken), context.CultureInfo);
+        var left = Convert.ToBoolean(expression.LeftExpression.Accept(this), context.CultureInfo);
 
         return left
-            ? expression.MiddleExpression.Accept(this, cancellationToken)
-            : expression.RightExpression.Accept(this, cancellationToken);
+            ? expression.MiddleExpression.Accept(this)
+            : expression.RightExpression.Accept(this);
     }
 
-    public virtual object? Visit(BinaryExpression expression, CancellationToken cancellationToken = default)
+    public virtual object? Visit(BinaryExpression expression)
     {
-        var binaryEventArgs = new BinaryEventArgs(expression, this, new AsyncEvaluationVisitor(context), cancellationToken);
+        var binaryEventArgs = new BinaryEventArgs(expression, this, new AsyncEvaluationVisitor(context, CancellationToken), CancellationToken);
         OnEvaluateBinary(binaryEventArgs);
 
         if (binaryEventArgs.HasResult)
@@ -45,14 +47,14 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         return EvaluationVisitorHelper.EvaluateBinary(expression.Type, left, right, context);
     }
 
-    public virtual object? Visit(UnaryExpression expression, CancellationToken cancellationToken = default)
+    public virtual object? Visit(UnaryExpression expression)
     {
-        var result = expression.Expression.Accept(this, cancellationToken);
+        var result = expression.Expression.Accept(this);
 
         return Unary(expression, result, context);
     }
 
-    public virtual object? Visit(Function function, CancellationToken cancellationToken = default)
+    public virtual object? Visit(Function function)
     {
         var functionName = function.Identifier.Name;
         var functionData = new FunctionData(
@@ -61,7 +63,7 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
             context,
             this,
             null,
-            cancellationToken);
+            CancellationToken);
         var functionArgs = new FunctionEventArgs(functionData);
 
         OnEvaluateFunction(functionName, functionArgs);
@@ -75,22 +77,22 @@ public class EvaluationVisitor(ExpressionContext context) : ILogicalExpressionVi
         return BuiltInFunctionHelper.Evaluate(functionName, functionData);
     }
 
-    public virtual object? Visit(Identifier identifier, CancellationToken cancellationToken = default)
+    public virtual object? Visit(Identifier identifier)
     {
-        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, cancellationToken);
+        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, CancellationToken);
 
-        return value is Expression expression ? expression.Evaluate(cancellationToken) : value;
+        return value is Expression expression ? expression.Evaluate(CancellationToken) : value;
     }
 
-    public virtual object? Visit(ValueExpression expression, CancellationToken cancellationToken = default) => expression.Value;
+    public virtual object? Visit(ValueExpression expression) => expression.Value;
 
-    public virtual object? Visit(LogicalExpressionList list, CancellationToken cancellationToken = default)
+    public virtual object? Visit(LogicalExpressionList list)
     {
         List<object?> result = [];
 
         foreach (var value in list)
         {
-            result.Add(value.Accept(this, cancellationToken));
+            result.Add(value.Accept(this));
         }
 
         return result;

@@ -181,14 +181,14 @@ public class Expression
     {
     }
 
-    protected virtual EvaluationVisitor CreateEvaluationVisitor()
+    protected virtual EvaluationVisitor CreateEvaluationVisitor(CancellationToken cancellationToken = default)
     {
-        return new EvaluationVisitor(Context);
+        return new EvaluationVisitor(Context, cancellationToken);
     }
 
-    protected virtual AsyncEvaluationVisitor CreateAsyncEvaluationVisitor()
+    protected virtual AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(CancellationToken cancellationToken = default)
     {
-        return new AsyncEvaluationVisitor(Context);
+        return new AsyncEvaluationVisitor(Context, cancellationToken);
     }
 
     /// <summary>
@@ -209,12 +209,12 @@ public class Expression
             if (Options.HasFlag(ExpressionOptions.IterateParameters))
                 return IterateParameters(cancellationToken);
 
-            var evaluationVisitor = CreateEvaluationVisitor();
+            var evaluationVisitor = CreateEvaluationVisitor(cancellationToken);
 
             if (LogicalExpression is null)
                 return null;
 
-            return LogicalExpression.Accept(evaluationVisitor, cancellationToken);
+            return LogicalExpression.Accept(evaluationVisitor);
         }
         catch (InvalidCastException exception)
         {
@@ -241,12 +241,12 @@ public class Expression
             if (Options.HasFlag(ExpressionOptions.IterateParameters))
                 return await IterateParametersAsync(cancellationToken).ConfigureAwait(false);
 
-            var evaluationVisitor = CreateAsyncEvaluationVisitor();
+            var evaluationVisitor = CreateAsyncEvaluationVisitor(cancellationToken);
 
             if (LogicalExpression is null)
                 return null;
 
-            return await LogicalExpression.Accept(evaluationVisitor, cancellationToken).ConfigureAwait(false);
+            return await LogicalExpression.Accept(evaluationVisitor).ConfigureAwait(false);
         }
         catch (InvalidCastException exception)
         {
@@ -258,13 +258,13 @@ public class Expression
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
-        var evaluationVisitor = CreateAsyncEvaluationVisitor();
+        var evaluationVisitor = CreateAsyncEvaluationVisitor(cancellationToken);
 
         if (LogicalExpression is null)
             return null;
 
         if (size == null)
-            return await LogicalExpression.Accept(evaluationVisitor, cancellationToken);
+            return await LogicalExpression.Accept(evaluationVisitor);
 
         var results = new List<object?>(size.Value);
 
@@ -276,7 +276,7 @@ public class Expression
                 Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            results.Add(await LogicalExpression.Accept(evaluationVisitor, cancellationToken));
+            results.Add(await LogicalExpression.Accept(evaluationVisitor));
         }
 
         return results;
@@ -286,13 +286,13 @@ public class Expression
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
-        var evaluationVisitor = CreateEvaluationVisitor();
+        var evaluationVisitor = CreateEvaluationVisitor(cancellationToken);
 
         if (LogicalExpression is null)
             return null;
 
         if (size == null)
-            return LogicalExpression.Accept(evaluationVisitor, cancellationToken);
+            return LogicalExpression.Accept(evaluationVisitor);
 
         var results = new List<object?>(size.Value);
 
@@ -304,7 +304,7 @@ public class Expression
                 Parameters[kvp.Key] = kvp.Value.Current;
             }
 
-            results.Add(LogicalExpression.Accept(evaluationVisitor, cancellationToken));
+            results.Add(LogicalExpression.Accept(evaluationVisitor));
         }
 
         return results;
@@ -318,7 +318,7 @@ public class Expression
     {
         var parameterExtractionVisitor = new ParameterExtractionVisitor();
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
-        return LogicalExpression.Accept(parameterExtractionVisitor, cancellationToken);
+        return LogicalExpression.Accept(parameterExtractionVisitor);
     }
 
     /// <summary>
@@ -329,7 +329,7 @@ public class Expression
     {
         var functionExtractionVisitor = new FunctionExtractionVisitor();
         LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
-        return LogicalExpression.Accept(functionExtractionVisitor, cancellationToken);
+        return LogicalExpression.Accept(functionExtractionVisitor);
     }
 
     /// <summary>
@@ -402,8 +402,8 @@ public class Expression
             return string.Empty;
 
         if (!evaluateParameters)
-            return logicalExpression.ToExpressionString(cancellationToken);
+            return logicalExpression.ToExpressionString();
 
-        return logicalExpression.Accept(new ParameterSubstitutionVisitor(Context), cancellationToken).TrimEnd();
+        return logicalExpression.Accept(new ParameterSubstitutionVisitor(Context, cancellationToken)).TrimEnd();
     }
 }

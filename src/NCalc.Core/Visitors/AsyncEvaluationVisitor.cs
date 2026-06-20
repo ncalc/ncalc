@@ -8,24 +8,26 @@ namespace NCalc.Visitors;
 /// Class responsible to asynchronous evaluating <see cref="LogicalExpression"/> objects into CLR objects.
 /// </summary>
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
-public class AsyncEvaluationVisitor(ExpressionContext context) : ILogicalExpressionVisitor<Task<object?>>
+public class AsyncEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<Task<object?>>
 {
-    public virtual async Task<object?> Visit(TernaryExpression expression, CancellationToken cancellationToken = default)
+    protected CancellationToken CancellationToken { get; } = cancellationToken;
+
+    public virtual async Task<object?> Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
-        var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this, cancellationToken), context.CultureInfo);
+        var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this), context.CultureInfo);
 
         if (left)
         {
-            return await expression.MiddleExpression.Accept(this, cancellationToken);
+            return await expression.MiddleExpression.Accept(this);
         }
 
-        return await expression.RightExpression.Accept(this, cancellationToken);
+        return await expression.RightExpression.Accept(this);
     }
 
-    public virtual async Task<object?> Visit(BinaryExpression expression, CancellationToken cancellationToken = default)
+    public virtual async Task<object?> Visit(BinaryExpression expression)
     {
-        var binaryEventArgs = new BinaryEventArgs(expression, new EvaluationVisitor(context), this, cancellationToken);
+        var binaryEventArgs = new BinaryEventArgs(expression, new EvaluationVisitor(context, CancellationToken), this, CancellationToken);
         await OnEvaluateBinaryAsync(binaryEventArgs);
 
         if (binaryEventArgs.HasResult)
@@ -48,28 +50,28 @@ public class AsyncEvaluationVisitor(ExpressionContext context) : ILogicalExpress
         return EvaluationVisitorHelper.EvaluateBinary(expression.Type, left, right, context);
     }
 
-    public virtual async Task<object?> Visit(UnaryExpression expression, CancellationToken cancellationToken = default)
+    public virtual async Task<object?> Visit(UnaryExpression expression)
     {
         // Recursively evaluates the underlying expression
-        var result = await expression.Expression.Accept(this, cancellationToken);
+        var result = await expression.Expression.Accept(this);
 
         return Unary(expression, result, context);
     }
 
-    public virtual async Task<object?> Visit(Function function, CancellationToken cancellationToken = default)
+    public virtual async Task<object?> Visit(Function function)
     {
         // Don't call parameters right now, instead let the function do it as needed.
         // Some parameters shouldn't be called, for instance, in a if(), the "not" value might be a division by zero
         // Evaluating every value could produce unexpected behaviour
         var functionName = function.Identifier.Name;
-        var syncEvaluationVisitor = new EvaluationVisitor(context);
+        var syncEvaluationVisitor = new EvaluationVisitor(context, CancellationToken);
         var functionData = new FunctionData(
             function.Identifier.Id,
             function.Parameters,
             context,
             syncEvaluationVisitor,
             this,
-            cancellationToken);
+            CancellationToken);
         var functionArgs = new FunctionEventArgs(functionData);
 
         await OnEvaluateFunctionAsync(functionName, functionArgs);
@@ -86,24 +88,24 @@ public class AsyncEvaluationVisitor(ExpressionContext context) : ILogicalExpress
         return await BuiltInFunctionHelper.EvaluateAsync(functionName, functionData);
     }
 
-    public virtual async Task<object?> Visit(Identifier identifier, CancellationToken cancellationToken = default)
+    public virtual async Task<object?> Visit(Identifier identifier)
     {
-        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, cancellationToken);
+        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, CancellationToken);
 
         return value is Expression expression
-            ? await expression.EvaluateAsync(cancellationToken)
+            ? await expression.EvaluateAsync(CancellationToken)
             : value;
     }
 
-    public virtual Task<object?> Visit(ValueExpression expression, CancellationToken cancellationToken = default) => Task.FromResult(expression.Value);
+    public virtual Task<object?> Visit(ValueExpression expression) => Task.FromResult(expression.Value);
 
-    public virtual async Task<object?> Visit(LogicalExpressionList list, CancellationToken cancellationToken = default)
+    public virtual async Task<object?> Visit(LogicalExpressionList list)
     {
         List<object?> result = [];
 
         foreach (var value in list)
         {
-            result.Add(await EvaluateAsync(value, cancellationToken));
+            result.Add(await EvaluateAsync(value));
         }
 
         return result;
@@ -131,8 +133,8 @@ public class AsyncEvaluationVisitor(ExpressionContext context) : ILogicalExpress
         return context.EvaluateBinaryAsyncHandler?.Invoke(args) ?? Task.CompletedTask;
     }
 
-    protected Task<object?> EvaluateAsync(LogicalExpression expression, CancellationToken cancellationToken = default)
+    protected Task<object?> EvaluateAsync(LogicalExpression expression)
     {
-        return expression.Accept(this, cancellationToken);
+        return expression.Accept(this);
     }
 }
