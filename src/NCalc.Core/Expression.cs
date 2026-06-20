@@ -78,7 +78,6 @@ public class Expression
         remove => Context.EvaluateParameterHandler -= value;
     }
 
-    protected IEvaluationVisitorFactory EvaluationVisitorFactory { get; }
     protected ExpressionContext Context { get; }
 
     /// <summary>
@@ -123,10 +122,9 @@ public class Expression
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
         LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
         Context = context ?? new ExpressionContext();
-        EvaluationVisitorFactory = new EvaluationVisitorFactory();
     }
 
-    protected Expression(
+    public Expression(
         string expressionString,
         ExpressionContext context,
         ILogicalExpressionFactory logicalExpressionFactory,
@@ -136,10 +134,9 @@ public class Expression
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
         Context = context;
-        EvaluationVisitorFactory = new EvaluationVisitorFactory();
     }
 
-    protected Expression(
+    public Expression(
         LogicalExpression logicalExpression,
         ExpressionContext context,
         ILogicalExpressionFactory logicalExpressionFactory,
@@ -148,28 +145,7 @@ public class Expression
         LogicalExpression = logicalExpression;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
-        EvaluationVisitorFactory = new EvaluationVisitorFactory();
         Context = context;
-    }
-
-    public Expression(
-        string expression,
-        ExpressionContext context,
-        ILogicalExpressionFactory factory,
-        ILogicalExpressionCache cache,
-        IEvaluationVisitorFactory evaluationVisitorFactory) : this(expression, context, factory, cache)
-    {
-        EvaluationVisitorFactory = evaluationVisitorFactory;
-    }
-
-    public Expression(
-        LogicalExpression logicalExpression,
-        ExpressionContext context,
-        ILogicalExpressionFactory factory,
-        ILogicalExpressionCache cache,
-        IEvaluationVisitorFactory evaluationVisitorFactory) : this(logicalExpression, context, factory, cache)
-    {
-        EvaluationVisitorFactory = evaluationVisitorFactory;
     }
 
     public Expression(string? expression, ExpressionContext? context = null) : this(context)
@@ -205,6 +181,16 @@ public class Expression
     {
     }
 
+    protected virtual EvaluationVisitor CreateEvaluationVisitor()
+    {
+        return new EvaluationVisitor(Context);
+    }
+
+    protected virtual AsyncEvaluationVisitor CreateAsyncEvaluationVisitor()
+    {
+        return new AsyncEvaluationVisitor(Context);
+    }
+
     /// <summary>
     /// Evaluates the logical expression.
     /// </summary>
@@ -223,7 +209,7 @@ public class Expression
             if (Options.HasFlag(ExpressionOptions.IterateParameters))
                 return IterateParameters(cancellationToken);
 
-            var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+            var evaluationVisitor = CreateEvaluationVisitor();
 
             if (LogicalExpression is null)
                 return null;
@@ -255,7 +241,7 @@ public class Expression
             if (Options.HasFlag(ExpressionOptions.IterateParameters))
                 return await IterateParametersAsync(cancellationToken).ConfigureAwait(false);
 
-            var evaluationVisitor = EvaluationVisitorFactory.CreateAsync(Context);
+            var evaluationVisitor = CreateAsyncEvaluationVisitor();
 
             if (LogicalExpression is null)
                 return null;
@@ -272,7 +258,7 @@ public class Expression
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
-        var evaluationVisitor = EvaluationVisitorFactory.CreateAsync(Context);
+        var evaluationVisitor = CreateAsyncEvaluationVisitor();
 
         if (LogicalExpression is null)
             return null;
@@ -300,7 +286,7 @@ public class Expression
     {
         var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
 
-        var evaluationVisitor = EvaluationVisitorFactory.Create(Context);
+        var evaluationVisitor = CreateEvaluationVisitor();
 
         if (LogicalExpression is null)
             return null;

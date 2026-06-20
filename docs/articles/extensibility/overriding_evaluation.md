@@ -1,7 +1,8 @@
 # Overriding Evaluation Behavior
 
 NCalc provides a flexible way to evaluate expressions, and in some cases, you may need to customize its evaluation
-behavior. This can be done by overriding the default evaluation visitor using `IEvaluationVisitorFactory`.
+behavior. This can be done by creating a custom `Expression` and overriding `CreateEvaluationVisitor` or
+`CreateAsyncEvaluationVisitor`.
 
 ## Custom Evaluation Visitor
 
@@ -11,45 +12,91 @@ overrides the behavior of value expressions, returning a special string when enc
 ```csharp
 private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
 {
-    public override object Visit(ValueExpression expression)
+    public override object? Visit(ValueExpression expression, CancellationToken cancellationToken = default)
     {
         // My custom behavior.
         if(expression.Value is 42)
             return "The answer";
 
         // Use the normal behavior.
-        return base.Visit(expression);
+        return base.Visit(expression, cancellationToken);
+    }
+}
+
+private class CustomAsyncVisitor(ExpressionContext context) : AsyncEvaluationVisitor(context)
+{
+    public override Task<object?> Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+    {
+        // My custom behavior.
+        if(expression.Value is 42)
+            return Task.FromResult<object?>("The answer async");
+
+        // Use the normal behavior.
+        return base.Visit(expression, cancellationToken);
     }
 }
 ```
 
-## Custom Evaluation Visitor Factory
+## Custom Expression
 
-To integrate the custom visitor with NCalc, implement the `IEvaluationVisitorFactory` interface:
+To integrate the custom visitor with NCalc, inherit from `Expression` and override the visitor creation method:
 
 ```csharp
-private class CustomEvaluationVisitorFactory : IEvaluationVisitorFactory
+private class CustomExpression(
+    string expression,
+    ExpressionContext context,
+    ILogicalExpressionFactory logicalExpressionFactory,
+    ILogicalExpressionCache cache) : Expression(expression, context, logicalExpressionFactory, cache)
 {
-    public EvaluationVisitor Create(ExpressionContext context)
+    public CustomExpression(
+        LogicalExpression logicalExpression,
+        ExpressionContext context,
+        ILogicalExpressionFactory logicalExpressionFactory,
+        ILogicalExpressionCache cache)
+        : this(string.Empty, context, logicalExpressionFactory, cache)
     {
-        return new CustomVisitor(context);
+        LogicalExpression = logicalExpression;
+    }
+
+    protected override EvaluationVisitor CreateEvaluationVisitor()
+    {
+        return new CustomVisitor(Context);
+    }
+
+    protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor()
+    {
+        return new CustomAsyncVisitor(Context);
     }
 }
 ```
 
-## Using `WithEvaluationVisitorFactory`
+## Using `IExpressionFactory`
 
-Use the `WithEvaluationVisitorFactory` method to specify the custom implementation
-of <xref:NCalc.Factories.IEvaluationVisitorFactory>. This ensures that the created evaluation visitor is used when
-evaluating expressions.
+Use a custom implementation of <xref:NCalc.Factories.IExpressionFactory> to return your custom expression type:
 
-### Example:
+```csharp
+private class CustomExpressionFactory(
+    ILogicalExpressionFactory logicalExpressionFactory,
+    ILogicalExpressionCache cache) : IExpressionFactory
+{
+    public Expression Create(string expression, ExpressionContext? expressionContext = null)
+    {
+        return new CustomExpression(expression, expressionContext ?? new(), logicalExpressionFactory, cache);
+    }
+
+    public Expression Create(LogicalExpression logicalExpression, ExpressionContext? expressionContext = null)
+    {
+        return new CustomExpression(logicalExpression, expressionContext ?? new(), logicalExpressionFactory, cache);
+    }
+}
+```
+
+Register the factory with dependency injection:
 
 ```csharp
 services.AddNCalc()
-        .WithEvaluationVisitorFactory<CustomEvaluationVisitorFactory>();
+        .WithExpressionFactory<CustomExpressionFactory>();
 ```
 
 By overriding the evaluation visitor, you gain complete control over how expressions are interpreted and processed,
 enabling customization to fit specific application needs.
-
