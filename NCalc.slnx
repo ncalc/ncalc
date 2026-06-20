@@ -18,11 +18,14 @@
     <File Path=".github/workflows/build-test.yml" />
     <File Path=".github/workflows/publish-nuget.yml" />
   </Folder>
-  <Folder Name="/0. Solution Items/Obsolete/">
+  <Folder Name="/0. Solution Items/Redirects/">
     <Project Path="src/NCalc.Async/NCalc.Async.csproj">
       <BuildType Solution="SignedRelease|*" Project="Debug" />
     </Project>
     <Project Path="src/NCalc.Sync/NCalc.Sync.csproj" />
+    <Project Path="src/NCalc/NCalc.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
   </Folder>
   <Folder Name="/0. Solution Items/Src/">
     <File Path="src/Directory.Build.props" />

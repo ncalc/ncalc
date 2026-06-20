@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Common Property Groups -->
+
+    <PropertyGroup>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <PackageProjectUrl>https://github.com/ncalc/ncalc</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
+        <PackageTags>ncalc; sync; expressions; math; evaluation;</PackageTags>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <Configurations>Debug;Release</Configurations>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Platforms>AnyCPU</Platforms>
+        <RootNamespace>NCalc</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../NCalc.png">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+    </ItemGroup>
+
+    <!-- Unsigned Assembly Configuration -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' ">
+        <AssemblyName>NCalc</AssemblyName>
+        <PackageId>NCalc</PackageId>
+        <Description>NCalc is a fast and lightweight expression evaluator library for .NET, designed for flexibility and high performance. It supports a wide range of mathematical and logical operations. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.</Description>
+    </PropertyGroup>
+
+    <!-- Strongly Signed Assembly Configuration -->
+
+    <!-- Other Item Groups and Package References -->
+    <ItemGroup>
+        <Compile Remove="Properties\ExcludeFromCodeCoverageAttribute35.cs" />
+    </ItemGroup>
+
+    <!-- Common Build Configurations -->
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj" />
+    </ItemGroup>
+</Project>
