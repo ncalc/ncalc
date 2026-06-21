@@ -32,7 +32,6 @@
     <File Path="src/Directory.Build.props" />
   </Folder>
   <Folder Name="/1. Docs/">
-    <File Path=".github/workflows/docs.yml" />
     <Project Path="docs/NCalc.Docs.csproj" />
   </Folder>
   <Folder Name="/2. Plugins/">

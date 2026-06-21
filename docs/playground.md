@@ -20,7 +20,7 @@
 
 <div class="playground-container">
   <iframe
-    src="https://ncalc.github.io/ncalc/playground"
+    src="https://ncalc.github.io/ncalc/playground/"
     title="NCalc Playground"
     loading="lazy">
   </iframe>
