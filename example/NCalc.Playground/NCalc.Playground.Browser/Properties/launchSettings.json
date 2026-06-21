@@ -1,6 +1,6 @@
 {
     "profiles": {
-    "NCalc.Showcase.Browser": {
+    "NCalc.Playground.Browser": {
         "commandName": "Project",
         "launchBrowser": true,
         "environmentVariables": {
