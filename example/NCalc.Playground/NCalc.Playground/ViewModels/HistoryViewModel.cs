@@ -8,7 +8,8 @@ namespace NCalc.Playground.ViewModels;
 
 public sealed partial class HistoryViewModel : ViewModelBase
 {
-    [ObservableProperty] private EvaluationHistoryItem? _selectedItem;
+    [ObservableProperty]
+    public partial EvaluationHistoryItem? SelectedItem { get; set; }
 
     public ObservableCollection<EvaluationHistoryItem> Items { get; } = [];
 
