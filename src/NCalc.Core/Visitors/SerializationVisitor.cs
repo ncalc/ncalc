@@ -10,18 +10,18 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         NumberDecimalSeparator = "."
     };
 
-    public virtual string Visit(TernaryExpression expression, CancellationToken cancellationToken = default)
+    public virtual string Visit(TernaryExpression expression)
     {
-        string result = EncapsulateNoValue(expression.LeftExpression, cancellationToken) + "? ";
-        result += EncapsulateNoValue(expression.MiddleExpression, cancellationToken) + ": ";
-        result += EncapsulateNoValue(expression.RightExpression, cancellationToken);
+        string result = EncapsulateNoValue(expression.LeftExpression) + "? ";
+        result += EncapsulateNoValue(expression.MiddleExpression) + ": ";
+        result += EncapsulateNoValue(expression.RightExpression);
 
         return result;
     }
 
-    public virtual string Visit(BinaryExpression expression, CancellationToken cancellationToken = default)
+    public virtual string Visit(BinaryExpression expression)
     {
-        string result = EncapsulateNoValue(expression.LeftExpression, cancellationToken);
+        string result = EncapsulateNoValue(expression.LeftExpression);
 
         result += expression.Type switch
         {
@@ -52,11 +52,11 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        result += EncapsulateNoValue(expression.RightExpression, cancellationToken);
+        result += EncapsulateNoValue(expression.RightExpression);
         return result;
     }
 
-    public virtual string Visit(UnaryExpression expression, CancellationToken cancellationToken = default)
+    public virtual string Visit(UnaryExpression expression)
     {
         string result = expression.Type switch
         {
@@ -66,11 +66,11 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             _ => string.Empty
         };
 
-        result += EncapsulateNoValue(expression.Expression, cancellationToken);
+        result += EncapsulateNoValue(expression.Expression);
         return result;
     }
 
-    public virtual string Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+    public virtual string Visit(ValueExpression expression)
     {
         return expression.Type switch
         {
@@ -82,13 +82,13 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         };
     }
 
-    public virtual string Visit(Function function, CancellationToken cancellationToken = default)
+    public virtual string Visit(Function function)
     {
         var resultBuilder = new StringBuilder(function.Identifier.Name + '(');
 
         for (int i = 0; i < function.Parameters.Count; i++)
         {
-            resultBuilder.Append(function.Parameters[i].Accept(this, cancellationToken));
+            resultBuilder.Append(function.Parameters[i].Accept(this));
             if (i < function.Parameters.Count - 1)
             {
                 if (resultBuilder[^1] == ' ')
@@ -105,17 +105,17 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return resultBuilder.ToString();
     }
 
-    public virtual string Visit(Identifier identifier, CancellationToken cancellationToken = default)
+    public virtual string Visit(Identifier identifier)
     {
         return $"[{identifier.Name}]";
     }
 
-    public virtual string Visit(LogicalExpressionList list, CancellationToken cancellationToken = default)
+    public virtual string Visit(LogicalExpressionList list)
     {
         var resultBuilder = new StringBuilder("(");
         for (var i = 0; i < list.Count; i++)
         {
-            resultBuilder.Append(list[i].Accept(this, cancellationToken).TrimEnd());
+            resultBuilder.Append(list[i].Accept(this).TrimEnd());
             if (i < list.Count - 1)
             {
                 resultBuilder.Append(',');
@@ -125,12 +125,12 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
         return resultBuilder.ToString();
     }
 
-    protected virtual string EncapsulateNoValue(LogicalExpression expression, CancellationToken cancellationToken = default)
+    protected virtual string EncapsulateNoValue(LogicalExpression expression)
     {
         if (expression is ValueExpression valueExpression)
-            return valueExpression.Accept(this, cancellationToken);
+            return valueExpression.Accept(this);
 
-        string result = expression.Accept(this, cancellationToken);
+        string result = expression.Accept(this);
         return $"({result.TrimEnd(' ')}) ";
     }
 }

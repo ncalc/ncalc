@@ -33,12 +33,12 @@ public class FunctionData(
             throw new NCalcEvaluationException(
                 "Asynchronous binary value evaluation is not available in this context.");
 
-        return Arguments[index].Accept(AsyncVisitor, CancellationToken);
+        return Arguments[index].Accept(AsyncVisitor);
     }
 
     public object? Evaluate(int index)
     {
-        return Arguments[index].Accept(SyncVisitor, CancellationToken);
+        return Arguments[index].Accept(SyncVisitor);
     }
 
     public void Add(LogicalExpression item) => Arguments.Add(item);

@@ -6,25 +6,25 @@ namespace NCalc.Visitors;
 /// Converts a <see cref="LogicalExpression"/> into a string representation while replacing known parameters
 /// with their resolved values.
 /// </summary>
-public class ParameterSubstitutionVisitor(ExpressionContext context) : SerializationVisitor
+public class ParameterSubstitutionVisitor(ExpressionContext context, CancellationToken cancellationToken = default) : SerializationVisitor
 {
-    public override string Visit(Identifier identifier, CancellationToken cancellationToken = default)
+    public override string Visit(Identifier identifier)
     {
-        if (TryEvaluateIdentifier(identifier, cancellationToken, out var value))
-            return SerializeValue(value, cancellationToken);
+        if (TryEvaluateIdentifier(identifier, out var value))
+            return SerializeValue(value);
 
-        return base.Visit(identifier, cancellationToken);
+        return base.Visit(identifier);
     }
 
-    protected override string EncapsulateNoValue(LogicalExpression expression, CancellationToken cancellationToken = default)
+    protected override string EncapsulateNoValue(LogicalExpression expression)
     {
         if (expression is Identifier identifier)
-            return $"{Visit(identifier, cancellationToken).TrimEnd()} ";
+            return $"{Visit(identifier).TrimEnd()} ";
 
-        return base.EncapsulateNoValue(expression, cancellationToken);
+        return base.EncapsulateNoValue(expression);
     }
 
-    private bool TryEvaluateIdentifier(Identifier identifier, CancellationToken cancellationToken, out object? value)
+    private bool TryEvaluateIdentifier(Identifier identifier, out object? value)
     {
         var identifierName = identifier.Name;
         var parameterArgs = new ParameterEventArgs(identifier.Id, cancellationToken);
@@ -57,7 +57,7 @@ public class ParameterSubstitutionVisitor(ExpressionContext context) : Serializa
         return false;
     }
 
-    private string SerializeValue(object? value, CancellationToken cancellationToken)
+    private string SerializeValue(object? value)
     {
         while (true)
         {
@@ -70,7 +70,7 @@ public class ParameterSubstitutionVisitor(ExpressionContext context) : Serializa
                 continue;
             }
 
-            return new ValueExpression(value).Accept(this, cancellationToken).TrimEnd(' ');
+            return new ValueExpression(value).Accept(this).TrimEnd(' ');
         }
     }
 }

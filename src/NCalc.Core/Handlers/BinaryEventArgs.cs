@@ -49,7 +49,7 @@ public class BinaryEventArgs(
         if (_leftResolvedValue != null)
             return _leftResolvedValue;
 
-        return _leftResolvedValue = BinaryExpression.LeftExpression.Accept(_syncVisitor!, CancellationToken);
+        return _leftResolvedValue = BinaryExpression.LeftExpression.Accept(_syncVisitor!);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class BinaryEventArgs(
         if (_asyncVisitor is null)
             throw new NCalcEvaluationException("Asynchronous binary value evaluation is not available in this context.");
 
-        _leftResolvedValue ??= await BinaryExpression.LeftExpression.Accept(_asyncVisitor, CancellationToken);
+        _leftResolvedValue ??= await BinaryExpression.LeftExpression.Accept(_asyncVisitor);
 
         return _leftResolvedValue;
     }
@@ -72,14 +72,14 @@ public class BinaryEventArgs(
         if (_rightResolvedValue != null)
             return _rightResolvedValue;
 
-        return _rightResolvedValue = BinaryExpression.RightExpression.Accept(_syncVisitor!, CancellationToken);
+        return _rightResolvedValue = BinaryExpression.RightExpression.Accept(_syncVisitor!);
     }
     public async Task<object?> RightValueAsync()
     {
         if (_asyncVisitor is null)
             throw new NCalcEvaluationException("Asynchronous binary value evaluation is not available in this context.");
 
-        _rightResolvedValue ??= await BinaryExpression.RightExpression.Accept(_asyncVisitor, CancellationToken);
+        _rightResolvedValue ??= await BinaryExpression.RightExpression.Accept(_asyncVisitor);
 
         return _rightResolvedValue;
     }

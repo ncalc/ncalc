@@ -75,7 +75,8 @@ public static class LambdaCompilationExtensions
                 visitor = new(parameter, expression.Options);
             }
 
-            var body = expression.LogicalExpression.Accept(visitor, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            var body = expression.LogicalExpression.Accept(visitor);
             if (!IsSameType(body, typeof(TResult)))
             {
                 body = LinqExpression.Convert(body, typeof(TResult));
