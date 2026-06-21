@@ -40,7 +40,7 @@ jobs:
           dotnet workload restore example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj
 
       - name: Publish Avalonia Playground
-        run: dotnet publish example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj --configuration Release --output artifacts/playground-publish
+        run: dotnet publish example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
 
       - name: Stage GitHub Pages artifact
         run: |
