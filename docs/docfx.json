@@ -30,7 +30,8 @@
           "api/*.yml",
           "articles/**/*.md",
           "articles/**/*.yml",
-          "Index.md",
+          "index.md",
+          "playground.html",
           "toc.yml"
         ]
       }
