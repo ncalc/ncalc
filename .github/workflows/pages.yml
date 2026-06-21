@@ -14,7 +14,6 @@ jobs:
   publish-pages:
     environment:
       name: github-pages
-      url: https://ncalc.github.io
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,16 +37,15 @@ jobs:
       - name: Restore Avalonia Playground Workloads
         run: dotnet workload restore example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj
 
-      - name: Build Avalonia Playground
-        run: dotnet build example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj --configuration Release
+      - name: Publish Avalonia Playground
+        run: dotnet publish example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj --configuration Release --output artifacts/playground-publish
 
       - name: Stage GitHub Pages artifact
         run: |
           rm -rf artifacts/pages
           mkdir -p artifacts/pages/playground
           cp -a docs/_site/. artifacts/pages/
-          cp -a example/NCalc.Playground/NCalc.Playground.Browser/wwwroot/. artifacts/pages/playground/
-          cp -a example/NCalc.Playground/NCalc.Playground.Browser/bin/Release/net10.0-browser/wwwroot/. artifacts/pages/playground/
+          cp -a artifacts/playground-publish/wwwroot/. artifacts/pages/playground/
           touch artifacts/pages/.nojekyll
 
       - name: Upload artifact
