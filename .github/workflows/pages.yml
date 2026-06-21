@@ -35,7 +35,9 @@ jobs:
           docfx build
 
       - name: Restore Avalonia Playground Workloads
-        run: dotnet workload restore example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj
+        run: |
+          dotnet workload install wasm-tools
+          dotnet workload restore example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj
 
       - name: Publish Avalonia Playground
         run: dotnet publish example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj --configuration Release --output artifacts/playground-publish
