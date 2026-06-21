@@ -1,4 +1,4 @@
-name: Publish Docs and Showcase
+name: Publish Docs and Playground
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
   publish-pages:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://ncalc.github.io
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,19 +35,19 @@ jobs:
           docfx metadata
           docfx build
 
-      - name: Restore Avalonia Showcase Workloads
+      - name: Restore Avalonia Playground Workloads
         run: dotnet workload restore example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj
 
-      - name: Build Avalonia Showcase
+      - name: Build Avalonia Playground
         run: dotnet build example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj --configuration Release
 
       - name: Stage GitHub Pages artifact
         run: |
           rm -rf artifacts/pages
-          mkdir -p artifacts/pages/showcase
+          mkdir -p artifacts/pages/playground
           cp -a docs/_site/. artifacts/pages/
-          cp -a example/NCalc.Playground/NCalc.Playground.Browser/wwwroot/. artifacts/pages/showcase/
-          cp -a example/NCalc.Playground/NCalc.Playground.Browser/bin/Release/net10.0-browser/wwwroot/. artifacts/pages/showcase/
+          cp -a example/NCalc.Playground/NCalc.Playground.Browser/wwwroot/. artifacts/pages/playground/
+          cp -a example/NCalc.Playground/NCalc.Playground.Browser/bin/Release/net10.0-browser/wwwroot/. artifacts/pages/playground/
           touch artifacts/pages/.nojekyll
 
       - name: Upload artifact
