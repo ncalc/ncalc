@@ -31,7 +31,7 @@
           "articles/**/*.md",
           "articles/**/*.yml",
           "index.md",
-          "playground.html",
+          "playground.md",
           "toc.yml"
         ]
       }
