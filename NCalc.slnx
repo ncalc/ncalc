@@ -17,6 +17,7 @@
     <File Path=".github/workflows/benchmarks.yml" />
     <File Path=".github/workflows/build-test.yml" />
     <File Path=".github/workflows/publish-nuget.yml" />
+    <File Path=".github\workflows\pages.yml" />
   </Folder>
   <Folder Name="/0. Solution Items/Redirects/">
     <Project Path="src/NCalc.Async/NCalc.Async.csproj">
