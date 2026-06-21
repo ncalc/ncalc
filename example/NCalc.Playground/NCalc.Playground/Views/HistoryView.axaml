@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="using:NCalc.Playground.Models"
+             xmlns:vm="using:NCalc.Playground.ViewModels"
+             x:Class="NCalc.Playground.Views.HistoryView"
+             x:DataType="vm:HistoryViewModel">
+    <Grid RowDefinitions="*,Auto" RowSpacing="8">
+        <DataGrid AutoGenerateColumns="False"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="False"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Expression"
+                                        Width="2*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:EvaluationHistoryItem">
+                            <TextBlock Text="{Binding Expression}"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip.Tip="{Binding OriginalExpressionString}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Result"
+                                    Width="1.2*"
+                                    Binding="{Binding Result}" />
+                <DataGridTextColumn Header="Type"
+                                    Width="90"
+                                    Binding="{Binding ReturnType}" />
+                <DataGridTextColumn Header="Status"
+                                    Width="82"
+                                    Binding="{Binding Status}" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button Grid.Row="1"
+                HorizontalAlignment="Left"
+                Command="{Binding ClearCommand}"
+                Content="Clear history" />
+    </Grid>
+</UserControl>

@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="using:NCalc.Playground.Views"
+        mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="760"
+        x:Class="NCalc.Playground.Views.MainWindow"
+        Width="1180"
+        Height="760"
+        MinWidth="900"
+        MinHeight="640"
+        Icon="/Assets/NCalc.ico"
+        WindowStartupLocation="CenterScreen"
+        Theme="{StaticResource ClassicWindow}"
+        Title="NCalc Playground">
+    <views:MainView />
+</Window>
