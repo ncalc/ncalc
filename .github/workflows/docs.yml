@@ -36,18 +36,18 @@ jobs:
           docfx build
 
       - name: Restore Avalonia Showcase Workloads
-        run: dotnet workload restore example/NCalc.Showcase/NCalc.Showcase.Browser/NCalc.Showcase.Browser.csproj
+        run: dotnet workload restore example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj
 
       - name: Build Avalonia Showcase
-        run: dotnet build example/NCalc.Showcase/NCalc.Showcase.Browser/NCalc.Showcase.Browser.csproj --configuration Release
+        run: dotnet build example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj --configuration Release
 
       - name: Stage GitHub Pages artifact
         run: |
           rm -rf artifacts/pages
           mkdir -p artifacts/pages/showcase
           cp -a docs/_site/. artifacts/pages/
-          cp -a example/NCalc.Showcase/NCalc.Showcase.Browser/wwwroot/. artifacts/pages/showcase/
-          cp -a example/NCalc.Showcase/NCalc.Showcase.Browser/bin/Release/net10.0-browser/wwwroot/. artifacts/pages/showcase/
+          cp -a example/NCalc.Playground/NCalc.Playground.Browser/wwwroot/. artifacts/pages/showcase/
+          cp -a example/NCalc.Playground/NCalc.Playground.Browser/bin/Release/net10.0-browser/wwwroot/. artifacts/pages/showcase/
           touch artifacts/pages/.nojekyll
 
       - name: Upload artifact
