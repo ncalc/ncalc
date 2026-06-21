@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:NCalc.Playground.ViewModels"
+             xmlns:views="using:NCalc.Playground.Views"
+             xmlns:viewModels="clr-namespace:NCalc.Playground.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="760"
+             x:Class="NCalc.Playground.Views.MainView"
+             x:DataType="vm:MainViewModel">
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <UserControl.Styles>
+        <Style Selector="Button.primary">
+            <Setter Property="MinWidth" Value="120" />
+            <Setter Property="Padding" Value="16,6" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBox.codeBox">
+            <Setter Property="FontFamily" Value="Consolas, Courier New" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+            <Setter Property="AcceptsReturn" Value="False" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.panelCaption">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style Selector="Border.panel">
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlDarkBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource ControlBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid Background="{DynamicResource WindowBrush}">
+        <Grid RowDefinitions="Auto,*">
+            <Grid Grid.Row="0"
+                  Margin="10"
+                  RowDefinitions="Auto,Auto"
+                  RowSpacing="4">
+                <Grid Margin="9,0">
+                    <TextBlock FontWeight="Bold"
+                               Text="Expression" />
+                </Grid>
+                <Grid Grid.Row="1"
+                      Margin="9,0,0,0"
+                      ColumnDefinitions="*,Auto"
+                      ColumnSpacing="8">
+                    <TextBox Grid.Row="1"
+                             Classes="codeBox"
+                             Height="32"
+                             HorizontalContentAlignment="Left"
+                             Text="{Binding Expression.ExpressionText, Mode=TwoWay}" />
+                    <Button Grid.Column="1"
+                            Classes="primary"
+                            Margin="9,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Command="{Binding EvaluateCommand}"
+                            Content="Evaluate" />
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Row="1"
+                  Margin="10,0,10,10"
+                  ColumnDefinitions="*,*"
+                  RowDefinitions="*"
+                  ColumnSpacing="8">
+                <Border Classes="panel">
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,Auto"
+                              Margin="0,0,0,6">
+                            <TextBlock Classes="panelCaption"
+                                       Margin="0"
+                                       VerticalAlignment="Center"
+                                       Text="Parameters" />
+                            <Button Grid.Column="1"
+                                    Command="{Binding Variables.AddVariableCommand}"
+                                    Content="Add" />
+                        </Grid>
+                        <views:VariablesGridView Grid.Row="1"
+                                                 DataContext="{Binding Variables}" />
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="1" Classes="panel">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <TextBlock Classes="panelCaption" Text="History" />
+                        <views:HistoryView Grid.Row="1" DataContext="{Binding History}" />
+                        <Grid Grid.Row="2"
+                              Margin="0,8,0,0"
+                              RowDefinitions="Auto,Auto"
+                              RowSpacing="4"
+                              HorizontalAlignment="Right">
+                            <TextBlock Text="Theme" />
+                            <ComboBox Grid.Row="1"
+                                      Width="120"
+                                      Height="28"
+                                      ItemsSource="{Binding Themes}"
+                                      SelectedItem="{Binding SelectedTheme, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="ThemeVariant">
+                                        <TextBlock Text="{Binding Key}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

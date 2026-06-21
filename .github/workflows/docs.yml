@@ -1,4 +1,4 @@
-name: Publish to DocFX
+name: Publish Docs and Showcase
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 jobs:
-  publish-docs:
+  publish-pages:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -35,10 +35,25 @@ jobs:
           docfx metadata
           docfx build
 
+      - name: Restore Avalonia Showcase Workloads
+        run: dotnet workload restore example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj
+
+      - name: Build Avalonia Showcase
+        run: dotnet build example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj --configuration Release
+
+      - name: Stage GitHub Pages artifact
+        run: |
+          rm -rf artifacts/pages
+          mkdir -p artifacts/pages/showcase
+          cp -a docs/_site/. artifacts/pages/
+          cp -a example/NCalc.Playground/NCalc.Playground.Browser/wwwroot/. artifacts/pages/showcase/
+          cp -a example/NCalc.Playground/NCalc.Playground.Browser/bin/Release/net10.0-browser/wwwroot/. artifacts/pages/showcase/
+          touch artifacts/pages/.nojekyll
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'docs/_site'
+          path: artifacts/pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

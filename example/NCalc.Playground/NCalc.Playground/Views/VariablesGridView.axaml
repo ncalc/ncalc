@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NCalc.Playground.ViewModels"
+             x:Class="NCalc.Playground.Views.VariablesGridView"
+             x:Name="Root"
+             x:DataType="vm:VariablesGridViewModel">
+    <Grid>
+        <DataGrid AutoGenerateColumns="False"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="False"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  ItemsSource="{Binding Variables}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name"
+                                    Width="1.1*"
+                                    Binding="{Binding Name, Mode=TwoWay}" />
+                <DataGridTextColumn Header="Value"
+                                    Width="1.4*"
+                                    Binding="{Binding ValueText, Mode=TwoWay}" />
+                <DataGridTemplateColumn Header=""
+                                        Width="74">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="vm:VariableRowViewModel">
+                            <Button HorizontalAlignment="Stretch"
+                                    Command="{Binding #Root.DataContext.RemoveVariableCommand}"
+                                    CommandParameter="{Binding}"
+                                    Content="Remove" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

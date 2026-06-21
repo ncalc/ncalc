@@ -6,3 +6,6 @@
   icon: fa-solid fa-code
   href: api/
   homepage: api/NCalc.html
+- name: Playground
+  icon: fa-solid fa-play
+  href: https://ncalc.github.io/playground

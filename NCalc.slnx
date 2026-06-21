@@ -51,8 +51,18 @@
   </Folder>
   <Folder Name="/3. Tests and Examples/">
     <Project Path="test/NCalc.Benchmarks/NCalc.Benchmarks.csproj" />
-    <Project Path="test/NCalc.Play/NCalc.Play.csproj" />
     <Project Path="test/NCalc.Tests/NCalc.Tests.csproj" />
+  </Folder>
+  <Folder Name="/3. Tests and Examples/Playground/">
+    <Project Path="example\NCalc.Playground\NCalc.Playground.Browser\NCalc.Playground.Browser.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
+    <Project Path="example\NCalc.Playground\NCalc.Playground.Desktop\NCalc.Playground.Desktop.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
+    <Project Path="example\NCalc.Playground\NCalc.Playground\NCalc.Playground.csproj">
+      <BuildType Solution="SignedRelease|*" Project="Debug" />
+    </Project>
   </Folder>
   <Folder Name="/4. Source Generators/">
     <Project Path="src/NCalc.SourceGenerators/NCalc.SourceGenerators.csproj">
