@@ -41,28 +41,34 @@
         <Grid RowDefinitions="Auto,*">
             <Grid Grid.Row="0"
                   Margin="10"
-                  ColumnDefinitions="*,Auto"
-                  ColumnSpacing="8">
-                <Grid RowDefinitions="Auto,Auto"
-                      RowSpacing="4">
+                  RowDefinitions="Auto,Auto"
+                  RowSpacing="4">
+                <Grid Margin="9,0">
                     <TextBlock FontWeight="Bold"
                                Text="Expression" />
+                </Grid>
+                <Grid Grid.Row="1"
+                      Margin="9,0,0,0"
+                      ColumnDefinitions="*,Auto"
+                      ColumnSpacing="8">
                     <TextBox Grid.Row="1"
                              Classes="codeBox"
                              Height="32"
                              HorizontalContentAlignment="Left"
                              Text="{Binding Expression.ExpressionText, Mode=TwoWay}" />
+                    <Button Grid.Column="1"
+                            Classes="primary"
+                            Margin="9,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Command="{Binding EvaluateCommand}"
+                            Content="Evaluate" />
                 </Grid>
-                <Button Grid.Column="1"
-                        Classes="primary"
-                        VerticalAlignment="Bottom"
-                        Command="{Binding EvaluateCommand}"
-                        Content="Evaluate" />
             </Grid>
 
             <Grid Grid.Row="1"
                   Margin="10,0,10,10"
-                  ColumnDefinitions="2*,1*"
+                  ColumnDefinitions="*,*"
                   RowDefinitions="*"
                   ColumnSpacing="8">
                 <Border Classes="panel">
