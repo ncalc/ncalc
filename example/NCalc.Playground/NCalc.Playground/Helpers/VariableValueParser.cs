@@ -12,6 +12,9 @@ public static class VariableValueParser
         if (value.Length == 0)
             return "";
 
+        if (IsQuoted(value))
+            return value[1..^1];
+
         if (value.Equals("null", StringComparison.OrdinalIgnoreCase))
             return null;
 
@@ -23,9 +26,6 @@ public static class VariableValueParser
 
         if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue))
             return decimalValue;
-
-        if (IsQuoted(value))
-            return value[1..^1];
 
         return value;
     }

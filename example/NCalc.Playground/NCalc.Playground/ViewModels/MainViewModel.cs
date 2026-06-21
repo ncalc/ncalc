@@ -2,11 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
 using Classic.Avalonia.Theme;
-using Classic.CommonControls.Dialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NCalc.Playground.Helpers;
@@ -52,14 +49,6 @@ public sealed partial class MainViewModel : ViewModelBase
             evaluation.ValueType,
             evaluation.HasError,
             parameters));
-
-        var owner =
-            (Application.Current?.ApplicationLifetime
-                as IClassicDesktopStyleApplicationLifetime)?
-            .MainWindow;
-
-        if (owner != null && evaluation.HasError)
-            await MessageBox.ShowDialog(owner, evaluation.Value, evaluation.ValueType, MessageBoxButtons.Ok, MessageBoxIcon.Error);
     }
 
 
