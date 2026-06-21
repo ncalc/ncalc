@@ -4,6 +4,7 @@
         <OutputType>Exe</OutputType>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Nullable>enable</Nullable>
+        <PublishTrimmed>false</PublishTrimmed>
     </PropertyGroup>
 
     <ItemGroup>
