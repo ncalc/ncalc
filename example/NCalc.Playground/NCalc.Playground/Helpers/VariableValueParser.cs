@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace NCalc.Playground.Helpers;
 
-public sealed class VariableValueParser
+public static class VariableValueParser
 {
     public static object? Parse(string value)
     {
