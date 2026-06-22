@@ -1,3 +1,9 @@
+# 6.3.0
+* Refactor: Restore dedicated sync evaluation path due reported performance regression by @gumbarros in https://github.com/ncalc/ncalc/pull/577
+* Refactor cancellation token usage by @gumbarros in https://github.com/ncalc/ncalc/pull/579
+* Add GetBuiltInFunctionNames method by @george-domingos in https://github.com/ncalc/ncalc/pull/581
+* Move 'if', 'in' functions to the top of Evaluate and EvaluateAsync in BultiIn by @george-domingos in https://github.com/ncalc/ncalc/pull/582
+
 # 6.2.0
 * Feature/evaluate binary handler by @george-domingos in https://github.com/ncalc/ncalc/pull/576
 
