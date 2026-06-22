@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using NCalc.Exceptions;
 using NCalc.Handlers;
 
@@ -5,6 +6,35 @@ namespace NCalc.Helpers;
 
 public static class BuiltInFunctionHelper
 {
+    private static readonly IReadOnlyList<string> _builtInFunctionNames =
+        new ReadOnlyCollection<string>([
+            "abs",
+            "acos",
+            "asin",
+            "atan",
+            "atan2",
+            "ceiling",
+            "cos",
+            "exp",
+            "floor",
+            "ieeeremainder",
+            "ln",
+            "log",
+            "log10",
+            "pow",
+            "round",
+            "sign",
+            "sqrt",
+            "tan",
+            "truncate",
+            "max",
+            "min",
+            "if",
+            "in",
+            "ifs"
+        ]);
+    public static IReadOnlyList<string> GetBuiltInFunctionNames() => _builtInFunctionNames;
+
     public static object? Evaluate(
         string functionName,
         FunctionData functionData)
