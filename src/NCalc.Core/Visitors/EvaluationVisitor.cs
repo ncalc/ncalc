@@ -88,11 +88,16 @@ public class EvaluationVisitor(ExpressionContext context, CancellationToken canc
 
     public virtual object? Visit(LogicalExpressionList list)
     {
-        List<object?> result = [];
+        if (list.Count == 0) return Array.Empty<object?>();
 
-        foreach (var value in list)
+        var expressions = list.AsSpan();
+        var listCount = expressions.Length;
+
+        var result = new object?[listCount];
+
+        for (var index = 0; index < listCount; index++)
         {
-            result.Add(value.Accept(this));
+            result[index] = expressions[index].Accept(this);
         }
 
         return result;

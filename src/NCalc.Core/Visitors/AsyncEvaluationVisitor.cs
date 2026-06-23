@@ -101,11 +101,14 @@ public class AsyncEvaluationVisitor(ExpressionContext context, CancellationToken
 
     public virtual async Task<object?> Visit(LogicalExpressionList list)
     {
-        List<object?> result = [];
+        if (list.Count == 0) return Array.Empty<object?>();
 
-        foreach (var value in list)
+        var listCount = list.Count;
+        var result = new object?[listCount];
+
+        for (var index = 0; index < listCount; index++)
         {
-            result.Add(await EvaluateAsync(value));
+            result[index] = await EvaluateAsync(list[index]);
         }
 
         return result;
