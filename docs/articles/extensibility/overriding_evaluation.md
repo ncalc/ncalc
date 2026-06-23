@@ -10,22 +10,22 @@ By creating a custom evaluation visitor, you can modify how specific expressions
 overrides the behavior of value expressions, returning a special string when encountering the number `42`:
 
 ```csharp
-private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
+private class CustomVisitor(ExpressionContext context, CancellationToken cancellationToken) : EvaluationVisitor(context, cancellationToken)
 {
-    public override object? Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+    public override object? Visit(ValueExpression expression)
     {
         // My custom behavior.
         if(expression.Value is 42)
             return "The answer";
 
         // Use the normal behavior.
-        return base.Visit(expression, cancellationToken);
+        return base.Visit(expression);
     }
 }
 
-private class CustomAsyncVisitor(ExpressionContext context) : AsyncEvaluationVisitor(context)
+private class CustomAsyncVisitor(ExpressionContext context, CancellationToken cancellationToken) : AsyncEvaluationVisitor(context, cancellationToken)
 {
-    public override Task<object?> Visit(ValueExpression expression, CancellationToken cancellationToken = default)
+    public override Task<object?> Visit(ValueExpression expression)
     {
         // My custom behavior.
         if(expression.Value is 42)
@@ -42,7 +42,7 @@ private class CustomAsyncVisitor(ExpressionContext context) : AsyncEvaluationVis
 To integrate the custom visitor with NCalc, inherit from `Expression` and override the visitor creation method:
 
 ```csharp
-private class CustomExpression(
+internal class CustomExpression(
     string expression,
     ExpressionContext context,
     ILogicalExpressionFactory logicalExpressionFactory,
@@ -75,7 +75,7 @@ private class CustomExpression(
 Use a custom implementation of <xref:NCalc.Factories.IExpressionFactory> to return your custom expression type:
 
 ```csharp
-private class CustomExpressionFactory(
+internal class CustomExpressionFactory(
     ILogicalExpressionFactory logicalExpressionFactory,
     ILogicalExpressionCache cache) : IExpressionFactory
 {
@@ -97,6 +97,3 @@ Register the factory with dependency injection:
 services.AddNCalc()
         .WithExpressionFactory<CustomExpressionFactory>();
 ```
-
-By overriding the evaluation visitor, you gain complete control over how expressions are interpreted and processed,
-enabling customization to fit specific application needs.
