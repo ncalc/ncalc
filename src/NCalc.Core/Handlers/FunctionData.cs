@@ -10,7 +10,7 @@ public class FunctionData(
     ILogicalExpressionVisitor<object?> syncVisitor,
     ILogicalExpressionVisitor<Task<object?>>? asyncVisitor,
     CancellationToken cancellationToken)
-    : IList<LogicalExpression>
+    : IReadOnlyList<LogicalExpression>
 {
     private LogicalExpressionList Arguments { get; } = arguments;
     private ILogicalExpressionVisitor<object?> SyncVisitor { get; } = syncVisitor;
@@ -21,11 +21,7 @@ public class FunctionData(
     public ExpressionContext Context { get; } = context;
     public CancellationToken CancellationToken { get; } = cancellationToken;
 
-    public LogicalExpression this[int index]
-    {
-        get => Arguments[index];
-        set => Arguments[index] = value;
-    }
+    public LogicalExpression this[int index] => Arguments[index];
 
     public Task<object?> EvaluateAsync(int index)
     {
@@ -40,35 +36,7 @@ public class FunctionData(
     {
         return Arguments[index].Accept(SyncVisitor);
     }
-
-    public void Add(LogicalExpression item) => Arguments.Add(item);
-
-    public void Clear() => Arguments.Clear();
-
-    public bool Contains(LogicalExpression item) => Arguments.Contains(item);
-
-    public void CopyTo(LogicalExpression[] array, int arrayIndex) => Arguments.CopyTo(array, arrayIndex);
-
-    public bool Remove(LogicalExpression item) => Arguments.Remove(item);
-
     public int Count => Arguments.Count;
-
-    public bool IsReadOnly => Arguments.IsReadOnly;
-
-    public int IndexOf(LogicalExpression item)
-    {
-        return Arguments.IndexOf(item);
-    }
-
-    public void Insert(int index, LogicalExpression item)
-    {
-        Arguments.Insert(index, item);
-    }
-
-    public void RemoveAt(int index)
-    {
-        Arguments.RemoveAt(index);
-    }
 
     public IEnumerator<LogicalExpression> GetEnumerator()
     {

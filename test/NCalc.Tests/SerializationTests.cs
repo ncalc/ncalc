@@ -92,15 +92,15 @@ public class SerializationTests
     [Test]
     public async Task Function_Serialization_Test()
     {
-        await Assert.That(new Function(new Identifier("test"), [
+        await Assert.That(new Function(new Identifier("test"), new LogicalExpressionList([
             new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false)),
             new UnaryExpression(UnaryExpressionType.Negate,
                 new BinaryExpression(BinaryExpressionType.And, new ValueExpression(true), new ValueExpression(false)))
-        ]).ToExpressionString()).IsEqualTo("test(True and False, -(True and False))");
+        ])).ToExpressionString()).IsEqualTo("test(True and False, -(True and False))");
 
-        await Assert.That(new Function(new Identifier("Sum"), [
+        await Assert.That(new Function(new Identifier("Sum"), new LogicalExpressionList([
             new BinaryExpression(BinaryExpressionType.Plus, new ValueExpression(1), new ValueExpression(2))
-        ]).ToExpressionString()).IsEqualTo("Sum(1 + 2)");
+        ])).ToExpressionString()).IsEqualTo("Sum(1 + 2)");
     }
 
     [Test]
