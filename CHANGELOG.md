@@ -1,3 +1,6 @@
+# 6.3.1
+* Changed `LogicalExpressionList` to implement `IReadOnlyList` instead of `IList` for improved performance by @george-domingos in https://github.com/ncalc/ncalc/pull/585
+
 # 6.3.0
 * Refactor: Restore dedicated sync evaluation path due reported performance regression by @gumbarros in https://github.com/ncalc/ncalc/pull/577
 * Refactor cancellation token usage by @gumbarros in https://github.com/ncalc/ncalc/pull/579
