@@ -60,6 +60,7 @@ public static class ServiceCollectionExtensions
         private void AddFactories()
         {
             services.AddScoped<IExpressionFactory, ExpressionFactory>();
+            services.AddScoped<IEvaluationVisitorFactory, EvaluationVisitorFactory>();
 
             services.AddSingleton<ILogicalExpressionFactory>(_ => LogicalExpressionFactory.GetInstance());
         }

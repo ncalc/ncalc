@@ -116,39 +116,43 @@ public class Expression
     public Exception? Error { get; private set; }
     private ILogicalExpressionCache LogicalExpressionCache { get; }
     private ILogicalExpressionFactory LogicalExpressionFactory { get; }
+    protected internal IEvaluationVisitorFactory? EvaluationVisitorFactory { get; private set; }
 
-    protected Expression(ExpressionContext? context = null)
+    protected Expression(ExpressionContext? context = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null)
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
         LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
         Context = context ?? new ExpressionContext();
+        EvaluationVisitorFactory = evaluationVisitorFactory;
     }
 
     public Expression(
         string expressionString,
         ExpressionContext context,
         ILogicalExpressionFactory logicalExpressionFactory,
-        ILogicalExpressionCache logicalExpressionCache)
+        ILogicalExpressionCache logicalExpressionCache,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+        : this(context, evaluationVisitorFactory)
     {
         ExpressionString = expressionString;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
-        Context = context;
     }
 
     public Expression(
         LogicalExpression logicalExpression,
         ExpressionContext context,
         ILogicalExpressionFactory logicalExpressionFactory,
-        ILogicalExpressionCache logicalExpressionCache)
+        ILogicalExpressionCache logicalExpressionCache,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+        : this(context, evaluationVisitorFactory)
     {
         LogicalExpression = logicalExpression;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
-        Context = context;
     }
 
-    public Expression(string? expression, ExpressionContext? context = null) : this(context)
+    public Expression(string? expression, ExpressionContext? context = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(context, evaluationVisitorFactory)
     {
         ExpressionString = expression;
     }
@@ -160,11 +164,12 @@ public class Expression
     }
 
     public Expression(string? expression, ExpressionOptions options = ExpressionOptions.None,
-        CultureInfo? cultureInfo = null) : this(expression, new ExpressionContext(options, cultureInfo))
+        CultureInfo? cultureInfo = null,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(expression, new ExpressionContext(options, cultureInfo), evaluationVisitorFactory)
     {
     }
 
-    public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null) : this(context)
+    public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(context, evaluationVisitorFactory)
     {
         LogicalExpression = logicalExpression ?? throw new
             ArgumentException("Expression can't be null", nameof(logicalExpression));
@@ -177,18 +182,26 @@ public class Expression
     }
 
     public Expression(LogicalExpression logicalExpression, ExpressionOptions options = ExpressionOptions.None,
-        CultureInfo? cultureInfo = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo))
+        CultureInfo? cultureInfo = null,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo), evaluationVisitorFactory)
     {
     }
 
     protected virtual EvaluationVisitor CreateEvaluationVisitor(CancellationToken cancellationToken = default)
     {
-        return new EvaluationVisitor(Context, cancellationToken);
+        return EvaluationVisitorFactory?.CreateEvaluationVisitor(Context, cancellationToken)
+               ?? new EvaluationVisitor(Context, cancellationToken);
     }
 
     protected virtual AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(CancellationToken cancellationToken = default)
     {
-        return new AsyncEvaluationVisitor(Context, cancellationToken);
+        return EvaluationVisitorFactory?.CreateAsyncEvaluationVisitor(Context, cancellationToken)
+               ?? new AsyncEvaluationVisitor(Context, cancellationToken);
+    }
+
+    internal void SetEvaluationVisitorFactory(IEvaluationVisitorFactory? evaluationVisitorFactory)
+    {
+        EvaluationVisitorFactory ??= evaluationVisitorFactory;
     }
 
     /// <summary>

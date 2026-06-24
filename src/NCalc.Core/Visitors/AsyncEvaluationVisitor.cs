@@ -8,9 +8,16 @@ namespace NCalc.Visitors;
 /// Class responsible to asynchronous evaluating <see cref="LogicalExpression"/> objects into CLR objects.
 /// </summary>
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
-public class AsyncEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<Task<object?>>
+public class AsyncEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default, NCalc.Factories.IEvaluationVisitorFactory? evaluationVisitorFactory = null) : ILogicalExpressionVisitor<Task<object?>>
 {
     protected CancellationToken CancellationToken { get; } = cancellationToken;
+    protected NCalc.Factories.IEvaluationVisitorFactory? EvaluationVisitorFactory { get; } = evaluationVisitorFactory;
+
+    protected EvaluationVisitor CreateEvaluationVisitor()
+    {
+        return EvaluationVisitorFactory?.CreateEvaluationVisitor(context, CancellationToken)
+               ?? new EvaluationVisitor(context, CancellationToken);
+    }
 
     public virtual async Task<object?> Visit(TernaryExpression expression)
     {
@@ -27,7 +34,7 @@ public class AsyncEvaluationVisitor(ExpressionContext context, CancellationToken
 
     public virtual async Task<object?> Visit(BinaryExpression expression)
     {
-        var binaryEventArgs = new BinaryEventArgs(expression, new EvaluationVisitor(context, CancellationToken), this, CancellationToken);
+        var binaryEventArgs = new BinaryEventArgs(expression, CreateEvaluationVisitor(), this, CancellationToken);
         await OnEvaluateBinaryAsync(binaryEventArgs);
 
         if (binaryEventArgs.HasResult)
@@ -64,7 +71,7 @@ public class AsyncEvaluationVisitor(ExpressionContext context, CancellationToken
         // Some parameters shouldn't be called, for instance, in a if(), the "not" value might be a division by zero
         // Evaluating every value could produce unexpected behaviour
         var functionName = function.Identifier.Name;
-        var syncEvaluationVisitor = new EvaluationVisitor(context, CancellationToken);
+        var syncEvaluationVisitor = CreateEvaluationVisitor();
         var functionData = new FunctionData(
             function.Identifier.Id,
             function.Parameters,
@@ -90,7 +97,7 @@ public class AsyncEvaluationVisitor(ExpressionContext context, CancellationToken
 
     public virtual async Task<object?> Visit(Identifier identifier)
     {
-        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, CancellationToken);
+        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, CancellationToken, EvaluationVisitorFactory);
 
         return value is Expression expression
             ? await expression.EvaluateAsync(CancellationToken)

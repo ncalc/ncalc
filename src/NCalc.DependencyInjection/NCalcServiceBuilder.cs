@@ -33,6 +33,17 @@ public class NCalcServiceBuilder(IServiceCollection services)
         return this;
     }
 
+    public NCalcServiceBuilder WithEvaluationVisitorFactory<
+        #if NET
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        #endif
+        TEvaluationVisitorFactory>()
+        where TEvaluationVisitorFactory : class, IEvaluationVisitorFactory
+    {
+        Services.ReplaceScoped<IEvaluationVisitorFactory, TEvaluationVisitorFactory>();
+        return this;
+    }
+
     public NCalcServiceBuilder WithLogicalExpressionFactory<
         #if NET
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
