@@ -8,7 +8,7 @@ public static class EvaluationHelper
     {
         try
         {
-            var parameters = BuildParameters(variables);
+            var parameters = BuildParameters(variables, options);
             var expression = new Expression(expressionText, options, CultureInfo.InvariantCulture);
 
             foreach (var (name, value) in parameters)
@@ -31,20 +31,25 @@ public static class EvaluationHelper
         }
     }
 
-    private static Dictionary<string, object?> BuildParameters(IEnumerable<VariableInput> variables)
+    private static Dictionary<string, object?> BuildParameters(IEnumerable<VariableInput> variables, ExpressionOptions options)
     {
         var parameters = new Dictionary<string, object?>(StringComparer.Ordinal);
 
-        foreach (var variable in variables)
+        foreach (var (name, value) in variables)
         {
-            var name = variable.Name.Trim();
-            if (name.Length == 0 && variable.ValueText.Trim().Length == 0)
+            var normalizedName = name.Trim();
+            if (normalizedName.Length == 0 && value.Trim().Length == 0)
                 continue;
 
-            if (!IdentifierValidator.IsValid(name))
-                throw new InvalidOperationException($"'{variable.Name}' is not a valid variable name.");
+            if (!IdentifierValidator.IsValid(normalizedName))
+                throw new InvalidOperationException($"'{name}' is not a valid variable name.");
 
-            parameters[name] = VariableValueParser.Parse(variable.ValueText);
+            var hasNumbers = value.Any(char.IsDigit);
+
+            if(hasNumbers)
+                parameters[normalizedName] = new Expression(value, options).Evaluate();
+            else
+                parameters[normalizedName] = value;
         }
 
         return parameters;
