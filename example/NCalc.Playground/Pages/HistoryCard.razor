@@ -1,0 +1,74 @@
+<div class="card h-100">
+    <div class="card-header d-flex align-items-center justify-content-between gap-2 bg-body-tertiary">
+        <h2 class="h6 fw-semibold mb-0 d-inline-flex align-items-center gap-2">
+            <i class="bi bi-clock-history" aria-hidden="true"></i>
+            <span>History</span>
+        </h2>
+        <button class="btn btn-sm btn-outline-secondary" type="button" @onclick="OnClear" disabled="@(History.Count == 0)">
+            <span>Clear history</span>
+        </button>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive playground-table">
+            <table class="table table-sm table-hover align-middle mb-0 history-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Expression</th>
+                        <th scope="col">Result</th>
+                        <th class="type-column" scope="col">Type</th>
+                        <th class="status-column text-center" scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (History.Count == 0)
+                    {
+                        <tr>
+                            <td class="text-body-secondary py-4 text-center" colspan="4">No evaluations yet.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in History)
+                        {
+                            <tr @key="item"
+                                class="history-row @(ReferenceEquals(item, SelectedItem) ? "table-active" : "")"
+                                title="@item.OriginalExpressionString"
+                                @onclick="() => OnApply.InvokeAsync(item)">
+                                <td class="text-truncate history-expression">@item.Expression</td>
+                                <td class="text-truncate">@item.Result</td>
+                                <td class="font-monospace">@item.ReturnType</td>
+                                <td class="text-center align-middle">
+                                    <span class="badge rounded-pill @(item.HasError ? "text-bg-danger" : "text-bg-success")">
+                                        @if (item.HasError)
+                                        {
+                                            <span class="bi bi-x"></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="bi bi-check"></span>
+                                        }
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<EvaluationHistoryItem> History { get; set; } = [];
+
+    [Parameter]
+    public EvaluationHistoryItem? SelectedItem { get; set; }
+
+    [Parameter]
+    public EventCallback<EvaluationHistoryItem> OnApply { get; set; }
+
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+}

@@ -88,7 +88,8 @@ public class EvaluationVisitor(ExpressionContext context, CancellationToken canc
 
     public virtual object? Visit(LogicalExpressionList list)
     {
-        if (list.Count == 0) return Array.Empty<object?>();
+        if (list.Count == 0)
+            return Array.Empty<object?>();
 
         var expressions = list.AsSpan();
         var listCount = expressions.Length;
@@ -101,11 +102,6 @@ public class EvaluationVisitor(ExpressionContext context, CancellationToken canc
         }
 
         return result;
-    }
-
-    protected bool Compare(object? a, object? b, ComparisonType comparisonType)
-    {
-        return EvaluationVisitorHelper.Compare(a, b, comparisonType, context);
     }
 
     protected void OnEvaluateFunction(string name, FunctionEventArgs args)

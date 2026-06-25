@@ -1,0 +1,53 @@
+<div class="card">
+    <div class="card-body">
+        <EditForm Model="this" OnSubmit="HandleSubmit">
+            <label class="form-label fw-semibold d-inline-flex align-items-center gap-2" for="expressionInput">
+                <i class="bi bi-pencil" aria-hidden="true"></i>
+                <span>Expression</span>
+            </label>
+            <div class="input-group expression-row">
+                <InputText id="expressionInput"
+                           class="@ExpressionInputClass"
+                           @bind-Value="_currentExpressionText"
+                           autocomplete="off"
+                           aria-invalid="@HasError" />
+                <button class="btn btn-primary fw-semibold px-4" type="submit">
+                    <span class="bi bi-play-circle-fill bi-lg"></span>
+                    Evaluate
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string ExpressionText { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> OnEvaluate { get; set; }
+
+    [Parameter]
+    public bool HasError { get; set; }
+
+    private string _currentExpressionText = string.Empty;
+    private string _previousExpressionText = string.Empty;
+
+    private string ExpressionInputClass => HasError
+        ? "form-control font-monospace is-invalid"
+        : "form-control font-monospace";
+
+    protected override void OnParametersSet()
+    {
+        if (ExpressionText == _previousExpressionText)
+            return;
+
+        _currentExpressionText = ExpressionText;
+        _previousExpressionText = ExpressionText;
+    }
+
+    private Task HandleSubmit(EditContext _)
+    {
+        return OnEvaluate.InvokeAsync(_currentExpressionText);
+    }
+}

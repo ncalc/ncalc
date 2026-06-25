@@ -1,0 +1,26 @@
+@page "/"
+
+<PageTitle>NCalc Playground</PageTitle>
+
+<div class="playground-shell min-vh-100">
+    <main class="container-fluid py-4">
+        <div class="vstack gap-3">
+            <ExpressionCard ExpressionText="@_expressionText"
+                            HasError="@(_selectedHistoryItem?.HasError == true)"
+                            OnEvaluate="Evaluate" />
+
+            <div class="row g-3 playground-panels">
+                <section class="col-12 col-lg-5">
+                    <ParametersCard Variables="_variables" OnAdd="AddVariable" OnRemove="RemoveVariable" />
+                </section>
+
+                <section class="col-12 col-lg-7">
+                    <HistoryCard History="_history"
+                                 SelectedItem="_selectedHistoryItem"
+                                 OnApply="ApplyHistoryItem"
+                                 OnClear="ClearHistory" />
+                </section>
+            </div>
+        </div>
+    </main>
+</div>

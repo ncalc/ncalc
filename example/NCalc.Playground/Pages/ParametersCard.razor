@@ -1,0 +1,55 @@
+<div class="card h-100">
+    <div class="card-header d-flex align-items-center justify-content-between gap-2 bg-body-tertiary">
+        <h2 class="h6 fw-semibold mb-0 d-inline-flex align-items-center gap-2"><i class="bi bi-tools" aria-hidden="true"></i><span>Parameters</span></h2>
+        <button class="btn btn-sm btn-outline-primary" type="button" @onclick="OnAdd">Add parameter</button>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive playground-table">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Value</th>
+                        <th class="action-column text-center" scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var variable in Variables)
+                    {
+                        <tr @key="variable">
+                            <td>
+                                <InputText class="form-control form-control-sm font-monospace"
+                                           @bind-Value="variable.Name"
+                                           autocomplete="off" />
+                            </td>
+                            <td>
+                                <InputText class="form-control form-control-sm font-monospace"
+                                           @bind-Value="variable.ValueText"
+                                           autocomplete="off" />
+                            </td>
+                            <td class="text-center align-middle">
+                                <button class="btn btn-link btn-sm p-0 text-danger"
+                                        type="button"
+                                        @onclick="() => OnRemove.InvokeAsync(variable)">
+                                    <span class="bi bi-trash-fill"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<VariableRow> Variables { get; set; } = [];
+
+    [Parameter]
+    public EventCallback OnAdd { get; set; }
+
+    [Parameter]
+    public EventCallback<VariableRow> OnRemove { get; set; }
+}

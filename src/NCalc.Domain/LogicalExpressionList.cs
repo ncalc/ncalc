@@ -4,27 +4,27 @@ namespace NCalc;
 
 public sealed class LogicalExpressionList : LogicalExpression, IReadOnlyList<LogicalExpression>
 {
-    private readonly LogicalExpression[] _list;
+    private readonly LogicalExpression[] _logicalExpressions;
 
     public LogicalExpressionList()
     {
-        _list = [];
+        _logicalExpressions = [];
     }
 
     public LogicalExpressionList(IReadOnlyList<LogicalExpression> values)
     {
-        _list = values.ToArray();
+        _logicalExpressions = values.ToArray();
     }
 
-    public int Count => _list.Length;
+    public int Count => _logicalExpressions.Length;
 
-    public Span<LogicalExpression> AsSpan() => _list.AsSpan();
+    public Span<LogicalExpression> AsSpan() => _logicalExpressions.AsSpan();
 
-    public LogicalExpression this[int index] => _list[index];
+    public LogicalExpression this[int index] => _logicalExpressions[index];
 
     public IEnumerator<LogicalExpression> GetEnumerator()
     {
-        return ((IEnumerable<LogicalExpression>)_list).GetEnumerator();
+        return ((IEnumerable<LogicalExpression>)_logicalExpressions).GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()

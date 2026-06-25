@@ -34,13 +34,13 @@ jobs:
           docfx metadata
           docfx build
 
-      - name: Restore Avalonia Playground Workloads
+      - name: Restore Playground Workloads
         run: |
           dotnet workload install wasm-tools
-          dotnet workload restore example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj
+          dotnet workload restore example/NCalc.Playground/NCalc.Playground/NCalc.Playground.csproj
 
-      - name: Publish Avalonia Playground
-        run: dotnet publish example/NCalc.Playground/NCalc.Playground.Browser/NCalc.Playground.Browser.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
+      - name: Publish Playground
+        run: dotnet publish example/NCalc.Playground/NCalc.Playground.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
 
       - name: Stage GitHub Pages artifact
         run: |
