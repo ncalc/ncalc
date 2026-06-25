@@ -1,6 +1,3 @@
-using System;
-using System.Globalization;
-
 namespace NCalc.Playground.Helpers;
 
 public static class VariableValueParser

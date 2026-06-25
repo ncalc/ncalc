@@ -1,13 +1,12 @@
-using System.Collections.Generic;
-using NCalc;
-
 namespace NCalc.Playground.Models;
 
-public sealed record EvaluationHistoryItem(
-    string Expression,
-    string OriginalExpressionString,
-    string Result,
-    string ReturnType,
-    bool HasError,
-    IReadOnlyList<VariableInput> Parameters,
-    ExpressionOptions Options);
+public class EvaluationHistoryItem
+{
+    public required string Expression { get; init; }
+    public required string OriginalExpressionString { get; init; }
+    public required object? Result { get; init; }
+    public required Type ReturnType { get; init; }
+    public required bool HasError { get; init; }
+    public required IReadOnlyList<VariableInput> Parameters { get; init; }
+    public required ExpressionOptions Options { get; init; }
+}

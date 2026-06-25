@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using NCalc;
 using NCalc.Playground.Helpers;
 using NCalc.Playground.Models;
@@ -7,6 +9,9 @@ namespace NCalc.Playground.Pages;
 public partial class Home
 {
     private const int MaximumHistoryItems = 20;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = default!;
 
     private readonly List<VariableRow> _variables =
     [
@@ -29,14 +34,16 @@ public partial class Home
             .ConvertAll(variable => new VariableInput(variable.Name, variable.ValueText)) ;
 
         var evaluation = EvaluationHelper.Evaluate(_expressionText, parameters, _selectedOptions);
-        var item = new EvaluationHistoryItem(
-            evaluation.ExpressionString,
-            _expressionText,
-            evaluation.Value,
-            evaluation.ValueType,
-            evaluation.HasError,
-            parameters,
-            _selectedOptions);
+        var item = new EvaluationHistoryItem
+        {
+            Expression = evaluation.ExpressionString,
+            OriginalExpressionString = _expressionText,
+            Result = evaluation.Value,
+            ReturnType = evaluation.Type,
+            HasError = evaluation.HasError,
+            Parameters = parameters,
+            Options = _selectedOptions
+        };
 
         _history.Insert(0, item);
         _selectedHistoryItem = item;
@@ -69,5 +76,10 @@ public partial class Home
 
         _variables.Clear();
         _variables.AddRange(item.Parameters.Select(parameter => new VariableRow(parameter.Name, parameter.ValueText)));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JsRuntime.InvokeVoidAsync("bootstrapPlayground.initializeTooltips");
     }
 }

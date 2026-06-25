@@ -17,14 +17,13 @@
                         <th scope="col">Expression</th>
                         <th scope="col">Result</th>
                         <th class="type-column" scope="col">Type</th>
-                        <th class="status-column text-center" scope="col">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (History.Count == 0)
                     {
                         <tr>
-                            <td class="text-body-secondary py-4 text-center" colspan="4">No evaluations yet.</td>
+                            <td class="text-body-secondary py-4 text-center" colspan="3">No evaluations yet.</td>
                         </tr>
                     }
                     else
@@ -33,22 +32,60 @@
                         {
                             <tr @key="item"
                                 class="history-row @(ReferenceEquals(item, SelectedItem) ? "table-active" : "")"
-                                title="@item.OriginalExpressionString"
                                 @onclick="() => OnApply.InvokeAsync(item)">
-                                <td class="text-truncate history-expression">@item.Expression</td>
-                                <td class="text-truncate">@item.Result</td>
-                                <td class="font-monospace">@item.ReturnType</td>
-                                <td class="text-center align-middle">
-                                    <span class="badge rounded-pill @(item.HasError ? "text-bg-danger" : "text-bg-success")">
-                                        @if (item.HasError)
-                                        {
-                                            <span class="bi bi-x"></span>
-                                        }
-                                        else
-                                        {
-                                            <span class="bi bi-check"></span>
-                                        }
-                                    </span>
+                                <td class="text-truncate history-expression">
+                                    @if (!string.Equals(item.Expression, item.OriginalExpressionString, StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        <span
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            data-bs-container="body"
+                                            title="@item.OriginalExpressionString"
+                                            >@item.Expression</span>
+                                    }
+                                    else
+                                    {
+                                        @item.Expression
+                                    }
+                                </td>
+                                <td class="text-truncate">
+                                    @switch (item.Result)
+                                    {
+                                        case true:
+                                            <span class="font-monospace text-success">True</span>
+                                            break;
+                                        case bool:
+                                            <span class="font-monospace text-danger">False</span>
+                                            break;
+                                        case null:
+                                            <span class="font-monospace text-muted">null</span>
+                                            break;
+                                        case string:
+                                            <span class="font-monospace text-muted">"@item.Result"</span>
+                                            break;
+                                        case IFormattable formattable:
+                                            @formattable.ToString(null, CultureInfo.InvariantCulture)
+                                            break;
+                                        default:
+                                            @item.Result?.ToString()
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.HasError)
+                                    {
+                                        <span class="badge text-bg-danger"
+                                              data-bs-toggle="tooltip"
+                                              data-bs-placement="top"
+                                              data-bs-container="body"
+                                              title="@item.ReturnType.Name">
+                                            Exception
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="font-monospace">@item.ReturnType.Name</span>
+                                    }
                                 </td>
                             </tr>
                         }
