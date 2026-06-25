@@ -36,6 +36,15 @@ public static class AssertExtensions
                     await new Expression(expressionText).EvaluateAsync(CancellationToken.None)));
         }
 
+        public ExpressionValueAssertion Expression(ExpressionContext context)
+        {
+            source.Context.ExpressionBuilder.Append(".Expression(parameters)");
+
+            return new ExpressionValueAssertion(
+                source.Context.Map<object?>(async expressionText =>
+                    await new Expression(expressionText, context).EvaluateAsync(CancellationToken.None)));
+        }
+
         public ExpressionValueAssertion Expression(IDictionary<string, object?> parameters)
         {
             source.Context.ExpressionBuilder.Append(".Expression(parameters)");

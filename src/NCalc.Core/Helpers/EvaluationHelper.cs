@@ -96,9 +96,9 @@ public static class EvaluationHelper
             return rightValue switch
             {
                 string rightValueString => Contains(leftValue, rightValueString, context),
-                IEnumerable<object?> rightValueEnumerableOfObj => Contains(leftValue, rightValueEnumerableOfObj, context),
+                object[] rightValueArray => Contains(leftValue, rightValueArray, context),
                 IEnumerable rightValueEnumerable => Contains(leftValue, rightValueEnumerable, context),
-                { } rightValueObject => Contains(leftValue, [rightValueObject], context),
+                { } rightValueObject => ValuesEqual(leftValue, rightValueObject, context),
                 _ => throw new NCalcEvaluationException(
                     "'in' operator right value must implement IEnumerable, be a string or an object.")
             };
@@ -111,7 +111,7 @@ public static class EvaluationHelper
                 return false;
             }
 
-            var leftValueString = Convert.ToString(leftValue, CultureInfo.InvariantCulture);
+            var leftValueString = Convert.ToString(leftValue, context.CultureInfo);
 
             if (string.IsNullOrEmpty(leftValueString))
                 return string.IsNullOrEmpty(rightValue);
@@ -119,67 +119,52 @@ public static class EvaluationHelper
             return rightValue.Contains(leftValueString);
         }
 
-        private static bool Contains(object? leftValue, IEnumerable<object?> rightValue, ExpressionContext context)
+        private static bool Contains<T>(object? leftValue, T rightValue, ExpressionContext context) where T : IEnumerable
         {
-            var rightArray = rightValue as object[] ?? rightValue.ToArray();
-
             var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
-
-            if (rightArray.All(v => v is string))
-            {
-                if (noStringTypeCoercion && leftValue is not string)
-                {
-                    return false;
-                }
-
-                return rightArray.OfType<string>().Contains(Convert.ToString(leftValue, context.CultureInfo) ?? string.Empty,
-                    TypeHelper.GetStringComparer(context));
-            }
-
-            return rightArray.Contains(leftValue,
-                noStringTypeCoercion ? EqualityComparer<object?>.Default : StringCoercionComparer.Default);
-        }
-
-        private static bool Contains(object? leftValue, IEnumerable rightValue, ExpressionContext context)
-        {
-            if (rightValue == null)
-                return false;
-
-            if (leftValue == null)
-            {
-                foreach (var item in rightValue)
-                {
-                    if (item == null)
-                        return true;
-                }
-
-                return false;
-            }
-
-            var leftType = leftValue.GetType();
-
-            var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
-            var comparer = noStringTypeCoercion ? EqualityComparer<object?>.Default : StringCoercionComparer.Default;
+            var stringComparer = noStringTypeCoercion ? null : TypeHelper.GetStringComparer(context);
 
             foreach (var item in rightValue)
             {
-                if (item != null)
-                {
-                    var rightType = item.GetType();
-
-                    if (rightType == leftType)
-                    {
-                        if (leftValue.Equals(item))
-                            return true;
-                    }
-                    else if (comparer.Equals(leftValue, item))
-                    {
-                        return true;
-                    }
-                }
+                if (ValuesEqual(leftValue, item, context.CultureInfo, noStringTypeCoercion, stringComparer))
+                    return true;
             }
 
             return false;
+        }
+
+        private static bool ValuesEqual(object? leftValue, object? rightValue, ExpressionContext context)
+        {
+            var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
+            var stringComparer = noStringTypeCoercion ? null : TypeHelper.GetStringComparer(context);
+
+            return ValuesEqual(leftValue, rightValue, context.CultureInfo, noStringTypeCoercion, stringComparer);
+        }
+
+        private static bool ValuesEqual(
+            object? leftValue,
+            object? rightValue,
+            CultureInfo cultureInfo,
+            bool noStringTypeCoercion,
+            StringComparer? stringComparer)
+        {
+            if (leftValue == null || rightValue == null)
+                return leftValue == rightValue;
+
+            if (noStringTypeCoercion)
+                return EqualityComparer<object?>.Default.Equals(leftValue, rightValue);
+
+            return (leftValue, rightValue) switch
+            {
+                (string leftString, string rightString) => stringComparer!.Equals(leftString, rightString),
+                (string leftString, _) => stringComparer!.Equals(
+                    leftString,
+                    Convert.ToString(rightValue, cultureInfo) ?? string.Empty),
+                (_, string rightString) => stringComparer!.Equals(
+                    Convert.ToString(leftValue, cultureInfo) ?? string.Empty,
+                    rightString),
+                _ => EqualityComparer<object?>.Default.Equals(leftValue, rightValue)
+            };
         }
 
         /// <summary>
