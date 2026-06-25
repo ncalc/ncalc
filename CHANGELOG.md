@@ -1,3 +1,6 @@
+# 6.3.2
+* Fix numeric type coercion in `in` comparisons by @gumbarros in https://github.com/ncalc/ncalc/pull/587
+
 # 6.3.1
 * Changed `LogicalExpressionList` to implement `IReadOnlyList` instead of `IList` for improved performance by @george-domingos in https://github.com/ncalc/ncalc/pull/585
 
