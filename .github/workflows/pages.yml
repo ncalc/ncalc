@@ -37,7 +37,7 @@ jobs:
       - name: Restore Playground Workloads
         run: |
           dotnet workload install wasm-tools
-          dotnet workload restore example/NCalc.Playground/NCalc.Playground/NCalc.Playground.csproj
+          dotnet workload restore example/NCalc.Playground/NCalc.Playground.csproj
 
       - name: Publish Playground
         run: dotnet publish example/NCalc.Playground/NCalc.Playground.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
