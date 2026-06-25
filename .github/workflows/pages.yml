@@ -40,7 +40,9 @@ jobs:
           dotnet workload restore example/NCalc.Playground/NCalc.Playground.csproj
 
       - name: Publish Playground
-        run: dotnet publish example/NCalc.Playground/NCalc.Playground.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
+        run: |
+          dotnet publish example/NCalc.Playground/NCalc.Playground.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
+          sed -i 's|<base href="/" />|<base href="/ncalc/playground/" />|' artifacts/playground-publish/wwwroot/index.html
 
       - name: Stage GitHub Pages artifact
         run: |
