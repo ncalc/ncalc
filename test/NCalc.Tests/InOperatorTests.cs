@@ -1,10 +1,22 @@
-using System.Threading.Tasks;
-
 namespace NCalc.Tests;
 
 [Property("Category", "Evaluations")]
 public class InOperatorTests
 {
+    [Test]
+    public async Task Should_Evaluate_NotIn_When_Parameter_And_Literals_Have_Different_Types_Issue_586()
+    {
+        var context = new ExpressionContext
+        {
+            StaticParameters =
+            {
+                ["quantity"] = (short)12
+            }
+        };
+
+        await Assert.That("quantity not in (1,2,3,12)").Expression(context).IsEqualTo(true);
+    }
+
     [Test]
     public async Task ShouldEvaluateInOperatorWithList()
     {
