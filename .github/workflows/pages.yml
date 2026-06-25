@@ -15,11 +15,17 @@ jobs:
     environment:
       name: github-pages
     runs-on: ubuntu-latest
+    env:
+      PLAYGROUND_PUBLISH_DIR: artifacts/playground-publish/wwwroot
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
       - name: Dotnet Setup
         uses: actions/setup-dotnet@v4
         with:
@@ -42,14 +48,19 @@ jobs:
       - name: Publish Playground
         run: |
           dotnet publish example/NCalc.Playground/NCalc.Playground.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
-          sed -i 's|<base href="/" />|<base href="/ncalc/playground/" />|' artifacts/playground-publish/wwwroot/index.html
+
+      - name: Rewrite Playground base href
+        uses: SteveSandersonMS/ghaction-rewrite-base-href@5b54862a8831e012d4f1a8b2660894415fdde8ec # v1.1.0
+        with:
+          html_path: ${{ env.PLAYGROUND_PUBLISH_DIR }}/index.html
+          base_href: /ncalc/playground/
 
       - name: Stage GitHub Pages artifact
         run: |
           rm -rf artifacts/pages
           mkdir -p artifacts/pages/playground
           cp -a docs/_site/. artifacts/pages/
-          cp -a artifacts/playground-publish/wwwroot/. artifacts/pages/playground/
+          cp -a "$PLAYGROUND_PUBLISH_DIR"/. artifacts/pages/playground/
           touch artifacts/pages/.nojekyll
 
       - name: Upload artifact
