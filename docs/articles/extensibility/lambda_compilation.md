@@ -42,11 +42,11 @@ Debug.Assert(function(context)); //true
 ```
 
 ## Compatibility
-Since v5.5 by default NCalc using a [FastExpressionCompiler](https://github.com/dadhi/FastExpressionCompiler)
- to improve the compilation performance (which is 10-40x times faster than .Compile()). But if you faced some issues, you can switch back to built-in System.Linq.Expressions .Compile() method by using AppContext switch:
+Since v5.5 by default NCalc uses a [FastExpressionCompiler](https://github.com/dadhi/FastExpressionCompiler)
+to improve the compilation performance (which is 10-40x times faster than .Compile()). But if you face issues, you can switch back to the built-in `System.Linq.Expressions.Compile()` method by using the AppContext switch:
 
 `AppContext.SetSwitch("NCalc.UseSystemLinqCompiler", true)` 
 
 ## Performance
-You should cache the result of <xref:NCalc.Expression.ToLambda``1>. The evaluation is indeed faster, but the compilation of the lambda is slow.
+You should cache the result of `Expression.ToLambda<T>()`. Evaluation is faster, but compiling the lambda is still expensive.
 See [benchmarks](../project/benchmarks.md) for more info.

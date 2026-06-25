@@ -23,7 +23,7 @@ The current built-in log messages are:
 
 ## Using logging with DI
 
-When you register NCalc with [`NCalc.DependencyInjection`](dependency_injection.md), NCalc uses the application's configured `ILoggerFactory` for services created by the container.
+When you register NCalc with [`NCalc.DependencyInjection`](../extensibility/dependency_injection.md), NCalc uses the application's configured `ILoggerFactory` for services created by the container.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;

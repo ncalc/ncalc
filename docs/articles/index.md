@@ -85,13 +85,12 @@ Debug.Assert(function()); //3
 
 ### Expression Serialization
 
-To convert an expression tree back to NCalc source
-text, use the explicit extension API <xref:NCalc.Extensions.LogicalExpressionExtensions.ToExpressionString(NCalc.LogicalExpression,System.Threading.CancellationToken)>.
-This API delegates to <xref:NCalc.Visitors.SerializationVisitor>. In older versions it was possible using <xref:System.Object.ToString>, but it's not a good practice as documented at [Microsoft docs](https://learn.microsoft.com/en-us/dotnet/api/system.object.tostring#notes-to-inheritors).
+To convert an expression tree back to NCalc source text, use <xref:NCalc.Expression.ToExpressionString(System.Boolean,System.Threading.CancellationToken)>.
+This method delegates to <xref:NCalc.Visitors.SerializationVisitor>. In older versions it was possible using <xref:System.Object.ToString>, but it's not a good practice as documented at [Microsoft docs](https://learn.microsoft.com/en-us/dotnet/api/system.object.tostring#notes-to-inheritors).
 
 ```csharp
-using NCalc.Extensions;
+using NCalc;
 
-var logicalExpression = LogicalExpressionFactory.Create("1 + 2");
-var expressionText = logicalExpression.ToExpressionString();
+var expression = new Expression("1 + 2");
+var expressionText = expression.ToExpressionString();
 ```

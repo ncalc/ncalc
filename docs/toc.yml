@@ -5,7 +5,7 @@
 - name: API Reference
   icon: fa-solid fa-code
   href: api/
-  homepage: api/NCalc.html
+  homepage: api/NCalc.yml
 - name: Playground
   icon: fa-solid fa-play
-  href: playground.html
+  href: playground.md

@@ -1,6 +1,6 @@
 ﻿## Caching
 
-When <xref:NCalc.Expression.Evaluate> is called on an expression, it is parsed once. If the same expression is reused, parsing is skipped and only the expression tree is evaluated again.
+When <xref:NCalc.Expression.Evaluate(System.Threading.CancellationToken)> is called on an expression, it is parsed once. If the same expression is reused, parsing is skipped and only the expression tree is evaluated again.
 
 Each parsed expression is cached internally, which means you do not need to manually reuse an <xref:NCalc.Expression> instance for the parser cache to help.
 

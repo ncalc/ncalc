@@ -50,7 +50,7 @@ the <xref:NCalc.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVis
 ## <xref:NCalc.Expression> Class
 
 This is the main class of NCalc. It abstracts the process of parsing and evaluating the string.
-The method <xref:NCalc.Expression.Evaluate> returns the actual value of its <xref:System.String> representation.
+The method <xref:NCalc.Expression.Evaluate(System.Threading.CancellationToken)> returns the actual value of its <xref:System.String> representation.
 
 Example:
 
@@ -63,7 +63,7 @@ Console.WriteLine(result);
 
 This example above first creates an instance of <xref:NCalc.Expression> using a valued constructor. This constructor
 takes a <xref:System.String> as parameter.
-Then the method <xref:NCalc.Expression.Evaluate> is called to parse the <xref:System.String> and returns the actual
+Then the method <xref:NCalc.Expression.Evaluate(System.Threading.CancellationToken)> is called to parse the <xref:System.String> and returns the actual
 value represented by the <xref:System.String>.
 
 To create expressions you can combine several [Operators](../language/operators.md) and [Values](../language/values.md).

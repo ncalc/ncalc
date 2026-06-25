@@ -17,7 +17,7 @@ catch (NCalcEvaluationException ex)
 }
 ```
 
-Though, you can also detect syntax errors before the evaluation by using the <xref:NCalc.ExpressionBase`1.HasErrors> method.
+Though, you can also detect syntax errors before the evaluation by using the <xref:NCalc.Expression.HasErrors(System.Threading.CancellationToken)> method.
 
 ```c#
 var expression = new Expression("a + b * (");

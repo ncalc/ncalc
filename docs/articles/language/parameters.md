@@ -3,7 +3,7 @@
 ## Static parameters
 
 Static parameters are values which can be defined before the evaluation of an expression.
-These parameters can be accessed using the <xref:NCalc.ExpressionBase`1.Parameters> property of the <xref:NCalc.Expression>
+These parameters can be accessed using the <xref:NCalc.Expression.Parameters> property of the <xref:NCalc.Expression>
 instance.
 
 ```c#
@@ -33,7 +33,7 @@ surface.Parameters["L"] = 2;
 ## Dynamic parameters
 
 Sometimes parameters can be even more complex to evaluate and need a dedicated method to be evaluated. This can be done
-using the <xref:NCalc.ExpressionParameter> delegate.
+using the <xref:NCalc.Handlers.ExpressionParameter> delegate.
 
 ```c#
 var expression = new Expression("Round(Pow([Pi], 2) + Pow([Pi], 2) + [X], 2)");
