@@ -47,10 +47,6 @@
     color: var(--bs-body-color);
 }
 
-.playground-shell main {
-    max-width: 1180px;
-}
-
 .expression-row {
     align-items: stretch;
 }

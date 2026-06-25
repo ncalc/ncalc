@@ -16,6 +16,10 @@
 .affix {
     display: none !important;
 }
+
+article {
+  display: contents !important;
+}
 </style>
 
 <div class="playground-container">
