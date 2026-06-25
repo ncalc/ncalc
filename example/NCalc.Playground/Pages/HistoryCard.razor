@@ -60,7 +60,7 @@
                                         case null:
                                             <span class="font-monospace text-muted">null</span>
                                             break;
-                                        case string:
+                                        case string when !item.HasError:
                                             <span class="font-monospace text-muted">"@item.Result"</span>
                                             break;
                                         case IFormattable formattable:
