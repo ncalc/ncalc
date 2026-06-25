@@ -51,8 +51,29 @@
     align-items: stretch;
 }
 
+.expression-row > .form-control {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.expression-row > .btn-group,
 .expression-row > .btn {
-    min-width: 8rem;
+    flex: 0 0 auto;
+}
+
+.expression-row > .btn-group > .btn {
+    min-width: 3rem;
+}
+
+.expression-actions .dropdown-menu {
+    max-height: 18rem;
+    overflow-y: auto;
+    min-width: 18rem;
+}
+
+.expression-option-item {
+    cursor: pointer;
+    white-space: normal;
 }
 
 .btn {
@@ -105,22 +126,31 @@
 
 @media (max-width: 575.98px) {
     .expression-row {
-        display: block;
+        gap: 0.5rem !important;
+    }
+
+    .expression-row > .form-control,
+    .expression-row > .btn-group,
+    .expression-row > .btn {
+        width: 100%;
     }
 
     .expression-row > .form-control {
         border-radius: var(--bs-border-radius) !important;
-        width: 100%;
     }
 
+    .expression-row > .btn-group > .btn,
     .expression-row > .btn {
         border-radius: var(--bs-border-radius) !important;
-        margin-top: 0.5rem;
+        width: 100%;
     }
 
-    .expression-row > .btn,
     .theme-picker {
         width: 100%;
+    }
+
+    .expression-actions .dropdown-menu {
+        min-width: 100%;
     }
 
     .playground-table {

@@ -1,3 +1,4 @@
+using NCalc;
 using NCalc.Playground.Helpers;
 using NCalc.Playground.Models;
 
@@ -17,6 +18,7 @@ public partial class Home
     private readonly List<EvaluationHistoryItem> _history = [];
 
     private string _expressionText = "Round([quantity] * [unitPrice] * (1 + [taxRate]), 2)";
+    private ExpressionOptions _selectedOptions;
     private EvaluationHistoryItem? _selectedHistoryItem;
 
     private void Evaluate(string expression)
@@ -26,14 +28,15 @@ public partial class Home
         var parameters = _variables
             .ConvertAll(variable => new VariableInput(variable.Name, variable.ValueText)) ;
 
-        var evaluation = EvaluationHelper.Evaluate(_expressionText, parameters);
+        var evaluation = EvaluationHelper.Evaluate(_expressionText, parameters, _selectedOptions);
         var item = new EvaluationHistoryItem(
             evaluation.ExpressionString,
             _expressionText,
             evaluation.Value,
             evaluation.ValueType,
             evaluation.HasError,
-            parameters);
+            parameters,
+            _selectedOptions);
 
         _history.Insert(0, item);
         _selectedHistoryItem = item;
@@ -62,6 +65,7 @@ public partial class Home
     {
         _selectedHistoryItem = item;
         _expressionText = item.OriginalExpressionString;
+        _selectedOptions = item.Options;
 
         _variables.Clear();
         _variables.AddRange(item.Parameters.Select(parameter => new VariableRow(parameter.Name, parameter.ValueText)));

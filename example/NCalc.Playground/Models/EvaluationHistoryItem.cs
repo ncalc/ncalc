@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using NCalc;
 
 namespace NCalc.Playground.Models;
 
@@ -8,4 +9,5 @@ public sealed record EvaluationHistoryItem(
     string Result,
     string ReturnType,
     bool HasError,
-    IReadOnlyList<VariableInput> Parameters);
+    IReadOnlyList<VariableInput> Parameters,
+    ExpressionOptions Options);

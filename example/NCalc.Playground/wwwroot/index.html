@@ -52,7 +52,7 @@
             };
 
             const applyTheme = () => {
-                const theme = getParentBootstrapTheme();
+                const theme = getParentBootstrapTheme() ?? 'dark';
                 document.documentElement.setAttribute('data-bs-theme', theme === 'dark' ? 'dark' : 'light');
             };
 

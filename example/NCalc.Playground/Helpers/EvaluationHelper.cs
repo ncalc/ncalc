@@ -1,18 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 using NCalc.Playground.Models;
 
 namespace NCalc.Playground.Helpers;
 
 public static class EvaluationHelper
 {
-    public static EvaluationResult Evaluate(string expressionText, IEnumerable<VariableInput> variables)
+    public static EvaluationResult Evaluate(string expressionText, IEnumerable<VariableInput> variables, ExpressionOptions options)
     {
         try
         {
             var parameters = BuildParameters(variables);
-            var expression = new Expression(expressionText, CultureInfo.InvariantCulture);
+            var expression = new Expression(expressionText, options, CultureInfo.InvariantCulture);
 
             foreach (var (name, value) in parameters)
                 expression.Parameters[name] = value;

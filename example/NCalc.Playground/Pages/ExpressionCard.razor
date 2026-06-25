@@ -8,28 +8,63 @@
 
     <div class="card-body">
         <EditForm Model="this" OnSubmit="HandleSubmit">
-            <div class="input-group expression-row">
+            <div class="d-flex flex-column flex-sm-row gap-2 expression-row">
                 <InputText id="expressionInput"
                            class="@ExpressionInputClass"
                            @bind-Value="_currentExpressionText"
                            autocomplete="off"
                            aria-label="Expression"
                            aria-invalid="@HasError" />
-                <button class="btn btn-primary fw-semibold px-4" type="submit">
-                    <span class="bi bi-play-circle-fill bi-lg"></span>
-                    Evaluate
-                </button>
+
+                <div class="btn-group expression-actions">
+                    <button class="btn btn-primary fw-semibold px-4" type="submit">
+                        <span class="bi bi-play-circle-fill bi-lg"></span>
+                        Evaluate
+                    </button>
+                    <button type="button"
+                            class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+                            data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside"
+                            aria-expanded="false">
+                        <span class="visually-hidden">Toggle options dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end p-2 shadow">
+                        @foreach (var option in SelectableOptions)
+                        {
+                            <li>
+                                <label class="dropdown-item d-flex align-items-center gap-2 rounded-2 mb-0 expression-option-item">
+                                    <input class="form-check-input m-0"
+                                           type="checkbox"
+                                           checked="@HasOption(option)"
+                                           @onchange="eventArgs => ToggleOption(option, eventArgs)" />
+                                    <span>@FormatOptionLabel(option)</span>
+                                </label>
+                            </li>
+                        }
+                    </ul>
+                </div>
             </div>
         </EditForm>
     </div>
 </div>
 
 @code {
+    private static readonly ExpressionOptions[] SelectableOptions =
+        Enum.GetValues<ExpressionOptions>()
+            .Where(option => option != ExpressionOptions.None)
+            .ToArray();
+
     [Parameter]
     public string ExpressionText { get; set; } = string.Empty;
 
     [Parameter]
     public EventCallback<string> OnEvaluate { get; set; }
+
+    [Parameter]
+    public ExpressionOptions SelectedOptions { get; set; }
+
+    [Parameter]
+    public EventCallback<ExpressionOptions> SelectedOptionsChanged { get; set; }
 
     [Parameter]
     public bool HasError { get; set; }
@@ -48,6 +83,46 @@
 
         _currentExpressionText = ExpressionText;
         _previousExpressionText = ExpressionText;
+    }
+
+    private bool HasOption(ExpressionOptions option) => SelectedOptions.HasFlag(option);
+
+    private async Task ToggleOption(ExpressionOptions option, ChangeEventArgs eventArgs)
+    {
+        var isChecked = eventArgs.Value is bool value
+            ? value
+            : bool.TryParse(eventArgs.Value?.ToString(), out var parsedValue) && parsedValue;
+        var updatedOptions = isChecked
+            ? SelectedOptions | option
+            : SelectedOptions & ~option;
+
+        if (updatedOptions == SelectedOptions)
+            return;
+
+        SelectedOptions = updatedOptions;
+        await SelectedOptionsChanged.InvokeAsync(updatedOptions);
+    }
+
+    private static string FormatOptionLabel(ExpressionOptions option)
+    {
+        var name = option.ToString();
+        var builder = new StringBuilder(name.Length + 8);
+
+        for (var index = 0; index < name.Length; index++)
+        {
+            var current = name[index];
+
+            if (index > 0 &&
+                char.IsUpper(current) &&
+                (char.IsLower(name[index - 1]) || (index + 1 < name.Length && char.IsLower(name[index + 1]))))
+            {
+                builder.Append(' ');
+            }
+
+            builder.Append(current);
+        }
+
+        return builder.Replace("Built In", "Built-In").ToString();
     }
 
     private Task HandleSubmit(EditContext _)

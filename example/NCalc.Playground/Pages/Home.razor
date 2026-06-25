@@ -7,6 +7,7 @@
         <div class="vstack gap-3">
             <ExpressionCard ExpressionText="@_expressionText"
                             HasError="@(_selectedHistoryItem?.HasError == true)"
+                            @bind-SelectedOptions="_selectedOptions"
                             OnEvaluate="Evaluate" />
 
             <div class="row g-3 playground-panels">
