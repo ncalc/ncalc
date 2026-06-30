@@ -49,7 +49,7 @@ public static class EvaluationHelper
 
         try
         {
-            return MathHelper.Add(leftValue, rightValue, context);
+            return MathHelper.Add(leftValue, rightValue, context.MathHelperOptions);
         }
         catch (FormatException) when (leftValue is string && rightValue is string)
         {
@@ -62,25 +62,25 @@ public static class EvaluationHelper
         public static object? Minus(object? leftValue, object? rightValue, ExpressionContext context)
         {
             (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, context);
-            return MathHelper.Subtract(leftValue, rightValue, context);
+            return MathHelper.Subtract(leftValue, rightValue, context.MathHelperOptions);
         }
 
         public static object? Times(object? leftValue, object? rightValue, ExpressionContext context)
         {
             (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, context);
-            return MathHelper.Multiply(leftValue, rightValue, context);
+            return MathHelper.Multiply(leftValue, rightValue, context.MathHelperOptions);
         }
 
         public static object? Div(object? leftValue, object? rightValue, ExpressionContext context)
         {
             (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, context);
-            return MathHelper.Divide(leftValue, rightValue, context);
+            return MathHelper.Divide(leftValue, rightValue, context.MathHelperOptions);
         }
 
         public static object? Modulo(object? leftValue, object? rightValue, ExpressionContext context)
         {
             (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, context);
-            return MathHelper.Modulo(leftValue, rightValue, context);
+            return MathHelper.Modulo(leftValue, rightValue, context.MathHelperOptions);
         }
 
         /// <summary>
@@ -142,13 +142,13 @@ public static class EvaluationHelper
                 if (leftValue is string || rightValue is string)
                     return EqualityComparer<object?>.Default.Equals(leftValue, rightValue);
 
-                return TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, context) == ComparisonResult.Equal;
+                return TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, context.ComparisonOptions) == ComparisonResult.Equal;
             }
 
             if (TypeHelper.HasNullOrTypeConflict(leftValue, rightValue, context.Options))
                 return false;
 
-            var stringComparer = TypeHelper.GetStringComparer(context);
+            var stringComparer = TypeHelper.GetStringComparer(context.ComparisonOptions);
 
             return (leftValue, rightValue) switch
             {
@@ -159,7 +159,7 @@ public static class EvaluationHelper
                 (_, string rightString) => stringComparer.Equals(
                     Convert.ToString(leftValue, context.CultureInfo) ?? string.Empty,
                     rightString),
-                _ => TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, context) == ComparisonResult.Equal
+                _ => TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, context.ComparisonOptions) == ComparisonResult.Equal
             };
         }
 
@@ -180,7 +180,7 @@ public static class EvaluationHelper
                 {
                     double doubleValue => -doubleValue,
                     float floatValue => -floatValue,
-                    _ => MathHelper.Subtract(0, result, context)
+                    _ => MathHelper.Subtract(0, result, context.MathHelperOptions)
                 },
                 UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, context.CultureInfo),
                 UnaryExpressionType.Positive => result,

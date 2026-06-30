@@ -1,4 +1,3 @@
-using NCalc.Extensions;
 using NCalc.Handlers;
 
 namespace NCalc.Tests;
@@ -19,6 +18,50 @@ public class ParametersAndFunctions
         var result = await expression.EvaluateAsync(CancellationToken.None);
 
         await Assert.That(result).IsEqualTo(10);
+    }
+
+    [Test]
+    public async Task ShouldCreateExpressionContextHelperOptionsFromCurrentValues()
+    {
+        var context = new ExpressionContext(
+            ExpressionOptions.DecimalAsDefault | ExpressionOptions.CaseInsensitiveStringComparer,
+            CultureInfo.InvariantCulture);
+
+        await Assert.That(context.MathHelperOptions.CultureInfo).IsEqualTo(CultureInfo.InvariantCulture);
+        await Assert.That(context.MathHelperOptions.DecimalAsDefault).IsTrue();
+        await Assert.That(context.ComparisonOptions.CultureInfo).IsEqualTo(CultureInfo.InvariantCulture);
+        await Assert.That(context.ComparisonOptions.IsCaseInsensitive).IsTrue();
+    }
+
+    [Test]
+    public async Task ShouldRefreshExpressionContextHelperOptionsWhenOptionsChange()
+    {
+        var context = new ExpressionContext(ExpressionOptions.None, CultureInfo.InvariantCulture);
+
+        _ = context.MathHelperOptions;
+        _ = context.ComparisonOptions;
+
+        context.Options = ExpressionOptions.DecimalAsDefault | ExpressionOptions.OrdinalStringComparer;
+
+        await Assert.That(context.MathHelperOptions.DecimalAsDefault).IsTrue();
+        await Assert.That(context.ComparisonOptions.IsOrdinal).IsTrue();
+    }
+
+    [Test]
+    public async Task ShouldRefreshExpressionContextHelperOptionsWhenCultureChanges()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NumberDecimalSeparator = ",";
+
+        var context = new ExpressionContext(ExpressionOptions.None, CultureInfo.InvariantCulture);
+
+        _ = context.MathHelperOptions;
+        _ = context.ComparisonOptions;
+
+        context.CultureInfo = culture;
+
+        await Assert.That(context.MathHelperOptions.CultureInfo.NumberFormat.NumberDecimalSeparator).IsEqualTo(",");
+        await Assert.That(context.ComparisonOptions.CultureInfo.NumberFormat.NumberDecimalSeparator).IsEqualTo(",");
     }
 
     [Test]
