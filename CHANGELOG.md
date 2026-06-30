@@ -1,3 +1,7 @@
+# 6.3.3
+* Fix `in` operator behavior for different types by @gumbarros in https://github.com/ncalc/ncalc/pull/588
+* Improve performance by caching expression helper options by @gumbarros in https://github.com/ncalc/ncalc/pull/589
+
 # 6.3.2
 * Fix numeric type coercion in `in` comparisons by @gumbarros in https://github.com/ncalc/ncalc/pull/587
 
