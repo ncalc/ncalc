@@ -4,7 +4,7 @@ namespace NCalc.Tests;
 public class InOperatorTests
 {
     [Test]
-    public async Task Should_Evaluate_NotIn_When_Parameter_And_Literals_Have_Different_Types_Issue_586()
+    public async Task Should_Evaluate_In_Operator_When_Parameter_And_Literals_Have_Different_Types_Issue_586()
     {
         var context = new ExpressionContext
         {
@@ -14,7 +14,7 @@ public class InOperatorTests
             }
         };
 
-        await Assert.That("quantity not in (1,2,3,12)").Expression(context).IsEqualTo(true);
+        await Assert.That("quantity in (1,2,3,12)").Expression(context).IsEqualTo(true);
     }
 
     [Test]
