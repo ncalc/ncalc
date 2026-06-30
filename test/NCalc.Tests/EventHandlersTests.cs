@@ -41,6 +41,38 @@ public class EventHandlersTests
     }
 
     [Test]
+    public async Task ShouldEvaluateStringArgumentsInCustomFunctionWithIterateParametersIssue83()
+    {
+        var e = new Expression("EndsWith([x], [y])", ExpressionOptions.IterateParameters)
+        {
+            Parameters =
+            {
+                ["x"] = new[] { "abc", "def" },
+                ["y"] = new[] { "c", "c" }
+            }
+        };
+
+        e.EvaluateFunction += (name, args) =>
+        {
+            if (name != "EndsWith")
+                return;
+
+            var firstParam = args.Parameters[0].Evaluate(args.Context, args.CancellationToken);
+            var secondParam = args.Parameters[1].Evaluate(args.Context, args.CancellationToken);
+
+            if (firstParam is not string firstArg || secondParam is not string secondArg)
+                throw new FormatException();
+
+            args.Result = firstArg.EndsWith(secondArg, StringComparison.InvariantCulture);
+        };
+
+        var result = (IList<object>)e.Evaluate(CancellationToken.None);
+
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result).IsEquivalentTo(new[] { true, false });
+    }
+
+    [Test]
     public async Task ExpressionShouldEvaluateParameters()
     {
         var e = new Expression("Round(Pow(Pi, 2) + Pow([Pi Squared], 2) + [X], 2)");
@@ -296,7 +328,7 @@ public class EventHandlersTests
     {
         var e = new Expression("((1+2+3)*2)*2");
 
-        e.EvaluateBinary += args => 
+        e.EvaluateBinary += args =>
         {
             if (args.BinaryExpression.Type == BinaryExpressionType.Plus)
             {
