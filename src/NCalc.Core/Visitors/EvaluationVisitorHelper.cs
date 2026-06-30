@@ -70,7 +70,7 @@ internal static class EvaluationVisitorHelper
                        Convert.ToInt32(right, context.CultureInfo);
 
             case BinaryExpressionType.Exponentiation:
-                return MathHelper.Pow(left, right, context);
+                return MathHelper.Pow(left, right, context.MathHelperOptions);
 
             case BinaryExpressionType.In:
                 return In(right, left, context);
@@ -98,7 +98,7 @@ internal static class EvaluationVisitorHelper
         if (HasNullOrTypeConflict(a, b, context.Options))
             return comparisonType == ComparisonType.NotEqual;
 
-        var result = CompareUsingMostPreciseType(a, b, context);
+        var result = CompareUsingMostPreciseType(a, b, context.ComparisonOptions);
 
         return comparisonType switch
         {

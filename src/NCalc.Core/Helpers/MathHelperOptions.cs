@@ -1,40 +1,18 @@
-using System.Runtime.CompilerServices;
-
 namespace NCalc.Helpers;
 
-public readonly struct MathHelperOptions(CultureInfo cultureInfo, ExpressionOptions options)
+public sealed class MathHelperOptions(CultureInfo cultureInfo, ExpressionOptions options)
 {
     public CultureInfo CultureInfo { get; } = cultureInfo;
 
-    public bool AllowBooleanCalculation
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => options.HasFlag(ExpressionOptions.AllowBooleanCalculation);
-    }
+    public bool AllowBooleanCalculation { get; } = options.HasFlag(ExpressionOptions.AllowBooleanCalculation);
 
-    public bool DecimalAsDefault
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => options.HasFlag(ExpressionOptions.DecimalAsDefault);
-    }
+    public bool DecimalAsDefault { get; } = options.HasFlag(ExpressionOptions.DecimalAsDefault);
 
-    public bool OverflowProtection
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => options.HasFlag(ExpressionOptions.OverflowProtection);
-    }
+    public bool OverflowProtection { get; } = options.HasFlag(ExpressionOptions.OverflowProtection);
 
-    public bool AllowCharValues
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => options.HasFlag(ExpressionOptions.AllowCharValues);
-    }
+    public bool AllowCharValues { get; } = options.HasFlag(ExpressionOptions.AllowCharValues);
 
-    public bool LongAsDefault
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => options.HasFlag(ExpressionOptions.LongAsDefault);
-    }
+    public bool LongAsDefault { get; } = options.HasFlag(ExpressionOptions.LongAsDefault);
 
     public static implicit operator MathHelperOptions(CultureInfo cultureInfo)
     {

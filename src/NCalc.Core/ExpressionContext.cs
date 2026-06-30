@@ -5,6 +5,9 @@ namespace NCalc;
 
 public record ExpressionContext
 {
+    private MathHelperOptions? _mathHelperOptions;
+    private ComparisonOptions? _comparisonOptions;
+
     public IDictionary<string, object?> StaticParameters { get; set; }
     public IDictionary<string, ExpressionParameter> DynamicParameters { get; set; }
     public IDictionary<string, ExpressionFunction> Functions { get; set; }
@@ -16,8 +19,28 @@ public record ExpressionContext
     public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
     public EvaluateAsyncFunctionHandler? EvaluateAsyncFunctionHandler { get; set; }
 
-    public ExpressionOptions Options { get; set; }
-    public CultureInfo CultureInfo { get; set; }
+    public ExpressionOptions Options
+    {
+        get;
+        set
+        {
+            field = value;
+            ResetHelperOptions();
+        }
+    }
+
+    public CultureInfo CultureInfo
+    {
+        get;
+        set
+        {
+            field = value;
+            ResetHelperOptions();
+        }
+    } = CultureInfo.CurrentCulture;
+
+    public MathHelperOptions MathHelperOptions => _mathHelperOptions ??= new MathHelperOptions(CultureInfo, Options);
+    public ComparisonOptions ComparisonOptions => _comparisonOptions ??= new ComparisonOptions(CultureInfo, Options);
 
     public ExpressionContext() : this(ExpressionOptions.None, CultureInfo.CurrentCulture)
     {
@@ -65,13 +88,21 @@ public record ExpressionContext
         CultureInfo = cultureInfo
     };
 
+    [Obsolete("Use ExpressionContext.MathHelperOptions instead.")]
     public static implicit operator MathHelperOptions(ExpressionContext context)
     {
-        return new MathHelperOptions(context.CultureInfo, context.Options);
+        return context.MathHelperOptions;
     }
 
+    [Obsolete("Use ExpressionContext.ComparisonOptions instead.")]
     public static implicit operator ComparisonOptions(ExpressionContext context)
     {
-        return new ComparisonOptions(context.CultureInfo, context.Options);
+        return context.ComparisonOptions;
+    }
+
+    private void ResetHelperOptions()
+    {
+        _mathHelperOptions = null;
+        _comparisonOptions = null;
     }
 }

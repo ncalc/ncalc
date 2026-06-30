@@ -1,6 +1,6 @@
 namespace NCalc.Helpers;
 
-public readonly struct ComparisonOptions(CultureInfo cultureInfo, ExpressionOptions options)
+public sealed class ComparisonOptions(CultureInfo cultureInfo, ExpressionOptions options)
 {
     public CultureInfo CultureInfo { get; } = cultureInfo;
 

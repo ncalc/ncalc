@@ -60,7 +60,7 @@ public static class BuiltInFunctionHelper
             var parameter = functionData.Evaluate(0);
             for (var i = 1; i < functionData.Count; i++)
             {
-                if (TypeHelper.CompareUsingMostPreciseType(parameter, functionData.Evaluate(i), context) == ComparisonResult.Equal)
+                if (TypeHelper.CompareUsingMostPreciseType(parameter, functionData.Evaluate(i), context.ComparisonOptions) == ComparisonResult.Equal)
                     return true;
             }
 
@@ -71,98 +71,98 @@ public static class BuiltInFunctionHelper
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Abs() takes exactly 1 argument");
-            return MathHelper.Abs(functionData.Evaluate(0), context);
+            return MathHelper.Abs(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Acos", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Acos() takes exactly 1 argument");
-            return MathHelper.Acos(functionData.Evaluate(0), context);
+            return MathHelper.Acos(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Asin", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Asin() takes exactly 1 argument");
-            return MathHelper.Asin(functionData.Evaluate(0), context);
+            return MathHelper.Asin(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Atan", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Atan() takes exactly 1 argument");
-            return MathHelper.Atan(functionData.Evaluate(0), context);
+            return MathHelper.Atan(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Atan2", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Atan2() takes exactly 2 arguments");
-            return MathHelper.Atan2(functionData.Evaluate(0), functionData.Evaluate(1), context);
+            return MathHelper.Atan2(functionData.Evaluate(0), functionData.Evaluate(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Ceiling", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Ceiling() takes exactly 1 argument");
-            return MathHelper.Ceiling(functionData.Evaluate(0), context);
+            return MathHelper.Ceiling(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Cos", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Cos() takes exactly 1 argument");
-            return MathHelper.Cos(functionData.Evaluate(0), context);
+            return MathHelper.Cos(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Exp", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Exp() takes exactly 1 argument");
-            return MathHelper.Exp(functionData.Evaluate(0), context);
+            return MathHelper.Exp(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Floor", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Floor() takes exactly 1 argument");
-            return MathHelper.Floor(functionData.Evaluate(0), context);
+            return MathHelper.Floor(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("IEEERemainder", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("IEEERemainder() takes exactly 2 arguments");
-            return MathHelper.IEEERemainder(functionData.Evaluate(0), functionData.Evaluate(1), context);
+            return MathHelper.IEEERemainder(functionData.Evaluate(0), functionData.Evaluate(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Ln", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Ln() takes exactly 1 argument");
-            return MathHelper.Ln(functionData.Evaluate(0), context);
+            return MathHelper.Ln(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Log", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Log() takes exactly 2 arguments");
-            return MathHelper.Log(functionData.Evaluate(0), functionData.Evaluate(1), context);
+            return MathHelper.Log(functionData.Evaluate(0), functionData.Evaluate(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Log10", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Log10() takes exactly 1 argument");
-            return MathHelper.Log10(functionData.Evaluate(0), context);
+            return MathHelper.Log10(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Pow", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Pow() takes exactly 2 arguments");
-            return MathHelper.Pow(functionData.Evaluate(0), functionData.Evaluate(1), context);
+            return MathHelper.Pow(functionData.Evaluate(0), functionData.Evaluate(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Round", comparison))
@@ -172,56 +172,56 @@ public static class BuiltInFunctionHelper
             var rounding = context.Options.HasFlag(ExpressionOptions.RoundAwayFromZero)
                 ? MidpointRounding.AwayFromZero
                 : MidpointRounding.ToEven;
-            return MathHelper.Round(functionData.Evaluate(0), functionData.Evaluate(1), rounding, context);
+            return MathHelper.Round(functionData.Evaluate(0), functionData.Evaluate(1), rounding, context.MathHelperOptions);
         }
 
         if (functionName.Equals("Sign", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Sign() takes exactly 1 argument");
-            return MathHelper.Sign(functionData.Evaluate(0), context);
+            return MathHelper.Sign(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Sin", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Sin() takes exactly 1 argument");
-            return MathHelper.Sin(functionData.Evaluate(0), context);
+            return MathHelper.Sin(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Sqrt", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Sqrt() takes exactly 1 argument");
-            return MathHelper.Sqrt(functionData.Evaluate(0), context);
+            return MathHelper.Sqrt(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Tan", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Tan() takes exactly 1 argument");
-            return MathHelper.Tan(functionData.Evaluate(0), context);
+            return MathHelper.Tan(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Truncate", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Truncate() takes exactly 1 argument");
-            return MathHelper.Truncate(functionData.Evaluate(0), context);
+            return MathHelper.Truncate(functionData.Evaluate(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Max", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Max() takes exactly 2 arguments");
-            return MathHelper.Max(functionData.Evaluate(0), functionData.Evaluate(1), context);
+            return MathHelper.Max(functionData.Evaluate(0), functionData.Evaluate(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Min", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Min() takes exactly 2 arguments");
-            return MathHelper.Min(functionData.Evaluate(0), functionData.Evaluate(1), context);
+            return MathHelper.Min(functionData.Evaluate(0), functionData.Evaluate(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("ifs", comparison))
@@ -270,7 +270,7 @@ public static class BuiltInFunctionHelper
             var parameter = await functionData.EvaluateAsync(0);
             for (var i = 1; i < functionData.Count; i++)
             {
-                if (TypeHelper.CompareUsingMostPreciseType(parameter, await functionData.EvaluateAsync(i), context) == ComparisonResult.Equal)
+                if (TypeHelper.CompareUsingMostPreciseType(parameter, await functionData.EvaluateAsync(i), context.ComparisonOptions) == ComparisonResult.Equal)
                     return true;
             }
 
@@ -281,98 +281,98 @@ public static class BuiltInFunctionHelper
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Abs() takes exactly 1 argument");
-            return MathHelper.Abs(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Abs(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Acos", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Acos() takes exactly 1 argument");
-            return MathHelper.Acos(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Acos(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Asin", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Asin() takes exactly 1 argument");
-            return MathHelper.Asin(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Asin(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Atan", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Atan() takes exactly 1 argument");
-            return MathHelper.Atan(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Atan(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Atan2", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Atan2() takes exactly 2 arguments");
-            return MathHelper.Atan2(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context);
+            return MathHelper.Atan2(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Ceiling", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Ceiling() takes exactly 1 argument");
-            return MathHelper.Ceiling(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Ceiling(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Cos", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Cos() takes exactly 1 argument");
-            return MathHelper.Cos(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Cos(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Exp", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Exp() takes exactly 1 argument");
-            return MathHelper.Exp(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Exp(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Floor", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Floor() takes exactly 1 argument");
-            return MathHelper.Floor(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Floor(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("IEEERemainder", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("IEEERemainder() takes exactly 2 arguments");
-            return MathHelper.IEEERemainder(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context);
+            return MathHelper.IEEERemainder(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Ln", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Ln() takes exactly 1 argument");
-            return MathHelper.Ln(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Ln(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Log", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Log() takes exactly 2 arguments");
-            return MathHelper.Log(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context);
+            return MathHelper.Log(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Log10", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Log10() takes exactly 1 argument");
-            return MathHelper.Log10(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Log10(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Pow", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Pow() takes exactly 2 arguments");
-            return MathHelper.Pow(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context);
+            return MathHelper.Pow(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Round", comparison))
@@ -382,56 +382,56 @@ public static class BuiltInFunctionHelper
             var rounding = context.Options.HasFlag(ExpressionOptions.RoundAwayFromZero)
                 ? MidpointRounding.AwayFromZero
                 : MidpointRounding.ToEven;
-            return MathHelper.Round(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), rounding, context);
+            return MathHelper.Round(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), rounding, context.MathHelperOptions);
         }
 
         if (functionName.Equals("Sign", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Sign() takes exactly 1 argument");
-            return MathHelper.Sign(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Sign(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Sin", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Sin() takes exactly 1 argument");
-            return MathHelper.Sin(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Sin(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Sqrt", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Sqrt() takes exactly 1 argument");
-            return MathHelper.Sqrt(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Sqrt(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Tan", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Tan() takes exactly 1 argument");
-            return MathHelper.Tan(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Tan(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Truncate", comparison))
         {
             if (functionData.Count != 1)
                 throw new NCalcEvaluationException("Truncate() takes exactly 1 argument");
-            return MathHelper.Truncate(await functionData.EvaluateAsync(0), context);
+            return MathHelper.Truncate(await functionData.EvaluateAsync(0), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Max", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Max() takes exactly 2 arguments");
-            return MathHelper.Max(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context);
+            return MathHelper.Max(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("Min", comparison))
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Min() takes exactly 2 arguments");
-            return MathHelper.Min(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context);
+            return MathHelper.Min(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), context.MathHelperOptions);
         }
 
         if (functionName.Equals("ifs", comparison))
