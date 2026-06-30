@@ -121,12 +121,9 @@ public static class EvaluationHelper
 
         private static bool Contains<T>(object? leftValue, T rightValue, ExpressionContext context) where T : IEnumerable
         {
-            var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
-            var stringComparer = noStringTypeCoercion ? null : TypeHelper.GetStringComparer(context);
-
             foreach (var item in rightValue)
             {
-                if (ValuesEqual(leftValue, item, context.CultureInfo, noStringTypeCoercion, stringComparer))
+                if (ValuesEqual(leftValue, item, context))
                     return true;
             }
 
@@ -135,35 +132,34 @@ public static class EvaluationHelper
 
         private static bool ValuesEqual(object? leftValue, object? rightValue, ExpressionContext context)
         {
-            var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
-            var stringComparer = noStringTypeCoercion ? null : TypeHelper.GetStringComparer(context);
-
-            return ValuesEqual(leftValue, rightValue, context.CultureInfo, noStringTypeCoercion, stringComparer);
-        }
-
-        private static bool ValuesEqual(
-            object? leftValue,
-            object? rightValue,
-            CultureInfo cultureInfo,
-            bool noStringTypeCoercion,
-            StringComparer? stringComparer)
-        {
             if (leftValue == null || rightValue == null)
                 return leftValue == rightValue;
 
+            var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
+
             if (noStringTypeCoercion)
-                return EqualityComparer<object?>.Default.Equals(leftValue, rightValue);
+            {
+                if (leftValue is string || rightValue is string)
+                    return EqualityComparer<object?>.Default.Equals(leftValue, rightValue);
+
+                return TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, context) == ComparisonResult.Equal;
+            }
+
+            if (TypeHelper.HasNullOrTypeConflict(leftValue, rightValue, context.Options))
+                return false;
+
+            var stringComparer = TypeHelper.GetStringComparer(context);
 
             return (leftValue, rightValue) switch
             {
-                (string leftString, string rightString) => stringComparer!.Equals(leftString, rightString),
-                (string leftString, _) => stringComparer!.Equals(
+                (string leftString, string rightString) => stringComparer.Equals(leftString, rightString),
+                (string leftString, _) => stringComparer.Equals(
                     leftString,
-                    Convert.ToString(rightValue, cultureInfo) ?? string.Empty),
-                (_, string rightString) => stringComparer!.Equals(
-                    Convert.ToString(leftValue, cultureInfo) ?? string.Empty,
+                    Convert.ToString(rightValue, context.CultureInfo) ?? string.Empty),
+                (_, string rightString) => stringComparer.Equals(
+                    Convert.ToString(leftValue, context.CultureInfo) ?? string.Empty,
                     rightString),
-                _ => EqualityComparer<object?>.Default.Equals(leftValue, rightValue)
+                _ => TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, context) == ComparisonResult.Equal
             };
         }
 
