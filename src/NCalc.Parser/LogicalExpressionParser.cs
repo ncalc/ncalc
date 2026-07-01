@@ -82,6 +82,46 @@ public static class LogicalExpressionParser
         return CreateExpressionParser(options.CultureInfo, GetSeparatorChars(options.ArgumentSeparator));
     }
 
+    private static Parser<LogicalExpression> CreateStringValueParser(char quote, bool allowCharValues)
+    {
+        var openingDelimiter = Terms.Char(quote);
+        var closingDelimiter = Literals.Char(quote);
+        var escapedUnicode = Literals.Text("\\u")
+            .SkipAnd(Literals.Pattern(Character.IsHexDigit, 4, 4))
+            .Then(static value => char.ConvertFromUtf32(Convert.ToInt32(value.ToString(), 16)));
+        var escapedCharacter = Literals.Char('\\')
+            .And(Literals.Pattern(_ => true, 1, 1))
+            .Then(static value =>
+            {
+                var escaped = value.Item2.ToString();
+                return escaped switch
+                {
+                    "\\" => "\\",
+                    "'" => "'",
+                    "\"" => "\"",
+                    "n" => "\n",
+                    "r" => "\r",
+                    "t" => "\t",
+                    "b" => "\b",
+                    "f" => "\f",
+                    _ => "\\" + escaped
+                };
+            });
+        var text = Literals.Pattern(c => c != quote && c != '\\' && c != '\r' && c != '\n')
+            .Then(static value => value.ToString());
+
+        return Between(openingDelimiter, ZeroOrMany(OneOf(escapedUnicode, escapedCharacter, text)), closingDelimiter)
+            .Then<LogicalExpression>(values =>
+            {
+                var value = string.Concat(values);
+
+                if (allowCharValues && value.Length == 1)
+                    return new ValueExpression(value[0]);
+
+                return new ValueExpression(value);
+            });
+    }
+
     private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, char[] argumentSeparator)
     {
         /*
@@ -257,23 +297,10 @@ public static class LogicalExpressionParser
         var booleanFalse = Terms.Text("false", true)
             .Then<LogicalExpression>(False);
 
-        var singleQuotesStringValue =
-            Terms.String(quotes: StringLiteralQuotes.Single)
-                .Then<LogicalExpression>(static (ctx, value) =>
-                {
-                    if (value.Length == 1 &&
-                        ((LogicalExpressionParserContext)ctx).ParserOptions.AllowCharValues)
-                    {
-                        return new ValueExpression(value.Span[0]);
-                    }
+        var singleQuotesStringValue = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
+            CreateStringValueParser('\'', ctx.ParserOptions.AllowCharValues));
 
-                    return new ValueExpression(value.ToString());
-                });
-
-        var doubleQuotesStringValue =
-            Terms
-                .String(quotes: StringLiteralQuotes.Double)
-                .Then<LogicalExpression>(static value => new ValueExpression(value.ToString()));
+        var doubleQuotesStringValue = CreateStringValueParser('"', false);
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue);
 
