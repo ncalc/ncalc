@@ -43,6 +43,7 @@ public static class MathFunctionHelper
             { "Floor", GetMathMethodInfo(nameof(Math.Floor), 1, true) },
             { "IEEERemainder", GetMathMethodInfo(nameof(Math.IEEERemainder), 2) },
             { "Log", GetMathMethodInfo(nameof(Math.Log), 2) },
+            { "Ln", GetMathMethodInfo(nameof(Math.Log), 1) },
             { "Log10", GetMathMethodInfo(nameof(Math.Log10), 1) },
             { "Sign", GetMathMethodInfo(nameof(Math.Sign), 1, true) },
             { "Sin", GetMathMethodInfo(nameof(Math.Sin), 1) },
