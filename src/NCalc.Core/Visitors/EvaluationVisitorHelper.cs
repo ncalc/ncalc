@@ -1,4 +1,5 @@
 using NCalc.Exceptions;
+using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using static NCalc.Helpers.EvaluationHelper;
@@ -116,7 +117,7 @@ internal static class EvaluationVisitorHelper
         Identifier identifier,
         ExpressionContext context,
         CancellationToken cancellationToken,
-        NCalc.Factories.IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
     {
         var identifierName = identifier.Name;
 
@@ -154,7 +155,7 @@ internal static class EvaluationVisitorHelper
     private static void ShareParametersWithChildExpression(
         Expression expression,
         ExpressionContext context,
-        NCalc.Factories.IEvaluationVisitorFactory? evaluationVisitorFactory)
+        IEvaluationVisitorFactory? evaluationVisitorFactory)
     {
         foreach (var p in context.StaticParameters)
             expression.Parameters[p.Key] = p.Value;

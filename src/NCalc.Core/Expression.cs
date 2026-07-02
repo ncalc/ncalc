@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using NCalc.Cache;
 using NCalc.Exceptions;
 using NCalc.Extensions;
@@ -190,13 +190,13 @@ public class Expression
     protected virtual EvaluationVisitor CreateEvaluationVisitor(CancellationToken cancellationToken = default)
     {
         return EvaluationVisitorFactory?.CreateEvaluationVisitor(Context, cancellationToken)
-               ?? new EvaluationVisitor(Context, cancellationToken);
+               ?? new EvaluationVisitor(Context, cancellationToken: cancellationToken);
     }
 
     protected virtual AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(CancellationToken cancellationToken = default)
     {
         return EvaluationVisitorFactory?.CreateAsyncEvaluationVisitor(Context, cancellationToken)
-               ?? new AsyncEvaluationVisitor(Context, cancellationToken);
+               ?? new AsyncEvaluationVisitor(Context, cancellationToken: cancellationToken);
     }
 
     internal void SetEvaluationVisitorFactory(IEvaluationVisitorFactory? evaluationVisitorFactory)

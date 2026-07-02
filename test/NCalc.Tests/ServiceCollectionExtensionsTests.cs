@@ -1,4 +1,4 @@
-﻿using NCalc.Cache;
+using NCalc.Cache;
 using NCalc.DependencyInjection;
 using NCalc.Exceptions;
 using NCalc.Factories;
@@ -176,7 +176,7 @@ public class ServiceCollectionExtensionsTests
         }
     }
 
-    private class CustomSyncVisitor(ExpressionContext context, CancellationToken cancellationToken, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : EvaluationVisitor(context, cancellationToken, evaluationVisitorFactory)
+    private class CustomSyncVisitor(ExpressionContext context, CancellationToken cancellationToken, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : EvaluationVisitor(context, evaluationVisitorFactory, cancellationToken)
     {
         public override object Visit(ValueExpression expression)
         {
@@ -187,7 +187,7 @@ public class ServiceCollectionExtensionsTests
         }
     }
 
-    private class CustomAsyncVisitor(ExpressionContext context, CancellationToken cancellationToken, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : AsyncEvaluationVisitor(context, cancellationToken, evaluationVisitorFactory)
+    private class CustomAsyncVisitor(ExpressionContext context, CancellationToken cancellationToken, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : AsyncEvaluationVisitor(context, evaluationVisitorFactory, cancellationToken)
     {
         public override Task<object> Visit(ValueExpression expression)
         {

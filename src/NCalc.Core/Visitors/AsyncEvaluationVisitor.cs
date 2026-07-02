@@ -1,3 +1,4 @@
+using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
 using static NCalc.Helpers.EvaluationHelper;
@@ -8,15 +9,15 @@ namespace NCalc.Visitors;
 /// Class responsible to asynchronous evaluating <see cref="LogicalExpression"/> objects into CLR objects.
 /// </summary>
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
-public class AsyncEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default, NCalc.Factories.IEvaluationVisitorFactory? evaluationVisitorFactory = null) : ILogicalExpressionVisitor<Task<object?>>
+public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisitorFactory? evaluationVisitorFactory = null, CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<Task<object?>>
 {
     protected CancellationToken CancellationToken { get; } = cancellationToken;
-    protected NCalc.Factories.IEvaluationVisitorFactory? EvaluationVisitorFactory { get; } = evaluationVisitorFactory;
+    protected IEvaluationVisitorFactory? EvaluationVisitorFactory { get; } = evaluationVisitorFactory;
 
     protected EvaluationVisitor CreateEvaluationVisitor()
     {
         return EvaluationVisitorFactory?.CreateEvaluationVisitor(context, CancellationToken)
-               ?? new EvaluationVisitor(context, CancellationToken);
+               ?? new EvaluationVisitor(context, cancellationToken: CancellationToken);
     }
 
     public virtual async Task<object?> Visit(TernaryExpression expression)

@@ -8,13 +8,13 @@ public sealed class EvaluationVisitorFactory : IEvaluationVisitorFactory
         ExpressionContext context,
         CancellationToken cancellationToken = default)
     {
-        return new EvaluationVisitor(context, cancellationToken, this);
+        return new EvaluationVisitor(context, this, cancellationToken);
     }
 
     public AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(
         ExpressionContext context,
         CancellationToken cancellationToken = default)
     {
-        return new AsyncEvaluationVisitor(context, cancellationToken, this);
+        return new AsyncEvaluationVisitor(context, this, cancellationToken);
     }
 }
