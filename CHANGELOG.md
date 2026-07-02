@@ -1,5 +1,4 @@
 # 6.4.0
-
 * fix: small fix for Ln support in NCalc.LambdaCompilation by @gogolevsergey in https://github.com/ncalc/ncalc/pull/590
 * feat: Add LIKE escape support and EscapeLike helper by @gumbarros in https://github.com/ncalc/ncalc/pull/593
 * feat: Add optional evaluation visitor factory to Expression by @george-domingos in https://github.com/ncalc/ncalc/pull/591
