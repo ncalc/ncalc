@@ -22,6 +22,12 @@ public class Expression
         set => Context.DynamicParameters = value;
     }
 
+    public IDictionary<string, AsyncExpressionParameter> AsyncParameters
+    {
+        get => Context.AsyncParameters;
+        set => Context.AsyncParameters = value;
+    }
+
     public IDictionary<string, ExpressionFunction> Functions
     {
         get => Context.Functions;
@@ -76,6 +82,15 @@ public class Expression
     {
         add => Context.EvaluateParameterHandler += value;
         remove => Context.EvaluateParameterHandler -= value;
+    }
+
+    /// <summary>
+    /// Event triggered to handle async parameter evaluation.
+    /// </summary>
+    public event EvaluateAsyncParameterHandler EvaluateAsyncParameter
+    {
+        add => Context.EvaluateAsyncParameterHandler += value;
+        remove => Context.EvaluateAsyncParameterHandler -= value;
     }
 
     protected ExpressionContext Context { get; }

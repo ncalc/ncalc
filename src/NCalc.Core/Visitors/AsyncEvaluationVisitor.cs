@@ -98,7 +98,11 @@ public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisito
 
     public virtual async Task<object?> Visit(Identifier identifier)
     {
-        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, CancellationToken, EvaluationVisitorFactory);
+        var value = await EvaluationVisitorHelper.GetIdentifierValueAsync(
+            identifier,
+            context,
+            CancellationToken,
+            EvaluationVisitorFactory);
 
         return value is Expression expression
             ? await expression.EvaluateAsync(CancellationToken)

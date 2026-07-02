@@ -150,6 +150,51 @@ internal static class EvaluationVisitorHelper
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
+    internal static async Task<object?> GetIdentifierValueAsync(
+        Identifier identifier,
+        ExpressionContext context,
+        CancellationToken cancellationToken,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+    {
+        var identifierName = identifier.Name;
+
+        var parameterArgs = new ParameterEventArgs(identifier.Id, cancellationToken);
+
+        context.EvaluateParameterHandler?.Invoke(identifierName, parameterArgs);
+
+        if (!parameterArgs.HasResult)
+            await (context.EvaluateAsyncParameterHandler?.Invoke(identifierName, parameterArgs) ?? Task.CompletedTask);
+
+        if (parameterArgs.HasResult)
+            return parameterArgs.Result;
+
+        if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
+        {
+            if (parameter is Expression expression)
+            {
+                ShareParametersWithChildExpression(expression, context, evaluationVisitorFactory);
+
+                return expression;
+            }
+
+            return parameter;
+        }
+
+        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+            return dynamicParameter(new ParameterData(identifier.Id, context, cancellationToken));
+
+        if (context.AsyncParameters.TryGetValue(identifierName, out var asyncParameter))
+            return await asyncParameter(new ParameterData(identifier.Id, context, cancellationToken));
+
+        if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
+            context.Options.HasFlag(ExpressionOptions.AllowNullParameter))
+        {
+            return null;
+        }
+
+        throw new NCalcParameterNotDefinedException(identifierName);
+    }
+
     private static void ShareParametersWithChildExpression(
         Expression expression,
         ExpressionContext context,
@@ -161,12 +206,16 @@ internal static class EvaluationVisitorHelper
         foreach (var p in context.DynamicParameters)
             expression.DynamicParameters[p.Key] = p.Value;
 
+        foreach (var p in context.AsyncParameters)
+            expression.AsyncParameters[p.Key] = p.Value;
+
         expression.SetEvaluationVisitorFactory(evaluationVisitorFactory);
 
         expression.EvaluateFunction += context.EvaluateFunctionHandler;
         expression.EvaluateAsyncFunction += context.EvaluateAsyncFunctionHandler;
 
         expression.EvaluateParameter += context.EvaluateParameterHandler;
+        expression.EvaluateAsyncParameter += context.EvaluateAsyncParameterHandler;
 
         expression.EvaluateBinary += context.EvaluateBinaryHandler;
         expression.EvaluateBinaryAsync += context.EvaluateBinaryAsyncHandler;

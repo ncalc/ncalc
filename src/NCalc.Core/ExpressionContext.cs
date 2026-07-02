@@ -10,12 +10,14 @@ public record ExpressionContext
 
     public IDictionary<string, object?> StaticParameters { get; set; }
     public IDictionary<string, ExpressionParameter> DynamicParameters { get; set; }
+    public IDictionary<string, AsyncExpressionParameter> AsyncParameters { get; set; }
     public IDictionary<string, ExpressionFunction> Functions { get; set; }
     public IDictionary<string, AsyncExpressionFunction> AsyncFunctions { get; set; }
 
     public EvaluateBinaryHandler? EvaluateBinaryHandler { get; set; }
     public EvaluateBinaryAsyncHandler? EvaluateBinaryAsyncHandler { get; set; }
     public EvaluateParameterHandler? EvaluateParameterHandler { get; set; }
+    public EvaluateAsyncParameterHandler? EvaluateAsyncParameterHandler { get; set; }
     public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
     public EvaluateAsyncFunctionHandler? EvaluateAsyncFunctionHandler { get; set; }
 
@@ -50,14 +52,16 @@ public record ExpressionContext
         IDictionary<string, object?>? staticParameters,
         IDictionary<string, ExpressionParameter>? dynamicParameters = null,
         IDictionary<string, ExpressionFunction>? functions = null,
-        IDictionary<string, AsyncExpressionFunction>? asyncFunctions = null)
+        IDictionary<string, AsyncExpressionFunction>? asyncFunctions = null,
+        IDictionary<string, AsyncExpressionParameter>? asyncParameters = null)
         : this(
             ExpressionOptions.None,
             CultureInfo.CurrentCulture,
             staticParameters,
             dynamicParameters,
             functions,
-            asyncFunctions)
+            asyncFunctions,
+            asyncParameters)
     {
     }
 
@@ -67,13 +71,15 @@ public record ExpressionContext
         IDictionary<string, object?>? staticParameters = null,
         IDictionary<string, ExpressionParameter>? dynamicParameters = null,
         IDictionary<string, ExpressionFunction>? functions = null,
-        IDictionary<string, AsyncExpressionFunction>? asyncFunctions = null)
+        IDictionary<string, AsyncExpressionFunction>? asyncFunctions = null,
+        IDictionary<string, AsyncExpressionParameter>? asyncParameters = null)
     {
         Options = options;
         CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
 
         StaticParameters = staticParameters ?? new Dictionary<string, object?>();
         DynamicParameters = dynamicParameters ?? new Dictionary<string, ExpressionParameter>();
+        AsyncParameters = asyncParameters ?? new Dictionary<string, AsyncExpressionParameter>();
         Functions = functions ?? new Dictionary<string, ExpressionFunction>();
         AsyncFunctions = asyncFunctions ?? new Dictionary<string, AsyncExpressionFunction>();
     }

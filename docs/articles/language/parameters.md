@@ -47,6 +47,21 @@ expression.DynamicParameters["Pi"] = _ => {
 };
 ```
 
+## Async dynamic parameters
+
+When parameter resolution needs asynchronous I/O, use <xref:NCalc.Expression.AsyncParameters> together with
+<xref:NCalc.Expression.EvaluateAsync(System.Threading.CancellationToken)>.
+
+```csharp
+var expression = new Expression("userName == 'alice'");
+
+expression.AsyncParameters["userName"] = async args =>
+{
+    await Task.Delay(100, args.CancellationToken);
+    return "alice";
+};
+```
+
 ## Serializing expressions with parameter values
 
 To inspect the expression text with known parameters replaced by their current values, use the
@@ -111,6 +126,20 @@ expression.EvaluateParameter += delegate(string name, ParameterEventArgs args)
 {
     if (name == "Pi")
         args.Result = 3.14;
+};
+```
+
+For asynchronous parameter resolution, use `EvaluateAsyncParameter`. During `EvaluateAsync()`, NCalc checks
+`EvaluateParameter` first and only calls `EvaluateAsyncParameter` if the synchronous handler did not set `Result`.
+
+```csharp
+expression.EvaluateAsyncParameter += async (name, args) =>
+{
+    if (name != "tenantId")
+        return;
+
+    await Task.Delay(100, args.CancellationToken);
+    args.Result = 42;
 };
 ```
 
