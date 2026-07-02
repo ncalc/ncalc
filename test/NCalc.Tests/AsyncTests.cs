@@ -1,5 +1,6 @@
 ﻿using NCalc.Exceptions;
 using NCalc.Factories;
+using NCalc.Parser;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NCalc.Tests;
@@ -297,6 +298,28 @@ public class AsyncTests
         await Assert.That(result[2]).IsEqualTo(4);
         await Assert.That(result[3]).IsEqualTo(9);
         await Assert.That(result[4]).IsEqualTo(16);
+    }
+
+    [Test]
+    public async Task ShouldEvaluateIfFalseBranchWhenIteratedConditionComparesNaNAsync()
+    {
+        var logicalExpression = LogicalExpressionParser.Parse(new LogicalExpressionParserContext(
+            "if((A - B) < 1; 0; (A - B))",
+            new LogicalExpressionParserOptions { ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon }));
+        var expression = new Expression(logicalExpression, ExpressionOptions.IterateParameters)
+        {
+            Parameters =
+            {
+                ["A"] = new[] { double.NaN },
+                ["B"] = new[] { double.NaN }
+            }
+        };
+
+        var result = await expression.EvaluateAsync<IList<object>>(CancellationToken.None);
+
+        await Assert.That(result).IsNotNull();
+        await Assert.That(result.Count).IsEqualTo(1);
+        await Assert.That(double.IsNaN((double)result[0])).IsTrue();
     }
 
     [Test]
