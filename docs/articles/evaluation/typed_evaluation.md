@@ -34,13 +34,37 @@ Both typed overloads first evaluate the expression normally and then apply the f
 - If the result is `null`, they return `default(T)`.
 - If the result is already of type `T`, they return it directly.
 - If the result implements `IConvertible`, NCalc converts it with `Convert.ChangeType` using `ExpressionContext.CultureInfo`.
-- If the result cannot be converted to `T`, NCalc throws `NCalcEvaluationException`.
+- If the result cannot be cast to `T`, NCalc throws <xref:NCalc.Exceptions.NCalcCastException>.
 
 ```csharp
 var expression = new Expression("'10'");
 
 var result = expression.Evaluate<int>();
 Debug.Assert(result == 10);
+```
+
+## Cast failures
+
+Typed evaluation failures are separate from expression evaluation failures. The expression is evaluated first; only the final result is cast to `T`.
+
+When NCalc cannot cast the evaluated result, it throws <xref:NCalc.Exceptions.NCalcCastException>. The exception includes:
+
+- `SourceValue`: the evaluated value that could not be cast.
+- `TargetType`: the requested result type.
+- `InnerException`: the underlying .NET conversion exception when `Convert.ChangeType` fails.
+
+```csharp
+var expression = new Expression("[1, 2, 3]");
+
+try
+{
+    expression.Evaluate<int>();
+}
+catch (NCalcCastException ex)
+{
+    Debug.Assert(ex.SourceValue is object[]);
+    Debug.Assert(ex.TargetType == typeof(int));
+}
 ```
 
 ## When to use typed evaluation

@@ -33,6 +33,30 @@ public class ExceptionsTests
     }
 
     [Test]
+    public async Task Should_Wrap_Typed_Evaluation_Conversion_Failures()
+    {
+        var exception = Assert.Throws<NCalcCastException>(() => new Expression("'abc'")
+            .Evaluate<int>(CancellationToken.None));
+
+        await Assert.That(exception.SourceValue).IsEqualTo("abc");
+        await Assert.That(exception.TargetType).IsEqualTo(typeof(int));
+        await Assert.That(exception.InnerException).IsTypeOf<FormatException>();
+    }
+
+    [Test]
+    public async Task Should_Wrap_Async_Typed_Evaluation_Conversion_Failures()
+    {
+        var expression = new Expression("'abc'");
+
+        var exception = await Assert.ThrowsAsync<NCalcCastException>(async () =>
+            await expression.EvaluateAsync<int>(CancellationToken.None));
+
+        await Assert.That(exception.SourceValue).IsEqualTo("abc");
+        await Assert.That(exception.TargetType).IsEqualTo(typeof(int));
+        await Assert.That(exception.InnerException).IsTypeOf<FormatException>();
+    }
+
+    [Test]
     [Arguments(". + 2")]
     [Arguments("(3 + 2")]
     [Arguments("42a")]

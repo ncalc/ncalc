@@ -247,30 +247,57 @@ public class Expression
         }
     }
 
+    /// <summary>
+    /// Evaluates the logical expression and converts the result to type <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <typeparam name="T">The type to which the evaluation result should be converted.</typeparam>
+    /// <returns>The result of the evaluation, converted to type <typeparamref name="T"/>, or <c>default</c> if the result is <c>null</c>.</returns>
+    /// <exception cref="NCalcCastException">Thrown when the result cannot be cast to type <typeparamref name="T"/>.</exception>
+    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public T? Evaluate<T>(CancellationToken cancellationToken = default)
     {
         var result = Evaluate(cancellationToken);
 
-        return result switch
-        {
-            null => default,
-            T typed => typed,
-            IConvertible cvt => (T)Convert.ChangeType(cvt, typeof(T), Context.CultureInfo),
-            _ => throw new NCalcEvaluationException($"Can't cast {result} to {typeof(T).Name}")
-        };
+        return CastResult<T>(result, Context.CultureInfo);
     }
 
+    /// <summary>
+    /// Asynchronously evaluates the logical expression and converts the result to type <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <typeparam name="T">The type to which the evaluation result should be converted.</typeparam>
+    /// <returns>A task that represents the asynchronous evaluation. The task result contains the value converted to type <typeparamref name="T"/>, or <c>default</c> if the result is <c>null</c>.</returns>
+    /// <exception cref="NCalcCastException">Thrown when the result cannot be cast to type <typeparamref name="T"/>.</exception>
+    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public async Task<T?> EvaluateAsync<T>(CancellationToken cancellationToken = default)
     {
         var result = await EvaluateAsync(cancellationToken);
 
-        return result switch
+        return CastResult<T>(result, Context.CultureInfo);
+    }
+
+    private static T? CastResult<T>(object? result, CultureInfo cultureInfo)
+    {
+        switch (result)
         {
-            null => default,
-            T typed => typed,
-            IConvertible cvt => (T)Convert.ChangeType(cvt, typeof(T), Context.CultureInfo),
-            _ => throw new NCalcEvaluationException($"Can't cast {result} to {typeof(T).Name}")
-        };
+            case null:
+                return default;
+            case T typed:
+                return typed;
+        }
+
+        if (result is not IConvertible convertible)
+            throw new NCalcCastException(result, typeof(T));
+
+        try
+        {
+            return (T)Convert.ChangeType(convertible, typeof(T), cultureInfo);
+        }
+        catch (Exception exception)
+        {
+            throw new NCalcCastException(result, typeof(T), exception);
+        }
     }
 
     /// <summary>

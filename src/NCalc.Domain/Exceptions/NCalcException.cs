@@ -6,7 +6,7 @@ public class NCalcException : Exception
     {
     }
 
-    protected NCalcException(string message, Exception exception) : base(message, exception)
+    protected NCalcException(string message, Exception? exception) : base(message, exception)
     {
     }
 }
