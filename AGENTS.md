@@ -9,6 +9,8 @@ Tests and development utilities live in `test/`: `NCalc.Tests` contains the auto
 
 ## Build, Test, and Development Commands
 
+Don't narrate your actions. Only report when an operation fails or requires my attention. Do not print progress updates like "running build" or "waiting for completion".
+
 - `dotnet restore NCalc.slnx`: restores all solution dependencies.
 - `dotnet build NCalc.slnx`: builds all projects using the pinned .NET SDK from `global.json`.
 - `dotnet test --project test/NCalc.Tests/NCalc.Tests.csproj`: runs the TUnit test suite through Microsoft.Testing.Platform. The newer `dotnet test` CLI used here requires the project to be passed with `--project`.
