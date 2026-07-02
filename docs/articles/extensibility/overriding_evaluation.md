@@ -1,45 +1,69 @@
 # Overriding Evaluation Behavior
 
 NCalc provides a flexible way to evaluate expressions, and in some cases, you may need to customize its evaluation
-behavior. This can be done by creating a custom `Expression` and overriding `CreateEvaluationVisitor` or
-`CreateAsyncEvaluationVisitor`.
+behavior. You can do that by overriding the evaluation visitors, and, when you want NCalc to resolve them for you,
+by plugging in `IEvaluationVisitorFactory` through `Expression` or dependency injection.
 
 ## Custom Evaluation Visitor
 
-By creating a custom evaluation visitor, you can modify how specific expressions are interpreted. The following example
-overrides the behavior of value expressions, returning a special string when encountering the number `42`:
+By creating a custom evaluation visitor, you can modify how specific expressions are interpreted. The following
+example overrides the behavior of value expressions, returning a special string when encountering the number `42`:
 
 ```csharp
-private class CustomVisitor(ExpressionContext context, CancellationToken cancellationToken) : EvaluationVisitor(context, cancellationToken)
+private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
 {
     public override object? Visit(ValueExpression expression)
     {
-        // My custom behavior.
-        if(expression.Value is 42)
+        if (expression.Value is 42)
             return "The answer";
 
-        // Use the normal behavior.
         return base.Visit(expression);
     }
 }
+```
 
-private class CustomAsyncVisitor(ExpressionContext context, CancellationToken cancellationToken) : AsyncEvaluationVisitor(context, cancellationToken)
+If you are using a factory, the same visitor can still accept it in the constructor so nested evaluations keep the
+same configuration.
+
+If you also need to customize the async path, you can apply the same pattern:
+
+```csharp
+private class CustomAsyncVisitor(ExpressionContext context) : AsyncEvaluationVisitor(context)
 {
     public override Task<object?> Visit(ValueExpression expression)
     {
-        // My custom behavior.
-        if(expression.Value is 42)
+        if (expression.Value is 42)
             return Task.FromResult<object?>("The answer async");
 
-        // Use the normal behavior.
-        return base.Visit(expression, cancellationToken);
+        return base.Visit(expression);
+    }
+}
+```
+
+## Custom Evaluation Visitor Factory
+
+If you want NCalc to create your custom visitors for you, implement `IEvaluationVisitorFactory` and return the
+visitors from there.
+
+```csharp
+private class CustomEvaluationVisitorFactory : IEvaluationVisitorFactory
+{
+    public EvaluationVisitor CreateEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+    {
+        return new CustomVisitor(context, this, cancellationToken);
+    }
+
+    public AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+    {
+        return new CustomAsyncVisitor(context, this, cancellationToken);
     }
 }
 ```
 
 ## Custom Expression
 
-To integrate the custom visitor with NCalc, inherit from `Expression` and override the visitor creation method:
+If you also need to customize the `Expression` type itself, inherit from it and override the visitor creation methods.
+This is useful when a custom expression type must inject additional state or change how visitors are built.
 
 ```csharp
 internal class CustomExpression(
@@ -58,42 +82,26 @@ internal class CustomExpression(
         LogicalExpression = logicalExpression;
     }
 
-    protected override EvaluationVisitor CreateEvaluationVisitor()
+    protected override EvaluationVisitor CreateEvaluationVisitor(CancellationToken cancellationToken = default)
     {
-        return new CustomVisitor(Context);
+        return new CustomVisitor(Context, EvaluationVisitorFactory, cancellationToken);
     }
 
-    protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor()
+    protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(CancellationToken cancellationToken = default)
     {
-        return new CustomAsyncVisitor(Context);
-    }
-}
-```
-
-## Using `IExpressionFactory`
-
-Use a custom implementation of <xref:NCalc.Factories.IExpressionFactory> to return your custom expression type:
-
-```csharp
-internal class CustomExpressionFactory(
-    ILogicalExpressionFactory logicalExpressionFactory,
-    ILogicalExpressionCache cache) : IExpressionFactory
-{
-    public Expression Create(string expression, ExpressionContext? expressionContext = null)
-    {
-        return new CustomExpression(expression, expressionContext ?? new(), logicalExpressionFactory, cache);
-    }
-
-    public Expression Create(LogicalExpression logicalExpression, ExpressionContext? expressionContext = null)
-    {
-        return new CustomExpression(logicalExpression, expressionContext ?? new(), logicalExpressionFactory, cache);
+        return new CustomAsyncVisitor(Context, EvaluationVisitorFactory, cancellationToken);
     }
 }
 ```
 
-Register the factory with dependency injection:
+## Using `WithEvaluationVisitorFactory`
+
+Register the factory with dependency injection when you want NCalc to resolve your custom visitors automatically.
 
 ```csharp
 services.AddNCalc()
-        .WithExpressionFactory<CustomExpressionFactory>();
+        .WithEvaluationVisitorFactory<CustomEvaluationVisitorFactory>();
 ```
+
+The factory is the wiring point, while the visitors contain the specialized behavior. If you only need to customize a
+specific visitor, you can override that visitor directly and keep the factory as the place where it is connected.

@@ -1,4 +1,5 @@
 using NCalc.Exceptions;
+using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
 
@@ -113,7 +114,8 @@ internal static class EvaluationVisitorHelper
     internal static object? GetIdentifierValue(
         Identifier identifier,
         ExpressionContext context,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
     {
         var identifierName = identifier.Name;
 
@@ -128,7 +130,7 @@ internal static class EvaluationVisitorHelper
         {
             if (parameter is Expression expression)
             {
-                ShareParametersWithChildExpression(expression, context);
+                ShareParametersWithChildExpression(expression, context, evaluationVisitorFactory);
 
                 return expression;
             }
@@ -148,13 +150,18 @@ internal static class EvaluationVisitorHelper
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    private static void ShareParametersWithChildExpression(Expression expression, ExpressionContext context)
+    private static void ShareParametersWithChildExpression(
+        Expression expression,
+        ExpressionContext context,
+        IEvaluationVisitorFactory? evaluationVisitorFactory)
     {
         foreach (var p in context.StaticParameters)
             expression.Parameters[p.Key] = p.Value;
 
         foreach (var p in context.DynamicParameters)
             expression.DynamicParameters[p.Key] = p.Value;
+
+        expression.SetEvaluationVisitorFactory(evaluationVisitorFactory);
 
         expression.EvaluateFunction += context.EvaluateFunctionHandler;
         expression.EvaluateAsyncFunction += context.EvaluateAsyncFunctionHandler;
