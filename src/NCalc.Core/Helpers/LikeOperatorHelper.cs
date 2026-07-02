@@ -47,15 +47,21 @@ public static class LikeOperatorHelper
 
         var value = leftValue.ToString()!;
         var pattern = rightValue.ToString()!;
-        var ignoreCase = context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
+        var comparisonOptions = context.ComparisonOptions;
 
-        return Like(value, pattern, ignoreCase, context.CultureInfo);
+        return Like(value, pattern, comparisonOptions.IsCaseInsensitive, comparisonOptions.IsOrdinal, comparisonOptions.CultureInfo);
     }
 
-    public static bool Like(string? value, string? pattern, bool ignoreCase, CultureInfo cultureInfo)
+    public static bool Like(string? value, string? pattern, bool ignoreCase, bool isOrdinal, CultureInfo cultureInfo)
     {
         if (value == null || pattern == null)
             return false;
+
+        if (!isOrdinal)
+        {
+            value = value.Normalize(NormalizationForm.FormC);
+            pattern = pattern.Normalize(NormalizationForm.FormC);
+        }
 
         var valueIndex = 0;
         var patternIndex = 0;

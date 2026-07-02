@@ -433,13 +433,14 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
         var likeMethod = typeof(LikeOperatorHelper).GetMethod(
             nameof(LikeOperatorHelper.Like),
-            [typeof(string), typeof(string), typeof(bool), typeof(CultureInfo)])!;
+            [typeof(string), typeof(string), typeof(bool), typeof(bool), typeof(CultureInfo)])!;
         var currentCulture = typeof(CultureInfo).GetProperty(nameof(CultureInfo.CurrentCulture))!;
         var callIsMatch = LinqExpression.Call(
             likeMethod,
             leftObj,
             rightObj,
             LinqExpression.Constant(_options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer)),
+            LinqExpression.Constant(_options.HasFlag(ExpressionOptions.OrdinalStringComparer)),
             LinqExpression.Property(null, currentCulture));
 
         // if either side is null should be false

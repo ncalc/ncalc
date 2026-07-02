@@ -188,6 +188,20 @@ public class LikeOperatorTests
     }
 
     [Test]
+    public async Task LikeOperatorShouldWorkAcrossCodepointBoundaries()
+    {
+        ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
+        const string source = "Cafe\u0301";
+        const string pattern = "CAF\u00C9";
+
+        context.StaticParameters["source"] = source;
+        context.StaticParameters["pattern"] = pattern;
+
+        await Assert.That(new Expression("source LIKE pattern", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+    }
+
+    [Test]
     public async Task LikeOperatorShouldWorkAsync()
     {
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
