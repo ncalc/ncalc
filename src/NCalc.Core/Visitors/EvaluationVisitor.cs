@@ -1,6 +1,7 @@
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
+using NCalc.Exceptions;
 using static NCalc.Helpers.EvaluationHelper;
 
 namespace NCalc.Visitors;
@@ -87,7 +88,7 @@ public class EvaluationVisitor(ExpressionContext context, IEvaluationVisitorFact
 
     public virtual object? Visit(Identifier identifier)
     {
-        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, CancellationToken, EvaluationVisitorFactory);
+        var value = GetIdentifierValue(identifier);
 
         return value is Expression expression ? expression.Evaluate(CancellationToken) : value;
     }
@@ -120,5 +121,60 @@ public class EvaluationVisitor(ExpressionContext context, IEvaluationVisitorFact
     protected void OnEvaluateBinary(BinaryEventArgs args)
     {
         context.EvaluateBinaryHandler?.Invoke(args);
+    }
+
+    private object? GetIdentifierValue(Identifier identifier)
+    {
+        var identifierName = identifier.Name;
+
+        var parameterArgs = new ParameterEventArgs(identifier.Id, CancellationToken);
+
+        context.EvaluateParameterHandler?.Invoke(identifierName, parameterArgs);
+
+        if (parameterArgs.HasResult)
+            return parameterArgs.Result;
+
+        if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
+        {
+            if (parameter is Expression expression)
+            {
+                ShareParametersWithChildExpression(expression);
+                return expression;
+            }
+
+            return parameter;
+        }
+
+        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+            return dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken));
+
+        if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
+            context.Options.HasFlag(ExpressionOptions.AllowNullParameter))
+        {
+            return null;
+        }
+
+        throw new NCalcParameterNotDefinedException(identifierName);
+    }
+
+    private void ShareParametersWithChildExpression(Expression expression)
+    {
+        foreach (var parameter in context.StaticParameters)
+            expression.Parameters[parameter.Key] = parameter.Value;
+
+        foreach (var parameter in context.DynamicParameters)
+            expression.DynamicParameters[parameter.Key] = parameter.Value;
+
+        foreach (var parameter in context.AsyncParameters)
+            expression.AsyncParameters[parameter.Key] = parameter.Value;
+
+        expression.SetEvaluationVisitorFactory(EvaluationVisitorFactory);
+
+        expression.EvaluateFunction += context.EvaluateFunctionHandler;
+        expression.EvaluateAsyncFunction += context.EvaluateAsyncFunctionHandler;
+        expression.EvaluateParameter += context.EvaluateParameterHandler;
+        expression.EvaluateAsyncParameter += context.EvaluateAsyncParameterHandler;
+        expression.EvaluateBinary += context.EvaluateBinaryHandler;
+        expression.EvaluateBinaryAsync += context.EvaluateBinaryAsyncHandler;
     }
 }

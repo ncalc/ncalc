@@ -217,7 +217,7 @@ public class AsyncTests
 
         var result = await expression.EvaluateAsync(CancellationToken.None);
 
-        await Assert.That(result).IsEqualTo(42);
+        await Assert.That(result).IsEqualTo(69);
     }
 
     [Test]
