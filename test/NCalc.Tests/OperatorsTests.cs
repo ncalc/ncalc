@@ -86,7 +86,7 @@ public class OperatorsTests
         var eif = new Expression("foo = true");
         eif.Parameters["foo"] = "true";
 
-        await Assert.That(eif.Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(eif.Evaluate<bool>(CancellationToken.None)).IsTrue();
     }
 
     [Test]
@@ -152,42 +152,42 @@ public class OperatorsTests
             }
         };
 
-        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(expression.Evaluate<bool>(CancellationToken.None)).IsFalse();
         await Assert.That(new Expression("amount <= amount")
         {
             Parameters =
             {
                 ["amount"] = double.NaN
             }
-        }.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        }.Evaluate<bool>(CancellationToken.None)).IsFalse();
         await Assert.That(new Expression("amount == amount")
         {
             Parameters =
             {
                 ["amount"] = double.NaN
             }
-        }.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        }.Evaluate<bool>(CancellationToken.None)).IsFalse();
         await Assert.That(new Expression("amount != amount")
         {
             Parameters =
             {
                 ["amount"] = double.NaN
             }
-        }.Evaluate(CancellationToken.None)).IsEqualTo(true);
+        }.Evaluate<bool>(CancellationToken.None)).IsTrue();
     }
 
     [Test]
     public async Task Should_Use_IEEE754_Semantics_For_Computed_And_FloatNaN_Comparisons()
     {
-        await Assert.That(new Expression("(0.0 / 0.0) < 0").Evaluate(CancellationToken.None)).IsEqualTo(false);
-        await Assert.That(new Expression("(0.0 / 0.0) != (0.0 / 0.0)").Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("(0.0 / 0.0) < 0").Evaluate<bool>(CancellationToken.None)).IsFalse();
+        await Assert.That(new Expression("(0.0 / 0.0) != (0.0 / 0.0)").Evaluate<bool>(CancellationToken.None)).IsTrue();
         await Assert.That(new Expression("amount <= 0")
         {
             Parameters =
             {
                 ["amount"] = float.NaN
             }
-        }.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        }.Evaluate<bool>(CancellationToken.None)).IsFalse();
     }
 
     [Test]

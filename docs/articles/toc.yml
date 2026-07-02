@@ -24,6 +24,9 @@
     - name: Expression Context
       icon: fa-solid fa-layer-group
       href: evaluation/expression_context.md
+    - name: Typed Evaluation
+      icon: fa-solid fa-code
+      href: evaluation/typed_evaluation.md
     - name: Handling Errors
       icon: fa-solid fa-triangle-exclamation
       href: evaluation/handling_errors.md

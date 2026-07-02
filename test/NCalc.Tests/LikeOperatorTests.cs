@@ -12,8 +12,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C";
 
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B2C'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B2C'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -22,8 +22,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C";
 
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_12C'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_12C'", context))
+            .Expression<bool>().IsFalse();
     }
 
     [Test]
@@ -32,8 +32,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "X12345";
 
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '_12345'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '_12345'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -42,8 +42,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABCX23YZ";
 
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'ABCX__YZ'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'ABCX__YZ'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -52,8 +52,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C3D";
 
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B_C_D'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B_C_D'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -62,8 +62,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC";
 
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B'", context))
+            .Expression<bool>().IsFalse();
     }
 
     [Test]
@@ -71,8 +71,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -80,8 +80,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC66";
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '%66'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '%66'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -89,8 +89,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC66XYZ";
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '%66%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '%66%'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -98,8 +98,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66";
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -107,8 +107,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "77ABC";
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context))
+            .Expression<bool>().IsFalse();
     }
 
     [Test]
@@ -116,8 +116,8 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["LEP_COD_SAP_PROD"] = "77ABC";
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} NOT LIKE '66%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} NOT LIKE '66%'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -126,8 +126,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["Value"] = "100%";
 
-        await Assert.That(new Expression(@"{Value} LIKE '%\%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression(@"{Value} LIKE '%\%'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -136,8 +136,8 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["Value"] = "Hello_world";
 
-        await Assert.That(new Expression(@"{Value} LIKE '%\_%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression(@"{Value} LIKE '%\_%'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -146,12 +146,12 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
 
         context.StaticParameters["Value"] = "1000";
-        await Assert.That(new Expression(@"{Value} LIKE '%\%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression(@"{Value} LIKE '%\%'", context))
+            .Expression<bool>().IsFalse();
 
         context.StaticParameters["Value"] = "Hello-world";
-        await Assert.That(new Expression(@"{Value} LIKE '%\_%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression(@"{Value} LIKE '%\_%'", context))
+            .Expression<bool>().IsFalse();
     }
 
     [Test]
@@ -170,10 +170,10 @@ public class LikeOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["Value"] = "Hello_world";
 
-        await Assert.That(new Expression("{Value} LIKE EscapeLike('Hello_world')", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
-        await Assert.That(new Expression("{Value} LIKE EscapeLike('Hello%world')", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression("{Value} LIKE EscapeLike('Hello_world')", context))
+            .Expression<bool>().IsTrue();
+        await Assert.That(new Expression("{Value} LIKE EscapeLike('Hello%world')", context))
+            .Expression<bool>().IsFalse();
     }
 
     [Test]
@@ -181,10 +181,10 @@ public class LikeOperatorTests
     {
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context))
+            .Expression<bool>().IsTrue();
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -197,8 +197,8 @@ public class LikeOperatorTests
         context.StaticParameters["source"] = source;
         context.StaticParameters["pattern"] = pattern;
 
-        await Assert.That(new Expression("source LIKE pattern", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("source LIKE pattern", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -207,8 +207,8 @@ public class LikeOperatorTests
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
         await Assert.That(await new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
-            .EvaluateAsync(CancellationToken.None)).IsEqualTo(true);
+            .EvaluateAsync<bool>(CancellationToken.None)).IsTrue();
         await Assert.That(await new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
-            .EvaluateAsync(CancellationToken.None)).IsEqualTo(true);
+            .EvaluateAsync<bool>(CancellationToken.None)).IsTrue();
     }
 }

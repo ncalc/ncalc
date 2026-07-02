@@ -42,18 +42,18 @@ public class EvaluationTests
         ein.Parameters["1"] = 2;
         ein.Parameters["2"] = 5;
 
-        await Assert.That(ein.Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(ein.Evaluate<bool>(CancellationToken.None)).IsTrue();
 
         var eout = new Expression("in((2 + 2), [1], [2], 1 + 2, 3)");
         eout.Parameters["1"] = 2;
         eout.Parameters["2"] = 5;
 
-        await Assert.That(eout.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(eout.Evaluate<bool>(CancellationToken.None)).IsFalse();
 
         // Should work with strings
         var estring = new Expression("in('to' + 'to', 'titi', 'toto')");
 
-        await Assert.That(estring.Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(estring.Evaluate<bool>(CancellationToken.None)).IsTrue();
     }
 
     [Test]
@@ -75,7 +75,7 @@ public class EvaluationTests
             }
         };
 
-        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(expression.Evaluate<bool>(CancellationToken.None)).IsTrue();
     }
 
     [Test]
@@ -138,9 +138,9 @@ public class EvaluationTests
     {
         var dateSeparator = CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator;
         await Assert.That(new Expression($"#1{dateSeparator}1{dateSeparator}2009#==#1{dateSeparator}1{dateSeparator}2009#")
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+            .Evaluate<bool>(CancellationToken.None)).IsTrue();
         await Assert.That(new Expression($"#2{dateSeparator}1{dateSeparator}2009#==#1{dateSeparator}1{dateSeparator}2009#")
-            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+            .Evaluate<bool>(CancellationToken.None)).IsFalse();
     }
 
     [Test]

@@ -90,7 +90,7 @@ public class CustomCultureTests
 
             var e = new Expression("[a]<2.0", CultureInfo.InvariantCulture);
             e.Parameters["a"] = "1.7";
-            await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(true);
+            await Assert.That(e.Evaluate<bool>(CancellationToken.None)).IsTrue();
         }
         finally
         {

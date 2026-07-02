@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using NCalc.Cache;
 using NCalc.Exceptions;
 using NCalc.Extensions;
@@ -224,15 +224,38 @@ public class Expression
 
             var evaluationVisitor = CreateEvaluationVisitor(cancellationToken);
 
-            if (LogicalExpression is null)
-                return null;
-
-            return LogicalExpression.Accept(evaluationVisitor);
+            return LogicalExpression?.Accept(evaluationVisitor);
         }
         catch (InvalidCastException exception)
         {
             throw new NCalcEvaluationException("Error evaluating expression.", exception);
         }
+    }
+
+    public T? Evaluate<T>(CancellationToken cancellationToken = default)
+    {
+        var result = Evaluate(cancellationToken);
+
+        return result switch
+        {
+            null => default,
+            T typed => typed,
+            IConvertible cvt => (T)Convert.ChangeType(cvt, typeof(T), Context.CultureInfo),
+            _ => throw new NCalcEvaluationException($"Can't cast {result} to {typeof(T).Name}")
+        };
+    }
+
+    public async Task<T?> EvaluateAsync<T>(CancellationToken cancellationToken = default)
+    {
+        var result = await EvaluateAsync(cancellationToken);
+
+        return result switch
+        {
+            null => default,
+            T typed => typed,
+            IConvertible cvt => (T)Convert.ChangeType(cvt, typeof(T), Context.CultureInfo),
+            _ => throw new NCalcEvaluationException($"Can't cast {result} to {typeof(T).Name}")
+        };
     }
 
     /// <summary>

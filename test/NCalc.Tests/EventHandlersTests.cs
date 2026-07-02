@@ -312,14 +312,14 @@ public class EventHandlersTests
         };
         e.Parameters["value"] = 9;
 
-        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(e.Evaluate<bool>(CancellationToken.None)).IsFalse();
 
         e.Parameters["value"] = 11;
-        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(e.Evaluate<bool>(CancellationToken.None)).IsFalse();
         e.Parameters["value"] = 12;
-        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(e.Evaluate<bool>(CancellationToken.None)).IsFalse();
         e.Parameters["value"] = 13;
-        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(e.Evaluate<bool>(CancellationToken.None)).IsTrue();
         await Assert.That(times).HasSingleItem();
     }
 

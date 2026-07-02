@@ -283,7 +283,7 @@ public class MathsTests
     public async Task ShouldCompareLongValues()
     {
         await Assert.That(new Expression("(0=1500000)||(((0+2200000000)-1500000)<0)")
-            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+            .Evaluate<bool>(CancellationToken.None)).IsFalse();
     }
 
     [Test]

@@ -3,6 +3,7 @@
 Behavioral options and evaluation rules that affect how expressions run.
 
 - [Expression Context](expression_context.md)
+- [Typed Evaluation](typed_evaluation.md)
 - [Handling Errors](handling_errors.md)
 - [Case Sensitivity](case_sensitivity.md)
 - [Overflow Protection](overflow_protection.md)
