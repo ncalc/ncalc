@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using NCalc.Helpers;
 
 namespace NCalc.Tests;
 
@@ -120,6 +121,62 @@ public class LikeOperatorTests
     }
 
     [Test]
+    public async Task ShouldMatchEscapedPercentUsingLike()
+    {
+        var context = new ExpressionContext();
+        context.StaticParameters["Value"] = "100%";
+
+        await Assert.That(new Expression(@"{Value} LIKE '%\%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+    }
+
+    [Test]
+    public async Task ShouldMatchEscapedUnderscoreUsingLike()
+    {
+        var context = new ExpressionContext();
+        context.StaticParameters["Value"] = "Hello_world";
+
+        await Assert.That(new Expression(@"{Value} LIKE '%\_%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+    }
+
+    [Test]
+    public async Task ShouldNotTreatEscapedWildcardsAsWildcardsUsingLike()
+    {
+        var context = new ExpressionContext();
+
+        context.StaticParameters["Value"] = "1000";
+        await Assert.That(new Expression(@"{Value} LIKE '%\%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+
+        context.StaticParameters["Value"] = "Hello-world";
+        await Assert.That(new Expression(@"{Value} LIKE '%\_%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+    }
+
+    [Test]
+    public async Task ShouldEscapeLikePattern()
+    {
+        await Assert.That(new Expression(@"EscapeLike('100%')")
+            .Evaluate(CancellationToken.None)).IsEqualTo(@"100\%");
+        await Assert.That(new Expression(@"EscapeLike('Hello_world')")
+            .Evaluate(CancellationToken.None)).IsEqualTo(@"Hello\_world");
+        await Assert.That(LikeOperatorHelper.EscapeLike(@"C:\Temp_100%")).IsEqualTo(@"C:\\Temp\_100\%");
+    }
+
+    [Test]
+    public async Task ShouldMatchEscapedUserInputUsingLike()
+    {
+        var context = new ExpressionContext();
+        context.StaticParameters["Value"] = "Hello_world";
+
+        await Assert.That(new Expression("{Value} LIKE EscapeLike('Hello_world')", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{Value} LIKE EscapeLike('Hello%world')", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(false);
+    }
+
+    [Test]
     public async Task LikeOperatorShouldRespectStringComparer()
     {
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
@@ -127,6 +184,20 @@ public class LikeOperatorTests
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
             .Evaluate(CancellationToken.None)).IsEqualTo(true);
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
+            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+    }
+
+    [Test]
+    public async Task LikeOperatorShouldWorkAcrossCodepointBoundaries()
+    {
+        ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
+        const string source = "Cafe\u0301";
+        const string pattern = "CAF\u00C9";
+
+        context.StaticParameters["source"] = source;
+        context.StaticParameters["pattern"] = pattern;
+
+        await Assert.That(new Expression("source LIKE pattern", context)
             .Evaluate(CancellationToken.None)).IsEqualTo(true);
     }
 

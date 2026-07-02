@@ -1,8 +1,6 @@
 using NCalc.Exceptions;
 using NCalc.Handlers;
 using NCalc.Helpers;
-using static NCalc.Helpers.EvaluationHelper;
-using static NCalc.Helpers.TypeHelper;
 
 namespace NCalc.Visitors;
 
@@ -17,7 +15,7 @@ internal static class EvaluationVisitorHelper
         switch (expressionType)
         {
             case BinaryExpressionType.Div:
-                return Div(left, right, context);
+                return EvaluationHelper.Div(left, right, context);
 
             case BinaryExpressionType.Equal:
                 return Compare(left, right, ComparisonType.Equal, context);
@@ -38,16 +36,16 @@ internal static class EvaluationVisitorHelper
                 return Compare(left, right, ComparisonType.NotEqual, context);
 
             case BinaryExpressionType.Minus:
-                return Minus(left, right, context);
+                return EvaluationHelper.Minus(left, right, context);
 
             case BinaryExpressionType.Modulo:
-                return Modulo(left, right, context);
+                return EvaluationHelper.Modulo(left, right, context);
 
             case BinaryExpressionType.Plus:
-                return Plus(left, right, context);
+                return EvaluationHelper.Plus(left, right, context);
 
             case BinaryExpressionType.Times:
-                return Times(left, right, context);
+                return EvaluationHelper.Times(left, right, context);
 
             case BinaryExpressionType.BitwiseAnd:
                 return Convert.ToUInt64(left, context.CultureInfo) &
@@ -73,16 +71,16 @@ internal static class EvaluationVisitorHelper
                 return MathHelper.Pow(left, right, context.MathHelperOptions);
 
             case BinaryExpressionType.In:
-                return In(right, left, context);
+                return EvaluationHelper.In(right, left, context);
 
             case BinaryExpressionType.NotIn:
-                return !In(right, left, context);
+                return !EvaluationHelper.In(right, left, context);
 
             case BinaryExpressionType.Like:
-                return Like(left, right, context);
+                return LikeOperatorHelper.Like(left, right, context);
 
             case BinaryExpressionType.NotLike:
-                return !Like(left, right, context);
+                return !LikeOperatorHelper.Like(left, right, context);
 
             default:
                 return null;
@@ -95,10 +93,10 @@ internal static class EvaluationVisitorHelper
         ComparisonType comparisonType,
         ExpressionContext context)
     {
-        if (HasNullOrTypeConflict(a, b, context.Options))
+        if (TypeHelper.HasNullOrTypeConflict(a, b, context.Options))
             return comparisonType == ComparisonType.NotEqual;
 
-        var result = CompareUsingMostPreciseType(a, b, context.ComparisonOptions);
+        var result = TypeHelper.CompareUsingMostPreciseType(a, b, context.ComparisonOptions);
 
         return comparisonType switch
         {

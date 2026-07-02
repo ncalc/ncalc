@@ -2,7 +2,7 @@
 
 ## Built-in Functions
 
-The framework includes a set of already implemented functions.
+The framework includes a set of already math implemented functions.
 
 | Name		         | Description	                                                                                                                                                                                                     | Usage	               | Result |
 |----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|--------|
@@ -30,11 +30,12 @@ The framework includes a set of already implemented functions.
 
 It also includes other general purpose ones.
 
-| Name		 | Description	                                                                                      | Usage	                                            | Result                                                                         |
-|--------|---------------------------------------------------------------------------------------------------|---------------------------------------------------|--------------------------------------------------------------------------------|
-| in	    | Returns whether an element is in a set of values.	                                                | in(1 + 1, 1, 2, 3)	                               | true                                                                           |
-| if	    | Returns a value based on a condition.	                                                            | if(3 % 2 = 1, 'value is true', 'value is false')	 | 'value is true'                                                                |
-| ifs    | Returns a value based on evaluating a number of conditions, returning a default if none are true. | ifs(foo > 50, "bar", foo > 75, "baz", "quux")     | if foo is between 50 and 75 "bar", foo greater than 75 "baz", otherwise "quux" |  
+| Name		     | Description	                                                                                      | Usage	                                            | Result                                                                         |
+|------------|---------------------------------------------------------------------------------------------------|---------------------------------------------------|--------------------------------------------------------------------------------|
+| in	        | Returns whether an element is in a set of values.	                                                | in(1 + 1, 1, 2, 3)	                               | true                                                                           |
+| if	        | Returns a value based on a condition.	                                                            | if(3 % 2 = 1, 'value is true', 'value is false')	 | 'value is true'                                                                |
+| ifs        | Returns a value based on evaluating a number of conditions, returning a default if none are true. | ifs(foo > 50, "bar", foo > 75, "baz", "quux")     | if foo is between 50 and 75 "bar", foo greater than 75 "baz", otherwise "quux" |  
+| escapeLike | Escapes `%`, `_`, and `\` so a value is matched literally in a `LIKE` pattern.              | escapeLike('100%')                                | '100\%'                                                                        |
 
 By default, the comma is used as argument separator, but you can change it using <xref:NCalc.Parser.LogicalExpressionArgumentSeparator>. You can specify multiple separators.
 

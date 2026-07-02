@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using NCalc.Exceptions;
 
 namespace NCalc.Helpers;
@@ -189,35 +188,9 @@ public static class EvaluationHelper
             };
         }
 
-        /// <summary>
-        /// Determines whether a specified string matches a pattern using SQL-like wildcards.
-        /// </summary>
-        /// <param name="leftValue">The left operand.</param>///
-        /// <param name="rightValue">The right operand.</param>
-        /// <param name="context">The context containing options for the comparison.</param>
-        /// <returns>
-        /// <c>true</c> if the <paramref name="value"/> matches the <paramref name="pattern"/>; otherwise, <c>false</c>.
-        /// </returns>
-        /// <remarks>
-        /// The comparison is case-insensitive if the <see cref="ExpressionOptions.CaseInsensitiveStringComparer"/> flag is set in the <paramref name="context"/>.
-        /// </remarks>
+        [Obsolete("Please use LikeOperatorHelper.Like.")]
         public static bool Like(object? leftValue, object? rightValue, ExpressionContext context)
         {
-            if (leftValue == null || rightValue == null)
-                return false;
-
-            string value = leftValue.ToString()!;
-            string pattern = rightValue.ToString()!;
-
-            var regexPattern = Regex.Escape(pattern)
-                .Replace("%", ".*") // % matches zero or more characters
-                .Replace("_", "."); // _ matches exactly one character
-
-            var options = context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer)
-                ? RegexOptions.IgnoreCase
-                : RegexOptions.None;
-
-            // Use ^ and $ to match the start and end of the string
-            return Regex.IsMatch(value, $"^{regexPattern}$", options);
+            return LikeOperatorHelper.Like(leftValue, rightValue, context);
         }
 }

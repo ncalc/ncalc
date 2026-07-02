@@ -157,12 +157,24 @@ Patterns can include:
 * `%` to match any sequence of characters.
 * `_` to match any single character.
 
+Use a backslash (`\`) to escape wildcard characters when they should be matched literally:
+* `\%` matches a literal percent sign.
+* `\_` matches a literal underscore.
+* `\\` matches a literal backslash.
+
+Use `EscapeLike(value)` when passing user input into a `LIKE` pattern and the input should be matched literally.
+
 **Examples:**
 ```csharp
 'HelloWorld' LIKE 'Hello%'     // True
 'Test123' NOT LIKE 'Test__'    // False
 '2024-08-28' LIKE '2024-08-__' // True
 'abc' LIKE 'a%'                // True
+'100%' LIKE '%\%'              // True
+'1000' LIKE '%\%'              // False
+'Hello_world' LIKE '%\_%'      // True
+'Hello-world' LIKE '%\_%'      // False
+'100%' LIKE EscapeLike('100%') // True
 ```
 
 ## Logical

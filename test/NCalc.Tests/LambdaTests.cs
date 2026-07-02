@@ -721,6 +721,10 @@ public class LambdaTests
     [Arguments("TEST", "%est", true, ExpressionOptions.CaseInsensitiveStringComparer)]
     [Arguments("this is a test", "%is a%", true, ExpressionOptions.None)]
     [Arguments("this is a test", "%ITS A%", false, ExpressionOptions.None)]
+    [Arguments("100%", @"%\%", true, ExpressionOptions.None)]
+    [Arguments("1000", @"%\%", false, ExpressionOptions.None)]
+    [Arguments("Hello_world", @"%\_%", true, ExpressionOptions.None)]
+    [Arguments("Hello-world", @"%\_%", false, ExpressionOptions.None)]
     public async Task ShouldHandleLikeOperator(string val, string right, bool expected, ExpressionOptions opts)
     {
         string[] ops = ["like", "not like"];
@@ -758,6 +762,20 @@ public class LambdaTests
                 await Assert.That(actualAbs).IsFalse();
             }
         }
+    }
+
+    [Test]
+    public async Task ShouldHandleEscapeLikeFunction()
+    {
+        var expression = new Expression("EscapeLike(x)");
+        expression.Parameters["x"] = "100%_";
+
+        var lambda = expression.ToLambda<string>(CancellationToken.None);
+
+        var actual = lambda();
+
+        await Assert.That(actual).IsEqualTo(@"100\%\_");
+        await Assert.That(actual).IsEqualTo((string)expression.Evaluate(CancellationToken.None)!);
     }
 
     [Test]

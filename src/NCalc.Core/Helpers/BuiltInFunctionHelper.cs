@@ -6,7 +6,7 @@ namespace NCalc.Helpers;
 
 public static class BuiltInFunctionHelper
 {
-    private static readonly IReadOnlyList<string> _builtInFunctionNames =
+    private static readonly IReadOnlyList<string> BuiltInFunctionNames =
         new ReadOnlyCollection<string>([
             "abs",
             "acos",
@@ -31,9 +31,10 @@ public static class BuiltInFunctionHelper
             "min",
             "if",
             "in",
-            "ifs"
+            "ifs",
+            "escapeLike"
         ]);
-    public static IReadOnlyList<string> GetBuiltInFunctionNames() => _builtInFunctionNames;
+    public static IReadOnlyList<string> GetBuiltInFunctionNames() => BuiltInFunctionNames;
 
     public static object? Evaluate(
         string functionName,
@@ -65,6 +66,14 @@ public static class BuiltInFunctionHelper
             }
 
             return false;
+        }
+
+        if (functionName.Equals("EscapeLike", comparison))
+        {
+            if (functionData.Count != 1)
+                throw new NCalcEvaluationException("EscapeLike() takes exactly 1 argument");
+
+            return LikeOperatorHelper.EscapeLike(Convert.ToString(functionData.Evaluate(0), context.CultureInfo) ?? string.Empty);
         }
 
         if (functionName.Equals("Abs", comparison))
@@ -241,7 +250,7 @@ public static class BuiltInFunctionHelper
 
             return null;
         }
-        
+
         throw new NCalcFunctionNotFoundException(functionName);
     }
 
@@ -275,6 +284,14 @@ public static class BuiltInFunctionHelper
             }
 
             return false;
+        }
+
+        if (functionName.Equals("EscapeLike", comparison))
+        {
+            if (functionData.Count != 1)
+                throw new NCalcEvaluationException("EscapeLike() takes exactly 1 argument");
+
+            return LikeOperatorHelper.EscapeLike(Convert.ToString(await functionData.EvaluateAsync(0), context.CultureInfo) ?? string.Empty);
         }
 
         if (functionName.Equals("Abs", comparison))
