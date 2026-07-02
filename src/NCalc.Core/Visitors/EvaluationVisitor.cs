@@ -1,4 +1,5 @@
-﻿using NCalc.Handlers;
+using NCalc.Factories;
+using NCalc.Handlers;
 using NCalc.Helpers;
 using static NCalc.Helpers.EvaluationHelper;
 
@@ -8,9 +9,16 @@ namespace NCalc.Visitors;
 /// Class responsible to synchronously evaluating <see cref="LogicalExpression"/> objects into CLR objects.
 /// </summary>
 /// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
-public class EvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<object?>
+public class EvaluationVisitor(ExpressionContext context, IEvaluationVisitorFactory? evaluationVisitorFactory = null, CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<object?>
 {
     protected CancellationToken CancellationToken { get; } = cancellationToken;
+    protected IEvaluationVisitorFactory? EvaluationVisitorFactory { get; } = evaluationVisitorFactory;
+
+    protected AsyncEvaluationVisitor CreateAsyncEvaluationVisitor()
+    {
+        return EvaluationVisitorFactory?.CreateAsyncEvaluationVisitor(context, CancellationToken)
+               ?? new AsyncEvaluationVisitor(context, cancellationToken: CancellationToken);
+    }
 
     public virtual object? Visit(TernaryExpression expression)
     {
@@ -23,7 +31,7 @@ public class EvaluationVisitor(ExpressionContext context, CancellationToken canc
 
     public virtual object? Visit(BinaryExpression expression)
     {
-        var binaryEventArgs = new BinaryEventArgs(expression, this, new AsyncEvaluationVisitor(context, CancellationToken), CancellationToken);
+        var binaryEventArgs = new BinaryEventArgs(expression, this, CreateAsyncEvaluationVisitor(), CancellationToken);
         OnEvaluateBinary(binaryEventArgs);
 
         if (binaryEventArgs.HasResult)
@@ -62,7 +70,7 @@ public class EvaluationVisitor(ExpressionContext context, CancellationToken canc
             function.Parameters,
             context,
             this,
-            null,
+            CreateAsyncEvaluationVisitor(),
             CancellationToken);
         var functionArgs = new FunctionEventArgs(functionData);
 
@@ -79,7 +87,7 @@ public class EvaluationVisitor(ExpressionContext context, CancellationToken canc
 
     public virtual object? Visit(Identifier identifier)
     {
-        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, CancellationToken);
+        var value = EvaluationVisitorHelper.GetIdentifierValue(identifier, context, CancellationToken, EvaluationVisitorFactory);
 
         return value is Expression expression ? expression.Evaluate(CancellationToken) : value;
     }

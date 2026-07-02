@@ -1,4 +1,4 @@
-﻿using NCalc.Cache;
+using NCalc.Cache;
 using NCalc.DependencyInjection;
 using NCalc.Exceptions;
 using NCalc.Factories;
@@ -83,6 +83,25 @@ public class ServiceCollectionExtensionsTests
         await Assert.That(await exp.EvaluateAsync(CancellationToken.None)).IsEqualTo("The answer async");
     }
 
+    [Test]
+    public async Task WithEvaluationVisitorFactory_ShouldPropagateToNestedExpressions()
+    {
+        var services = new ServiceCollection();
+
+        services.AddNCalc()
+            .WithEvaluationVisitorFactory<CustomEvaluationVisitorFactory>();
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
+
+        var exp = expFactory.Create("value");
+        exp.Parameters["value"] = new Expression("42");
+
+        await Assert.That(exp.Evaluate(CancellationToken.None)).IsEqualTo("The answer");
+        await Assert.That(await exp.EvaluateAsync(CancellationToken.None)).IsEqualTo("The answer async");
+    }
+
     #region Custom Implementations Stubs
 
     private class CustomExpressionFactory(
@@ -144,7 +163,20 @@ public class ServiceCollectionExtensionsTests
         }
     }
 
-    private class CustomSyncVisitor(ExpressionContext context, CancellationToken cancellationToken) : EvaluationVisitor(context, cancellationToken)
+    private class CustomEvaluationVisitorFactory : IEvaluationVisitorFactory
+    {
+        public EvaluationVisitor CreateEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+        {
+            return new CustomSyncVisitor(context, cancellationToken, this);
+        }
+
+        public AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+        {
+            return new CustomAsyncVisitor(context, cancellationToken, this);
+        }
+    }
+
+    private class CustomSyncVisitor(ExpressionContext context, CancellationToken cancellationToken, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : EvaluationVisitor(context, evaluationVisitorFactory, cancellationToken)
     {
         public override object Visit(ValueExpression expression)
         {
@@ -155,7 +187,7 @@ public class ServiceCollectionExtensionsTests
         }
     }
 
-    private class CustomAsyncVisitor(ExpressionContext context, CancellationToken cancellationToken) : AsyncEvaluationVisitor(context, cancellationToken)
+    private class CustomAsyncVisitor(ExpressionContext context, CancellationToken cancellationToken, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : AsyncEvaluationVisitor(context, evaluationVisitorFactory, cancellationToken)
     {
         public override Task<object> Visit(ValueExpression expression)
         {

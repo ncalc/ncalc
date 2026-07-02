@@ -8,12 +8,12 @@ public static class LogicalExpressionExtensions
     {
         public Task<object?> EvaluateAsync(ExpressionContext context, CancellationToken cancellationToken = default)
         {
-            return expression.Accept(new AsyncEvaluationVisitor(context, cancellationToken));
+            return expression.Accept(new AsyncEvaluationVisitor(context, cancellationToken: cancellationToken));
         }
 
         public object? Evaluate(ExpressionContext context, CancellationToken cancellationToken = default)
         {
-            return expression.Accept(new EvaluationVisitor(context, cancellationToken));
+            return expression.Accept(new EvaluationVisitor(context, cancellationToken: cancellationToken));
         }
 
         public string ToExpressionString()
