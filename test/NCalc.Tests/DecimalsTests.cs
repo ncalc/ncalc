@@ -129,7 +129,7 @@ public class DecimalsTests
     [Test]
     public async Task ShouldNotRoundDecimalValues()
     {
-        await Assert.That(new Expression("0 <= -0.6").Evaluate(CancellationToken.None)).IsEqualTo(false);
+        await Assert.That(new Expression("0 <= -0.6").Evaluate<bool>(CancellationToken.None)).IsFalse();
     }
 
     [Test]

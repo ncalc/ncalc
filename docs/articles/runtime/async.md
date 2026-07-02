@@ -49,6 +49,21 @@ var result = await expression.EvaluateAsync();
 Debug.Assert((bool)result!);
 ```
 
+When the expected result type is known, use `EvaluateAsync<T>()`:
+
+```csharp
+var countExpression = new Expression("database_operation('SELECT COUNT(*)')");
+
+countExpression.AsyncFunctions["database_operation"] = async args =>
+{
+    await Task.Delay(100, args.CancellationToken);
+    return 3;
+};
+
+var count = await countExpression.EvaluateAsync<int>();
+Debug.Assert(count == 3);
+```
+
 ## Async Function Handlers
 
 `EvaluateAsyncFunction` is only used by `EvaluateAsync()`. During async evaluation, NCalc invokes

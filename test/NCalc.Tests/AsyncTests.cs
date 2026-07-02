@@ -27,8 +27,8 @@ public class AsyncTests
             return "FOO";
         };
 
-        var result = await expression.EvaluateAsync(CancellationToken.None);
-        await Assert.That(result).IsEqualTo(true);
+        var result = await expression.EvaluateAsync<bool>(CancellationToken.None);
+        await Assert.That(result).IsTrue();
     }
 
     [Test]
@@ -318,9 +318,9 @@ public class AsyncTests
             {
                 ["amount"] = double.NaN
             }
-        }.EvaluateAsync(CancellationToken.None)).IsEqualTo(false);
-        await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo(true);
-        await Assert.That(await new Expression("(0.0 / 0.0) == (0.0 / 0.0)").EvaluateAsync(CancellationToken.None))
-            .IsEqualTo(false);
+        }.EvaluateAsync<bool>(CancellationToken.None)).IsFalse();
+        await Assert.That(await expression.EvaluateAsync<bool>(CancellationToken.None)).IsTrue();
+        await Assert.That(await new Expression("(0.0 / 0.0) == (0.0 / 0.0)").EvaluateAsync<bool>(CancellationToken.None))
+            .IsFalse();
     }
 }

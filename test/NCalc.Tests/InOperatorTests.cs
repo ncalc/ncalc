@@ -14,7 +14,7 @@ public class InOperatorTests
             }
         };
 
-        await Assert.That("quantity in (1,2,3,12)").Expression(context).IsEqualTo(true);
+        await Assert.That("quantity in (1,2,3,12)").Expression<bool>(context).IsTrue();
     }
 
     [Test]
@@ -22,8 +22,8 @@ public class InOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["PageState"] = "Insert";
-        await Assert.That(new Expression("{PageState} in ('Insert','Update')", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{PageState} in ('Insert','Update')", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -32,8 +32,8 @@ public class InOperatorTests
         var context = new ExpressionContext();
         context.StaticParameters["PageState"] = "Insert";
 
-        await Assert.That(new Expression("{PageState} in 'Insert a quote, you must.'", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{PageState} in 'Insert a quote, you must.'", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -41,8 +41,8 @@ public class InOperatorTests
     {
         var context = new ExpressionContext();
         context.StaticParameters["PageState"] = "Import";
-        await Assert.That(new Expression("{PageState} not in  ('Insert','Update')", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{PageState} not in  ('Insert','Update')", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -50,8 +50,8 @@ public class InOperatorTests
     {
         ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
         context.StaticParameters["PageState"] = "Insert";
-        await Assert.That(new Expression("{PageState} in ('INSERT','UPDATE')", context)
-            .Evaluate(CancellationToken.None)).IsEqualTo(true);
+        await Assert.That(new Expression("{PageState} in ('INSERT','UPDATE')", context))
+            .Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -60,7 +60,7 @@ public class InOperatorTests
         await Assert.That(new Expression("{tap_int_status} in (5)")
         {
             Parameters = { { "tap_int_status", 5 } }
-        }.Evaluate(CancellationToken.None)).IsEqualTo(true);
+        }).Expression<bool>().IsTrue();
     }
 
     [Test]
@@ -69,7 +69,7 @@ public class InOperatorTests
         await Assert.That(new Expression("{PageState} in 4")
         {
             Parameters = { { "PageState", "Insert" } }
-        }.Evaluate(CancellationToken.None)).IsEqualTo(false);
+        }).Expression<bool>().IsFalse();
     }
 
     [Test]
