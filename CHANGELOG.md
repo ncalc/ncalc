@@ -1,3 +1,10 @@
+# 6.4.0
+* fix: small fix for Ln support in NCalc.LambdaCompilation by @gogolevsergey in https://github.com/ncalc/ncalc/pull/590
+* feat: Add LIKE escape support and EscapeLike helper by @gumbarros in https://github.com/ncalc/ncalc/pull/593
+* feat: Add optional evaluation visitor factory to Expression by @george-domingos in https://github.com/ncalc/ncalc/pull/591
+* feat: Add typed evaluation overloads by @gumbarros in https://github.com/ncalc/ncalc/pull/595
+* feat: Add async parameter callback support by @gumbarros in https://github.com/ncalc/ncalc/pull/596
+
 # 6.3.3
 * Fix `in` operator behavior for different types by @gumbarros in https://github.com/ncalc/ncalc/pull/588
 * Improve performance by caching expression helper options by @gumbarros in https://github.com/ncalc/ncalc/pull/589
