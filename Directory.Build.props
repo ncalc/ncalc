@@ -4,6 +4,7 @@
     <Authors>Sebastien Ros and contributors</Authors>
     <Copyright>Sebastien Ros and contributors</Copyright>
     <Company>https://github.com/ncalc</Company>
+    <RepositoryUrl>https://github.com/ncalc/ncalc.git</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
