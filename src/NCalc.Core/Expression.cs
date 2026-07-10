@@ -102,7 +102,7 @@ public class Expression
         ExpressionString = expressionString;
         CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
-        CultureInfo = (CultureInfo?)null ?? CultureInfo.CurrentCulture;
+        CultureInfo = CultureInfo.CurrentCulture;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
     }
@@ -118,7 +118,7 @@ public class Expression
         LogicalExpression = logicalExpression ?? throw new ArgumentNullException(nameof(logicalExpression));
         CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
-        CultureInfo = (CultureInfo?)null ?? CultureInfo.CurrentCulture;
+        CultureInfo = CultureInfo.CurrentCulture;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
     }
