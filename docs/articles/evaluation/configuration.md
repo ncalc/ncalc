@@ -1,6 +1,6 @@
 # Configuration
 
-NCalc 7 separates expression configuration from runtime state.
+NCalc separates expression configuration from runtime state.
 
 Use <xref:NCalc.ExpressionConfiguration> for parsing, evaluation, math, comparison, and cache settings. Use
 <xref:NCalc.ExpressionContext> for runtime data such as parameters, functions, and event handlers.
@@ -107,7 +107,7 @@ public class RuleEvaluator(
 }
 ```
 
-## Legacy ExpressionOptions
+## ExpressionOptions
 
 <xref:NCalc.ExpressionOptions> is kept as a legacy helper. It is no longer the main configuration model.
 
@@ -124,3 +124,5 @@ var expression = new Expression("1.2 + 3.4", configuration);
 
 For new code, prefer constructing <xref:NCalc.ExpressionConfiguration>, <xref:NCalc.Parser.LogicalExpressionParserOptions>,
 <xref:NCalc.ExpressionEvaluationOptions>, and <xref:NCalc.Helpers.MathOptions> directly.
+
+Using <xref:NCalc.ExpressionConfiguration> directly also avoids using `Enum.HasFlag` because of its unnecessary overhead.
