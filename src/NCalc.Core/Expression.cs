@@ -135,7 +135,7 @@ public class Expression
     {
         ExpressionString = expression;
         CacheEnabled = ((ExpressionConfiguration?)null)?.CacheEnabled ?? true;
-        Configuration = (ExpressionConfiguration?)null ?? new ExpressionConfiguration();
+        Configuration = new ExpressionConfiguration();
         CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
     }
 
