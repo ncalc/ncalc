@@ -102,7 +102,6 @@ public class Expression
         ExpressionString = expressionString;
         CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
-        CultureInfo = CultureInfo.CurrentCulture;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
     }
@@ -118,7 +117,6 @@ public class Expression
         LogicalExpression = logicalExpression ?? throw new ArgumentNullException(nameof(logicalExpression));
         CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
-        CultureInfo = CultureInfo.CurrentCulture;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
     }
@@ -134,24 +132,22 @@ public class Expression
     public Expression(string? expression, CultureInfo cultureInfo) : this()
     {
         ExpressionString = expression;
-        CacheEnabled = ((ExpressionConfiguration?)null)?.CacheEnabled ?? true;
-        Configuration = new ExpressionConfiguration();
-        CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
+        CacheEnabled = true;
+        CultureInfo = cultureInfo;
     }
 
     public Expression(string? expression, ExpressionContext context) : this()
     {
         ExpressionString = expression;
         Context = context;
-        CacheEnabled = ((ExpressionConfiguration?)null)?.CacheEnabled ?? true;
-        Configuration = (ExpressionConfiguration?)null ?? new ExpressionConfiguration();
+        CacheEnabled = true;
         CultureInfo = CultureInfo.CurrentCulture;
     }
 
-    public Expression(string? expression, ExpressionConfiguration configuration, ExpressionContext context, CultureInfo? cultureInfo = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(evaluationVisitorFactory)
+    public Expression(string? expression, ExpressionConfiguration? configuration, ExpressionContext? context, CultureInfo? cultureInfo = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(evaluationVisitorFactory)
     {
         ExpressionString = expression;
-        Context = context;
+        Context = context ?? new ExpressionContext();
         CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
         CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
