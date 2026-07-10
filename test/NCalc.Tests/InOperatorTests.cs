@@ -8,7 +8,7 @@ public class InOperatorTests
     {
         var context = new ExpressionContext
         {
-            StaticParameters =
+            Parameters =
             {
                 ["quantity"] = (short)12
             }
@@ -20,8 +20,13 @@ public class InOperatorTests
     [Test]
     public async Task ShouldEvaluateInOperatorWithList()
     {
-        var context = new ExpressionContext();
-        context.StaticParameters["PageState"] = "Insert";
+        var context = new ExpressionContext
+        {
+            Parameters =
+            {
+                ["PageState"] = "Insert"
+            }
+        };
         await Assert.That(new Expression("{PageState} in ('Insert','Update')", context))
             .Expression<bool>().IsTrue();
     }
@@ -29,8 +34,13 @@ public class InOperatorTests
     [Test]
     public async Task ShouldEvaluateInOperatorWithString()
     {
-        var context = new ExpressionContext();
-        context.StaticParameters["PageState"] = "Insert";
+        var context = new ExpressionContext
+        {
+            Parameters =
+            {
+                ["PageState"] = "Insert"
+            }
+        };
 
         await Assert.That(new Expression("{PageState} in 'Insert a quote, you must.'", context))
             .Expression<bool>().IsTrue();
@@ -39,19 +49,27 @@ public class InOperatorTests
     [Test]
     public async Task ShouldEvaluateNotInOperator()
     {
-        var context = new ExpressionContext();
-        context.StaticParameters["PageState"] = "Import";
-        await Assert.That(new Expression("{PageState} not in  ('Insert','Update')", context))
-            .Expression<bool>().IsTrue();
+        var expression = new Expression("{PageState} in ('INSERT','UPDATE')", ExpressionOptions.CaseInsensitiveStringComparer)
+        {
+            Parameters =
+            {
+                ["PageState"] = "Import"
+            }
+        };
+        await Assert.That(expression).Expression<bool>().IsFalse();
     }
 
     [Test]
     public async Task InOperatorShouldRespectStringComparer()
     {
-        ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
-        context.StaticParameters["PageState"] = "Insert";
-        await Assert.That(new Expression("{PageState} in ('INSERT','UPDATE')", context))
-            .Expression<bool>().IsTrue();
+        var expression = new Expression("{PageState} in ('INSERT','UPDATE')", ExpressionOptions.CaseInsensitiveStringComparer)
+            {
+                Parameters =
+                {
+                    ["PageState"] = "Insert"
+                }
+            };
+        await Assert.That(expression).Expression<bool>().IsTrue();
     }
 
     [Test]

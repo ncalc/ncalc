@@ -39,9 +39,6 @@
     <Project Path="src/NCalc.DependencyInjection/NCalc.DependencyInjection.csproj">
       <BuildType Solution="SignedRelease|*" Project="Debug" />
     </Project>
-    <Project Path="src/Plugins/NCalc.Antlr/NCalc.Antlr.csproj">
-      <BuildType Solution="SignedRelease|*" Project="Debug" />
-    </Project>
     <Project Path="src/Plugins/NCalc.LambdaCompilation/NCalc.LambdaCompilation.csproj">
       <BuildType Solution="SignedRelease|*" Project="Debug" />
     </Project>
@@ -54,7 +51,7 @@
     <Project Path="test/NCalc.Tests/NCalc.Tests.csproj" />
   </Folder>
   <Folder Name="/3. Tests and Examples/Playground/">
-    <Project Path="example\NCalc.Playground\NCalc.Playground.csproj"/>
+    <Project Path="example\NCalc.Playground\NCalc.Playground.csproj" />
   </Folder>
   <Folder Name="/4. Source Generators/">
     <Project Path="src/NCalc.SourceGenerators/NCalc.SourceGenerators.csproj">

@@ -6,16 +6,29 @@ Each parsed expression is cached internally, which means you do not need to manu
 
 The default cache now keeps strong references and evicts the least recently used entries when it reaches its capacity. This is more predictable than a weak-reference cache and avoids scanning the whole dictionary on every insert.
 
-You can disable caching at the framework level by adding <xref:NCalc.ExpressionOptions.NoCache> at your [global expression context](../evaluation/expression_context.md).
+You can disable caching with <xref:NCalc.ExpressionConfiguration.CacheEnabled>.
 
 ```csharp
-MyContext.Value.Options = ExpressionOptions.NoCache;
+static readonly ExpressionConfiguration NoParserCache = new()
+{
+    CacheEnabled = false
+};
 ```
 
 You can also tell a specific <xref:NCalc.Expression> instance not to use the cache.
 
 ```csharp
-var expression = new Expression("1 + 1", ExpressionOptions.NoCache);
+var expression = new Expression("1 + 1")
+{
+    CacheEnabled = false
+};
+```
+
+For old flag-based code, <xref:NCalc.ExpressionOptions> is still supported through
+<xref:NCalc.ExpressionConfiguration.FromOptions(NCalc.ExpressionOptions)>. Treat it as a legacy conversion helper.
+
+```csharp
+var configuration = ExpressionConfiguration.FromOptions(ExpressionOptions.NoCache);
 ```
 
 ## Default cache size

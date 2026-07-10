@@ -5,7 +5,7 @@ namespace NCalc.Parser;
 /// Each option specifies which character should be used to separate arguments in function calls.
 /// </summary>
 [Flags]
-public enum LogicalExpressionArgumentSeparator
+public enum ArgumentSeparator
 {
     /// <summary>
     /// Default value, uses comma separator

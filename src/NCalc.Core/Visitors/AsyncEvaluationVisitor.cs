@@ -7,24 +7,28 @@ using static NCalc.Helpers.EvaluationHelper;
 namespace NCalc.Visitors;
 
 /// <summary>
-/// Class responsible to asynchronous evaluating <see cref="LogicalExpression"/> objects into CLR objects.
+/// Class responsible to asynchronous evaluating <see cref="LogicalExpression"/>.
 /// </summary>
-/// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
-public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisitorFactory? evaluationVisitorFactory = null, CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<Task<object?>>
+public class AsyncEvaluationVisitor(
+    ExpressionContext context,
+    ExpressionEvaluationOptions options,
+    CultureInfo cultureInfo,
+    IEvaluationVisitorFactory? evaluationVisitorFactory = null,
+    CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<Task<object?>>
 {
     protected CancellationToken CancellationToken { get; } = cancellationToken;
     protected IEvaluationVisitorFactory? EvaluationVisitorFactory { get; } = evaluationVisitorFactory;
 
     protected EvaluationVisitor CreateEvaluationVisitor()
     {
-        return EvaluationVisitorFactory?.CreateEvaluationVisitor(context, CancellationToken)
-               ?? new EvaluationVisitor(context, cancellationToken: CancellationToken);
+        return EvaluationVisitorFactory?.CreateEvaluationVisitor(context, options, cultureInfo, CancellationToken)
+               ?? new EvaluationVisitor(context, options, cultureInfo, cancellationToken: CancellationToken);
     }
 
     public virtual async Task<object?> Visit(TernaryExpression expression)
     {
         // Evaluates the left expression and saves the value
-        var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this), context.CultureInfo);
+        var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this), cultureInfo);
 
         if (left)
         {
@@ -44,19 +48,19 @@ public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisito
 
         if (expression.Type == BinaryExpressionType.And)
         {
-            return Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), context.CultureInfo) &&
-                   Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), context.CultureInfo);
+            return Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), cultureInfo) &&
+                   Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), cultureInfo);
         }
 
         if (expression.Type == BinaryExpressionType.Or)
         {
-            return Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), context.CultureInfo) || Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), context.CultureInfo);
+            return Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), cultureInfo) || Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), cultureInfo);
         }
 
         var left = await binaryEventArgs.LeftValueAsync();
         var right = await binaryEventArgs.RightValueAsync();
 
-        return EvaluationVisitorHelper.EvaluateBinary(expression.Type, left, right, context);
+        return EvaluationVisitorHelper.EvaluateBinary(expression.Type, left, right, options, cultureInfo);
     }
 
     public virtual async Task<object?> Visit(UnaryExpression expression)
@@ -64,7 +68,7 @@ public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisito
         // Recursively evaluates the underlying expression
         var result = await expression.Expression.Accept(this);
 
-        return Unary(expression, result, context);
+        return Unary(expression, result, options, cultureInfo);
     }
 
     public virtual async Task<object?> Visit(Function function)
@@ -78,6 +82,8 @@ public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisito
             function.Identifier.Id,
             function.Parameters,
             context,
+            options,
+            cultureInfo,
             syncEvaluationVisitor,
             this,
             CancellationToken);
@@ -125,7 +131,7 @@ public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisito
 
     protected bool Compare(object? a, object? b, ComparisonType comparisonType)
     {
-        return EvaluationVisitorHelper.Compare(a, b, comparisonType, context);
+        return EvaluationVisitorHelper.Compare(a, b, comparisonType, options, cultureInfo);
     }
 
     protected Task OnEvaluateFunctionAsync(string name, FunctionEventArgs args)
@@ -164,7 +170,7 @@ public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisito
         if (parameterArgs.HasResult)
             return parameterArgs.Result;
 
-        if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
+        if (context.Parameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
@@ -182,7 +188,7 @@ public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisito
             return await asyncParameter(new ParameterData(identifier.Id, context, CancellationToken));
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
-            context.Options.HasFlag(ExpressionOptions.AllowNullParameter))
+            options.AllowNullParameter)
         {
             return null;
         }
@@ -192,7 +198,7 @@ public class AsyncEvaluationVisitor(ExpressionContext context, IEvaluationVisito
 
     private void ShareParametersWithChildExpression(Expression expression)
     {
-        foreach (var parameter in context.StaticParameters)
+        foreach (var parameter in context.Parameters)
             expression.Parameters[parameter.Key] = parameter.Value;
 
         foreach (var parameter in context.DynamicParameters)

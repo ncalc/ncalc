@@ -305,7 +305,7 @@ public class AsyncTests
     {
         var logicalExpression = LogicalExpressionParser.Parse(new LogicalExpressionParserContext(
             "if((A - B) < 1; 0; (A - B))",
-            new LogicalExpressionParserOptions { ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon }));
+            new LogicalExpressionParserOptions { ArgumentSeparator = ArgumentSeparator.Semicolon }));
         var expression = new Expression(logicalExpression, ExpressionOptions.IterateParameters)
         {
             Parameters =

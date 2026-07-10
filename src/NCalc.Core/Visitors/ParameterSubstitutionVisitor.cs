@@ -6,7 +6,7 @@ namespace NCalc.Visitors;
 /// Converts a <see cref="LogicalExpression"/> into a string representation while replacing known parameters
 /// with their resolved values.
 /// </summary>
-public class ParameterSubstitutionVisitor(ExpressionContext context, CancellationToken cancellationToken = default) : SerializationVisitor
+public class ParameterSubstitutionVisitor(ExpressionContext context, ExpressionEvaluationOptions options, CancellationToken cancellationToken = default) : SerializationVisitor
 {
     public override string Visit(Identifier identifier)
     {
@@ -37,7 +37,7 @@ public class ParameterSubstitutionVisitor(ExpressionContext context, Cancellatio
             return true;
         }
 
-        if (context.StaticParameters.TryGetValue(identifierName, out value))
+        if (context.Parameters.TryGetValue(identifierName, out value))
             return true;
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
@@ -47,7 +47,7 @@ public class ParameterSubstitutionVisitor(ExpressionContext context, Cancellatio
         }
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase)
-            && context.Options.HasFlag(ExpressionOptions.AllowNullParameter))
+            && options.AllowNullParameter)
         {
             value = null;
             return true;

@@ -98,11 +98,19 @@ var expression = new Expression("{PageState} ==  'List'");
 
 ## Multi-valued parameters
 
-When parameters are `IEnumerable` and the <xref:NCalc.ExpressionOptions.IterateParameters> is
-used, the result is a `List<object?>` made of the evaluation of each value in the parameter.
+When parameters are `IEnumerable` and <xref:NCalc.ExpressionEvaluationOptions.IterateParameters> is enabled, the result
+is a `List<object?>` made of the evaluation of each value in the parameter.
 
 ```c#
-var expression = new Expression("(a * b) ** c", ExpressionOptions.IterateParameters);
+var configuration = new ExpressionConfiguration
+{
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        IterateParameters = true
+    }
+};
+
+var expression = new Expression("(a * b) ** c", configuration);
 expression.Parameters["a"] = new int[] { 1, 2, 3, 4, 5 };
 expression.Parameters["b"] = new int[] { 6, 7, 8, 9, 0 };
 expression.Parameters["c"] = 3;
@@ -145,11 +153,18 @@ expression.EvaluateAsyncParameter += async (name, args) =>
 
 ## Compare with null parameters
 
-When parameter is null and <xref:NCalc.ExpressionOptions.AllowNullParameter> is used, comparison of values to null is
-allowed.
+When <xref:NCalc.ExpressionEvaluationOptions.AllowNullParameter> is enabled, comparison of values to `null` is allowed.
 
 ```c#
-var expression = new Expression("'a string' == null", ExpressionOptions.AllowNullParameter);
+var configuration = new ExpressionConfiguration
+{
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        AllowNullParameter = true
+    }
+};
+
+var expression = new Expression("'a string' == null", configuration);
 (bool)expression.Evaluate();
 
 //  False
@@ -161,7 +176,7 @@ var expression = new Expression("'a string' == null", ExpressionOptions.AllowNul
 var expression = new Expression ("if(x=0,x,y)"); 
 expression.Parameters["x"] = 1;
 expression.Parameters["y"] = "pan";
-var parameters = expression.GetParametersNames(); 
+var parameters = expression.GetParameterNames(); 
 //  x
 //  y
 ```

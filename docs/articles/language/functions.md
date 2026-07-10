@@ -21,7 +21,7 @@ The framework includes a set of already math implemented functions.
 | Max		          | Returns the larger of two specified numbers.	                                                                                                                                                                    | Max(1, 2)	           | 2      |
 | Min		          | Returns the smaller of two numbers.	                                                                                                                                                                             | Min(1, 2)	           | 1      |
 | Pow		          | Returns a specified number raised to the specified power.	                                                                                                                                                       | Pow(3, 2)	           | 9d     |
-| Round		        | Rounds a value to the nearest integer or specified number of decimal places. The mid number behaviour can be changed by using ExpressionOptions.RoundAwayFromZero during construction of the Expression object.	 | Round(3.222, 2)	     | 3.22d  |
+| Round		        | Rounds a value to the nearest integer or specified number of decimal places. The midpoint behavior can be changed with `ExpressionEvaluationOptions.Math.RoundAwayFromZero`.	 | Round(3.222, 2)	     | 3.22d  |
 | Sign		         | Returns a value indicating the sign of a number.	                                                                                                                                                                | Sign(-10)	           | -1     |
 | Sin		          | Returns the sine of the specified angle.	                                                                                                                                                                        | Sin(0)	              | 0d     |
 | Sqrt		         | Returns the square root of a specified number.	                                                                                                                                                                  | Sqrt(4)	             | 2d     |
@@ -37,9 +37,21 @@ It also includes other general purpose ones.
 | ifs        | Returns a value based on evaluating a number of conditions, returning a default if none are true. | ifs(foo > 50, "bar", foo > 75, "baz", "quux")     | if foo is between 50 and 75 "bar", foo greater than 75 "baz", otherwise "quux" |  
 | escapeLike | Escapes `%`, `_`, and `\` so a value is matched literally in a `LIKE` pattern.              | escapeLike('100%')                                | '100\%'                                                                        |
 
-By default, the comma is used as argument separator, but you can change it using <xref:NCalc.Parser.LogicalExpressionArgumentSeparator>. You can specify multiple separators.
+By default, the comma is used as argument separator, but you can change it using <xref:NCalc.Parser.ArgumentSeparator>.
+You can specify multiple separators.
 
-If <xref:NCalc.ExpressionOptions.DecimalAsDefault> is used all functions will cast the arguments to <xref:System.Decimal>.
+```csharp
+var configuration = new ExpressionConfiguration
+{
+    Parsing = new LogicalExpressionParserOptions
+    {
+        ArgumentSeparator = ArgumentSeparator.Comma | ArgumentSeparator.Semicolon
+    }
+};
+```
+
+Configure <xref:NCalc.Helpers.MathOptions.DefaultNumberType> to control how math functions coerce string numbers and
+choose decimal precision.
 
 ## Custom Functions
 Custom functions are created using the <xref:NCalc.Handlers.ExpressionFunction> delegate. The argument list is exposed as <xref:NCalc.Handlers.FunctionData>, which lets you evaluate parameters lazily when needed.

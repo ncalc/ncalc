@@ -66,9 +66,8 @@ public class EvaluationTests
     public async Task Should_Not_Throw_Function_Not_Found_Issue_110()
     {
         const string expressionStr = "IN([acp_associated_person_transactions], 'T', 'Z', 'A')";
-        var expression = new Expression(expressionStr)
+        var expression = new Expression(expressionStr,  ExpressionOptions.RoundAwayFromZero | ExpressionOptions.IgnoreCaseAtBuiltInFunctions)
         {
-            Options = ExpressionOptions.RoundAwayFromZero | ExpressionOptions.IgnoreCaseAtBuiltInFunctions,
             Parameters =
             {
                 ["acp_associated_person_transactions"] = 'T'
@@ -174,7 +173,7 @@ public class EvaluationTests
     {
         var options = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
 
         var context = new LogicalExpressionParserContext(expression, options);

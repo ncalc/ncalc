@@ -67,12 +67,12 @@ public static class LambdaCompilationExtensions
             LinqParameterExpression? parameter = null;
             if (IsVoidType<TContext>())
             {
-                visitor = new(expression.Parameters, expression.Options);
+                visitor = new(expression.Parameters, expression.EvaluationOptions);
             }
             else
             {
                 parameter = LinqExpression.Parameter(typeof(TContext), "ctx");
-                visitor = new(parameter, expression.Options);
+                visitor = new(parameter, expression.EvaluationOptions);
             }
 
             cancellationToken.ThrowIfCancellationRequested();

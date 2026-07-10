@@ -1,78 +1,78 @@
 # Expression Context
 
-<xref:NCalc.ExpressionContext> is the class responsible for storing contextual data of the expression, like
-[parameters](../language/parameters.md), [functions](../language/functions.md), and async callbacks used by
-[EvaluateAsync](../runtime/async.md).
+<xref:NCalc.ExpressionContext> stores runtime data for an expression evaluation:
+[parameters](../language/parameters.md), [functions](../language/functions.md), async callbacks, and event handlers.
+
+Configuration does not live in the context anymore. Use [configuration](configuration.md) for parser and evaluation
+settings.
 
 ## Creating a context
 
 ```csharp
-//Explicit
 var context = new ExpressionContext
 {
-    Options = ExpressionOptions.IgnoreCaseAtBuiltInFunctions
+    Parameters =
+    {
+        ["Price"] = 12.5m,
+        ["Quantity"] = 4
+    },
+    Functions =
+    {
+        ["SecretOperation"] = _ => 42
+    }
 };
-var expression = new Expression("ABS(42)", context);
 
-//Implicit
-ExpressionContext context = ExpressionOptions.IgnoreCaseAtBuiltInFunctions;
-var expression = new Expression("ABS(42)", context);
-
-//Cloning
-ExpressionContext context = ExpressionOptions.IgnoreCaseAtBuiltInFunctions;
-var newContext = context with { CultureInfo = CultureInfo.CurrentUICulture };
-var expression = new Expression("ABS(42)", newContext);
+var expression = new Expression("Price * Quantity + SecretOperation()", context);
+var result = expression.Evaluate();
 ```
-> [!WARNING]
-> The [with](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/with-expression) keyword will create a shallow copy of the object, any unchanged reference type like `IDictionary` inside
-> the context will remain the same.
 
-
-## Using a single context for all expressions
-You can optimize your system to use a single context instance for all expressions.
-The example below use [DI](../extensibility/dependency_injection.md) for creating a singleton instance.
+To use configuration and context together, pass both to the expression:
 
 ```csharp
-///At Program.cs:
-builder.Services.AddSingleton<ExpressionContext>(_ =>
+var configuration = new ExpressionConfiguration
 {
-    return new ExpressionContext
+    Evaluation = new ExpressionEvaluationOptions
     {
-        Options = ExpressionOptions.OverflowProtection,
-        Functions = new Dictionary<string, ExpressionFunction>()
+        IgnoreCaseAtBuiltInFunctions = true
+    }
+};
+
+var context = new ExpressionContext
+{
+    Parameters =
+    {
+        ["Value"] = -42
+    }
+};
+
+var expression = new Expression("ABS(Value)", configuration, context);
+var result = expression.Evaluate();
+```
+
+## Lifetime
+
+<xref:NCalc.ExpressionContext> is mutable and not thread-safe. Do not cache a single context as global shared state when
+parameters, functions, or handlers can change.
+
+Create a context per evaluation, request, or operation:
+
+```csharp
+static readonly ExpressionConfiguration Configuration = new()
+{
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        Math = new MathOptions
         {
-            {"SecretOperation", (arguments) => 42}
-        }.ToFrozenDictionary()
-    };
-});
-
-///At MyService.cs
-public class MyService(IExpressionFactory expressionFactory, ExpressionContext context)
-{
-    public object? Evaluate(string expressionString)
-    {
-        //Using the `with` keyword is possible to create a copy with different options.
-        var expression = expressionFactory.Create(expressionString, context with { Options = ExpressionOptions.IgnoreCaseAtBuiltInFunctions });
-        return expression.Evaluate();
+            OverflowProtection = true
+        }
     }
-}
-```
+};
 
-If you are not using DI, you can also use a static property to store a single context:
-```csharp
-///At MyContext.cs:
-public class MyContext
+public object? Evaluate(string expressionText, IDictionary<string, object?> parameters)
 {
-    public static readonly ExpressionContext Value = new();
-}
+    var context = new ExpressionContext(parameters);
+    var expression = new Expression(expressionText, Configuration, context);
 
-///At MyService.cs
-public class MyService
-{
-    public object? Evaluate(string expressionString)
-    {
-        var expression = new Expression(expressionString, MyContext.Value with { Options = ExpressionOptions.IgnoreCaseAtBuiltInFunctions });
-        return expression.Evaluate();
-    }
+    return expression.Evaluate();
 }
 ```

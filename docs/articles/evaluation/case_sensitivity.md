@@ -9,9 +9,12 @@ This behavior can be overriden for both using a `IDictionary` implementation wit
 ```c#
 var expression = new Expression("secretOperation()")
 {
-    Functions = new Dictionary<string, ExpressionFunction>(StringComparer.InvariantCultureIgnoreCase)
+    Context =
     {
-        { "SecretOperation", (arguments) => 42 }
+        Functions = new Dictionary<string, ExpressionFunction>(StringComparer.InvariantCultureIgnoreCase)
+        {
+            { "SecretOperation", _ => 42 }
+        }
     }
 };
 ```
@@ -29,18 +32,34 @@ var expression = new Expression("name == 'Beatriz'")
 
 ## Case-insensitive built-in function
 ```c#
-var expression = new Expression("aBs(-1)", ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
+var configuration = new ExpressionConfiguration
+{
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        IgnoreCaseAtBuiltInFunctions = true
+    }
+};
+
+var expression = new Expression("aBs(-1)", configuration);
 ```
 
 ## String Comparison
-You can also change the comparison of string values using <xref:NCalc.ExpressionOptions.CaseInsensitiveStringComparer>.
+You can also change the comparison of string values using <xref:NCalc.ExpressionEvaluationOptions.StringComparer>.
 
 ```c#
 var expression = new Expression("{PageState} == 'list'");
 expression.Parameters["PageState"] = "List";
 Debug.Assert(false, expression.Evaluate());
 
-expression = new Expression("{PageState} == 'list'", ExpressionOptions.CaseInsensitiveStringComparer);
+var configuration = new ExpressionConfiguration
+{
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        StringComparer = StringComparer.CurrentCultureIgnoreCase
+    }
+};
+
+expression = new Expression("{PageState} == 'list'", configuration);
 expression.Parameters["PageState"] = "List";
 Debug.Assert(true, expression.Evaluate());
 ```

@@ -56,7 +56,7 @@ public static class AssertExtensions
                 source.Context.Map<object?>(async expressionText =>
                     await new Expression(expressionText, new ExpressionContext
                     {
-                        StaticParameters = parameters
+                        Parameters = parameters
                     }).EvaluateAsync(CancellationToken.None)));
         }
 
@@ -81,7 +81,7 @@ public static class AssertExtensions
                 source.Context.Map<T>(async expressionText =>
                     await new Expression(expressionText, new ExpressionContext
                     {
-                        StaticParameters = parameters
+                        Parameters = parameters
                     }).EvaluateAsync<T>(CancellationToken.None)));
         }
     }

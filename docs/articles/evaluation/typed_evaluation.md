@@ -33,7 +33,7 @@ Both typed overloads first evaluate the expression normally and then apply the f
 
 - If the result is `null`, they return `default(T)`.
 - If the result is already of type `T`, they return it directly.
-- If the result implements `IConvertible`, NCalc converts it with `Convert.ChangeType` using `ExpressionContext.CultureInfo`.
+- If the result implements `IConvertible`, NCalc converts it with `Convert.ChangeType` using `Expression.CultureInfo`.
 - If the result cannot be cast to `T`, NCalc throws <xref:NCalc.Exceptions.NCalcCastException>.
 
 ```csharp
@@ -72,7 +72,7 @@ catch (NCalcCastException ex)
 Prefer `Evaluate<T>()` or `EvaluateAsync<T>()` when:
 
 - The expression has a stable expected result type such as `bool`, `int`, `decimal`, or `DateTime`.
-- You want conversion to follow the expression context culture.
+- You want conversion to follow the expression culture.
 - You want a single API call instead of evaluating to `object` and casting manually.
 
 Use the non-generic `Evaluate()` or `EvaluateAsync()` overloads when the result type is not known ahead of time or may vary between evaluations.

@@ -4,6 +4,7 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Visitors;
 using System.Threading.Tasks;
+using NCalc.Parser;
 
 namespace NCalc.Tests;
 
@@ -108,75 +109,135 @@ public class ServiceCollectionExtensionsTests
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache cache) : IExpressionFactory
     {
-        public Expression Create(string expression, ExpressionContext expressionContext = null)
+        public Expression Create(
+            string expression,
+            ExpressionConfiguration? configuration = null)
         {
-            return new CustomExpression(expression, expressionContext ?? new(), logicalExpressionFactory, cache);
+            return new CustomExpression(
+                expression,
+                configuration ?? new ExpressionConfiguration(),
+                logicalExpressionFactory,
+                cache);
         }
 
-        public Expression Create(LogicalExpression logicalExpression, ExpressionContext expressionContext = null)
+        public Expression Create(
+            LogicalExpression logicalExpression,
+            ExpressionConfiguration? configuration = null)
         {
-            return new CustomExpression(logicalExpression, expressionContext ?? new(), logicalExpressionFactory, cache);
+            return new CustomExpression(
+                logicalExpression,
+                configuration ?? new ExpressionConfiguration(),
+                logicalExpressionFactory,
+                cache);
         }
+    }
+
+    private class CustomLogicalExpressionFactory : ILogicalExpressionFactory
+    {
+        public LogicalExpression Create(
+            string expression,
+            LogicalExpressionParserOptions? options = null,
+            CultureInfo? cultureInfo = null,
+            CancellationToken cancellationToken = default)
+            => throw new NCalcException("Stub method intended for testing.");
     }
 
     private class CustomCache : ILogicalExpressionCache
     {
-        public bool TryGetValue(string expression, out LogicalExpression logicalExpression) => throw new NCalcException("Stub method intented for testing.");
+        public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)
+        {
+            logicalExpression = null;
+            return false;
+        }
 
         public void Set(string expression, LogicalExpression logicalExpression)
         {
         }
     }
 
-    private class CustomLogicalExpressionFactory : ILogicalExpressionFactory
-    {
-        public LogicalExpression Create(string expression, ExpressionOptions options, CancellationToken cancellationToken = default) => throw new NCalcException("Stub method intented for testing.");
-
-        public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken cancellationToken = default)
-            => throw new NCalcException("Stub method intented for testing.");
-    }
-
     private class CustomExpression(
         string expression,
-        ExpressionContext context,
+        ExpressionConfiguration configuration,
         ILogicalExpressionFactory logicalExpressionFactory,
-        ILogicalExpressionCache cache) : Expression(expression, context, logicalExpressionFactory, cache)
+        ILogicalExpressionCache cache)
+        : Expression(expression, configuration, logicalExpressionFactory, cache)
     {
         public CustomExpression(
             LogicalExpression logicalExpression,
-            ExpressionContext context,
+            ExpressionConfiguration configuration,
             ILogicalExpressionFactory logicalExpressionFactory,
             ILogicalExpressionCache cache)
-            : this(string.Empty, context, logicalExpressionFactory, cache)
+            : this(string.Empty, configuration, logicalExpressionFactory, cache)
         {
             LogicalExpression = logicalExpression;
         }
 
-        protected override EvaluationVisitor CreateEvaluationVisitor(CancellationToken cancellationToken = default)
+        protected override EvaluationVisitor CreateEvaluationVisitor(
+            ExpressionContext context,
+            CancellationToken cancellationToken = default)
         {
-            return new CustomSyncVisitor(Context, cancellationToken);
+            return new CustomSyncVisitor(
+                context,
+                EvaluationOptions,
+                CultureInfo,
+                cancellationToken);
         }
 
-        protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(CancellationToken cancellationToken = default)
+        protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(
+            ExpressionContext context,
+            CancellationToken cancellationToken = default)
         {
-            return new CustomAsyncVisitor(Context, cancellationToken);
+            return new CustomAsyncVisitor(
+                context,
+                EvaluationOptions,
+                CultureInfo,
+                cancellationToken);
         }
     }
 
     private class CustomEvaluationVisitorFactory : IEvaluationVisitorFactory
     {
-        public EvaluationVisitor CreateEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+        public EvaluationVisitor CreateEvaluationVisitor(
+            ExpressionContext context,
+            ExpressionEvaluationOptions options,
+            CultureInfo cultureInfo,
+            CancellationToken cancellationToken = default)
         {
-            return new CustomSyncVisitor(context, cancellationToken, this);
+            return new CustomSyncVisitor(
+                context,
+                options,
+                cultureInfo,
+                cancellationToken,
+                this);
         }
 
-        public AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+        public AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(
+            ExpressionContext context,
+            ExpressionEvaluationOptions options,
+            CultureInfo cultureInfo,
+            CancellationToken cancellationToken = default)
         {
-            return new CustomAsyncVisitor(context, cancellationToken, this);
+            return new CustomAsyncVisitor(
+                context,
+                options,
+                cultureInfo,
+                cancellationToken,
+                this);
         }
     }
 
-    private class CustomSyncVisitor(ExpressionContext context, CancellationToken cancellationToken, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : EvaluationVisitor(context, evaluationVisitorFactory, cancellationToken)
+    private class CustomSyncVisitor(
+        ExpressionContext context,
+        ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo,
+        CancellationToken cancellationToken,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+        : EvaluationVisitor(
+            context,
+            options,
+            cultureInfo,
+            evaluationVisitorFactory,
+            cancellationToken)
     {
         public override object Visit(ValueExpression expression)
         {
@@ -187,7 +248,18 @@ public class ServiceCollectionExtensionsTests
         }
     }
 
-    private class CustomAsyncVisitor(ExpressionContext context, CancellationToken cancellationToken, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : AsyncEvaluationVisitor(context, evaluationVisitorFactory, cancellationToken)
+    private class CustomAsyncVisitor(
+        ExpressionContext context,
+        ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo,
+        CancellationToken cancellationToken,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+        : AsyncEvaluationVisitor(
+            context,
+            options,
+            cultureInfo,
+            evaluationVisitorFactory,
+            cancellationToken)
     {
         public override Task<object> Visit(ValueExpression expression)
         {

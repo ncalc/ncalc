@@ -11,13 +11,13 @@ public sealed class ExpressionFactory(
     IEvaluationVisitorFactory? evaluationVisitorFactory = null
 ) : IExpressionFactory
 {
-    public Expression Create(string expression, ExpressionContext? expressionContext = null)
+    public Expression Create(string expression, ExpressionConfiguration? configuration = null)
     {
-        return new Expression(expression, expressionContext ?? new(), logicalExpressionFactory, cache, evaluationVisitorFactory);
+        return new Expression(expression, configuration, logicalExpressionFactory, cache, evaluationVisitorFactory);
     }
 
-    public Expression Create(LogicalExpression logicalExpression, ExpressionContext? expressionContext = null)
+    public Expression Create(LogicalExpression logicalExpression, ExpressionConfiguration? configuration = null)
     {
-        return new Expression(logicalExpression, expressionContext ?? new(), logicalExpressionFactory, cache, evaluationVisitorFactory);
+        return new Expression(logicalExpression, configuration, logicalExpressionFactory, cache, evaluationVisitorFactory);
     }
 }

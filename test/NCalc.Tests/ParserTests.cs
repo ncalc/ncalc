@@ -65,7 +65,10 @@ public class ParserTests
     {
         const string formula = "'c'";
 
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues, cancellationToken: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, new LogicalExpressionParserOptions
+        {
+            AllowCharValues = true
+        }, cancellationToken: CancellationToken.None);
 
         await Assert.That(logicalExpression).IsTypeOf<ValueExpression>();
 

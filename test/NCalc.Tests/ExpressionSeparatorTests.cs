@@ -5,11 +5,11 @@ namespace NCalc.Tests;
 public class ExpressionSeparatorTests
 {
     [Test]
-    [Arguments("Max(1, 2)", 2, LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments("Max(1; 2)", 2, LogicalExpressionArgumentSeparator.Semicolon)]
-    [Arguments("Min(5, 3)", 3, LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments("Min(5; 3)", 3, LogicalExpressionArgumentSeparator.Semicolon)]
-    public async Task Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, LogicalExpressionArgumentSeparator separator)
+    [Arguments("Max(1, 2)", 2, ArgumentSeparator.Comma)]
+    [Arguments("Max(1; 2)", 2, ArgumentSeparator.Semicolon)]
+    [Arguments("Min(5, 3)", 3, ArgumentSeparator.Comma)]
+    [Arguments("Min(5; 3)", 3, ArgumentSeparator.Semicolon)]
+    public async Task Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, ArgumentSeparator separator)
     {
         // Arrange
         var options = new LogicalExpressionParserOptions
@@ -34,7 +34,7 @@ public class ExpressionSeparatorTests
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
         const string expressionText = "CustomAdd(10; 20)";
 
@@ -65,7 +65,7 @@ public class ExpressionSeparatorTests
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
 
         const string expressionText = "Max(x; y)";

@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using ExtendedNumerics;
+using NCalc.Parser;
 
 namespace NCalc.Helpers;
 
@@ -10,100 +11,70 @@ public static class MathHelper
 {
     private const int MaxFactorialInput = 170;
 
-    public static object? Add(object? a, object? b)
-    {
-        return Add(a, b, CultureInfo.CurrentCulture);
-    }
-
-    public static object? Add(object? a, object? b, MathHelperOptions options)
+    public static object? Add(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
         if (a == null || b == null)
             return null;
 
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
+        a = ConvertIfNeeded(a, options, cultureInfo);
+        b = ConvertIfNeeded(b, options, cultureInfo);
 
-        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        ConvertToHighestPrecision(ref a, ref b, cultureInfo);
         return BinaryOperators.Add(a, b, options.OverflowProtection);
     }
 
-    public static object? Subtract(object? a, object? b)
-    {
-        return Subtract(a, b, CultureInfo.CurrentCulture);
-    }
-
-    public static object? Subtract(object? a, object? b, MathHelperOptions options)
+    public static object? Subtract(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
         if (a == null || b == null)
             return null;
 
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
+        a = ConvertIfNeeded(a, options, cultureInfo);
+        b = ConvertIfNeeded(b, options, cultureInfo);
 
-        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        ConvertToHighestPrecision(ref a, ref b, cultureInfo);
         return BinaryOperators.Subtract(a, b, options.OverflowProtection);
     }
 
-    public static object? Multiply(object? a, object? b)
-    {
-        return Multiply(a, b, CultureInfo.CurrentCulture);
-    }
-
-    public static object? Multiply(object? a, object? b, MathHelperOptions options)
+    public static object? Multiply(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
         if (a == null || b == null)
             return null;
 
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
+        a = ConvertIfNeeded(a, options, cultureInfo);
+        b = ConvertIfNeeded(b, options, cultureInfo);
 
-        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        ConvertToHighestPrecision(ref a, ref b, cultureInfo);
         return BinaryOperators.Multiply(a, b, options.OverflowProtection);
     }
 
-    public static object? Divide(object? a, object? b)
-    {
-        return Divide(a, b, CultureInfo.CurrentCulture);
-    }
-
-    public static object? Divide(object? a, object? b, MathHelperOptions options)
+    public static object? Divide(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
         if (a == null || b == null)
             return null;
 
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
+        a = ConvertIfNeeded(a, options, cultureInfo);
+        b = ConvertIfNeeded(b, options, cultureInfo);
 
         if (!(TypeHelper.IsReal(a) || TypeHelper.IsReal(b)))
-            a = Convert.ToDouble(a, options.CultureInfo);
+            a = Convert.ToDouble(a, cultureInfo);
 
-        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        ConvertToHighestPrecision(ref a, ref b, cultureInfo);
         return BinaryOperators.Divide(a, b, options.OverflowProtection);
     }
 
-    public static object? Modulo(object? a, object? b)
-    {
-        return Modulo(a, b, CultureInfo.CurrentCulture);
-    }
-
-    public static object? Modulo(object? a, object? b, MathHelperOptions options)
+    public static object? Modulo(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
         if (a == null || b == null)
             return null;
 
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
+        a = ConvertIfNeeded(a, options, cultureInfo);
+        b = ConvertIfNeeded(b, options, cultureInfo);
 
-        ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        ConvertToHighestPrecision(ref a, ref b, cultureInfo);
         return BinaryOperators.Modulo(a, b);
     }
 
-    public static object? Max(object a, object b)
-    {
-        return Max(a, b, CultureInfo.CurrentCulture);
-    }
-
-    public static object? Max(object? a, object? b, MathHelperOptions options)
+    public static object? Max(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
         switch (a)
         {
@@ -118,10 +89,10 @@ public static class MathHelper
             return a;
         }
 
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
+        a = ConvertIfNeeded(a, options, cultureInfo);
+        b = ConvertIfNeeded(b, options, cultureInfo);
 
-        var typeCode = ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        var typeCode = ConvertToHighestPrecision(ref a, ref b, cultureInfo);
 
         return typeCode switch
         {
@@ -140,12 +111,7 @@ public static class MathHelper
         };
     }
 
-    public static object? Min(object? a, object? b)
-    {
-        return Min(a, b, CultureInfo.CurrentCulture);
-    }
-
-    public static object? Min(object? a, object? b, MathHelperOptions options)
+    public static object? Min(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
         if (a == null && b == null)
         {
@@ -162,10 +128,10 @@ public static class MathHelper
             return a;
         }
 
-        a = ConvertIfNeeded(a, options);
-        b = ConvertIfNeeded(b, options);
+        a = ConvertIfNeeded(a, options, cultureInfo);
+        b = ConvertIfNeeded(b, options, cultureInfo);
 
-        var typeCode = ConvertToHighestPrecision(ref a, ref b, options.CultureInfo);
+        var typeCode = ConvertToHighestPrecision(ref a, ref b, cultureInfo);
 
         return typeCode switch
         {
@@ -254,173 +220,183 @@ public static class MathHelper
         }
     }
 
-    public static object Abs(object? a, MathHelperOptions options)
+    public static object Abs(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (options.DecimalAsDefault)
-            return Math.Abs(ConvertToDecimal(a, options));
+        if (a is decimal || options.DefaultNumberType is DefaultNumberType.Decimal)
+            return Math.Abs(ConvertToDecimal(a, cultureInfo));
 
-        return Math.Abs(ConvertToDouble(a, options));
+        return Math.Abs(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Acos(object? a, MathHelperOptions options)
+    public static object Acos(object? a, CultureInfo cultureInfo)
     {
-        return Math.Acos(ConvertToDouble(a, options));
+        return Math.Acos(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Asin(object? a, MathHelperOptions options)
+    public static object Asin(object? a, CultureInfo cultureInfo)
     {
-        return Math.Asin(ConvertToDouble(a, options));
+        return Math.Asin(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Atan(object? a, MathHelperOptions options)
+    public static object Atan(object? a, CultureInfo cultureInfo)
     {
-        return Math.Atan(ConvertToDouble(a, options));
+        return Math.Atan(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Atan2(object? a, object? b, MathHelperOptions options)
+    public static object Atan2(object? a, object? b, CultureInfo cultureInfo)
     {
-        return Math.Atan2(ConvertToDouble(a, options), ConvertToDouble(b, options));
+        return Math.Atan2(ConvertToDouble(a, cultureInfo), ConvertToDouble(b, cultureInfo));
     }
 
-    public static object Ceiling(object? a, MathHelperOptions options)
+    public static object Ceiling(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (options.DecimalAsDefault)
-            return Math.Ceiling(ConvertToDecimal(a, options));
+        if (a is decimal || options.DefaultNumberType is DefaultNumberType.Decimal)
+            return Math.Ceiling(ConvertToDecimal(a, cultureInfo));
 
-        return Math.Ceiling(ConvertToDouble(a, options));
+        return Math.Ceiling(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Cos(object? a, MathHelperOptions options)
+    public static object Cos(object? a, CultureInfo cultureInfo)
     {
-        return Math.Cos(ConvertToDouble(a, options));
+        return Math.Cos(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Exp(object? a, MathHelperOptions options)
+    public static object Exp(object? a, CultureInfo cultureInfo)
     {
-        return Math.Exp(ConvertToDouble(a, options));
+        return Math.Exp(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Floor(object? a, MathHelperOptions options)
+    public static object Floor(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (options.DecimalAsDefault)
-            return Math.Floor(ConvertToDecimal(a, options));
+        if (a is decimal || options.DefaultNumberType is DefaultNumberType.Decimal)
+            return Math.Floor(ConvertToDecimal(a, cultureInfo));
 
-        return Math.Floor(ConvertToDouble(a, options));
+        return Math.Floor(ConvertToDouble(a, cultureInfo));
     }
 
     // ReSharper disable once InconsistentNaming
-    public static object IEEERemainder(object? a, object? b, MathHelperOptions options)
+    public static object IEEERemainder(object? a, object? b, CultureInfo cultureInfo)
     {
-        return Math.IEEERemainder(ConvertToDouble(a, options), ConvertToDouble(b, options));
+        return Math.IEEERemainder(ConvertToDouble(a, cultureInfo), ConvertToDouble(b, cultureInfo));
     }
 
-    public static object Ln(object? a, MathHelperOptions options)
+    public static object Ln(object? a, CultureInfo cultureInfo)
     {
-        return Math.Log(ConvertToDouble(a, options));
+        return Math.Log(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Log(object? a, object? b, MathHelperOptions options)
+    public static object Log(object? a, object? b, CultureInfo cultureInfo)
     {
-        return Math.Log(ConvertToDouble(a, options), ConvertToDouble(b, options));
+        return Math.Log(ConvertToDouble(a, cultureInfo), ConvertToDouble(b, cultureInfo));
     }
 
-    public static object Log10(object? a, MathHelperOptions options)
+    public static object Log10(object? a, CultureInfo cultureInfo)
     {
-        return Math.Log10(ConvertToDouble(a, options));
+        return Math.Log10(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Pow(object? a, object? b, MathHelperOptions options)
+    public static object Pow(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
-        if (options.DecimalAsDefault)
+        if (a is decimal || options.DefaultNumberType is DefaultNumberType.Decimal)
         {
-            var @base = new BigDecimal(ConvertToDecimal(a, options));
-            var exponent = new BigInteger(ConvertToDecimal(b, options));
+            var @base = new BigDecimal(ConvertToDecimal(a, cultureInfo));
+            var exponent = new BigInteger(ConvertToDecimal(b, cultureInfo));
 
             return (decimal)BigDecimal.Pow(@base, exponent);
         }
 
-        return Math.Pow(ConvertToDouble(a, options), ConvertToDouble(b, options));
+        return Math.Pow(ConvertToDouble(a, cultureInfo), ConvertToDouble(b, cultureInfo));
     }
 
-    public static object Round(object? a, object? b, MidpointRounding rounding, MathHelperOptions options)
+    public static object Round(object? a, object? b, MidpointRounding rounding, MathOptions options, CultureInfo cultureInfo)
     {
-        if (options.DecimalAsDefault)
-            return Math.Round(ConvertToDecimal(a, options), ConvertToInt(b, options), rounding);
+        if (a is decimal || options.DefaultNumberType is DefaultNumberType.Decimal)
+            return Math.Round(ConvertToDecimal(a, cultureInfo), ConvertToInt(b, cultureInfo), rounding);
 
-        return Math.Round(ConvertToDouble(a, options), ConvertToInt(b, options), rounding);
+        return Math.Round(ConvertToDouble(a, cultureInfo), ConvertToInt(b, cultureInfo), rounding);
     }
 
-    public static object Sign(object? a, MathHelperOptions options)
+    public static object Sign(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (options.DecimalAsDefault)
-            return Math.Sign(ConvertToDecimal(a, options));
+        if (a is decimal || options.DefaultNumberType is DefaultNumberType.Decimal)
+            return Math.Sign(ConvertToDecimal(a, cultureInfo));
 
-        return Math.Sign(ConvertToDouble(a, options));
+        return Math.Sign(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Sin(object? a, MathHelperOptions options)
+    public static object Sin(object? a, CultureInfo cultureInfo)
     {
-        return Math.Sin(ConvertToDouble(a, options));
+        return Math.Sin(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Sqrt(object? a, MathHelperOptions options)
+    public static object Sqrt(object? a, CultureInfo cultureInfo)
     {
-        return Math.Sqrt(ConvertToDouble(a, options));
+        return Math.Sqrt(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Tan(object? a, MathHelperOptions options)
+    public static object Tan(object? a, CultureInfo cultureInfo)
     {
-        return Math.Tan(ConvertToDouble(a, options));
+        return Math.Tan(ConvertToDouble(a, cultureInfo));
     }
 
-    public static object Truncate(object? a, MathHelperOptions options)
+    public static object Truncate(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (options.DecimalAsDefault)
-            return Math.Truncate(ConvertToDecimal(a, options));
+        if (a is decimal || options.DefaultNumberType is DefaultNumberType.Decimal)
+            return Math.Truncate(ConvertToDecimal(a, cultureInfo));
 
-        return Math.Truncate(ConvertToDouble(a, options));
+        return Math.Truncate(ConvertToDouble(a, cultureInfo));
     }
 
-    private static object ConvertIfNeeded(object value, MathHelperOptions options)
+    private static object ConvertIfNeeded(object value, MathOptions options, CultureInfo cultureInfo)
     {
         return value switch
         {
-            char ch when options is { DecimalAsDefault: true, AllowCharValues: false } => decimal.Parse(ch.ToString(), options.CultureInfo),
-            string s when options is { DecimalAsDefault: true } => decimal.Parse(s, options.CultureInfo),
             char ch => (int)ch,
-            string s => double.Parse(s, options.CultureInfo),
+            string s => ParseNumber(s, options.DefaultNumberType, cultureInfo),
             bool boolean when options.AllowBooleanCalculation => boolean ? 1 : 0,
             _ => value
         };
     }
 
-    private static double ConvertToDouble(object? value, MathHelperOptions options)
+    private static object ParseNumber(string value, DefaultNumberType defaultNumberType, CultureInfo cultureInfo)
+    {
+        return defaultNumberType switch
+        {
+            DefaultNumberType.Double => double.Parse(value, cultureInfo),
+            DefaultNumberType.Decimal => decimal.Parse(value, cultureInfo),
+            DefaultNumberType.Int32 => int.Parse(value, cultureInfo),
+            DefaultNumberType.Int64 => long.Parse(value, cultureInfo),
+            _ => throw new ArgumentOutOfRangeException(nameof(defaultNumberType), defaultNumberType, null)
+        };
+    }
+
+    private static double ConvertToDouble(object? value, CultureInfo cultureInfo)
     {
         return value switch
         {
             double @double => @double,
-            char ch => Convert.ToDouble(ch.ToString(), options.CultureInfo),
-            _ => Convert.ToDouble(value, options.CultureInfo)
+            char ch => Convert.ToDouble(ch.ToString(), cultureInfo),
+            _ => Convert.ToDouble(value, cultureInfo)
         };
     }
 
-    private static decimal ConvertToDecimal(object? value, MathHelperOptions options)
+    private static decimal ConvertToDecimal(object? value, CultureInfo cultureInfo)
     {
         return value switch
         {
             decimal @decimal => @decimal,
-            char ch => Convert.ToDecimal(ch.ToString(), options.CultureInfo),
-            _ => Convert.ToDecimal(value, options.CultureInfo)
+            char ch => Convert.ToDecimal(ch.ToString(), cultureInfo),
+            _ => Convert.ToDecimal(value, cultureInfo)
         };
     }
 
-    private static int ConvertToInt(object? value, MathHelperOptions options)
+    private static int ConvertToInt(object? value, CultureInfo cultureInfo)
     {
         return value switch
         {
             int i => i,
-            char ch => Convert.ToInt32(ch.ToString(), options.CultureInfo),
-            _ => Convert.ToInt32(value, options.CultureInfo)
+            char ch => Convert.ToInt32(ch.ToString(), cultureInfo),
+            _ => Convert.ToInt32(value, cultureInfo)
         };
     }
 

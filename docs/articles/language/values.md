@@ -30,7 +30,22 @@ Use the dot to define the decimal part.
 123.456
 .123
 ```
-They are evaluated as <xref:System.Double>, unless you use <xref:NCalc.ExpressionOptions.DecimalAsDefault>.
+They are evaluated as <xref:System.Double> by default. Use
+<xref:NCalc.Parser.LogicalExpressionParserOptions.DefaultNumberType> to change the parsed number type.
+
+```csharp
+var configuration = new ExpressionConfiguration
+{
+    Parsing = new LogicalExpressionParserOptions
+    {
+        DefaultNumberType = DefaultNumberType.Decimal
+    },
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        Math = new MathOptions(DefaultNumberType.Decimal)
+    }
+};
+```
 
 ## Scientific notation
 
@@ -44,7 +59,8 @@ You can use the e to define power of ten (10^).
 .1e-2
 1e10
 ```
-They are evaluated as <xref:System.Double>, unless you use <xref:NCalc.ExpressionOptions.DecimalAsDefault>.
+They are evaluated as <xref:System.Double> by default. Use
+<xref:NCalc.Parser.LogicalExpressionParserOptions.DefaultNumberType> to change the parsed number type.
 
 ## DateTime
 
@@ -83,11 +99,21 @@ greeting("Chers")
 You can escape special characters using \\, \', \n, \r, \t.
 
 ## Chars
-If you use <xref:NCalc.ExpressionOptions.AllowCharValues>, single quoted strings are interpreted as <xref:System.Char>
-```
-var expression = new Expression("'g'", ExpressionOptions.AllowCharValues);
-var result = expression.Evalutate();
-Debug.Assert(result); // 'g' -> System.Char
+If you set <xref:NCalc.Parser.LogicalExpressionParserOptions.AllowCharValues>, single quoted strings are interpreted as
+<xref:System.Char>.
+
+```csharp
+var configuration = new ExpressionConfiguration
+{
+    Parsing = new LogicalExpressionParserOptions
+    {
+        AllowCharValues = true
+    }
+};
+
+var expression = new Expression("'g'", configuration);
+var result = expression.Evaluate();
+Debug.Assert(result is 'g');
 ```
 
 ## Guid

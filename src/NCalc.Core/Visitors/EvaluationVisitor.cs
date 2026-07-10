@@ -7,23 +7,27 @@ using static NCalc.Helpers.EvaluationHelper;
 namespace NCalc.Visitors;
 
 /// <summary>
-/// Class responsible to synchronously evaluating <see cref="LogicalExpression"/> objects into CLR objects.
+/// Class responsible to synchronously evaluating <see cref="LogicalExpression"/>.
 /// </summary>
-/// <param name="context">Contextual parameters of the <see cref="LogicalExpression"/>, like custom functions and parameters.</param>
-public class EvaluationVisitor(ExpressionContext context, IEvaluationVisitorFactory? evaluationVisitorFactory = null, CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<object?>
+public class EvaluationVisitor(
+    ExpressionContext context,
+    ExpressionEvaluationOptions options,
+    CultureInfo cultureInfo,
+    IEvaluationVisitorFactory? evaluationVisitorFactory = null,
+    CancellationToken cancellationToken = default) : ILogicalExpressionVisitor<object?>
 {
     protected CancellationToken CancellationToken { get; } = cancellationToken;
     protected IEvaluationVisitorFactory? EvaluationVisitorFactory { get; } = evaluationVisitorFactory;
 
     protected AsyncEvaluationVisitor CreateAsyncEvaluationVisitor()
     {
-        return EvaluationVisitorFactory?.CreateAsyncEvaluationVisitor(context, CancellationToken)
-               ?? new AsyncEvaluationVisitor(context, cancellationToken: CancellationToken);
+        return EvaluationVisitorFactory?.CreateAsyncEvaluationVisitor(context, options, cultureInfo, CancellationToken)
+               ?? new AsyncEvaluationVisitor(context, options, cultureInfo, cancellationToken: CancellationToken);
     }
 
     public virtual object? Visit(TernaryExpression expression)
     {
-        var left = Convert.ToBoolean(expression.LeftExpression.Accept(this), context.CultureInfo);
+        var left = Convert.ToBoolean(expression.LeftExpression.Accept(this), cultureInfo);
 
         return left
             ? expression.MiddleExpression.Accept(this)
@@ -40,27 +44,27 @@ public class EvaluationVisitor(ExpressionContext context, IEvaluationVisitorFact
 
         if (expression.Type == BinaryExpressionType.And)
         {
-            return Convert.ToBoolean(binaryEventArgs.LeftValue(), context.CultureInfo) &&
-                   Convert.ToBoolean(binaryEventArgs.RightValue(), context.CultureInfo);
+            return Convert.ToBoolean(binaryEventArgs.LeftValue(), cultureInfo) &&
+                   Convert.ToBoolean(binaryEventArgs.RightValue(), cultureInfo);
         }
 
         if (expression.Type == BinaryExpressionType.Or)
         {
-            return Convert.ToBoolean(binaryEventArgs.LeftValue(), context.CultureInfo) ||
-                   Convert.ToBoolean(binaryEventArgs.RightValue(), context.CultureInfo);
+            return Convert.ToBoolean(binaryEventArgs.LeftValue(), cultureInfo) ||
+                   Convert.ToBoolean(binaryEventArgs.RightValue(), cultureInfo);
         }
 
         var left = binaryEventArgs.LeftValue();
         var right = binaryEventArgs.RightValue();
 
-        return EvaluationVisitorHelper.EvaluateBinary(expression.Type, left, right, context);
+        return EvaluationVisitorHelper.EvaluateBinary(expression.Type, left, right, options, cultureInfo);
     }
 
     public virtual object? Visit(UnaryExpression expression)
     {
         var result = expression.Expression.Accept(this);
 
-        return Unary(expression, result, context);
+        return Unary(expression, result, options, cultureInfo);
     }
 
     public virtual object? Visit(Function function)
@@ -70,6 +74,8 @@ public class EvaluationVisitor(ExpressionContext context, IEvaluationVisitorFact
             function.Identifier.Id,
             function.Parameters,
             context,
+            options,
+            cultureInfo,
             this,
             CreateAsyncEvaluationVisitor(),
             CancellationToken);
@@ -134,7 +140,7 @@ public class EvaluationVisitor(ExpressionContext context, IEvaluationVisitorFact
         if (parameterArgs.HasResult)
             return parameterArgs.Result;
 
-        if (context.StaticParameters.TryGetValue(identifierName, out var parameter))
+        if (context.Parameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
@@ -149,7 +155,7 @@ public class EvaluationVisitor(ExpressionContext context, IEvaluationVisitorFact
             return dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken));
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
-            context.Options.HasFlag(ExpressionOptions.AllowNullParameter))
+            options.AllowNullParameter)
         {
             return null;
         }
@@ -159,7 +165,7 @@ public class EvaluationVisitor(ExpressionContext context, IEvaluationVisitorFact
 
     private void ShareParametersWithChildExpression(Expression expression)
     {
-        foreach (var parameter in context.StaticParameters)
+        foreach (var parameter in context.Parameters)
             expression.Parameters[parameter.Key] = parameter.Value;
 
         foreach (var parameter in context.DynamicParameters)

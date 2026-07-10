@@ -1,4 +1,5 @@
 using NCalc.Handlers;
+using NCalc.Parser;
 
 namespace NCalc.Tests;
 
@@ -22,47 +23,38 @@ public class ParametersAndFunctions
     }
 
     [Test]
-    public async Task ShouldCreateExpressionContextHelperOptionsFromCurrentValues()
+    public async Task ShouldCreateExpressionConfigurationHelperOptionsFromExpressionOptions()
     {
-        var context = new ExpressionContext(
-            ExpressionOptions.DecimalAsDefault | ExpressionOptions.CaseInsensitiveStringComparer,
-            CultureInfo.InvariantCulture);
+        var configuration = ExpressionConfiguration.FromOptions(
+            ExpressionOptions.DecimalAsDefault | ExpressionOptions.CaseInsensitiveStringComparer);
 
-        await Assert.That(context.MathHelperOptions.CultureInfo).IsEqualTo(CultureInfo.InvariantCulture);
-        await Assert.That(context.MathHelperOptions.DecimalAsDefault).IsTrue();
-        await Assert.That(context.ComparisonOptions.CultureInfo).IsEqualTo(CultureInfo.InvariantCulture);
-        await Assert.That(context.ComparisonOptions.IsCaseInsensitive).IsTrue();
+        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(DefaultNumberType.Decimal);
+        await Assert.That(configuration.Evaluation.StringComparer.Equals("a", "A")).IsTrue();
     }
 
     [Test]
-    public async Task ShouldRefreshExpressionContextHelperOptionsWhenOptionsChange()
+    public async Task ShouldCreateExpressionConfigurationHelperOptionsFromUpdatedOptions()
     {
-        var context = new ExpressionContext(ExpressionOptions.None, CultureInfo.InvariantCulture);
+        var options = ExpressionOptions.None;
 
-        _ = context.MathHelperOptions;
-        _ = context.ComparisonOptions;
+        options = ExpressionOptions.DecimalAsDefault | ExpressionOptions.OrdinalStringComparer;
+        var configuration = ExpressionConfiguration.FromOptions(options);
 
-        context.Options = ExpressionOptions.DecimalAsDefault | ExpressionOptions.OrdinalStringComparer;
-
-        await Assert.That(context.MathHelperOptions.DecimalAsDefault).IsTrue();
-        await Assert.That(context.ComparisonOptions.IsOrdinal).IsTrue();
+        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(DefaultNumberType.Decimal);
+        await Assert.That(configuration.Evaluation.StringComparer.Compare("a", "A")).IsGreaterThan(0);
     }
 
     [Test]
-    public async Task ShouldRefreshExpressionContextHelperOptionsWhenCultureChanges()
+    public async Task ShouldCreateExpressionWithConfigurationAndContext()
     {
-        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
-        culture.NumberFormat.NumberDecimalSeparator = ",";
+        var context = new ExpressionContext();
+        context.Parameters["value"] = 22.5;
+        var configuration = ExpressionConfiguration.FromOptions(ExpressionOptions.RoundAwayFromZero);
 
-        var context = new ExpressionContext(ExpressionOptions.None, CultureInfo.InvariantCulture);
+        var expression = new Expression("Round(value, 0)", configuration, context);
 
-        _ = context.MathHelperOptions;
-        _ = context.ComparisonOptions;
-
-        context.CultureInfo = culture;
-
-        await Assert.That(context.MathHelperOptions.CultureInfo.NumberFormat.NumberDecimalSeparator).IsEqualTo(",");
-        await Assert.That(context.ComparisonOptions.CultureInfo.NumberFormat.NumberDecimalSeparator).IsEqualTo(",");
+        await Assert.That(configuration.Evaluation.Math.RoundAwayFromZero).IsTrue();
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(23d);
     }
 
     [Test]
@@ -72,7 +64,7 @@ public class ParametersAndFunctions
         {
             Functions =
             {
-                ["SecretOperation"] = (args) => (int)args[0].Evaluate(args.Context, CancellationToken.None) + (int)args[1].Evaluate(args.Context, CancellationToken.None)
+                ["SecretOperation"] = (args) => (int)args.Evaluate(0) + (int)args.Evaluate(1)
             }
         };
 
@@ -91,7 +83,7 @@ public class ParametersAndFunctions
             },
             Functions =
             {
-                ["SecretOperation"] = (args) => (int)args[0].Evaluate(args.Context) + (int)args[1].Evaluate(args.Context)
+                ["SecretOperation"] = (args) => (int)args.Evaluate(0) + (int)args.Evaluate(1)
             }
         };
 
@@ -121,7 +113,7 @@ public class ParametersAndFunctions
                 }
             }
 
-            return (int)args[0].Evaluate(args.Context) + (int)args[1].Evaluate(args.Context);
+            return (int)args.Evaluate(0) + (int)args.Evaluate(1);
         };
 
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(12);
@@ -140,8 +132,8 @@ public class ParametersAndFunctions
         var times = new Dictionary<string, int>();
         e.Functions[id] = (args) =>
         {
-            var t = (int)args[1].Evaluate(args.Context) - 1;
-            var r = (bool)args[0].Evaluate(args.Context);
+            var t = (int)args.Evaluate(1) - 1;
+            var r = (bool)args.Evaluate(0);
             if (r)
             {
                 if (!times.ContainsKey(id))
@@ -235,8 +227,8 @@ public class ParametersAndFunctions
         var e = new Expression("if(true, func1(x) + func2(func3(y)), 0)");
 
         e.Functions["func1"] = (_) => 1;
-        e.Functions["func2"] = (arg) => 2 * Convert.ToDouble(arg[0].Evaluate(arg.Context));
-        e.Functions["func3"] = (arg) => 3 * Convert.ToDouble(arg[0].Evaluate(arg.Context));
+        e.Functions["func2"] = (arg) => 2 * Convert.ToDouble(arg.Evaluate(0));
+        e.Functions["func3"] = (arg) => 3 * Convert.ToDouble(arg.Evaluate(0));
 
         e.DynamicParameters["x"] = _ => 1;
         e.DynamicParameters["y"] = _ => 2;
@@ -291,7 +283,7 @@ public class ParametersAndFunctions
 
         await Assert.That("name == 'Beatriz'").Expression<bool>(new ExpressionContext
         {
-            StaticParameters = parameters
+            Parameters = parameters
         }).IsTrue();
     }
 

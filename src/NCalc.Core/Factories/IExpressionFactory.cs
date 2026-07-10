@@ -4,9 +4,9 @@ public interface IExpressionFactory
 {
     public Expression Create(
         string expression,
-        ExpressionContext? expressionContext = null);
+        ExpressionConfiguration? configuration = null);
 
     public Expression Create(
         LogicalExpression logicalExpression,
-        ExpressionContext? expressionContext = null);
+        ExpressionConfiguration? configuration = null);
 }
