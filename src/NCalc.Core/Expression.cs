@@ -145,7 +145,7 @@ public class Expression
         Context = context;
         CacheEnabled = ((ExpressionConfiguration?)null)?.CacheEnabled ?? true;
         Configuration = (ExpressionConfiguration?)null ?? new ExpressionConfiguration();
-        CultureInfo = (CultureInfo?)null ?? CultureInfo.CurrentCulture;
+        CultureInfo = CultureInfo.CurrentCulture;
     }
 
     public Expression(string? expression, ExpressionConfiguration configuration, ExpressionContext context, CultureInfo? cultureInfo = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(evaluationVisitorFactory)
