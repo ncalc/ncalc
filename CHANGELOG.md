@@ -19,6 +19,7 @@
 * `LogicalExpression` extension methods `Evaluate(...)` and `EvaluateAsync(...)` were removed. Evaluate through `Expression` or instantiate the appropriate evaluation visitor.
 * `ComparisonOptions` was removed. Use `StringComparer` property.
 * `MathHelperOptions` was renamed to `MathOptions`.
+* `LogicalExpressionParserContext` was renamed to `LogicalExpressionParseContext` following Parlot convention
 * The `NCalc.Antlr` package/plugin was removed. Use the default Parlot parser or provide a custom `ILogicalExpressionFactory`.
 
 # 6.4.0

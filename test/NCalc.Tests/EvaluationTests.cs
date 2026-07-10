@@ -176,7 +176,7 @@ public class EvaluationTests
             ArgumentSeparator = ArgumentSeparator.Semicolon
         };
 
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
 

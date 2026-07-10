@@ -90,7 +90,7 @@ public class ExtractionTests
         {
             ArgumentSeparator = ArgumentSeparator.Semicolon
         };
-        var context = new LogicalExpressionParserContext(expressionText, options);
+        var context = new LogicalExpressionParseContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression);

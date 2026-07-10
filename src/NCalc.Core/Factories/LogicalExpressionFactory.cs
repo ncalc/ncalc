@@ -37,7 +37,7 @@ public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory>? 
 
     public static LogicalExpression Create(string expression, LogicalExpressionParserOptions? options = null, CultureInfo? cultureInfo = null, CancellationToken cancellationToken = default)
     {
-        var parserContext = new LogicalExpressionParserContext(expression, options ?? new LogicalExpressionParserOptions(), cancellationToken);
+        var parserContext = new LogicalExpressionParseContext(expression, options ?? new LogicalExpressionParserOptions(), cancellationToken);
         return LogicalExpressionParser.Parse(parserContext, cultureInfo);
     }
 }

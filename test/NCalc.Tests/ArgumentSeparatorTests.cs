@@ -20,7 +20,7 @@ public class ArgumentSeparatorTests
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -43,7 +43,7 @@ public class ArgumentSeparatorTests
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -65,7 +65,7 @@ public class ArgumentSeparatorTests
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act & Assert
         Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse(context));
@@ -87,9 +87,9 @@ public class ArgumentSeparatorTests
         var commaExpression = "Max(1, 2)";
         var semicolonExpression = "Max(3; 4)";
 
-        var commaContext = new LogicalExpressionParserContext(commaExpression, commaOptions);
+        var commaContext = new LogicalExpressionParseContext(commaExpression, commaOptions);
 
-        var semicolonContext = new LogicalExpressionParserContext(semicolonExpression, semicolonOptions);
+        var semicolonContext = new LogicalExpressionParseContext(semicolonExpression, semicolonOptions);
 
         // Act
         var commaResult = LogicalExpressionParser.Parse(commaContext);
@@ -145,7 +145,7 @@ public class ArgumentSeparatorTests
         };
         var expression = "Max(1.5; 2.3)"; // Using dots for decimals to avoid confusion with argument separator
 
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context, germanCulture);
@@ -176,7 +176,7 @@ public class ArgumentSeparatorTests
         };
         var expression = $"Max(1{separatorChar}3)";
 
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -191,7 +191,7 @@ public class ArgumentSeparatorTests
     {
         // Arrange
         const string expression = "Max(2, 3)";
-        var context = new LogicalExpressionParserContext(expression);
+        var context = new LogicalExpressionParseContext(expression);
         // Not setting ParserOptions should default to comma separator
 
         // Act
@@ -211,7 +211,7 @@ public class ArgumentSeparatorTests
         {
             ArgumentSeparator = ArgumentSeparator.Semicolon
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -231,7 +231,7 @@ public class ArgumentSeparatorTests
         };
         var expression = "Max(Min(1; 2); Max(3; 4))";
 
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -253,7 +253,7 @@ public class ArgumentSeparatorTests
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -277,8 +277,8 @@ public class ArgumentSeparatorTests
         };
         var expression = "Abs(-5)"; // Single argument function
 
-        var commaContext = new LogicalExpressionParserContext(expression, commaOptions);
-        var semicolonContext = new LogicalExpressionParserContext(expression, semicolonOptions);
+        var commaContext = new LogicalExpressionParseContext(expression, commaOptions);
+        var semicolonContext = new LogicalExpressionParseContext(expression, semicolonOptions);
 
         // Act
         var commaResult = LogicalExpressionParser.Parse(commaContext);
@@ -306,9 +306,9 @@ public class ArgumentSeparatorTests
         var commaExpression = "Max(1, 2)";
         var semicolonExpression = "Max(3; 4)";
 
-        var commaContext = new LogicalExpressionParserContext(commaExpression, argumentOptions);
+        var commaContext = new LogicalExpressionParseContext(commaExpression, argumentOptions);
 
-        var semicolonContext = new LogicalExpressionParserContext(semicolonExpression, argumentOptions);
+        var semicolonContext = new LogicalExpressionParseContext(semicolonExpression, argumentOptions);
 
         // Act
         var commaResult = LogicalExpressionParser.Parse(commaContext);

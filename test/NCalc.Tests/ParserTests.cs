@@ -165,7 +165,7 @@ public class ParserTests
         {
             try
             {
-                var context = new LogicalExpressionParserContext(c);
+                var context = new LogicalExpressionParseContext(c);
                 LogicalExpressionParser.Parse(context);
             }
             catch (Exception)

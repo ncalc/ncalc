@@ -16,7 +16,7 @@ public class ExpressionSeparatorTests
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expressionText, options);
+        var context = new LogicalExpressionParseContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
 
@@ -38,7 +38,7 @@ public class ExpressionSeparatorTests
         };
         const string expressionText = "CustomAdd(10; 20)";
 
-        var context = new LogicalExpressionParserContext(expressionText, options);
+        var context = new LogicalExpressionParseContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression);
@@ -70,7 +70,7 @@ public class ExpressionSeparatorTests
 
         const string expressionText = "Max(x; y)";
 
-        var context = new LogicalExpressionParserContext(expressionText, options);
+        var context = new LogicalExpressionParseContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression)

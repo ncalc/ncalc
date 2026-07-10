@@ -303,7 +303,7 @@ public class AsyncTests
     [Test]
     public async Task ShouldEvaluateIfFalseBranchWhenIteratedConditionComparesNaNAsync()
     {
-        var logicalExpression = LogicalExpressionParser.Parse(new LogicalExpressionParserContext(
+        var logicalExpression = LogicalExpressionParser.Parse(new LogicalExpressionParseContext(
             "if((A - B) < 1; 0; (A - B))",
             new LogicalExpressionParserOptions { ArgumentSeparator = ArgumentSeparator.Semicolon }));
         var expression = new Expression(logicalExpression, ExpressionOptions.IterateParameters)

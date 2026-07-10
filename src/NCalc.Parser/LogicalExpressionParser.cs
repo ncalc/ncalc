@@ -185,30 +185,27 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var doubleNumber = Terms.Number<double>(NumberOptions.Float)
-            .Then<LogicalExpression>(static (ctx, val) =>
+            .Then<LogicalExpression>(static d => new ValueExpression(d));
+
+        var decimalFallbackNumber = Terms.Number<double>(NumberOptions.Float)
+            .Then<LogicalExpression>(static val =>
             {
-                bool useDecimal = ((LogicalExpressionParserContext)ctx).ParserOptions.DefaultNumberType == DefaultNumberType.Decimal;
-                if (useDecimal)
+                return val switch
                 {
-                    if (val > MaxDecDouble)
-                        return new ValueExpression(double.PositiveInfinity);
-
-                    if (val < MinDecDouble)
-                        return new ValueExpression(double.NegativeInfinity);
-
-                    return new ValueExpression((decimal)val);
-                }
-
-                return new ValueExpression(val);
+                    > MaxDecDouble => new ValueExpression(double.PositiveInfinity),
+                    < MinDecDouble => new ValueExpression(double.NegativeInfinity),
+                    _ => new ValueExpression((decimal)val)
+                };
             });
 
-        var decimalOrDouble = OneOf(decimalNumber, doubleNumber);
-        var decimalOrDoubleNumber = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
+        var decimalOrDouble = OneOf(decimalNumber, decimalFallbackNumber);
+        var decimalOrDoubleNumber = Select<LogicalExpressionParseContext, LogicalExpression>(ctx =>
         {
-            if (ctx.ParserOptions.DefaultNumberType == DefaultNumberType.Decimal)
-                return decimalOrDouble;
-
-            return doubleNumber;
+            return ctx.Options.DefaultNumberType switch
+            {
+                DefaultNumberType.Decimal => decimalOrDouble,
+                _ => doubleNumber
+            };
         });
 
         var argumentSeparatorTerm = CreateSeparatorParser(argumentSeparator);
@@ -295,8 +292,8 @@ public static class LogicalExpressionParser
         var booleanFalse = Terms.Text("false", true)
             .Then<LogicalExpression>(False);
 
-        var singleQuotesStringValue = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
-            CreateStringValueParser('\'', ctx.ParserOptions.AllowCharValues));
+        var singleQuotesStringValue = Select<LogicalExpressionParseContext, LogicalExpression>(ctx =>
+            CreateStringValueParser('\'', ctx.Options.AllowCharValues));
 
         var doubleQuotesStringValue = CreateStringValueParser('"', false);
 
@@ -413,12 +410,13 @@ public static class LogicalExpressionParser
 
         var intOrLong = OneOf(intNumber, longNumber);
 
-        var integralNumber = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
+        var integralNumber = Select<LogicalExpressionParseContext, LogicalExpression>(ctx =>
         {
-            return ctx.ParserOptions.DefaultNumberType switch
+            return ctx.Options.DefaultNumberType switch
             {
                 DefaultNumberType.Int64 => longNumber,
                 DefaultNumberType.Int32 => intNumber,
+                DefaultNumberType.Double or DefaultNumberType.Decimal => intOrLong,
                 _ => intOrLong
             };
         });
@@ -584,9 +582,9 @@ public static class LogicalExpressionParser
         return result;
     }
 
-    public static LogicalExpression Parse(LogicalExpressionParserContext context, CultureInfo? culture = null)
+    public static LogicalExpression Parse(LogicalExpressionParseContext context, CultureInfo? culture = null)
     {
-        var parser = GetOrCreateExpressionParser(context.ParserOptions, culture ?? CultureInfo.CurrentUICulture);
+        var parser = GetOrCreateExpressionParser(context.Options, culture ?? CultureInfo.CurrentUICulture);
 
         if (parser.TryParse(context, out var result, out var error))
             return result;
