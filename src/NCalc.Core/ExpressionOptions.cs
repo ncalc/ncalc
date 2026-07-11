@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace NCalc;
 
 /// <summary>
-/// Legacy flag-based options that can be converted to <see cref="ExpressionConfiguration"/>.
+/// Flag-based options that can be converted to <see cref="ExpressionConfiguration"/>.
 /// </summary>
 /// <remarks>
 /// Prefer configuring new code with <see cref="ExpressionConfiguration"/>,
@@ -17,7 +17,7 @@ namespace NCalc;
 public enum ExpressionOptions
 {
     /// <summary>
-    /// No legacy options are set.
+    /// No options are set.
     /// </summary>
     [Display(Name = "None")]
     None = 0,

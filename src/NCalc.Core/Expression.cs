@@ -27,8 +27,6 @@ public class Expression
 
     public CultureInfo CultureInfo { get; set; }
 
-    public bool CacheEnabled { get; set; } = true;
-
     public ExpressionContext Context { get; }
 
     public IDictionary<string, object?> Parameters
@@ -100,7 +98,6 @@ public class Expression
         : this(evaluationVisitorFactory)
     {
         ExpressionString = expressionString;
-        CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
@@ -115,7 +112,6 @@ public class Expression
         : this(evaluationVisitorFactory)
     {
         LogicalExpression = logicalExpression ?? throw new ArgumentNullException(nameof(logicalExpression));
-        CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
@@ -124,7 +120,6 @@ public class Expression
     public Expression(string? expression, ExpressionConfiguration? configuration = null, CultureInfo? cultureInfo = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(evaluationVisitorFactory)
     {
         ExpressionString = expression;
-        CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
         CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
     }
@@ -132,7 +127,6 @@ public class Expression
     public Expression(string? expression, CultureInfo cultureInfo) : this()
     {
         ExpressionString = expression;
-        CacheEnabled = true;
         CultureInfo = cultureInfo;
     }
 
@@ -140,7 +134,6 @@ public class Expression
     {
         ExpressionString = expression;
         Context = context;
-        CacheEnabled = true;
         CultureInfo = CultureInfo.CurrentCulture;
     }
 
@@ -148,7 +141,6 @@ public class Expression
     {
         ExpressionString = expression;
         Context = context ?? new ExpressionContext();
-        CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
         CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
     }
@@ -156,7 +148,6 @@ public class Expression
     public Expression(LogicalExpression logicalExpression, ExpressionConfiguration? configuration = null, CultureInfo? cultureInfo = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(evaluationVisitorFactory)
     {
         LogicalExpression = logicalExpression ?? throw new ArgumentNullException(nameof(logicalExpression));
-        CacheEnabled = configuration?.CacheEnabled ?? true;
         Configuration = configuration ?? new ExpressionConfiguration();
         CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
     }
@@ -343,14 +334,14 @@ public class Expression
             throw new NCalcException($"{nameof(ExpressionString)} cannot be null or empty.");
         }
 
-        if (CacheEnabled && LogicalExpressionCache.TryGetValue(ExpressionString!, out var cached))
+        if (Configuration.CacheEnabled && LogicalExpressionCache.TryGetValue(ExpressionString!, out var cached))
             return cached;
 
         try
         {
             Error = null;
             var expression = CreateLogicalExpression(cancellationToken);
-            if (CacheEnabled)
+            if (Configuration.CacheEnabled)
                 LogicalExpressionCache.Set(ExpressionString!, expression);
             return expression;
         }
