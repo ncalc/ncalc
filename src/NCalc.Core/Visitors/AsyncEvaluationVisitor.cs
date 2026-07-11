@@ -129,11 +129,6 @@ public class AsyncEvaluationVisitor(
         return result;
     }
 
-    protected bool Compare(object? a, object? b, ComparisonType comparisonType)
-    {
-        return EvaluationVisitorHelper.Compare(a, b, comparisonType, options, cultureInfo);
-    }
-
     protected Task OnEvaluateFunctionAsync(string name, FunctionEventArgs args)
     {
         context.EvaluateFunctionHandler?.Invoke(name, args);
