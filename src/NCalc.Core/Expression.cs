@@ -27,7 +27,7 @@ public class Expression
 
     public CultureInfo CultureInfo { get; set; }
 
-    public ExpressionContext Context { get; }
+    public ExpressionContext Context { get; set; }
 
     public IDictionary<string, object?> Parameters
     {
