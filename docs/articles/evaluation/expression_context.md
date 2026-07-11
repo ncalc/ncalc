@@ -3,8 +3,7 @@
 <xref:NCalc.ExpressionContext> stores runtime data for an expression evaluation:
 [parameters](../language/parameters.md), [functions](../language/functions.md), async callbacks, and event handlers.
 
-Configuration does not live in the context anymore. Use [configuration](configuration.md) for parser and evaluation
-settings.
+Use [configuration](configuration.md) for parser and evaluation settings.
 
 ## Creating a context
 
@@ -51,28 +50,20 @@ var result = expression.Evaluate();
 
 ## Lifetime
 
-<xref:NCalc.ExpressionContext> is mutable and not thread-safe. Do not cache a single context as global shared state when
+<xref:NCalc.ExpressionContext> is mutable and not thread-safe. Do not cache a single context as global shared state because
 parameters, functions, or handlers can change.
 
 Create a context per evaluation, request, or operation:
 
 ```csharp
-static readonly ExpressionConfiguration Configuration = new()
+public class EvaluationService(ExpressionConfiguration configuration)
 {
-    Evaluation = new ExpressionEvaluationOptions
+    public object? Evaluate(string expressionText, IDictionary<string, object?> parameters)
     {
-        Math = new MathOptions
-        {
-            OverflowProtection = true
-        }
+        var context = new ExpressionContext(parameters);
+        var expression = new Expression(expressionText, configuration, context);
+    
+        return expression.Evaluate();
     }
-};
-
-public object? Evaluate(string expressionText, IDictionary<string, object?> parameters)
-{
-    var context = new ExpressionContext(parameters);
-    var expression = new Expression(expressionText, Configuration, context);
-
-    return expression.Evaluate();
 }
 ```
