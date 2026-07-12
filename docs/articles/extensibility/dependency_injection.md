@@ -28,11 +28,11 @@ builder.Services.AddSingleton(new ExpressionConfiguration
 {
     Parsing = new LogicalExpressionParserOptions
     {
-        DefaultNumberType = DefaultNumberType.Decimal
+        FloatingPointNumberType = FloatingPointNumberType.Decimal
     },
     Evaluation = new ExpressionEvaluationOptions
     {
-        Math = new MathOptions(DefaultNumberType.Decimal)
+        Math = new MathOptions(NumberType.Decimal)
     }
 });
 

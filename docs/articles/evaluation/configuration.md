@@ -7,13 +7,15 @@ Use <xref:NCalc.ExpressionConfiguration> for parsing, evaluation, math, comparis
 
 ```csharp
 using NCalc;
+using NCalc.Helpers;
 using NCalc.Parser;
 
 static readonly ExpressionConfiguration Configuration = new(
     parserOptions: new LogicalExpressionParserOptions
     {
         AllowCharValues = true,
-        DefaultNumberType = DefaultNumberType.Decimal,
+        FloatingPointNumberType = FloatingPointNumberType.Decimal,
+        IntegerNumberType = IntegerNumberType.Auto,
         ArgumentSeparator = ArgumentSeparator.Comma | ArgumentSeparator.Semicolon
     },
     evaluationOptions: new ExpressionEvaluationOptions
@@ -22,7 +24,7 @@ static readonly ExpressionConfiguration Configuration = new(
         StringComparer = StringComparer.OrdinalIgnoreCase,
         Math = new MathOptions
         {
-            DefaultNumberType = DefaultNumberType.Decimal,
+            NumberType = NumberType.Decimal,
             OverflowProtection = true,
             RoundAwayFromZero = true
         }
@@ -76,14 +78,14 @@ builder.Services.AddSingleton(new ExpressionConfiguration
 {
     Parsing = new LogicalExpressionParserOptions
     {
-        DefaultNumberType = DefaultNumberType.Decimal
+        FloatingPointNumberType = FloatingPointNumberType.Decimal
     },
     Evaluation = new ExpressionEvaluationOptions
     {
         StringComparer = StringComparer.OrdinalIgnoreCase,
         Math = new MathOptions
         {
-            DefaultNumberType = DefaultNumberType.Decimal,
+            DefaultNumberType = NumberType.Decimal,
             OverflowProtection = true
         }
     }

@@ -2,7 +2,7 @@
 
 * Refactor expression configuration by separating immutable parsing/evaluation settings from runtime expression context.
 * Add `ExpressionConfiguration`, `ExpressionEvaluationOptions` for explicit configuration.
-* Add `DefaultNumberType` and use it for parser number handling and string-to-number coercion in math helpers.
+* Add `FloatingPointNumberType`, `IntegerNumberType`, and `NumberType` to configure parser number handling and string-to-number coercion in math helpers.
 * Improve parser caching by including culture in the parser cache key.
 * Remove the `NCalc.Antlr` plugin and its tests/benchmarks from the solution, ANTLR is missing many features and is a cost to be maintained. If you use Antlr, please open an issue.
 
@@ -12,7 +12,7 @@
 * `Expression` constructors and `IExpressionFactory.Create` now accept `ExpressionConfiguration` for configuration. Runtime parameters/functions/events are supplied through `Expression.Context` or an explicit `ExpressionContext`.
 * `DynamicParameters`, `AsyncParameters`, `Functions`, and `AsyncFunctions` on `Expression` no longer have setters. Mutate the dictionaries on `Expression.Context` or replace them through a new `ExpressionContext`.
 * `LogicalExpressionArgumentSeparator` was renamed to `ArgumentSeparator`.
-* `LogicalExpressionParserOptions` no longer exposes `DecimalAsDefault` and `LongAsDefault`. Please use `DefaultNumberType`.
+* `LogicalExpressionParserOptions` no longer exposes `DecimalAsDefault` and `LongAsDefault`. Use `FloatingPointNumberType` and `IntegerNumberType`.
 * `LogicalExpressionParser.GetOrCreateExpressionParser` now requires a `CultureInfo`, and `LogicalExpressionParser.Parse` accepts culture separately from parser options.
 * `ILogicalExpressionFactory.Create` now accepts `LogicalExpressionParserOptions?` and `CultureInfo?` instead of `ExpressionOptions`.
 * `IEvaluationVisitorFactory`, `EvaluationVisitor`, and `AsyncEvaluationVisitor` now require `ExpressionEvaluationOptions` and `CultureInfo`.

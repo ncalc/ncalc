@@ -1,3 +1,4 @@
+using NCalc.Helpers;
 #if NET
 using System.ComponentModel.DataAnnotations;
 #endif
@@ -61,9 +62,10 @@ public enum ExpressionOptions
     [Display(Name = "Case-Insensitive String Comparer")]
     CaseInsensitiveStringComparer = 1 << 5,
 
-    /// <inheritdoc cref="Parser.DefaultNumberType.Decimal"/>
+    /// <inheritdoc cref="Parser.FloatingPointNumberType.Decimal"/>
     /// <remarks>
-    /// Converts to <see cref="Parser.DefaultNumberType.Decimal"/> on both parser and math options.
+    /// Converts to <see cref="Parser.FloatingPointNumberType.Decimal"/> on parser options
+    /// and <see cref="NumberType.Decimal"/> on math options.
     /// </remarks>
     [Display(Name = "Decimal As Default")]
     DecimalAsDefault = 1 << 6,
@@ -134,9 +136,10 @@ public enum ExpressionOptions
     [Display(Name = "Strict Type Matching")]
     StrictTypeMatching = 1 << 15,
 
-    /// <inheritdoc cref="Parser.DefaultNumberType.Int64"/>
+    /// <inheritdoc cref="Parser.IntegerNumberType.Int64"/>
     /// <remarks>
-    /// Converts to <see cref="Parser.DefaultNumberType.Int64"/> on both parser and math options,
+    /// Converts to <see cref="Parser.IntegerNumberType.Int64"/> on parser options
+    /// and <see cref="NumberType.Int64"/> on math options,
     /// unless <see cref="DecimalAsDefault"/> is also set.
     /// </remarks>
     [Display(Name = "Long As Default")]

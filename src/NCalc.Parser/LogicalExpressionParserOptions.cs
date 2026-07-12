@@ -11,9 +11,14 @@ public sealed class LogicalExpressionParserOptions
     public bool AllowCharValues { get; init; }
 
     /// <summary>
-    /// Gets the default parsed number type.
+    /// Gets the default parsed floating point number type.
     /// </summary>
-    public DefaultNumberType DefaultNumberType { get; init; } = DefaultNumberType.Double;
+    public FloatingPointNumberType FloatingPointNumberType { get; init; } = FloatingPointNumberType.Double;
+
+    /// <summary>
+    /// Gets the default parsed integer number type.
+    /// </summary>
+    public IntegerNumberType IntegerNumberType { get; init; } = IntegerNumberType.Auto;
 
     /// <summary>
     /// The argument separator used to separate function arguments. Default is Comma.

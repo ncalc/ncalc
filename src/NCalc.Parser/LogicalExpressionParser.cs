@@ -201,9 +201,9 @@ public static class LogicalExpressionParser
         var decimalOrDouble = OneOf(decimalNumber, decimalFallbackNumber);
         var decimalOrDoubleNumber = Select<LogicalExpressionParseContext, LogicalExpression>(ctx =>
         {
-            return ctx.Options.DefaultNumberType switch
+            return ctx.Options.FloatingPointNumberType switch
             {
-                DefaultNumberType.Decimal => decimalOrDouble,
+                FloatingPointNumberType.Decimal => decimalOrDouble,
                 _ => doubleNumber
             };
         });
@@ -412,11 +412,10 @@ public static class LogicalExpressionParser
 
         var integralNumber = Select<LogicalExpressionParseContext, LogicalExpression>(ctx =>
         {
-            return ctx.Options.DefaultNumberType switch
+            return ctx.Options.IntegerNumberType switch
             {
-                DefaultNumberType.Int64 => longNumber,
-                DefaultNumberType.Int32 => intNumber,
-                DefaultNumberType.Double or DefaultNumberType.Decimal => intOrLong,
+                IntegerNumberType.Int64 => longNumber,
+                IntegerNumberType.Int32 => intNumber,
                 _ => intOrLong
             };
         });

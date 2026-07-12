@@ -175,24 +175,24 @@ public class DecimalsTests
     }
 
     [Test]
-    public async Task ShouldUseDefaultNumberTypeWhenCoercingStringNumbers()
+    public async Task ShouldUseMathNumberTypeWhenCoercingStringNumbers()
     {
         var cultureInfo = CultureInfo.InvariantCulture;
 
-        await Assert.That(MathHelper.Add("2", "3", new MathOptions(defaultNumberType: DefaultNumberType.Double), cultureInfo)).IsEqualTo(5d);
-        await Assert.That(MathHelper.Add("2", "3", new MathOptions(defaultNumberType: DefaultNumberType.Decimal), cultureInfo)).IsEqualTo(5m);
-        await Assert.That(MathHelper.Add("2", "3", new MathOptions(defaultNumberType: DefaultNumberType.Int32), cultureInfo)).IsEqualTo(5);
-        await Assert.That(MathHelper.Add("2", "3", new MathOptions(defaultNumberType: DefaultNumberType.Int64), cultureInfo)).IsEqualTo(5L);
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions(NumberType.Double), cultureInfo)).IsEqualTo(5d);
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions(NumberType.Decimal), cultureInfo)).IsEqualTo(5m);
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions(NumberType.Int32), cultureInfo)).IsEqualTo(5);
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions(NumberType.Int64), cultureInfo)).IsEqualTo(5L);
     }
 
     [Test]
-    public async Task ShouldHandleAllDefaultNumberTypesWhenChoosingMathFunctionPrecision()
+    public async Task ShouldHandleAllMathNumberTypesWhenChoosingMathFunctionPrecision()
     {
-        foreach (var defaultNumberType in Enum.GetValues<DefaultNumberType>())
+        foreach (var numberType in Enum.GetValues<NumberType>())
         {
-            var result = MathHelper.Abs("-1", new MathOptions(defaultNumberType: defaultNumberType), CultureInfo.InvariantCulture);
+            var result = MathHelper.Abs("-1", new MathOptions(numberType), CultureInfo.InvariantCulture);
 
-            if (defaultNumberType == DefaultNumberType.Decimal)
+            if (numberType == NumberType.Decimal)
                 await Assert.That(result).IsEqualTo(1m);
             else
                 await Assert.That(result).IsEqualTo(1d);

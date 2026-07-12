@@ -1,5 +1,3 @@
-using NCalc.Parser;
-
 namespace NCalc.Helpers;
 
 public sealed class MathOptions
@@ -8,15 +6,15 @@ public sealed class MathOptions
     {
     }
 
-    public MathOptions(DefaultNumberType defaultNumberType)
+    public MathOptions(NumberType defaultNumberType)
     {
         DefaultNumberType = defaultNumberType;
     }
 
     /// <summary>
-    /// Gets the default parsed and coerced number type.
+    /// Gets the number type used when coercing string values and choosing math function precision.
     /// </summary>
-    public DefaultNumberType DefaultNumberType { get; init; } = DefaultNumberType.Double;
+    public NumberType DefaultNumberType { get; init; } = NumberType.Double;
 
     /// <summary>
     /// Allows arithmetic operations with <see cref="bool"/> values.

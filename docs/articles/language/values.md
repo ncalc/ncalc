@@ -31,18 +31,18 @@ Use the dot to define the decimal part.
 .123
 ```
 They are evaluated as <xref:System.Double> by default. Use
-<xref:NCalc.Parser.LogicalExpressionParserOptions.DefaultNumberType> to change the parsed number type.
+<xref:NCalc.Parser.LogicalExpressionParserOptions.FloatingPointNumberType> to change the parsed floating point number type.
 
 ```csharp
 var configuration = new ExpressionConfiguration
 {
     Parsing = new LogicalExpressionParserOptions
     {
-        DefaultNumberType = DefaultNumberType.Decimal
+        FloatingPointNumberType = FloatingPointNumberType.Decimal
     },
     Evaluation = new ExpressionEvaluationOptions
     {
-        Math = new MathOptions(DefaultNumberType.Decimal)
+        Math = new MathOptions(NumberType.Decimal)
     }
 };
 ```
@@ -60,7 +60,7 @@ You can use the e to define power of ten (10^).
 1e10
 ```
 They are evaluated as <xref:System.Double> by default. Use
-<xref:NCalc.Parser.LogicalExpressionParserOptions.DefaultNumberType> to change the parsed number type.
+<xref:NCalc.Parser.LogicalExpressionParserOptions.FloatingPointNumberType> to change the parsed floating point number type.
 
 ## DateTime
 

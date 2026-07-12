@@ -50,7 +50,7 @@ var configuration = new ExpressionConfiguration
 };
 ```
 
-Configure <xref:NCalc.Helpers.MathOptions.DefaultNumberType> to control how math functions coerce string numbers and
+Configure <xref:NCalc.Helpers.MathOptions.NumberType> to control how math functions coerce string numbers and
 choose decimal precision.
 
 ## Custom Functions

@@ -1,4 +1,5 @@
 using NCalc.Handlers;
+using NCalc.Helpers;
 using NCalc.Parser;
 
 namespace NCalc.Tests;
@@ -28,7 +29,9 @@ public class ParametersAndFunctions
         var configuration = ExpressionConfiguration.FromOptions(
             ExpressionOptions.DecimalAsDefault | ExpressionOptions.CaseInsensitiveStringComparer);
 
-        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(DefaultNumberType.Decimal);
+        await Assert.That(configuration.Parsing.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
+        await Assert.That(configuration.Parsing.IntegerNumberType).IsEqualTo(IntegerNumberType.Auto);
+        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(NumberType.Decimal);
         await Assert.That(configuration.Evaluation.StringComparer.Equals("a", "A")).IsTrue();
     }
 
@@ -40,8 +43,21 @@ public class ParametersAndFunctions
         options = ExpressionOptions.DecimalAsDefault | ExpressionOptions.OrdinalStringComparer;
         var configuration = ExpressionConfiguration.FromOptions(options);
 
-        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(DefaultNumberType.Decimal);
+        await Assert.That(configuration.Parsing.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
+        await Assert.That(configuration.Parsing.IntegerNumberType).IsEqualTo(IntegerNumberType.Auto);
+        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(NumberType.Decimal);
         await Assert.That(configuration.Evaluation.StringComparer.Compare("a", "A")).IsGreaterThan(0);
+    }
+
+    [Test]
+    public async Task ShouldSplitDecimalAndLongExpressionOptions()
+    {
+        var configuration = ExpressionConfiguration.FromOptions(
+            ExpressionOptions.DecimalAsDefault | ExpressionOptions.LongAsDefault);
+
+        await Assert.That(configuration.Parsing.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
+        await Assert.That(configuration.Parsing.IntegerNumberType).IsEqualTo(IntegerNumberType.Int64);
+        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(NumberType.Decimal);
     }
 
     [Test]

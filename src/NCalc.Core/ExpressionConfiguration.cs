@@ -38,7 +38,8 @@ public sealed class ExpressionConfiguration
             Parsing = new LogicalExpressionParserOptions
             {
                 AllowCharValues = options.HasFlag(ExpressionOptions.AllowCharValues),
-                DefaultNumberType = GetDefaultNumberType(options)
+                FloatingPointNumberType = GetFloatingPointNumberType(options),
+                IntegerNumberType = GetIntegerNumberType(options)
             },
             Evaluation = new ExpressionEvaluationOptions
             {
@@ -53,7 +54,7 @@ public sealed class ExpressionConfiguration
 
                 Math = new MathOptions
                 {
-                    DefaultNumberType = GetDefaultNumberType(options),
+                    DefaultNumberType = GetMathNumberType(options),
                     AllowBooleanCalculation = options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
                     OverflowProtection = options.HasFlag(ExpressionOptions.OverflowProtection),
                     RoundAwayFromZero = options.HasFlag(ExpressionOptions.RoundAwayFromZero)
@@ -65,14 +66,29 @@ public sealed class ExpressionConfiguration
         };
     }
 
-    private static DefaultNumberType GetDefaultNumberType(ExpressionOptions options)
+    private static FloatingPointNumberType GetFloatingPointNumberType(ExpressionOptions options)
     {
         if (options.HasFlag(ExpressionOptions.DecimalAsDefault))
-            return DefaultNumberType.Decimal;
+            return FloatingPointNumberType.Decimal;
+
+        return FloatingPointNumberType.Double;
+    }
+
+    private static IntegerNumberType GetIntegerNumberType(ExpressionOptions options)
+    {
+        return options.HasFlag(ExpressionOptions.LongAsDefault)
+            ? IntegerNumberType.Int64
+            : IntegerNumberType.Auto;
+    }
+
+    private static NumberType GetMathNumberType(ExpressionOptions options)
+    {
+        if (options.HasFlag(ExpressionOptions.DecimalAsDefault))
+            return NumberType.Decimal;
 
         return options.HasFlag(ExpressionOptions.LongAsDefault)
-            ? DefaultNumberType.Int64
-            : DefaultNumberType.Double;
+            ? NumberType.Int64
+            : NumberType.Double;
     }
 
     private static StringComparer GetStringComparer(ExpressionOptions options)
