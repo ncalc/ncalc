@@ -13,11 +13,10 @@ static readonly ExpressionConfiguration ExpressionConfiguration = new()
 {
     CacheEnabled = false
 };
-```
-```
 
-```csharp
-var configuration = ExpressionConfiguration.FromOptions(ExpressionOptions.NoCache);
+// or...
+
+static readonly ExpressionConfiguration ExpressionConfiguration = ExpressionConfiguration.FromOptions(ExpressionOptions.NoCache);
 ```
 
 ## Default cache size
