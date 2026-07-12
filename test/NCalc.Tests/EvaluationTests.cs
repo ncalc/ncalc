@@ -152,6 +152,16 @@ public class EvaluationTests
     }
 
     [Test]
+    public async Task ShouldApplyOptionsSetter()
+    {
+        var expression = new Expression("Round(22.5, 0)");
+
+        expression.Options = ExpressionOptions.RoundAwayFromZero;
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(23d);
+    }
+
+    [Test]
     public async Task ShouldEvaluateSubExpressions()
     {
         var volume = new Expression("[surface] * h");

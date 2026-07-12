@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using NCalc.Helpers;
 using NCalc.Parser;
 

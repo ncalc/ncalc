@@ -47,6 +47,9 @@ public sealed class ExpressionEvaluationOptions
     /// </summary>
     public bool StrictTypeMatching { get; init; }
 
+    /// <summary>
+    /// Gets math evaluation options.
+    /// </summary>
     public MathOptions Math { get; init; } = new();
 
     /// <summary>

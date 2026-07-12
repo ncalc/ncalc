@@ -109,17 +109,19 @@ public class RuleEvaluator(
 
 ## ExpressionOptions
 
-<xref:NCalc.ExpressionOptions> is kept as a legacy helper. It is no longer the main configuration model.
-
-Use it only when you want to convert old flag-based configuration into <xref:NCalc.ExpressionConfiguration>:
+<xref:NCalc.ExpressionOptions> is kept as a legacy helper, it will convert old flag-based configuration into <xref:NCalc.ExpressionConfiguration>:
 
 ```csharp
-var configuration = ExpressionConfiguration.FromOptions(
-    ExpressionOptions.DecimalAsDefault |
-    ExpressionOptions.OverflowProtection |
-    ExpressionOptions.CaseInsensitiveStringComparer);
+var expression = new Expression("1.2 + 3.4",  ExpressionOptions.DecimalAsDefault | ExpressionOptions.CaseInsensitiveStringComparer);
+```
 
-var expression = new Expression("1.2 + 3.4", configuration);
+The <xref:NCalc.Expression.Options> setter also replaces the expression's
+current <xref:NCalc.Expression.Configuration> with the configuration created by
+<xref:NCalc.ExpressionConfiguration.FromOptions(NCalc.ExpressionOptions)>:
+
+```csharp
+var expression = new Expression("Round(22.5, 0)");
+expression.Options = ExpressionOptions.RoundAwayFromZero;
 ```
 
 For new code, prefer constructing <xref:NCalc.ExpressionConfiguration>, <xref:NCalc.Parser.LogicalExpressionParserOptions>,

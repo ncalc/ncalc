@@ -16,59 +16,134 @@ namespace NCalc;
 /// </summary>
 public class Expression
 {
+    /// <summary>
+    /// Textual representation of the expression.
+    /// </summary>
     public string? ExpressionString { get; protected init; }
+
+    /// <summary>
+    /// Parsed logical expression tree.
+    /// </summary>
     public LogicalExpression? LogicalExpression { get; set; }
+
+    /// <summary>
+    /// Gets the last parsing error, if any.
+    /// </summary>
     public Exception? Error { get; private set; }
 
+    /// <summary>
+    /// Gets or sets parsing, evaluation, and caching configuration.
+    /// </summary>
     public ExpressionConfiguration Configuration { get; set; }
 
+    /// <summary>
+    /// Gets the parser options from <see cref="Configuration"/>.
+    /// </summary>
     public LogicalExpressionParserOptions ParserOptions => Configuration.Parsing;
+
+    /// <summary>
+    /// Gets the evaluation options from <see cref="Configuration"/>.
+    /// </summary>
     public ExpressionEvaluationOptions EvaluationOptions => Configuration.Evaluation;
 
+    /// <summary>
+    /// Culture information for parsing and evaluation.
+    /// </summary>
     public CultureInfo CultureInfo { get; set; }
 
+    /// <summary>
+    /// Runtime context that stores parameters, functions, and handlers.
+    /// </summary>
     public ExpressionContext Context { get; set; }
 
+    /// <summary>
+    /// Static parameters for the expression evaluation.
+    /// </summary>
     public IDictionary<string, object?> Parameters
     {
         get => Context.Parameters;
         set => Context.Parameters = value;
     }
+
+    /// <summary>
+    /// Replaces <see cref="Configuration"/> with a configuration converted from <see cref="ExpressionOptions"/> flags.
+    /// </summary>
+    /// <remarks>
+    /// Prefer setting <see cref="Configuration"/> directly.
+    /// </remarks>
+    public ExpressionOptions Options
+    {
+        set => Configuration = ExpressionConfiguration.FromOptions(value);
+    }
+
+    /// <summary>
+    /// Dynamic parameters for the expression evaluation.
+    /// </summary>
     public IDictionary<string, ExpressionParameter> DynamicParameters => Context.DynamicParameters;
+
+    /// <summary>
+    /// Async dynamic parameters for the expression evaluation.
+    /// </summary>
     public IDictionary<string, AsyncExpressionParameter> AsyncParameters => Context.AsyncParameters;
+
+    /// <summary>
+    /// Custom functions for the expression evaluation.
+    /// </summary>
     public IDictionary<string, ExpressionFunction> Functions => Context.Functions;
+
+    /// <summary>
+    /// Async custom functions for the expression evaluation.
+    /// </summary>
     public IDictionary<string, AsyncExpressionFunction> AsyncFunctions => Context.AsyncFunctions;
 
+    /// <summary>
+    /// Event triggered to handle function evaluation.
+    /// </summary>
     public event EvaluateFunctionHandler EvaluateFunction
     {
         add => Context.EvaluateFunctionHandler += value;
         remove => Context.EvaluateFunctionHandler -= value;
     }
 
+    /// <summary>
+    /// Event triggered to handle binary evaluation.
+    /// </summary>
     public event EvaluateBinaryHandler EvaluateBinary
     {
         add => Context.EvaluateBinaryHandler += value;
         remove => Context.EvaluateBinaryHandler -= value;
     }
 
+    /// <summary>
+    /// Event triggered to handle async binary evaluation.
+    /// </summary>
     public event EvaluateBinaryAsyncHandler EvaluateBinaryAsync
     {
         add => Context.EvaluateBinaryAsyncHandler += value;
         remove => Context.EvaluateBinaryAsyncHandler -= value;
     }
 
+    /// <summary>
+    /// Event triggered to handle async function evaluation.
+    /// </summary>
     public event EvaluateAsyncFunctionHandler EvaluateAsyncFunction
     {
         add => Context.EvaluateAsyncFunctionHandler += value;
         remove => Context.EvaluateAsyncFunctionHandler -= value;
     }
 
+    /// <summary>
+    /// Event triggered to handle parameter evaluation.
+    /// </summary>
     public event EvaluateParameterHandler EvaluateParameter
     {
         add => Context.EvaluateParameterHandler += value;
         remove => Context.EvaluateParameterHandler -= value;
     }
 
+    /// <summary>
+    /// Event triggered to handle async parameter evaluation.
+    /// </summary>
     public event EvaluateAsyncParameterHandler EvaluateAsyncParameter
     {
         add => Context.EvaluateAsyncParameterHandler += value;
@@ -77,6 +152,10 @@ public class Expression
 
     private ILogicalExpressionCache LogicalExpressionCache { get; }
     private ILogicalExpressionFactory LogicalExpressionFactory { get; }
+
+    /// <summary>
+    /// Factory used to create evaluation visitors.
+    /// </summary>
     protected IEvaluationVisitorFactory? EvaluationVisitorFactory { get; private set; }
 
     protected Expression(IEvaluationVisitorFactory? evaluationVisitorFactory = null)
@@ -169,6 +248,10 @@ public class Expression
         EvaluationVisitorFactory ??= evaluationVisitorFactory;
     }
 
+    /// <summary>
+    /// Evaluates the logical expression.
+    /// </summary>
+    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public object? Evaluate(CancellationToken cancellationToken = default)
     {
         LogicalExpression ??= GetLogicalExpression(cancellationToken);
@@ -189,11 +272,23 @@ public class Expression
         }
     }
 
+    /// <summary>
+    /// Evaluates the logical expression and converts the result to type <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T">The type to which the evaluation result should be converted.</typeparam>
+    /// <returns>The evaluation result converted to type <typeparamref name="T"/>, or <c>default</c> if the result is <c>null</c>.</returns>
+    /// <exception cref="NCalcCastException">Thrown when the result cannot be cast to type <typeparamref name="T"/>.</exception>
+    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public T? Evaluate<T>(CancellationToken cancellationToken = default)
     {
         return CastResult<T>(Evaluate(cancellationToken), CultureInfo);
     }
 
+    /// <summary>
+    /// Asynchronously evaluates the logical expression.
+    /// </summary>
+    /// <returns>The result of the evaluation.</returns>
+    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public async ValueTask<object?> EvaluateAsync(CancellationToken cancellationToken = default)
     {
         LogicalExpression ??= GetLogicalExpression(cancellationToken);
@@ -217,6 +312,13 @@ public class Expression
         }
     }
 
+    /// <summary>
+    /// Asynchronously evaluates the logical expression and converts the result to type <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T">The type to which the evaluation result should be converted.</typeparam>
+    /// <returns>The evaluation result converted to type <typeparamref name="T"/>, or <c>default</c> if the result is <c>null</c>.</returns>
+    /// <exception cref="NCalcCastException">Thrown when the result cannot be cast to type <typeparamref name="T"/>.</exception>
+    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public async ValueTask<T?> EvaluateAsync<T>(CancellationToken cancellationToken = default)
     {
         return CastResult<T>(await EvaluateAsync(cancellationToken).ConfigureAwait(false), CultureInfo);
@@ -291,6 +393,10 @@ public class Expression
         return results;
     }
 
+    /// <summary>
+    /// Returns all parameter names from the expression.
+    /// </summary>
+    /// <returns>Parameter names used by the expression.</returns>
     public List<string> GetParameterNames(CancellationToken cancellationToken = default)
     {
         LogicalExpression ??= CreateLogicalExpression(cancellationToken);
@@ -302,12 +408,20 @@ public class Expression
         return LogicalExpressionFactory.Create(ExpressionString!, ParserOptions, CultureInfo, cancellationToken);
     }
 
+    /// <summary>
+    /// Returns all function names from the expression.
+    /// </summary>
+    /// <returns>Function names used by the expression.</returns>
     public List<string> GetFunctionNames(CancellationToken cancellationToken = default)
     {
         LogicalExpression ??= CreateLogicalExpression(cancellationToken);
         return LogicalExpression.Accept(new FunctionExtractionVisitor());
     }
 
+    /// <summary>
+    /// Creates the logical expression to check for syntax errors.
+    /// </summary>
+    /// <returns><c>true</c> if errors were detected; otherwise, <c>false</c>.</returns>
     [MemberNotNullWhen(true, nameof(Error))]
     public bool HasErrors(CancellationToken cancellationToken = default)
     {
@@ -324,6 +438,10 @@ public class Expression
         }
     }
 
+    /// <summary>
+    /// Gets the parsed logical expression, using the cache when enabled.
+    /// </summary>
+    /// <returns>The parsed logical expression, or <c>null</c> when parsing fails.</returns>
     public LogicalExpression? GetLogicalExpression(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(ExpressionString))
@@ -352,6 +470,12 @@ public class Expression
         }
     }
 
+    /// <summary>
+    /// Returns the normalized expression string.
+    /// </summary>
+    /// <param name="evaluateParameters">Whether parameter values should be substituted.</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The expression string.</returns>
     public string ToExpressionString(bool evaluateParameters = false, CancellationToken cancellationToken = default)
     {
         var logicalExpression = GetLogicalExpression(cancellationToken);
