@@ -13,6 +13,9 @@ public sealed class ExpressionConfiguration
 
     public ExpressionEvaluationOptions Evaluation { get; init; }
 
+    /// <summary>
+    /// Enables parsed expression cache usage.
+    /// </summary>
     public bool CacheEnabled { get; init; } = true;
 
     public ExpressionConfiguration()

@@ -5,8 +5,14 @@ namespace NCalc.Parser;
 /// </summary>
 public sealed class LogicalExpressionParserOptions
 {
+    /// <summary>
+    /// Parses single-quoted one-character values as <see cref="char"/>.
+    /// </summary>
     public bool AllowCharValues { get; init; }
 
+    /// <summary>
+    /// Gets the default parsed number type.
+    /// </summary>
     public DefaultNumberType DefaultNumberType { get; init; } = DefaultNumberType.Double;
 
     /// <summary>
