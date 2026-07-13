@@ -55,15 +55,17 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
                 continue;
             }
 
-            if (ShouldGenerateSameTypeFastPath(type))
+            var typeDefinition = metadata.Types.SingleOrDefault(definition => definition.Keyword == type);
+
+            if (typeDefinition is { SupportsSameTypeComparisonFastPath: true })
             {
-                GenerateSameTypeFastPath(builder, type);
+                GenerateSameTypeFastPath(builder, typeDefinition);
             }
 
             builder.AppendLine($"        if ({GenerateTypeMatchExpression(type)})");
             builder.AppendLine("        {");
 
-            if (type is "double" or "float")
+            if (typeDefinition?.SupportsNaN == true)
             {
                 GenerateFloatingPointComparison(builder, type);
             }
@@ -94,24 +96,18 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
         return $"a is {type} || b is {type}";
     }
 
-    private static bool ShouldGenerateSameTypeFastPath(string type)
+    private static void GenerateSameTypeFastPath(StringBuilder builder, NumericTypeDefinition typeDefinition)
     {
-        return type is "decimal" or "double" or "float" or "long" or "int";
-    }
-
-    private static void GenerateSameTypeFastPath(StringBuilder builder, string type)
-    {
+        var type = typeDefinition.Keyword;
         var left = $"{type}Left";
         var right = $"{type}Right";
 
         builder.AppendLine($"        if (a is {type} {left} && b is {type} {right})");
         builder.AppendLine("        {");
 
-        if (type is "double" or "float")
+        if (typeDefinition.SupportsNaN)
         {
-            var nanMethod = type == "double" ? "double.IsNaN" : "float.IsNaN";
-
-            builder.AppendLine($"            if ({nanMethod}({left}) || {nanMethod}({right}))");
+            builder.AppendLine($"            if ({type}.IsNaN({left}) || {type}.IsNaN({right}))");
             builder.AppendLine("                return ComparisonResult.Unordered;");
             builder.AppendLine();
         }
@@ -124,12 +120,11 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
     private static void GenerateFloatingPointComparison(StringBuilder builder, string type)
     {
         var conversionMethod = type == "double" ? "ToDouble" : "ToSingle";
-        var nanMethod = type == "double" ? "double.IsNaN" : "float.IsNaN";
 
         builder.AppendLine($"            var left = Convert.{conversionMethod}(a, cultureInfo);");
         builder.AppendLine($"            var right = Convert.{conversionMethod}(b, cultureInfo);");
         builder.AppendLine();
-        builder.AppendLine($"            if ({nanMethod}(left) || {nanMethod}(right))");
+        builder.AppendLine($"            if ({type}.IsNaN(left) || {type}.IsNaN(right))");
         builder.AppendLine("                return ComparisonResult.Unordered;");
         builder.AppendLine();
         GenerateComparisonResult(builder, "left.CompareTo(right)");
