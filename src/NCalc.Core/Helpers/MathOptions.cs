@@ -1,5 +1,3 @@
-using NCalc.Parser;
-
 namespace NCalc.Helpers;
 
 public sealed class MathOptions

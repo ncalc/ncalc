@@ -1,6 +1,5 @@
 ﻿using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Parser;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NCalc.Tests;

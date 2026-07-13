@@ -1,7 +1,7 @@
 using Parlot;
 using Parlot.Fluent;
 
-namespace NCalc.Parser;
+namespace NCalc;
 
 public sealed class LogicalExpressionParseContext(
     string text,

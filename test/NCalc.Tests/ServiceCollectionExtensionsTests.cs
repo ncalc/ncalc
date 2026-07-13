@@ -4,7 +4,6 @@ using NCalc.Exceptions;
 using NCalc.Factories;
 using NCalc.Visitors;
 using System.Threading.Tasks;
-using NCalc.Parser;
 
 namespace NCalc.Tests;
 

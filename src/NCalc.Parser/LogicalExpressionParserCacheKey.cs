@@ -1,4 +1,4 @@
-namespace NCalc.Parser;
+namespace NCalc;
 
 internal readonly record struct LogicalExpressionParserCacheKey(
     bool AllowCharValues,

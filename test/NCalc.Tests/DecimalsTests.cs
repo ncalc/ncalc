@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using NCalc.Helpers;
-using NCalc.Parser;
 
 namespace NCalc.Tests;
 

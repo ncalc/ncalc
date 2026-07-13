@@ -1,4 +1,4 @@
-namespace NCalc.Parser;
+namespace NCalc;
 
 /// <summary>
 /// Defines the available argument separator options for function arguments.

@@ -1,4 +1,4 @@
-namespace NCalc.Parser;
+namespace NCalc;
 
 public enum FloatingPointNumberType
 {

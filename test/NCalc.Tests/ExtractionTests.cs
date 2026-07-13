@@ -1,4 +1,3 @@
-using NCalc.Parser;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;

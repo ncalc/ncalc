@@ -1,5 +1,3 @@
-using NCalc.Parser;
-
 namespace NCalc.Tests;
 
 public class ExpressionSeparatorTests

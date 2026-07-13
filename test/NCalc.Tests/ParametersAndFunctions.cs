@@ -1,6 +1,5 @@
 using NCalc.Handlers;
 using NCalc.Helpers;
-using NCalc.Parser;
 
 namespace NCalc.Tests;
 

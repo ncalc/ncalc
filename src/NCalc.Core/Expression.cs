@@ -5,7 +5,6 @@ using NCalc.Extensions;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
-using NCalc.Parser;
 using NCalc.Visitors;
 
 namespace NCalc;

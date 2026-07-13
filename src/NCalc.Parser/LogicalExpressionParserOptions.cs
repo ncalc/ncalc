@@ -1,4 +1,4 @@
-namespace NCalc.Parser;
+namespace NCalc;
 
 /// <summary>
 /// Options for configuring the LogicalExpressionParser behavior.

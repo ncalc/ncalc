@@ -1,5 +1,4 @@
 using NCalc.Helpers;
-using NCalc.Parser;
 
 namespace NCalc;
 

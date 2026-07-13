@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using NCalc.Exceptions;
 using NCalc.Extensions;
 using NCalc.Logging;
-using NCalc.Parser;
 
 namespace NCalc.Factories;
 

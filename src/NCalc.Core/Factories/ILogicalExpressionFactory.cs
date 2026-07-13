@@ -1,6 +1,4 @@
-﻿using NCalc.Parser;
-
-namespace NCalc.Factories;
+﻿namespace NCalc.Factories;
 
 public interface ILogicalExpressionFactory
 {

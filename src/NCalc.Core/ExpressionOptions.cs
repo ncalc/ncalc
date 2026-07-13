@@ -10,7 +10,7 @@ namespace NCalc;
 /// </summary>
 /// <remarks>
 /// Prefer configuring new code with <see cref="ExpressionConfiguration"/>,
-/// <see cref="Parser.LogicalExpressionParserOptions"/>, <see cref="ExpressionEvaluationOptions"/>,
+/// <see cref="LogicalExpressionParserOptions"/>, <see cref="ExpressionEvaluationOptions"/>,
 /// and <see cref="Helpers.MathOptions"/> directly. This enum is kept as a compatibility helper for
 /// older code paths and is converted by <see cref="ExpressionConfiguration.FromOptions(ExpressionOptions)"/>.
 /// </remarks>
@@ -62,9 +62,9 @@ public enum ExpressionOptions
     [Display(Name = "Case-Insensitive String Comparer")]
     CaseInsensitiveStringComparer = 1 << 5,
 
-    /// <inheritdoc cref="Parser.FloatingPointNumberType.Decimal"/>
+    /// <inheritdoc cref="FloatingPointNumberType.Decimal"/>
     /// <remarks>
-    /// Converts to <see cref="Parser.FloatingPointNumberType.Decimal"/> on parser options
+    /// Converts to <see cref="FloatingPointNumberType.Decimal"/> on parser options
     /// and <see cref="Helpers.MathOptions.FloatingPointNumberType"/> on math options.
     /// </remarks>
     [Display(Name = "Decimal As Default")]
@@ -108,9 +108,9 @@ public enum ExpressionOptions
     [Display(Name = "String Concatenation")]
     StringConcat = 1 << 11,
 
-    /// <inheritdoc cref="Parser.LogicalExpressionParserOptions.AllowCharValues"/>
+    /// <inheritdoc cref="LogicalExpressionParserOptions.AllowCharValues"/>
     /// <remarks>
-    /// Converts to <see cref="Parser.LogicalExpressionParserOptions.AllowCharValues"/>.
+    /// Converts to <see cref="LogicalExpressionParserOptions.AllowCharValues"/>.
     /// </remarks>
     [Display(Name = "Allow Char Values")]
     AllowCharValues = 1 << 12,
@@ -136,9 +136,9 @@ public enum ExpressionOptions
     [Display(Name = "Strict Type Matching")]
     StrictTypeMatching = 1 << 15,
 
-    /// <inheritdoc cref="Parser.IntegerNumberType.Int64"/>
+    /// <inheritdoc cref="IntegerNumberType.Int64"/>
     /// <remarks>
-    /// Converts to <see cref="Parser.IntegerNumberType.Int64"/> on parser options
+    /// Converts to <see cref="IntegerNumberType.Int64"/> on parser options
     /// and <see cref="Helpers.MathOptions.IntegerNumberType"/> on math options,
     /// unless <see cref="DecimalAsDefault"/> is also set.
     /// </remarks>

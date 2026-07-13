@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <Description>Default Parlot-based parser for NCalc expressions, including parser options and argument separator configuration.</Description>
         <SignAssembly>true</SignAssembly>
+        <RootNamespace>NCalc</RootNamespace>
         <AssemblyOriginatorKeyFile>../../NCalc.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 

@@ -1,6 +1,5 @@
 #nullable enable
 using NCalc.Exceptions;
-using NCalc.Parser;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;

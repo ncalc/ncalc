@@ -2,7 +2,7 @@ using NCalc.Exceptions;
 using Parlot;
 using Parlot.Fluent;
 
-namespace NCalc.Parser;
+namespace NCalc;
 
 /// <summary>
 /// Class responsible for parsing strings into <see cref="LogicalExpression"/> objects.

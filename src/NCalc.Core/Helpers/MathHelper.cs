@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using ExtendedNumerics;
-using NCalc.Parser;
 
 namespace NCalc.Helpers;
 
