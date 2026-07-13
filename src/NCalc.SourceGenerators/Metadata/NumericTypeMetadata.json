@@ -64,7 +64,7 @@
       "keyword": "int",
       "typeCode": "TypeCode.Int32",
       "supportsBinaryOperators": true,
-      "supportsSameTypeComparisonFastPath": true,
+      "supportsSameTypeComparison": true,
       "expandBitsTypeCode": "TypeCode.Int64",
       "implicitConversions": [ "long", "float", "double", "decimal" ]
     },
@@ -80,7 +80,7 @@
       "keyword": "long",
       "typeCode": "TypeCode.Int64",
       "supportsBinaryOperators": true,
-      "supportsSameTypeComparisonFastPath": true,
+      "supportsSameTypeComparison": true,
       "expandBitsTypeCode": "TypeCode.UInt64",
       "implicitConversions": [ "float", "double", "decimal" ]
     },
@@ -98,7 +98,7 @@
       "isReal": true,
       "supportsNaN": true,
       "supportsBinaryOperators": true,
-      "supportsSameTypeComparisonFastPath": true,
+      "supportsSameTypeComparison": true,
       "expandBitsTypeCode": "TypeCode.Double",
       "implicitConversions": [ "double" ]
     },
@@ -108,7 +108,7 @@
       "isReal": true,
       "supportsNaN": true,
       "supportsBinaryOperators": true,
-      "supportsSameTypeComparisonFastPath": true,
+      "supportsSameTypeComparison": true,
       "expandBitsTypeCode": "TypeCode.Double"
     },
     {
@@ -116,7 +116,7 @@
       "typeCode": "TypeCode.Decimal",
       "isReal": true,
       "supportsBinaryOperators": true,
-      "supportsSameTypeComparisonFastPath": true,
+      "supportsSameTypeComparison": true,
       "expandBitsTypeCode": "TypeCode.Double"
     },
     {

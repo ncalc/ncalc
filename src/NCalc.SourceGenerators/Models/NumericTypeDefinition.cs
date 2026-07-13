@@ -22,8 +22,8 @@ internal sealed class NumericTypeDefinition
     [JsonPropertyName("supportsBinaryOperators")]
     public bool SupportsBinaryOperators { get; set; }
 
-    [JsonPropertyName("supportsSameTypeComparisonFastPath")]
-    public bool SupportsSameTypeComparisonFastPath { get; set; }
+    [JsonPropertyName("supportsSameTypeComparison")]
+    public bool SupportsSameTypeComparison { get; set; }
 
     [JsonPropertyName("expandBitsTypeCode")]
     public string? ExpandBitsTypeCode { get; set; }

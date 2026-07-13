@@ -57,9 +57,9 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
 
             var typeDefinition = metadata.Types.SingleOrDefault(definition => definition.Keyword == type);
 
-            if (typeDefinition is { SupportsSameTypeComparisonFastPath: true })
+            if (typeDefinition is { SupportsSameTypeComparison: true })
             {
-                GenerateSameTypeFastPath(builder, typeDefinition);
+                GenerateSameTypeComparison(builder, typeDefinition);
             }
 
             builder.AppendLine($"        if ({GenerateTypeMatchExpression(type)})");
@@ -96,7 +96,7 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
         return $"a is {type} || b is {type}";
     }
 
-    private static void GenerateSameTypeFastPath(StringBuilder builder, NumericTypeDefinition typeDefinition)
+    private static void GenerateSameTypeComparison(StringBuilder builder, NumericTypeDefinition typeDefinition)
     {
         var type = typeDefinition.Keyword;
         var left = $"{type}Left";
