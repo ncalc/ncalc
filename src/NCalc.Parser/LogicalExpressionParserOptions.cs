@@ -18,7 +18,7 @@ public sealed class LogicalExpressionParserOptions
     /// <summary>
     /// Gets the default parsed integer number type.
     /// </summary>
-    public IntegerNumberType IntegerNumberType { get; init; } = IntegerNumberType.Auto;
+    public IntegerNumberType IntegerNumberType { get; init; } = IntegerNumberType.Int32;
 
     /// <summary>
     /// The argument separator used to separate function arguments. Default is Comma.

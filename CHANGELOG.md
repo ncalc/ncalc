@@ -2,7 +2,7 @@
 
 * Refactor expression configuration by separating immutable parsing/evaluation settings from runtime expression context.
 * Add `ExpressionConfiguration`, `ExpressionEvaluationOptions` for explicit configuration.
-* Add `FloatingPointNumberType`, `IntegerNumberType`, and `NumberType` to configure parser number handling and string-to-number coercion in math helpers.
+* Add `FloatingPointNumberType` and `IntegerNumberType` to configure parser number handling and string-to-number coercion in math helpers.
 * Improve parser caching by including culture in the parser cache key.
 * Remove the `NCalc.Antlr` plugin and its tests/benchmarks from the solution, ANTLR is missing many features and is a cost to be maintained. If you use Antlr, please open an issue.
 

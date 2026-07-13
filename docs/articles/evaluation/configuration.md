@@ -15,7 +15,7 @@ static readonly ExpressionConfiguration Configuration = new(
     {
         AllowCharValues = true,
         FloatingPointNumberType = FloatingPointNumberType.Decimal,
-        IntegerNumberType = IntegerNumberType.Auto,
+        IntegerNumberType = IntegerNumberType.Int32,
         ArgumentSeparator = ArgumentSeparator.Comma | ArgumentSeparator.Semicolon
     },
     evaluationOptions: new ExpressionEvaluationOptions
@@ -24,7 +24,7 @@ static readonly ExpressionConfiguration Configuration = new(
         StringComparer = StringComparer.OrdinalIgnoreCase,
         Math = new MathOptions
         {
-            NumberType = NumberType.Decimal,
+            FloatingPointNumberType = FloatingPointNumberType.Decimal,
             OverflowProtection = true,
             RoundAwayFromZero = true
         }
@@ -85,7 +85,7 @@ builder.Services.AddSingleton(new ExpressionConfiguration
         StringComparer = StringComparer.OrdinalIgnoreCase,
         Math = new MathOptions
         {
-            DefaultNumberType = NumberType.Decimal,
+            FloatingPointNumberType = FloatingPointNumberType.Decimal,
             OverflowProtection = true
         }
     }

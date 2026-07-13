@@ -42,7 +42,10 @@ var configuration = new ExpressionConfiguration
     },
     Evaluation = new ExpressionEvaluationOptions
     {
-        Math = new MathOptions(NumberType.Decimal)
+        Math = new MathOptions
+        {
+            FloatingPointNumberType = FloatingPointNumberType.Decimal
+        }
     }
 };
 ```

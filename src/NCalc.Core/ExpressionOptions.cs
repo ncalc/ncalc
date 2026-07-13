@@ -65,7 +65,7 @@ public enum ExpressionOptions
     /// <inheritdoc cref="Parser.FloatingPointNumberType.Decimal"/>
     /// <remarks>
     /// Converts to <see cref="Parser.FloatingPointNumberType.Decimal"/> on parser options
-    /// and <see cref="NumberType.Decimal"/> on math options.
+    /// and <see cref="Helpers.MathOptions.FloatingPointNumberType"/> on math options.
     /// </remarks>
     [Display(Name = "Decimal As Default")]
     DecimalAsDefault = 1 << 6,
@@ -139,7 +139,7 @@ public enum ExpressionOptions
     /// <inheritdoc cref="Parser.IntegerNumberType.Int64"/>
     /// <remarks>
     /// Converts to <see cref="Parser.IntegerNumberType.Int64"/> on parser options
-    /// and <see cref="NumberType.Int64"/> on math options,
+    /// and <see cref="Helpers.MathOptions.IntegerNumberType"/> on math options,
     /// unless <see cref="DecimalAsDefault"/> is also set.
     /// </remarks>
     [Display(Name = "Long As Default")]

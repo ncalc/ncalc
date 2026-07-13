@@ -415,7 +415,6 @@ public static class LogicalExpressionParser
             return ctx.Options.IntegerNumberType switch
             {
                 IntegerNumberType.Int64 => longNumber,
-                IntegerNumberType.Int32 => intNumber,
                 _ => intOrLong
             };
         });

@@ -1,20 +1,18 @@
+using NCalc.Parser;
+
 namespace NCalc.Helpers;
 
 public sealed class MathOptions
 {
-    public MathOptions()
-    {
-    }
-
-    public MathOptions(NumberType defaultNumberType)
-    {
-        DefaultNumberType = defaultNumberType;
-    }
+    /// <summary>
+    /// Gets the default parsed floating point number type.
+    /// </summary>
+    public FloatingPointNumberType FloatingPointNumberType { get; init; } = FloatingPointNumberType.Double;
 
     /// <summary>
-    /// Gets the number type used when coercing string values and choosing math function precision.
+    /// Gets the default parsed integer number type.
     /// </summary>
-    public NumberType DefaultNumberType { get; init; } = NumberType.Double;
+    public IntegerNumberType IntegerNumberType { get; init; } = IntegerNumberType.Int32;
 
     /// <summary>
     /// Allows arithmetic operations with <see cref="bool"/> values.

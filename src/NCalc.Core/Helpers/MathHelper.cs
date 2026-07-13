@@ -222,8 +222,15 @@ public static class MathHelper
 
     public static object Abs(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (a is decimal || options.DefaultNumberType is NumberType.Decimal)
+        if (a is decimal aDecimal)
+        {
+            return Math.Abs(aDecimal);
+        }
+
+        if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
+        {
             return Math.Abs(ConvertToDecimal(a, cultureInfo));
+        }
 
         return Math.Abs(ConvertToDouble(a, cultureInfo));
     }
@@ -250,8 +257,15 @@ public static class MathHelper
 
     public static object Ceiling(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (a is decimal || options.DefaultNumberType is NumberType.Decimal)
+        if (a is decimal aDecimal)
+        {
+            return Math.Ceiling(aDecimal);
+        }
+
+        if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
+        {
             return Math.Ceiling(ConvertToDecimal(a, cultureInfo));
+        }
 
         return Math.Ceiling(ConvertToDouble(a, cultureInfo));
     }
@@ -268,8 +282,15 @@ public static class MathHelper
 
     public static object Floor(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (a is decimal || options.DefaultNumberType is NumberType.Decimal)
+        if (a is decimal aDecimal)
+        {
+            return Math.Floor(aDecimal);
+        }
+
+        if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
+        {
             return Math.Floor(ConvertToDecimal(a, cultureInfo));
+        }
 
         return Math.Floor(ConvertToDouble(a, cultureInfo));
     }
@@ -297,7 +318,15 @@ public static class MathHelper
 
     public static object Pow(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
-        if (a is decimal || options.DefaultNumberType is NumberType.Decimal)
+        if (a is decimal aDecimal)
+        {
+            var @base = new BigDecimal(aDecimal);
+            var exponent = new BigInteger(ConvertToDecimal(b, cultureInfo));
+
+            return (decimal)BigDecimal.Pow(@base, exponent);
+        }
+
+        if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
         {
             var @base = new BigDecimal(ConvertToDecimal(a, cultureInfo));
             var exponent = new BigInteger(ConvertToDecimal(b, cultureInfo));
@@ -310,16 +339,32 @@ public static class MathHelper
 
     public static object Round(object? a, object? b, MidpointRounding rounding, MathOptions options, CultureInfo cultureInfo)
     {
-        if (a is decimal || options.DefaultNumberType is NumberType.Decimal)
-            return Math.Round(ConvertToDecimal(a, cultureInfo), ConvertToInt(b, cultureInfo), rounding);
+        var digits = ConvertToInt(b, cultureInfo);
 
-        return Math.Round(ConvertToDouble(a, cultureInfo), ConvertToInt(b, cultureInfo), rounding);
+        if (a is decimal aDecimal)
+        {
+            return Math.Round(aDecimal, digits, rounding);
+        }
+
+        if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
+        {
+            return Math.Round(ConvertToDecimal(a, cultureInfo), digits, rounding);
+        }
+
+        return Math.Round(ConvertToDouble(a, cultureInfo), digits, rounding);
     }
 
     public static object Sign(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (a is decimal || options.DefaultNumberType is NumberType.Decimal)
+        if (a is decimal aDecimal)
+        {
+            return Math.Sign(aDecimal);
+        }
+
+        if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
+        {
             return Math.Sign(ConvertToDecimal(a, cultureInfo));
+        }
 
         return Math.Sign(ConvertToDouble(a, cultureInfo));
     }
@@ -341,8 +386,15 @@ public static class MathHelper
 
     public static object Truncate(object? a, MathOptions options, CultureInfo cultureInfo)
     {
-        if (a is decimal || options.DefaultNumberType is NumberType.Decimal)
+        if (a is decimal aDecimal)
+        {
+            return Math.Truncate(aDecimal);
+        }
+
+        if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
+        {
             return Math.Truncate(ConvertToDecimal(a, cultureInfo));
+        }
 
         return Math.Truncate(ConvertToDouble(a, cultureInfo));
     }
@@ -352,56 +404,21 @@ public static class MathHelper
         return value switch
         {
             char ch => (int)ch,
-            string s => ParseNumber(s, options.DefaultNumberType, cultureInfo),
+            string s => ParseNumber(s, options, cultureInfo),
             bool boolean when options.AllowBooleanCalculation => boolean ? 1 : 0,
             _ => value
         };
     }
 
-    private static object ParseNumber(string value, NumberType numberType, CultureInfo cultureInfo)
+    private static object ParseNumber(string value, MathOptions options, CultureInfo cultureInfo)
     {
-        return numberType switch
-        {
-            NumberType.Double => double.Parse(value, cultureInfo),
-            NumberType.Decimal => decimal.Parse(value, cultureInfo),
-            NumberType.Int32 => int.Parse(value, cultureInfo),
-            NumberType.Int64 => long.Parse(value, cultureInfo),
-            NumberType.Auto => ParseNumber(value, cultureInfo),
-            _ => throw new ArgumentOutOfRangeException(nameof(numberType), numberType, null)
-        };
-    }
+        if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
+            return decimal.Parse(value, cultureInfo);
 
-    private static object ParseNumber(string value, CultureInfo cultureInfo)
-    {
-        var numberFormat = cultureInfo.NumberFormat;
+        if (options.IntegerNumberType is IntegerNumberType.Int64)
+            return long.Parse(value, cultureInfo);
 
-#if NET
-        var isFloating =
-            value.Contains(numberFormat.NumberDecimalSeparator) ||
-            value.Contains('e', StringComparison.OrdinalIgnoreCase);
-#else
-        var isFloating =
-            value.Contains(numberFormat.NumberDecimalSeparator) ||
-            value.Contains('e') ||
-            value.Contains('E');
-#endif
-
-        if (!isFloating)
-        {
-            if (int.TryParse(value, NumberStyles.Integer, cultureInfo, out var i))
-                return i;
-
-            if (long.TryParse(value, NumberStyles.Integer, cultureInfo, out var l))
-                return l;
-        }
-
-        if (decimal.TryParse(value, NumberStyles.Number, cultureInfo, out var d))
-            return d;
-
-        if (double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, cultureInfo, out var dbl))
-            return dbl;
-
-        throw new FormatException($"'{value}' is not a valid number.");
+        return double.Parse(value, cultureInfo);
     }
 
     private static double ConvertToDouble(object? value, CultureInfo cultureInfo)
@@ -418,8 +435,8 @@ public static class MathHelper
     {
         return value switch
         {
-            decimal @decimal => @decimal,
             char ch => Convert.ToDecimal(ch.ToString(), cultureInfo),
+            decimal @decimal => @decimal,
             _ => Convert.ToDecimal(value, cultureInfo)
         };
     }

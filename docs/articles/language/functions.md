@@ -50,8 +50,9 @@ var configuration = new ExpressionConfiguration
 };
 ```
 
-Configure <xref:NCalc.Helpers.MathOptions.NumberType> to control how math functions coerce string numbers and
-choose decimal precision.
+Configure <xref:NCalc.Helpers.MathOptions.FloatingPointNumberType> and
+<xref:NCalc.Helpers.MathOptions.IntegerNumberType> to control how math functions coerce string numbers. The
+floating-point option also selects decimal precision for the applicable math functions.
 
 ## Custom Functions
 Custom functions are created using the <xref:NCalc.Handlers.ExpressionFunction> delegate. The argument list is exposed as <xref:NCalc.Handlers.FunctionData>, which lets you evaluate parameters lazily when needed.

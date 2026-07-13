@@ -30,22 +30,20 @@ public class ParametersAndFunctions
             ExpressionOptions.DecimalAsDefault | ExpressionOptions.CaseInsensitiveStringComparer);
 
         await Assert.That(configuration.Parsing.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
-        await Assert.That(configuration.Parsing.IntegerNumberType).IsEqualTo(IntegerNumberType.Auto);
-        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(NumberType.Decimal);
+        await Assert.That(configuration.Evaluation.Math.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
+        await Assert.That(configuration.Evaluation.Math.IntegerNumberType).IsEqualTo(IntegerNumberType.Int32);
         await Assert.That(configuration.Evaluation.StringComparer.Equals("a", "A")).IsTrue();
     }
 
     [Test]
     public async Task ShouldCreateExpressionConfigurationHelperOptionsFromUpdatedOptions()
     {
-        var options = ExpressionOptions.None;
-
-        options = ExpressionOptions.DecimalAsDefault | ExpressionOptions.OrdinalStringComparer;
+        const ExpressionOptions options = ExpressionOptions.DecimalAsDefault | ExpressionOptions.OrdinalStringComparer;
         var configuration = ExpressionConfiguration.FromOptions(options);
 
         await Assert.That(configuration.Parsing.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
-        await Assert.That(configuration.Parsing.IntegerNumberType).IsEqualTo(IntegerNumberType.Auto);
-        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(NumberType.Decimal);
+        await Assert.That(configuration.Evaluation.Math.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
+        await Assert.That(configuration.Evaluation.Math.IntegerNumberType).IsEqualTo(IntegerNumberType.Int32);
         await Assert.That(configuration.Evaluation.StringComparer.Compare("a", "A")).IsGreaterThan(0);
     }
 
@@ -57,7 +55,8 @@ public class ParametersAndFunctions
 
         await Assert.That(configuration.Parsing.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
         await Assert.That(configuration.Parsing.IntegerNumberType).IsEqualTo(IntegerNumberType.Int64);
-        await Assert.That(configuration.Evaluation.Math.DefaultNumberType).IsEqualTo(NumberType.Decimal);
+        await Assert.That(configuration.Evaluation.Math.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
+        await Assert.That(configuration.Evaluation.Math.IntegerNumberType).IsEqualTo(IntegerNumberType.Int64);
     }
 
     [Test]

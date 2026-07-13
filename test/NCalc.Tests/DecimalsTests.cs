@@ -175,28 +175,32 @@ public class DecimalsTests
     }
 
     [Test]
-    public async Task ShouldUseMathNumberTypeWhenCoercingStringNumbers()
+    public async Task ShouldUseMathNumberTypesWhenCoercingStringNumbers()
     {
         var cultureInfo = CultureInfo.InvariantCulture;
 
-        await Assert.That(MathHelper.Add("2", "3", new MathOptions(NumberType.Double), cultureInfo)).IsEqualTo(5d);
-        await Assert.That(MathHelper.Add("2", "3", new MathOptions(NumberType.Decimal), cultureInfo)).IsEqualTo(5m);
-        await Assert.That(MathHelper.Add("2", "3", new MathOptions(NumberType.Int32), cultureInfo)).IsEqualTo(5);
-        await Assert.That(MathHelper.Add("2", "3", new MathOptions(NumberType.Int64), cultureInfo)).IsEqualTo(5L);
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions(), cultureInfo)).IsEqualTo(5d);
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions
+        {
+            FloatingPointNumberType = FloatingPointNumberType.Decimal
+        }, cultureInfo)).IsEqualTo(5m);
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions
+        {
+            IntegerNumberType = IntegerNumberType.Int64
+        }, cultureInfo)).IsEqualTo(5L);
     }
 
     [Test]
-    public async Task ShouldHandleAllMathNumberTypesWhenChoosingMathFunctionPrecision()
+    public async Task ShouldUseFloatingPointNumberTypeWhenChoosingMathFunctionPrecision()
     {
-        foreach (var numberType in Enum.GetValues<NumberType>())
+        var doubleResult = MathHelper.Abs("-1", new MathOptions(), CultureInfo.InvariantCulture);
+        var decimalResult = MathHelper.Abs("-1", new MathOptions
         {
-            var result = MathHelper.Abs("-1", new MathOptions(numberType), CultureInfo.InvariantCulture);
+            FloatingPointNumberType = FloatingPointNumberType.Decimal
+        }, CultureInfo.InvariantCulture);
 
-            if (numberType == NumberType.Decimal)
-                await Assert.That(result).IsEqualTo(1m);
-            else
-                await Assert.That(result).IsEqualTo(1d);
-        }
+        await Assert.That(doubleResult).IsEqualTo(1d);
+        await Assert.That(decimalResult).IsEqualTo(1m);
     }
 
     [Test]

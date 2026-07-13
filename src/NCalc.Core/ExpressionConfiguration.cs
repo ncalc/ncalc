@@ -54,7 +54,8 @@ public sealed class ExpressionConfiguration
 
                 Math = new MathOptions
                 {
-                    DefaultNumberType = GetMathNumberType(options),
+                    FloatingPointNumberType = GetFloatingPointNumberType(options),
+                    IntegerNumberType = GetIntegerNumberType(options),
                     AllowBooleanCalculation = options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
                     OverflowProtection = options.HasFlag(ExpressionOptions.OverflowProtection),
                     RoundAwayFromZero = options.HasFlag(ExpressionOptions.RoundAwayFromZero)
@@ -78,17 +79,7 @@ public sealed class ExpressionConfiguration
     {
         return options.HasFlag(ExpressionOptions.LongAsDefault)
             ? IntegerNumberType.Int64
-            : IntegerNumberType.Auto;
-    }
-
-    private static NumberType GetMathNumberType(ExpressionOptions options)
-    {
-        if (options.HasFlag(ExpressionOptions.DecimalAsDefault))
-            return NumberType.Decimal;
-
-        return options.HasFlag(ExpressionOptions.LongAsDefault)
-            ? NumberType.Int64
-            : NumberType.Double;
+            : IntegerNumberType.Int32;
     }
 
     private static StringComparer GetStringComparer(ExpressionOptions options)
