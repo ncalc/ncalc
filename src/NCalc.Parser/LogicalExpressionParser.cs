@@ -582,7 +582,7 @@ public static class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParseContext context, CultureInfo? culture = null)
     {
-        var parser = GetOrCreateExpressionParser(context.Options, culture ?? CultureInfo.CurrentUICulture);
+        var parser = GetOrCreateExpressionParser(context.Options, culture ?? CultureInfo.CurrentCulture);
 
         if (parser.TryParse(context, out var result, out var error))
             return result;
