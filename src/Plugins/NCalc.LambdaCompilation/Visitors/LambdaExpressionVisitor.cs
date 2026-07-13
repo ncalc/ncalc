@@ -172,9 +172,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
                 arg1 = LinqExpression.Convert(args[1], typeof(int));
 
-                var rounding = _options.Math.RoundAwayFromZero
-                    ? MidpointRounding.AwayFromZero
-                    : MidpointRounding.ToEven;
+                var rounding = _options.Math.MidpointRounding;
                 return LinqExpression.Call(MathFunctionHelper.Functions["Round"].First().MethodInfo, arg0, arg1,
                     LinqExpression.Constant(rounding));
             case var s when string.Equals(s, "if", comparisonType):

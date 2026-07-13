@@ -26,7 +26,7 @@ static readonly ExpressionConfiguration Configuration = new(
         {
             FloatingPointNumberType = FloatingPointNumberType.Decimal,
             OverflowProtection = true,
-            RoundAwayFromZero = true
+            MidpointRounding = MidpointRounding.AwayFromZero
         }
     });
 

@@ -57,7 +57,7 @@ public sealed class ExpressionConfiguration
                     IntegerNumberType = GetIntegerNumberType(options),
                     AllowBooleanCalculation = options.HasFlag(ExpressionOptions.AllowBooleanCalculation),
                     OverflowProtection = options.HasFlag(ExpressionOptions.OverflowProtection),
-                    RoundAwayFromZero = options.HasFlag(ExpressionOptions.RoundAwayFromZero)
+                    MidpointRounding = options.HasFlag(ExpressionOptions.RoundAwayFromZero) ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven
                 },
 
                 StrictTypeMatching = options.HasFlag(ExpressionOptions.StrictTypeMatching),

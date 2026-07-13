@@ -45,9 +45,9 @@ public enum ExpressionOptions
     [Display(Name = "Iterate Parameters")]
     IterateParameters = 1 << 3,
 
-    /// <inheritdoc cref="Helpers.MathOptions.RoundAwayFromZero"/>
+    /// <inheritdoc cref="Helpers.MathOptions.MidpointRounding"/>
     /// <remarks>
-    /// Converts to <see cref="Helpers.MathOptions.RoundAwayFromZero"/>.
+    /// Converts to <see cref="Helpers.MathOptions.MidpointRounding"/>.
     /// </remarks>
     [Display(Name = "Round Away From Zero")]
     RoundAwayFromZero = 1 << 4,

@@ -23,7 +23,7 @@ public sealed class MathOptions
     public bool OverflowProtection { get; init; }
 
     /// <summary>
-    /// Uses <see cref="MidpointRounding.AwayFromZero"/> for the built-in Round function.
+    /// Gets the midpoint rounding strategy.
     /// </summary>
-    public bool RoundAwayFromZero { get; init; }
+    public MidpointRounding MidpointRounding { get; init; } = MidpointRounding.ToEven;
 }

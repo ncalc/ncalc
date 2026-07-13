@@ -179,10 +179,7 @@ public static class BuiltInFunctionHelper
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Round() takes exactly 2 arguments");
-            var rounding = options.Math.RoundAwayFromZero
-                ? MidpointRounding.AwayFromZero
-                : MidpointRounding.ToEven;
-            return MathHelper.Round(functionData.Evaluate(0), functionData.Evaluate(1), rounding, options.Math, cultureInfo);
+            return MathHelper.Round(functionData.Evaluate(0), functionData.Evaluate(1), options.Math.MidpointRounding, options.Math, cultureInfo);
         }
 
         if (functionName.Equals("Sign", comparison))
@@ -398,10 +395,7 @@ public static class BuiltInFunctionHelper
         {
             if (functionData.Count != 2)
                 throw new NCalcEvaluationException("Round() takes exactly 2 arguments");
-            var rounding = options.Math.RoundAwayFromZero
-                ? MidpointRounding.AwayFromZero
-                : MidpointRounding.ToEven;
-            return MathHelper.Round(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), rounding, options.Math, cultureInfo);
+            return MathHelper.Round(await functionData.EvaluateAsync(0), await functionData.EvaluateAsync(1), options.Math.MidpointRounding, options.Math, cultureInfo);
         }
 
         if (functionName.Equals("Sign", comparison))

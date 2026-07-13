@@ -63,11 +63,17 @@ public class ParametersAndFunctions
     {
         var context = new ExpressionContext();
         context.Parameters["value"] = 22.5;
-        var configuration = ExpressionConfiguration.FromOptions(ExpressionOptions.RoundAwayFromZero);
+        var configuration = new ExpressionConfiguration
+        {
+            Evaluation = new ExpressionEvaluationOptions
+            {
+                Math = new MathOptions { MidpointRounding = MidpointRounding.AwayFromZero }
+            }
+        };
 
         var expression = new Expression("Round(value, 0)", configuration, context);
 
-        await Assert.That(configuration.Evaluation.Math.RoundAwayFromZero).IsTrue();
+        await Assert.That(configuration.Evaluation.Math.MidpointRounding).IsEqualTo(MidpointRounding.AwayFromZero);
         await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(23d);
     }
 
