@@ -30,7 +30,7 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
         builder.AppendLine("public static partial class TypeHelper");
         builder.AppendLine("{");
 
-        GenerateMostPreciseType(builder, metadata);
+        GenerateCompareUsingMostPreciseType(builder, metadata);
         GenerateMostPreciseNumberType(builder, metadata);
         GenerateCanConvertPrimitiveImplicitly(builder, metadata);
         GenerateIsNumberType(builder, metadata);
@@ -43,23 +43,138 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static void GenerateMostPreciseType(StringBuilder builder, NumericTypeMetadata metadata)
+    private static void GenerateCompareUsingMostPreciseType(StringBuilder builder, NumericTypeMetadata metadata)
     {
-        builder.AppendLine("    private static Type GetMostPreciseType(Type? a, Type? b)");
+        builder.AppendLine("    public static ComparisonResult CompareUsingMostPreciseType(object? a, object? b, StringComparer stringComparer, CultureInfo cultureInfo)");
         builder.AppendLine("    {");
 
         foreach (var type in metadata.BuiltInTypeOrder)
         {
-            builder.AppendLine($"        if (a == typeof({type}) || b == typeof({type}))");
+            if (type == "object")
+            {
+                continue;
+            }
+
+            if (ShouldGenerateSameTypeFastPath(type))
+            {
+                GenerateSameTypeFastPath(builder, type);
+            }
+
+            builder.AppendLine($"        if ({GenerateTypeMatchExpression(type)})");
             builder.AppendLine("        {");
-            builder.AppendLine($"            return typeof({type});");
+
+            if (type is "double" or "float")
+            {
+                GenerateFloatingPointComparison(builder, type);
+            }
+            else if (type == "string")
+            {
+                GenerateStringComparison(builder);
+            }
+            else
+            {
+                GenerateValueTypeComparison(builder, type);
+            }
+
             builder.AppendLine("        }");
             builder.AppendLine();
         }
 
-        builder.AppendLine("        return a ?? typeof(object);");
+        builder.AppendLine("        var comparisonType = a?.GetType() ?? b?.GetType() ?? typeof(object);");
+        builder.AppendLine("        var convertedA = a != null ? Convert.ChangeType(a, comparisonType, cultureInfo) : null;");
+        builder.AppendLine("        var convertedB = b != null ? Convert.ChangeType(b, comparisonType, cultureInfo) : null;");
+        builder.AppendLine();
+        GenerateComparisonResult(builder, "System.Collections.Comparer.Default.Compare(convertedA, convertedB)");
         builder.AppendLine("    }");
         builder.AppendLine();
+    }
+
+    private static string GenerateTypeMatchExpression(string type)
+    {
+        return $"a is {type} || b is {type}";
+    }
+
+    private static bool ShouldGenerateSameTypeFastPath(string type)
+    {
+        return type is "decimal" or "double" or "float" or "long" or "int";
+    }
+
+    private static void GenerateSameTypeFastPath(StringBuilder builder, string type)
+    {
+        var left = $"{type}Left";
+        var right = $"{type}Right";
+
+        builder.AppendLine($"        if (a is {type} {left} && b is {type} {right})");
+        builder.AppendLine("        {");
+
+        if (type is "double" or "float")
+        {
+            var nanMethod = type == "double" ? "double.IsNaN" : "float.IsNaN";
+
+            builder.AppendLine($"            if ({nanMethod}({left}) || {nanMethod}({right}))");
+            builder.AppendLine("                return ComparisonResult.Unordered;");
+            builder.AppendLine();
+        }
+
+        GenerateComparisonResult(builder, $"{left}.CompareTo({right})");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+    }
+
+    private static void GenerateFloatingPointComparison(StringBuilder builder, string type)
+    {
+        var conversionMethod = type == "double" ? "ToDouble" : "ToSingle";
+        var nanMethod = type == "double" ? "double.IsNaN" : "float.IsNaN";
+
+        builder.AppendLine($"            var left = Convert.{conversionMethod}(a, cultureInfo);");
+        builder.AppendLine($"            var right = Convert.{conversionMethod}(b, cultureInfo);");
+        builder.AppendLine();
+        builder.AppendLine($"            if ({nanMethod}(left) || {nanMethod}(right))");
+        builder.AppendLine("                return ComparisonResult.Unordered;");
+        builder.AppendLine();
+        GenerateComparisonResult(builder, "left.CompareTo(right)");
+    }
+
+    private static void GenerateStringComparison(StringBuilder builder)
+    {
+        builder.AppendLine("            var left = a != null ? Convert.ToString(a, cultureInfo) : null;");
+        builder.AppendLine("            var right = b != null ? Convert.ToString(b, cultureInfo) : null;");
+        builder.AppendLine();
+        GenerateComparisonResult(builder, "stringComparer.Compare(left, right)");
+    }
+
+    private static void GenerateValueTypeComparison(StringBuilder builder, string type)
+    {
+        var conversionMethod = type switch
+        {
+            "decimal" => "ToDecimal",
+            "long" => "ToInt64",
+            "ulong" => "ToUInt64",
+            "int" => "ToInt32",
+            "uint" => "ToUInt32",
+            "short" => "ToInt16",
+            "ushort" => "ToUInt16",
+            "byte" => "ToByte",
+            "sbyte" => "ToSByte",
+            "char" => "ToChar",
+            "bool" => "ToBoolean",
+            _ => throw new InvalidOperationException($"Unsupported value type '{type}'.")
+        };
+
+        builder.AppendLine($"            {type}? left = a != null ? Convert.{conversionMethod}(a, cultureInfo) : null;");
+        builder.AppendLine($"            {type}? right = b != null ? Convert.{conversionMethod}(b, cultureInfo) : null;");
+        builder.AppendLine();
+        GenerateComparisonResult(builder, "Nullable.Compare(left, right)");
+    }
+
+    private static void GenerateComparisonResult(StringBuilder builder, string comparisonExpression)
+    {
+        builder.AppendLine($"            return {comparisonExpression} switch");
+        builder.AppendLine("            {");
+        builder.AppendLine("                < 0 => ComparisonResult.Less,");
+        builder.AppendLine("                > 0 => ComparisonResult.Greater,");
+        builder.AppendLine("                _ => ComparisonResult.Equal");
+        builder.AppendLine("            };");
     }
 
     private static void GenerateMostPreciseNumberType(StringBuilder builder, NumericTypeMetadata metadata)
