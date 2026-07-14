@@ -47,28 +47,6 @@ and keeps configuration shared consistently across your application.
 <xref:NCalc.ExpressionContext> is not thread-safe. It contains mutable dictionaries and event handlers for a single
 evaluation flow. Create a new context per evaluation, request, or mutable scope.
 
-```csharp
-static readonly ExpressionConfiguration Configuration = new()
-{
-    Evaluation = new ExpressionEvaluationOptions
-    {
-        StringComparer = StringComparer.CurrentCultureIgnoreCase,
-        Math = new MathOptions
-        {
-            OverflowProtection = true
-        }
-    }
-};
-
-public object? Evaluate(string expressionText, IDictionary<string, object?> parameters)
-{
-    var context = new ExpressionContext(parameters);
-    var expression = new Expression(expressionText, Configuration, context, CultureInfo.InvariantCulture);
-
-    return expression.Evaluate();
-}
-```
-
 ## Dependency Injection
 
 Because configuration is immutable and thread-safe, register it as a singleton when using dependency injection:
