@@ -30,17 +30,36 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
         builder.AppendLine("public static partial class TypeHelper");
         builder.AppendLine("{");
 
+        GenerateNumericTypeInfo(builder, metadata);
         GenerateCompareUsingMostPreciseType(builder, metadata);
         GenerateMostPreciseNumberType(builder, metadata);
         GenerateCanConvertPrimitiveImplicitly(builder, metadata);
         GenerateIsNumberType(builder, metadata);
         GenerateIsReal(builder, metadata);
-        GenerateIsUnsignedType(builder, metadata);
-        GenerateTypeCodeExpandBits(builder, metadata);
 
         builder.AppendLine("}");
 
         return builder.ToString();
+    }
+
+    private static void GenerateNumericTypeInfo(StringBuilder builder, NumericTypeMetadata metadata)
+    {
+        builder.AppendLine("    internal static NumericTypeInfo GetNumericTypeInfo(object value)");
+        builder.AppendLine("    {");
+        builder.AppendLine("        switch (value)");
+        builder.AppendLine("        {");
+
+        foreach (var type in metadata.BinaryOperatorTypes)
+        {
+            builder.AppendLine($"            case {type.Keyword}:");
+            builder.AppendLine($"                return new NumericTypeInfo({type.TypeCode}, {type.BitSize}, {type.IsReal.ToString().ToLowerInvariant()}, {type.IsUnsigned.ToString().ToLowerInvariant()}, {type.ExpandBitsTypeCode ?? "TypeCode.Empty"});");
+        }
+
+        builder.AppendLine("            default:");
+        builder.AppendLine("                return default;");
+        builder.AppendLine("        }");
+        builder.AppendLine("    }");
+        builder.AppendLine();
     }
 
     private static void GenerateCompareUsingMostPreciseType(StringBuilder builder, NumericTypeMetadata metadata)
@@ -251,52 +270,6 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
         builder.AppendLine("                return true;");
         builder.AppendLine("            default:");
         builder.AppendLine("                return false;");
-        builder.AppendLine("        }");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-    }
-
-    private static void GenerateIsUnsignedType(StringBuilder builder, NumericTypeMetadata metadata)
-    {
-        var unsignedTypes = metadata.BinaryOperatorTypes.Where(type => type.IsUnsigned);
-
-        builder.AppendLine("    public static bool IsUnsignedType(object? value)");
-        builder.AppendLine("    {");
-        builder.AppendLine("        switch (value)");
-        builder.AppendLine("        {");
-
-        foreach (var type in unsignedTypes)
-        {
-            builder.AppendLine($"            case {type.Keyword}:");
-        }
-
-        builder.AppendLine("                return true;");
-        builder.AppendLine("            default:");
-        builder.AppendLine("                return false;");
-        builder.AppendLine("        }");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-    }
-
-    private static void GenerateTypeCodeExpandBits(StringBuilder builder, NumericTypeMetadata metadata)
-    {
-        builder.AppendLine("    public static TypeCode TypeCodeExpandBits(TypeCode typeCode)");
-        builder.AppendLine("    {");
-        builder.AppendLine("        switch (typeCode)");
-        builder.AppendLine("        {");
-
-        foreach (var group in metadata.TypeCodeExpandBitsTypes.GroupBy(type => type.ExpandBitsTypeCode))
-        {
-            foreach (var type in group)
-            {
-                builder.AppendLine($"            case {type.TypeCode}:");
-            }
-
-            builder.AppendLine($"                return {group.Key};");
-        }
-
-        builder.AppendLine("            default:");
-        builder.AppendLine("                return TypeCode.Empty;");
         builder.AppendLine("        }");
         builder.AppendLine("    }");
         builder.AppendLine();

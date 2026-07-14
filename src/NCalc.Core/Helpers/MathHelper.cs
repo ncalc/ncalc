@@ -151,72 +151,40 @@ public static class MathHelper
 
     private static TypeCode ConvertToHighestPrecision(ref object a, ref object b, CultureInfo cultureInfo)
     {
-        var typeCodeA = Type.GetTypeCode(a.GetType());
-        var typeCodeB = Type.GetTypeCode(b.GetType());
+        var typeInfoA = TypeHelper.GetNumericTypeInfo(a);
+        var typeInfoB = TypeHelper.GetNumericTypeInfo(b);
+        var typeCodeA = typeInfoA.TypeCode;
+        var typeCodeB = typeInfoB.TypeCode;
 
         if (typeCodeA == typeCodeB)
             return typeCodeA;
 
-        if (TypeCodeBitSize(typeCodeA, out var floatingPointA) is not { } bitSizeA || TypeCodeBitSize(typeCodeB, out var floatingPointB) is not { } bitSizeB)
+        if (typeInfoA.BitSize == 0 || typeInfoB.BitSize == 0)
             return TypeCode.Empty;
 
-        if ((floatingPointA && !floatingPointB) || (bitSizeA > bitSizeB))
+        if ((typeInfoA.IsFloatingPoint && !typeInfoB.IsFloatingPoint) || typeInfoA.BitSize > typeInfoB.BitSize)
         {
             b = Convert.ChangeType(b, typeCodeA, cultureInfo);
             return typeCodeA;
         }
 
-        if (bitSizeA == bitSizeB)
+        if (typeInfoA.BitSize == typeInfoB.BitSize)
         {
-            bool isUnsignedA = TypeHelper.IsUnsignedType(a);
-            bool isUnsignedB = TypeHelper.IsUnsignedType(b);
-
-            if (isUnsignedA || isUnsignedB)
+            if (typeInfoA.IsUnsigned || typeInfoB.IsUnsigned)
             {
-                var extendedType = TypeHelper.TypeCodeExpandBits(typeCodeA);
-                if (extendedType != TypeCode.Empty)
-                {
-                    a = Convert.ChangeType(a, extendedType, cultureInfo);
-                    b = Convert.ChangeType(b, extendedType, cultureInfo);
-                    return extendedType;
-                }
+                var extendedType = typeInfoA.ExpandedTypeCode;
 
-                return typeCodeA;
+                if (extendedType == TypeCode.Empty)
+                    return typeCodeA;
+
+                a = Convert.ChangeType(a, extendedType, cultureInfo);
+                b = Convert.ChangeType(b, extendedType, cultureInfo);
+                return extendedType;
             }
         }
 
         a = Convert.ChangeType(a, typeCodeB, cultureInfo);
         return typeCodeB;
-    }
-
-    private static int? TypeCodeBitSize(TypeCode typeCode, out bool floatingPoint)
-    {
-        floatingPoint = false;
-        switch (typeCode)
-        {
-            case TypeCode.SByte:
-            case TypeCode.Byte:
-                return 8;
-            case TypeCode.Int16:
-            case TypeCode.UInt16:
-                return 16;
-            case TypeCode.Int32:
-            case TypeCode.UInt32:
-                return 32;
-            case TypeCode.Int64:
-            case TypeCode.UInt64:
-                return 64;
-            case TypeCode.Single:
-                floatingPoint = true;
-                return 32;
-            case TypeCode.Double:
-                floatingPoint = true;
-                return 64;
-            case TypeCode.Decimal:
-                floatingPoint = true;
-                return 128;
-            default: return null;
-        }
     }
 
     public static object Abs(object? a, MathOptions options, CultureInfo cultureInfo)
