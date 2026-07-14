@@ -18,7 +18,4 @@ internal sealed class NumericTypeMetadata
 
     public NumericTypeDefinition[] PrimitiveConversionTypes =>
         Types.Where(type => type.ImplicitConversions is { Length: > 0 }).ToArray();
-
-    public NumericTypeDefinition[] TypeCodeExpandBitsTypes =>
-        Types.Where(type => type.ExpandBitsTypeCode != null).ToArray();
 }

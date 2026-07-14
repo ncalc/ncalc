@@ -13,6 +13,9 @@ internal sealed class NumericTypeDefinition
     [JsonPropertyName("isReal")]
     public bool IsReal { get; set; }
 
+    [JsonPropertyName("bitSize")]
+    public int BitSize { get; set; }
+
     [JsonPropertyName("supportsNaN")]
     public bool SupportsNaN { get; set; }
 

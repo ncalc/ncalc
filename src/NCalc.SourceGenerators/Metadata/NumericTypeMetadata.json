@@ -33,6 +33,7 @@
     {
       "keyword": "byte",
       "typeCode": "TypeCode.Byte",
+      "bitSize": 8,
       "isUnsigned": true,
       "supportsBinaryOperators": true,
       "expandBitsTypeCode": "TypeCode.Int32",
@@ -41,6 +42,7 @@
     {
       "keyword": "sbyte",
       "typeCode": "TypeCode.SByte",
+      "bitSize": 8,
       "supportsBinaryOperators": true,
       "expandBitsTypeCode": "TypeCode.Int32",
       "implicitConversions": [ "short", "int", "long", "float", "double", "decimal" ]
@@ -48,6 +50,7 @@
     {
       "keyword": "short",
       "typeCode": "TypeCode.Int16",
+      "bitSize": 16,
       "supportsBinaryOperators": true,
       "expandBitsTypeCode": "TypeCode.Int32",
       "implicitConversions": [ "int", "long", "float", "double", "decimal" ]
@@ -55,6 +58,7 @@
     {
       "keyword": "ushort",
       "typeCode": "TypeCode.UInt16",
+      "bitSize": 16,
       "isUnsigned": true,
       "supportsBinaryOperators": true,
       "expandBitsTypeCode": "TypeCode.Int32",
@@ -63,6 +67,7 @@
     {
       "keyword": "int",
       "typeCode": "TypeCode.Int32",
+      "bitSize": 32,
       "supportsBinaryOperators": true,
       "supportsSameTypeComparison": true,
       "expandBitsTypeCode": "TypeCode.Int64",
@@ -71,6 +76,7 @@
     {
       "keyword": "uint",
       "typeCode": "TypeCode.UInt32",
+      "bitSize": 32,
       "isUnsigned": true,
       "supportsBinaryOperators": true,
       "expandBitsTypeCode": "TypeCode.Int64",
@@ -79,6 +85,7 @@
     {
       "keyword": "long",
       "typeCode": "TypeCode.Int64",
+      "bitSize": 64,
       "supportsBinaryOperators": true,
       "supportsSameTypeComparison": true,
       "expandBitsTypeCode": "TypeCode.UInt64",
@@ -87,6 +94,7 @@
     {
       "keyword": "ulong",
       "typeCode": "TypeCode.UInt64",
+      "bitSize": 64,
       "isUnsigned": true,
       "supportsBinaryOperators": true,
       "expandBitsTypeCode": "TypeCode.UInt64",
@@ -95,6 +103,7 @@
     {
       "keyword": "float",
       "typeCode": "TypeCode.Single",
+      "bitSize": 32,
       "isReal": true,
       "supportsNaN": true,
       "supportsBinaryOperators": true,
@@ -105,6 +114,7 @@
     {
       "keyword": "double",
       "typeCode": "TypeCode.Double",
+      "bitSize": 64,
       "isReal": true,
       "supportsNaN": true,
       "supportsBinaryOperators": true,
@@ -114,6 +124,7 @@
     {
       "keyword": "decimal",
       "typeCode": "TypeCode.Decimal",
+      "bitSize": 128,
       "isReal": true,
       "supportsBinaryOperators": true,
       "supportsSameTypeComparison": true,
@@ -122,6 +133,7 @@
     {
       "keyword": "char",
       "typeCode": "TypeCode.Char",
+      "bitSize": 16,
       "expandBitsTypeCode": "TypeCode.Int32",
       "implicitConversions": [ "ushort", "int", "uint", "long", "ulong", "float", "double", "decimal" ]
     }
