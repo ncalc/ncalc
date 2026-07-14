@@ -106,12 +106,10 @@ public class CustomCultureTests
             var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
             culture.NumberFormat.NumberDecimalSeparator = ",";
             Thread.CurrentThread.CurrentCulture = culture;
-            var context = new ExpressionContext(
-                ExpressionOptions.StringConcat,
-                CultureInfo.InvariantCulture);
-            var expr = new Expression("[a] + 2.5", context)
+            var expr = new Expression("[a] + 2.5",ExpressionOptions.StringConcat)
             {
-                Parameters = { ["a"] = 1.7 }
+                Parameters = { ["a"] = 1.7 },
+                CultureInfo = CultureInfo.InvariantCulture
             };
             await Assert.That(expr.Evaluate(CancellationToken.None)).IsEqualTo("1.72.5");
         }

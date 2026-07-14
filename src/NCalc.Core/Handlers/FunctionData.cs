@@ -7,6 +7,8 @@ public class FunctionData(
     Guid id,
     LogicalExpressionList arguments,
     ExpressionContext context,
+    ExpressionEvaluationOptions evaluationOptions,
+    CultureInfo cultureInfo,
     ILogicalExpressionVisitor<object?> syncVisitor,
     ILogicalExpressionVisitor<Task<object?>>? asyncVisitor,
     CancellationToken cancellationToken)
@@ -19,6 +21,8 @@ public class FunctionData(
     public Guid Id { get; } = id;
 
     public ExpressionContext Context { get; } = context;
+    public ExpressionEvaluationOptions EvaluationOptions { get; } = evaluationOptions;
+    public CultureInfo CultureInfo { get; } = cultureInfo;
     public CancellationToken CancellationToken { get; } = cancellationToken;
 
     public LogicalExpression this[int index] => Arguments[index];

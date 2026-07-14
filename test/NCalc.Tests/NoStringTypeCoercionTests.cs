@@ -19,7 +19,7 @@ public class NoStringTypeCoercionTests
     [Arguments("'10' + 'mA - ' + (10 + 20) + 'mA'", "10mA - 30mA")]
     public async Task ShouldUseStringConcatenationIfEitherValueIsAString(string expression, object expected)
     {
-        var res = new Expression(expression, ExpressionOptions.NoStringTypeCoercion, CultureInfo.InvariantCulture)
+        var res = new Expression(expression, ExpressionOptions.NoStringTypeCoercion,null, CultureInfo.InvariantCulture)
             .Evaluate(CancellationToken.None);
         await Assert.That(res).IsEqualTo(expected);
     }

@@ -1,6 +1,6 @@
 #nullable enable
 using NCalc.Exceptions;
-using NCalc.Parser;
+using NCalc.Helpers;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;
@@ -66,9 +66,8 @@ public class EvaluationTests
     public async Task Should_Not_Throw_Function_Not_Found_Issue_110()
     {
         const string expressionStr = "IN([acp_associated_person_transactions], 'T', 'Z', 'A')";
-        var expression = new Expression(expressionStr)
+        var expression = new Expression(expressionStr, ExpressionOptions.IgnoreCaseAtBuiltInFunctions)
         {
-            Options = ExpressionOptions.RoundAwayFromZero | ExpressionOptions.IgnoreCaseAtBuiltInFunctions,
             Parameters =
             {
                 ["acp_associated_person_transactions"] = 'T'
@@ -144,12 +143,34 @@ public class EvaluationTests
     }
 
     [Test]
-    public async Task ShouldRoundAwayFromZero()
+    public async Task ShouldUseConfiguredMidpointRounding()
     {
         await Assert.That(new Expression("Round(22.5, 0)")
             .Evaluate(CancellationToken.None)).IsEqualTo(22d);
-        await Assert.That(new Expression("Round(22.5, 0)", ExpressionOptions.RoundAwayFromZero)
+        await Assert.That(new Expression("Round(22.5, 0)", new ExpressionConfiguration
+        {
+            Evaluation = new ExpressionEvaluationOptions
+            {
+                Math = new MathOptions { MidpointRounding = MidpointRounding.AwayFromZero }
+            }
+        })
             .Evaluate(CancellationToken.None)).IsEqualTo(23d);
+    }
+
+    [Test]
+    public async Task ShouldApplyConfiguration()
+    {
+        var expression = new Expression("Round(22.5, 0)");
+
+        expression.Configuration = new ExpressionConfiguration
+        {
+            Evaluation = new ExpressionEvaluationOptions
+            {
+                Math = new MathOptions { MidpointRounding = MidpointRounding.AwayFromZero }
+            }
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(23d);
     }
 
     [Test]
@@ -174,10 +195,10 @@ public class EvaluationTests
     {
         var options = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
 
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
 

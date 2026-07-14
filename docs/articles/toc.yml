@@ -24,6 +24,9 @@
     - name: Expression Context
       icon: fa-solid fa-layer-group
       href: evaluation/expression_context.md
+    - name: Configuration
+      icon: fa-solid fa-gear
+      href: evaluation/configuration.md
     - name: Typed Evaluation
       icon: fa-solid fa-code
       href: evaluation/typed_evaluation.md
@@ -49,6 +52,9 @@
     - name: Async Support
       icon: fa-solid fa-bolt
       href: runtime/async.md
+    - name: Performance
+      icon: fa-solid fa-gauge-high
+      href: runtime/performance.md
     - name: Caching
       icon: fa-solid fa-database
       href: runtime/caching.md
@@ -75,9 +81,6 @@
       icon: fa-solid fa-plug
       href: extensibility/plugins/index.md
       items:
-        - name: ANTLR
-          icon: fa-solid fa-code
-          href: extensibility/plugins/antlr.md
         - name: Memory Cache
           icon: fa-solid fa-memory
           href: extensibility/plugins/memory_cache.md
@@ -94,6 +97,9 @@
     - name: Changelog
       icon: fa-solid fa-clock-rotate-left
       href: project/changelog.md
+    - name: Migrate from NCalc v6 to NCalc v7
+      icon: fa-solid fa-right-left
+      href: project/migrate_v6_to_v7.md
     - name: Publishing a New Release
       icon: fa-solid fa-rocket
       href: project/new_release.md

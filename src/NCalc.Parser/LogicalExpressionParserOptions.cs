@@ -1,34 +1,27 @@
-namespace NCalc.Parser;
+namespace NCalc;
 
 /// <summary>
 /// Options for configuring the LogicalExpressionParser behavior.
 /// </summary>
-public sealed record LogicalExpressionParserOptions
+public sealed class LogicalExpressionParserOptions
 {
+    /// <summary>
+    /// Parses single-quoted one-character values as <see cref="char"/>.
+    /// </summary>
     public bool AllowCharValues { get; init; }
 
-    public bool DecimalAsDefault { get; init; }
-
-    public bool LongAsDefault { get; init; }
+    /// <summary>
+    /// Gets the default parsed floating point number type.
+    /// </summary>
+    public FloatingPointNumberType FloatingPointNumberType { get; init; } = FloatingPointNumberType.Double;
 
     /// <summary>
-    /// The culture info used for parsing expressions.
+    /// Gets the default parsed integer number type.
     /// </summary>
-    public CultureInfo CultureInfo { get; init; } = CultureInfo.CurrentCulture;
+    public IntegerNumberType IntegerNumberType { get; init; } = IntegerNumberType.Int32;
 
     /// <summary>
     /// The argument separator used to separate function arguments. Default is Comma.
     /// </summary>
-    public LogicalExpressionArgumentSeparator ArgumentSeparator { get; init; } =
-        LogicalExpressionArgumentSeparator.Comma;
-
-    public LogicalExpressionParserOptions()
-    {
-    }
-
-    public LogicalExpressionParserOptions(CultureInfo cultureInfo, LogicalExpressionArgumentSeparator separator)
-    {
-        CultureInfo = cultureInfo;
-        ArgumentSeparator = separator;
-    }
+    public ArgumentSeparator ArgumentSeparator { get; init; } = ArgumentSeparator.Comma;
 }

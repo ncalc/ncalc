@@ -1,22 +1,20 @@
-using NCalc.Parser;
-
 namespace NCalc.Tests;
 
 public class ExpressionSeparatorTests
 {
     [Test]
-    [Arguments("Max(1, 2)", 2, LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments("Max(1; 2)", 2, LogicalExpressionArgumentSeparator.Semicolon)]
-    [Arguments("Min(5, 3)", 3, LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments("Min(5; 3)", 3, LogicalExpressionArgumentSeparator.Semicolon)]
-    public async Task Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, LogicalExpressionArgumentSeparator separator)
+    [Arguments("Max(1, 2)", 2, ArgumentSeparator.Comma)]
+    [Arguments("Max(1; 2)", 2, ArgumentSeparator.Semicolon)]
+    [Arguments("Min(5, 3)", 3, ArgumentSeparator.Comma)]
+    [Arguments("Min(5; 3)", 3, ArgumentSeparator.Semicolon)]
+    public async Task Expression_Should_Support_Custom_Separators_End_To_End(string expressionText, int expected, ArgumentSeparator separator)
     {
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expressionText, options);
+        var context = new LogicalExpressionParseContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
 
@@ -34,11 +32,11 @@ public class ExpressionSeparatorTests
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
         const string expressionText = "CustomAdd(10; 20)";
 
-        var context = new LogicalExpressionParserContext(expressionText, options);
+        var context = new LogicalExpressionParseContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression);
@@ -65,12 +63,12 @@ public class ExpressionSeparatorTests
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
 
         const string expressionText = "Max(x; y)";
 
-        var context = new LogicalExpressionParserContext(expressionText, options);
+        var context = new LogicalExpressionParseContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression)

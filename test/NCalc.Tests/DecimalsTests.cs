@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using NCalc.Helpers;
 
 namespace NCalc.Tests;
 
@@ -60,8 +61,13 @@ public class DecimalsTests
     [Test]
     public async Task ShouldAddDoubleAndDecimal()
     {
-        var e = new Expression("1.8 + Abs([var1])");
-        e.Parameters["var1"] = 9.2;
+        var e = new Expression("1.8 + Abs([var1])")
+        {
+            Parameters =
+            {
+                ["var1"] = 9.2
+            }
+        };
 
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(11d);
     }
@@ -69,8 +75,13 @@ public class DecimalsTests
     [Test]
     public async Task ShouldSubtractDoubleAndDecimal()
     {
-        var e = new Expression("1.8 - Abs([var1])");
-        e.Parameters["var1"] = 0.8;
+        var e = new Expression("1.8 - Abs([var1])")
+        {
+            Parameters =
+            {
+                ["var1"] = 0.8
+            }
+        };
 
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(1d);
     }
@@ -78,8 +89,13 @@ public class DecimalsTests
     [Test]
     public async Task ShouldMultiplyDoubleAndDecimal()
     {
-        var e = new Expression("1.8 * Abs([var1])");
-        e.Parameters["var1"] = 9.2;
+        var e = new Expression("1.8 * Abs([var1])")
+        {
+            Parameters =
+            {
+                ["var1"] = 9.2
+            }
+        };
 
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(16.56);
     }
@@ -87,8 +103,13 @@ public class DecimalsTests
     [Test]
     public async Task ShouldDivideDoubleAndDecimal()
     {
-        var e = new Expression("1.8 / Abs([var1])");
-        e.Parameters["var1"] = 0.5;
+        var e = new Expression("1.8 / Abs([var1])")
+        {
+            Parameters =
+            {
+                ["var1"] = 0.5
+            }
+        };
 
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(3.6d);
     }
@@ -98,8 +119,13 @@ public class DecimalsTests
     {
         // https://github.com/ncalc/ncalc/issues/16
 
-        var e = new Expression("x / 1.0");
-        e.Parameters["x"] = 1m;
+        var e = new Expression("x / 1.0")
+        {
+            Parameters =
+            {
+                ["x"] = 1m
+            }
+        };
 
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(1m);
     }
@@ -107,9 +133,14 @@ public class DecimalsTests
     [Test]
     public async Task Should_Divide_Decimal_By_Single()
     {
-        var e = new Expression("x / y");
-        e.Parameters["x"] = 1m;
-        e.Parameters["y"] = 1f;
+        var e = new Expression("x / y")
+        {
+            Parameters =
+            {
+                ["x"] = 1m,
+                ["y"] = 1f
+            }
+        };
 
         await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(1m);
     }
@@ -143,18 +174,46 @@ public class DecimalsTests
     }
 
     [Test]
+    public async Task ShouldUseMathNumberTypesWhenCoercingStringNumbers()
+    {
+        var cultureInfo = CultureInfo.InvariantCulture;
+
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions(), cultureInfo)).IsEqualTo(5d);
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions
+        {
+            FloatingPointNumberType = FloatingPointNumberType.Decimal
+        }, cultureInfo)).IsEqualTo(5m);
+        await Assert.That(MathHelper.Add("2", "3", new MathOptions
+        {
+            IntegerNumberType = IntegerNumberType.Int64
+        }, cultureInfo)).IsEqualTo(5L);
+    }
+
+    [Test]
+    public async Task ShouldUseFloatingPointNumberTypeWhenChoosingMathFunctionPrecision()
+    {
+        var doubleResult = MathHelper.Abs("-1", new MathOptions(), CultureInfo.InvariantCulture);
+        var decimalResult = MathHelper.Abs("-1", new MathOptions
+        {
+            FloatingPointNumberType = FloatingPointNumberType.Decimal
+        }, CultureInfo.InvariantCulture);
+
+        await Assert.That(doubleResult).IsEqualTo(1d);
+        await Assert.That(decimalResult).IsEqualTo(1m);
+    }
+
+    [Test]
     public async Task ShouldResolveHexadecimal()
     {
         await Assert.That(new Expression("0x17 + 0x18").Evaluate(CancellationToken.None)).IsEqualTo(0x2f);
     }
 
-    
     [Test]
     public async Task ShouldResolveOctal()
     {
         await Assert.That(new Expression("0o16 + 0o17").Evaluate(CancellationToken.None)).IsEqualTo(29);
     }
-    
+
     [Test]
     public async Task ShouldResolveBinary()
     {
@@ -178,7 +237,7 @@ public class DecimalsTests
     [Test]
     public async Task ShouldParseBigNumbersAsDecimals()
     {
-        var expr = new Expression("25343463636363454545454544563464.12", ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
+        var expr = new Expression("25343463636363454545454544563464.12", ExpressionOptions.DecimalAsDefault, null,CultureInfo.InvariantCulture);
         var res = expr.Evaluate(CancellationToken.None);
         await Assert.That(res).IsEqualTo(double.PositiveInfinity);
     }

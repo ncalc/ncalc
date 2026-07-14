@@ -1,4 +1,3 @@
-using NCalc.Parser;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;
@@ -88,9 +87,9 @@ public class ExtractionTests
         const string expressionText = "[a] + GetTimeValue(if([c] > [d]; test([e] > 0; [g]; [h]); [f]); 1; 'sec')";
         var options = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
-        var context = new LogicalExpressionParserContext(expressionText, options);
+        var context = new LogicalExpressionParseContext(expressionText, options);
 
         var logicalExpression = LogicalExpressionParser.Parse(context);
         var expression = new Expression(logicalExpression);

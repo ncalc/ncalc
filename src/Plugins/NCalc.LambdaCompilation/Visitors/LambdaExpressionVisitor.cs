@@ -15,9 +15,8 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 {
     private readonly IDictionary<string, object?>? _parameters;
     private readonly LinqExpression? _context;
-    private readonly ExpressionOptions _options;
-    private readonly bool _ordinalStringComparer;
-    private readonly bool _caseInsensitiveStringComparer;
+    private readonly ExpressionEvaluationOptions _options;
+    private readonly StringComparer _stringComparer;
     private readonly bool _ignoreCaseAtBuiltInFunctions;
     private readonly bool _checked;
 
@@ -27,21 +26,20 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
     private static readonly MethodInfo StringComparerCompareMethod =
         typeof(StringComparer).GetMethod("Compare", [typeof(string), typeof(string)])!;
 
-    private LambdaExpressionVisitor(ExpressionOptions options)
+    private LambdaExpressionVisitor(ExpressionEvaluationOptions options)
     {
         _options = options;
-        _ordinalStringComparer = _options.HasFlag(ExpressionOptions.OrdinalStringComparer);
-        _checked = _options.HasFlag(ExpressionOptions.OverflowProtection);
-        _caseInsensitiveStringComparer = _options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer);
-        _ignoreCaseAtBuiltInFunctions = _options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
+        _stringComparer = _options.StringComparer;
+        _checked = _options.Math.OverflowProtection;
+        _ignoreCaseAtBuiltInFunctions = _options.IgnoreCaseAtBuiltInFunctions;
     }
 
-    public LambdaExpressionVisitor(IDictionary<string, object?> parameters, ExpressionOptions options) : this(options)
+    public LambdaExpressionVisitor(IDictionary<string, object?> parameters, ExpressionEvaluationOptions options) : this(options)
     {
         _parameters = parameters;
     }
 
-    public LambdaExpressionVisitor(LinqParameterExpression context, ExpressionOptions options) : this(options)
+    public LambdaExpressionVisitor(LinqParameterExpression context, ExpressionEvaluationOptions options) : this(options)
     {
         _context = context;
     }
@@ -144,7 +142,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             case var s when string.Equals(s, "Pow", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
 
-                if (_options == ExpressionOptions.DecimalAsDefault)
+                if (args[0].Type == typeof(decimal))
                 {
                     arg0 = LinqExpression.Convert(args[0], typeof(decimal));
                     arg1 = LinqExpression.Convert(args[1], typeof(decimal));
@@ -167,16 +165,14 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             case var s when string.Equals(s, "Round", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
 
-                if (_options == ExpressionOptions.DecimalAsDefault)
+                if (args[0].Type == typeof(decimal))
                     arg0 = LinqExpression.Convert(args[0], typeof(decimal));
                 else
                     arg0 = LinqExpression.Convert(args[0], typeof(double));
 
                 arg1 = LinqExpression.Convert(args[1], typeof(int));
 
-                var rounding = (_options & ExpressionOptions.RoundAwayFromZero) == ExpressionOptions.RoundAwayFromZero
-                    ? MidpointRounding.AwayFromZero
-                    : MidpointRounding.ToEven;
+                var rounding = _options.Math.MidpointRounding;
                 return LinqExpression.Call(MathFunctionHelper.Functions["Round"].First().MethodInfo, arg0, arg1,
                     LinqExpression.Constant(rounding));
             case var s when string.Equals(s, "if", comparisonType):
@@ -216,7 +212,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                     MathMethodInfo func;
                     var f = kvp.Value;
 
-                    if (_options == ExpressionOptions.DecimalAsDefault && f.Any(_ => _.DecimalSupport))
+                    if (args.Any(_ => _.Type == typeof(decimal)) && f.Any(_ => _.DecimalSupport))
                         func = f.First(_ => _.DecimalSupport);
                     else
                         func = f.First(_ => !_.DecimalSupport);
@@ -318,7 +314,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         left = LinqUtils.UnwrapNullable(left);
         right = LinqUtils.UnwrapNullable(right);
 
-        if (_options.HasFlag(ExpressionOptions.AllowBooleanCalculation))
+        if (_options.Math.AllowBooleanCalculation)
         {
             if (left.Type == typeof(bool))
             {
@@ -348,16 +344,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         if (typeof(string) != left.Type && typeof(string) != right.Type)
             return action(left, right);
 
-        LinqExpression comparer;
-        if (_caseInsensitiveStringComparer)
-        {
-            if (_ordinalStringComparer)
-                comparer = LinqExpression.Constant(StringComparer.OrdinalIgnoreCase);
-            else
-                comparer = LinqExpression.Constant(StringComparer.CurrentCultureIgnoreCase);
-        }
-        else
-            comparer = LinqExpression.Constant(StringComparer.Ordinal);
+        LinqExpression comparer = LinqExpression.Constant(_stringComparer);
 
         switch (expressionType)
         {
@@ -407,14 +394,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
         if (isString)
         {
-            LinqExpression comparer =
-                _caseInsensitiveStringComparer
-                    ? (_ordinalStringComparer
-                        ? LinqExpression.Constant(StringComparer.OrdinalIgnoreCase)
-                        : LinqExpression.Constant(StringComparer.CurrentCultureIgnoreCase))
-                    : (_ordinalStringComparer
-                        ? LinqExpression.Constant(StringComparer.Ordinal)
-                        : LinqExpression.Constant(StringComparer.CurrentCulture));
+            LinqExpression comparer = LinqExpression.Constant(_stringComparer);
 
             return LinqExpression.Call(
                 null, containsMi, source, LinqExpression.Convert(left, typeof(string)), comparer);
@@ -433,15 +413,12 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
         var likeMethod = typeof(LikeOperatorHelper).GetMethod(
             nameof(LikeOperatorHelper.Like),
-            [typeof(string), typeof(string), typeof(bool), typeof(bool), typeof(CultureInfo)])!;
-        var currentCulture = typeof(CultureInfo).GetProperty(nameof(CultureInfo.CurrentCulture))!;
+            [typeof(string), typeof(string), typeof(StringComparer)])!;
         var callIsMatch = LinqExpression.Call(
             likeMethod,
             leftObj,
             rightObj,
-            LinqExpression.Constant(_options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer)),
-            LinqExpression.Constant(_options.HasFlag(ExpressionOptions.OrdinalStringComparer)),
-            LinqExpression.Property(null, currentCulture));
+            LinqExpression.Constant(_options.StringComparer));
 
         // if either side is null should be false
         var leftNull = LinqExpression.Equal(leftObj, LinqExpression.Constant(null));

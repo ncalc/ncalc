@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using NCalc.Cache;
 using NCalc.Exceptions;
 using NCalc.Extensions;
@@ -10,35 +10,86 @@ using NCalc.Visitors;
 namespace NCalc;
 
 /// <summary>
-/// This class represents a mathematical or logical expression that can be asynchronous evaluated.
-/// It supports caching, custom parameter and function evaluation, and options for handling null parameters and iterating over parameter collections.
-/// The class manages the parsing, validation, and evaluation of expressions, and provides mechanisms for error detection and reporting.
+/// A reusable parsed expression and its immutable parsing and evaluation options.
+/// Runtime parameters, functions, and handlers are supplied through <see cref="ExpressionContext"/>.
 /// </summary>
 public class Expression
 {
-    public IDictionary<string, ExpressionParameter> DynamicParameters
+    /// <summary>
+    /// Textual representation of the expression.
+    /// </summary>
+    public string? ExpressionString { get; protected init; }
+
+    /// <summary>
+    /// Parsed logical expression tree.
+    /// </summary>
+    public LogicalExpression? LogicalExpression { get; set; }
+
+    /// <summary>
+    /// Gets the last parsing error, if any.
+    /// </summary>
+    public Exception? Error { get; private set; }
+
+    /// <summary>
+    /// Gets or sets parsing, evaluation, and caching configuration.
+    /// </summary>
+    public ExpressionConfiguration Configuration { get; set; }
+
+    /// <summary>
+    /// Gets the parser options from <see cref="Configuration"/>.
+    /// </summary>
+    public LogicalExpressionParserOptions ParserOptions => Configuration.Parsing;
+
+    /// <summary>
+    /// Gets the evaluation options from <see cref="Configuration"/>.
+    /// </summary>
+    public ExpressionEvaluationOptions EvaluationOptions => Configuration.Evaluation;
+
+    /// <summary>
+    /// Culture information for parsing and evaluation.
+    /// </summary>
+    public CultureInfo CultureInfo { get; set; }
+
+    /// <summary>
+    /// Runtime context that stores parameters, functions, and handlers.
+    /// </summary>
+    public ExpressionContext Context { get; set; }
+
+    /// <summary>
+    /// Static parameters for the expression evaluation.
+    /// </summary>
+    public IDictionary<string, object?> Parameters => Context.Parameters;
+
+    /// <summary>
+    /// Replaces <see cref="Configuration"/> with a configuration converted from <see cref="ExpressionOptions"/> flags.
+    /// </summary>
+    /// <remarks>
+    /// Prefer setting <see cref="Configuration"/> directly.
+    /// </remarks>
+    public ExpressionOptions Options
     {
-        get => Context.DynamicParameters;
-        set => Context.DynamicParameters = value;
+        set => Configuration = ExpressionConfiguration.FromOptions(value);
     }
 
-    public IDictionary<string, AsyncExpressionParameter> AsyncParameters
-    {
-        get => Context.AsyncParameters;
-        set => Context.AsyncParameters = value;
-    }
+    /// <summary>
+    /// Dynamic parameters for the expression evaluation.
+    /// </summary>
+    public IDictionary<string, ExpressionParameter> DynamicParameters => Context.DynamicParameters;
 
-    public IDictionary<string, ExpressionFunction> Functions
-    {
-        get => Context.Functions;
-        set => Context.Functions = value;
-    }
+    /// <summary>
+    /// Async dynamic parameters for the expression evaluation.
+    /// </summary>
+    public IDictionary<string, AsyncExpressionParameter> AsyncParameters => Context.AsyncParameters;
 
-    public IDictionary<string, AsyncExpressionFunction> AsyncFunctions
-    {
-        get => Context.AsyncFunctions;
-        set => Context.AsyncFunctions = value;
-    }
+    /// <summary>
+    /// Custom functions for the expression evaluation.
+    /// </summary>
+    public IDictionary<string, ExpressionFunction> Functions => Context.Functions;
+
+    /// <summary>
+    /// Async custom functions for the expression evaluation.
+    /// </summary>
+    public IDictionary<string, AsyncExpressionFunction> AsyncFunctions => Context.AsyncFunctions;
 
     /// <summary>
     /// Event triggered to handle function evaluation.
@@ -57,12 +108,13 @@ public class Expression
         add => Context.EvaluateBinaryHandler += value;
         remove => Context.EvaluateBinaryHandler -= value;
     }
+
     /// <summary>
-    /// Event triggered to handle binary evaluation.
+    /// Event triggered to handle async binary evaluation.
     /// </summary>
     public event EvaluateBinaryAsyncHandler EvaluateBinaryAsync
     {
-        add => Context.EvaluateBinaryAsyncHandler+= value;
+        add => Context.EvaluateBinaryAsyncHandler += value;
         remove => Context.EvaluateBinaryAsyncHandler -= value;
     }
 
@@ -93,125 +145,109 @@ public class Expression
         remove => Context.EvaluateAsyncParameterHandler -= value;
     }
 
-    protected ExpressionContext Context { get; }
-
-    /// <summary>
-    /// Options for the expression evaluation.
-    /// </summary>
-    public ExpressionOptions Options
-    {
-        get => Context.Options;
-        set => Context.Options = value;
-    }
-
-    /// <summary>
-    /// Culture information for the expression evaluation.
-    /// </summary>
-    public CultureInfo CultureInfo
-    {
-        get => Context.CultureInfo;
-        set => Context.CultureInfo = value;
-    }
-
-    /// <summary>
-    /// Parameters for the expression evaluation.
-    /// </summary>
-    public IDictionary<string, object?> Parameters
-    {
-        get => Context.StaticParameters;
-        set => Context.StaticParameters = value;
-    }
-
-    /// <summary>
-    /// Textual representation of the expression.
-    /// </summary>
-    public string? ExpressionString { get; protected init; }
-
-    public LogicalExpression? LogicalExpression { get; set; }
-    public Exception? Error { get; private set; }
     private ILogicalExpressionCache LogicalExpressionCache { get; }
     private ILogicalExpressionFactory LogicalExpressionFactory { get; }
-    protected internal IEvaluationVisitorFactory? EvaluationVisitorFactory { get; private set; }
 
-    protected Expression(ExpressionContext? context = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+    /// <summary>
+    /// Factory used to create evaluation visitors.
+    /// </summary>
+    protected IEvaluationVisitorFactory? EvaluationVisitorFactory { get; private set; }
+
+    protected Expression(
+        ExpressionConfiguration configuration,
+        ExpressionContext context,
+        CultureInfo cultureInfo,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
         LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
-        Context = context ?? new ExpressionContext();
         EvaluationVisitorFactory = evaluationVisitorFactory;
+        Configuration = configuration;
+        Context = context;
+        CultureInfo = cultureInfo;
     }
 
-    public Expression(
+    protected internal Expression(
         string expressionString,
-        ExpressionContext context,
+        ExpressionConfiguration configuration,
+        ExpressionContext expressionContext,
+        CultureInfo cultureInfo,
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitorFactory? evaluationVisitorFactory = null)
-        : this(context, evaluationVisitorFactory)
+        : this(configuration, expressionContext, cultureInfo, evaluationVisitorFactory)
     {
         ExpressionString = expressionString;
+        Configuration = configuration;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
     }
 
-    public Expression(
+    protected internal Expression(
         LogicalExpression logicalExpression,
-        ExpressionContext context,
+        ExpressionConfiguration configuration,
+        ExpressionContext expressionContext,
+        CultureInfo cultureInfo,
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitorFactory? evaluationVisitorFactory = null)
-        : this(context, evaluationVisitorFactory)
+        : this(configuration, expressionContext, cultureInfo, evaluationVisitorFactory)
     {
         LogicalExpression = logicalExpression;
+        Configuration = configuration;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
     }
 
-    public Expression(string? expression, ExpressionContext? context = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(context, evaluationVisitorFactory)
+    public Expression(string? expression, CultureInfo cultureInfo) : this(new ExpressionConfiguration(),
+        new ExpressionContext(), cultureInfo)
     {
         ExpressionString = expression;
     }
 
-    // ReSharper disable once RedundantOverload.Global
-    // Reason: False positive, ExpressionContext have implicit conversions.
-    public Expression(string? expression) : this(expression, ExpressionOptions.None)
+    public Expression(string? expression, ExpressionContext context) : this(new ExpressionConfiguration(), context, CultureInfo.CurrentCulture)
     {
+        ExpressionString = expression;
     }
 
-    public Expression(string? expression, ExpressionOptions options = ExpressionOptions.None,
+    public Expression(
+        string? expression,
+        ExpressionConfiguration? configuration = null,
+        ExpressionContext? context = null,
         CultureInfo? cultureInfo = null,
-        IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(expression, new ExpressionContext(options, cultureInfo), evaluationVisitorFactory)
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(
+        configuration ?? new ExpressionConfiguration(), context ?? new ExpressionContext(),
+        cultureInfo ?? CultureInfo.CurrentCulture, evaluationVisitorFactory)
     {
+        ExpressionString = expression;
     }
 
-    public Expression(LogicalExpression logicalExpression, ExpressionContext? context = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(context, evaluationVisitorFactory)
-    {
-        LogicalExpression = logicalExpression ?? throw new
-            ArgumentException("Expression can't be null", nameof(logicalExpression));
-    }
-
-    // ReSharper disable once RedundantOverload.Global
-    // Reason: False positive, ExpressionContext have implicit conversions.
-    public Expression(LogicalExpression logicalExpression) : this(logicalExpression, ExpressionOptions.None)
-    {
-    }
-
-    public Expression(LogicalExpression logicalExpression, ExpressionOptions options = ExpressionOptions.None,
+    public Expression(LogicalExpression logicalExpression,
+        ExpressionConfiguration? configuration = null,
+        ExpressionContext? context = null,
         CultureInfo? cultureInfo = null,
-        IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(logicalExpression, new ExpressionContext(options, cultureInfo), evaluationVisitorFactory)
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(
+        configuration ?? new ExpressionConfiguration(), context ?? new ExpressionContext(),
+        cultureInfo ?? CultureInfo.CurrentCulture, evaluationVisitorFactory)
     {
+        LogicalExpression = logicalExpression ?? throw new ArgumentNullException(nameof(logicalExpression));
     }
 
-    protected virtual EvaluationVisitor CreateEvaluationVisitor(CancellationToken cancellationToken = default)
+    protected virtual EvaluationVisitor CreateEvaluationVisitor(ExpressionContext context,
+        CancellationToken cancellationToken = default)
     {
-        return EvaluationVisitorFactory?.CreateEvaluationVisitor(Context, cancellationToken)
-               ?? new EvaluationVisitor(Context, cancellationToken: cancellationToken);
+        return EvaluationVisitorFactory?.CreateEvaluationVisitor(context, EvaluationOptions, CultureInfo,
+                   cancellationToken)
+               ?? new EvaluationVisitor(context, EvaluationOptions, CultureInfo, cancellationToken: cancellationToken);
     }
 
-    protected virtual AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(CancellationToken cancellationToken = default)
+    protected virtual AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(ExpressionContext context,
+        CancellationToken cancellationToken = default)
     {
-        return EvaluationVisitorFactory?.CreateAsyncEvaluationVisitor(Context, cancellationToken)
-               ?? new AsyncEvaluationVisitor(Context, cancellationToken: cancellationToken);
+        return EvaluationVisitorFactory?.CreateAsyncEvaluationVisitor(context, EvaluationOptions, CultureInfo,
+                   cancellationToken)
+               ?? new AsyncEvaluationVisitor(context, EvaluationOptions, CultureInfo,
+                   cancellationToken: cancellationToken);
     }
 
     internal void SetEvaluationVisitorFactory(IEvaluationVisitorFactory? evaluationVisitorFactory)
@@ -222,7 +258,6 @@ public class Expression
     /// <summary>
     /// Evaluates the logical expression.
     /// </summary>
-    /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public object? Evaluate(CancellationToken cancellationToken = default)
     {
@@ -233,13 +268,10 @@ public class Expression
 
         try
         {
-            // If array evaluation, execute the same expression multiple times
-            if (Options.HasFlag(ExpressionOptions.IterateParameters))
+            if (EvaluationOptions.IterateParameters)
                 return IterateParameters(cancellationToken);
 
-            var evaluationVisitor = CreateEvaluationVisitor(cancellationToken);
-
-            return LogicalExpression?.Accept(evaluationVisitor);
+            return LogicalExpression?.Accept(CreateEvaluationVisitor(Context, cancellationToken));
         }
         catch (InvalidCastException exception)
         {
@@ -250,43 +282,62 @@ public class Expression
     /// <summary>
     /// Evaluates the logical expression and converts the result to type <typeparamref name="T"/>.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
     /// <typeparam name="T">The type to which the evaluation result should be converted.</typeparam>
-    /// <returns>The result of the evaluation, converted to type <typeparamref name="T"/>, or <c>default</c> if the result is <c>null</c>.</returns>
+    /// <returns>The evaluation result converted to type <typeparamref name="T"/>, or <c>default</c> if the result is <c>null</c>.</returns>
     /// <exception cref="NCalcCastException">Thrown when the result cannot be cast to type <typeparamref name="T"/>.</exception>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public T? Evaluate<T>(CancellationToken cancellationToken = default)
     {
-        var result = Evaluate(cancellationToken);
+        return CastResult<T>(Evaluate(cancellationToken), CultureInfo);
+    }
 
-        return CastResult<T>(result, Context.CultureInfo);
+    /// <summary>
+    /// Asynchronously evaluates the logical expression.
+    /// </summary>
+    /// <returns>The result of the evaluation.</returns>
+    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
+    public async ValueTask<object?> EvaluateAsync(CancellationToken cancellationToken = default)
+    {
+        LogicalExpression ??= GetLogicalExpression(cancellationToken);
+
+        if (Error is not null)
+            throw Error;
+
+        try
+        {
+            if (EvaluationOptions.IterateParameters)
+                return await IterateParametersAsync(cancellationToken).ConfigureAwait(false);
+
+            if (LogicalExpression is null)
+                return null;
+
+            return await LogicalExpression.Accept(CreateAsyncEvaluationVisitor(Context, cancellationToken))
+                .ConfigureAwait(false);
+        }
+        catch (InvalidCastException exception)
+        {
+            throw new NCalcEvaluationException("Error evaluating expression.", exception);
+        }
     }
 
     /// <summary>
     /// Asynchronously evaluates the logical expression and converts the result to type <typeparamref name="T"/>.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
     /// <typeparam name="T">The type to which the evaluation result should be converted.</typeparam>
-    /// <returns>A task that represents the asynchronous evaluation. The task result contains the value converted to type <typeparamref name="T"/>, or <c>default</c> if the result is <c>null</c>.</returns>
+    /// <returns>The evaluation result converted to type <typeparamref name="T"/>, or <c>default</c> if the result is <c>null</c>.</returns>
     /// <exception cref="NCalcCastException">Thrown when the result cannot be cast to type <typeparamref name="T"/>.</exception>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public async Task<T?> EvaluateAsync<T>(CancellationToken cancellationToken = default)
+    public async ValueTask<T?> EvaluateAsync<T>(CancellationToken cancellationToken = default)
     {
-        var result = await EvaluateAsync(cancellationToken);
-
-        return CastResult<T>(result, Context.CultureInfo);
+        return CastResult<T>(await EvaluateAsync(cancellationToken).ConfigureAwait(false), CultureInfo);
     }
 
     private static T? CastResult<T>(object? result, CultureInfo cultureInfo)
     {
-        switch (result)
-        {
-            case null:
-                return default;
-            case T typed:
-                return typed;
-        }
-
+        if (result is null)
+            return default;
+        if (result is T typed)
+            return typed;
         if (result is not IConvertible convertible)
             throw new NCalcCastException(result, typeof(T));
 
@@ -300,61 +351,26 @@ public class Expression
         }
     }
 
-    /// <summary>
-    /// Asynchronously evaluates the logical expression.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The result of the evaluation.</returns>
-    /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public async ValueTask<object?> EvaluateAsync(CancellationToken cancellationToken = default)
-    {
-        LogicalExpression ??= GetLogicalExpression(cancellationToken);
-
-        if (Error is not null)
-            throw Error;
-
-        try
-        {
-            // If array evaluation, execute the same expression multiple times
-            if (Options.HasFlag(ExpressionOptions.IterateParameters))
-                return await IterateParametersAsync(cancellationToken).ConfigureAwait(false);
-
-            var evaluationVisitor = CreateAsyncEvaluationVisitor(cancellationToken);
-
-            if (LogicalExpression is null)
-                return null;
-
-            return await LogicalExpression.Accept(evaluationVisitor).ConfigureAwait(false);
-        }
-        catch (InvalidCastException exception)
-        {
-            throw new NCalcEvaluationException("Error evaluating expression.", exception);
-        }
-    }
-
     private async ValueTask<object?> IterateParametersAsync(CancellationToken cancellationToken)
     {
-        var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
-
-        var evaluationVisitor = CreateAsyncEvaluationVisitor(cancellationToken);
-
+        var parameterEnumerators = ParametersHelper.GetEnumerators(Context.Parameters, out var size);
         if (LogicalExpression is null)
             return null;
 
-        if (size == null)
-            return await LogicalExpression.Accept(evaluationVisitor);
+        var visitor = CreateAsyncEvaluationVisitor(Context, cancellationToken);
+        if (size is null)
+            return await LogicalExpression.Accept(visitor).ConfigureAwait(false);
 
         var results = new List<object?>(size.Value);
-
         for (var i = 0; i < size; i++)
         {
-            foreach (var kvp in parameterEnumerators)
+            foreach (var parameter in parameterEnumerators)
             {
-                kvp.Value.MoveNext();
-                Parameters[kvp.Key] = kvp.Value.Current;
+                parameter.Value.MoveNext();
+                Context.Parameters[parameter.Key] = parameter.Value.Current;
             }
 
-            results.Add(await LogicalExpression.Accept(evaluationVisitor));
+            results.Add(await LogicalExpression.Accept(visitor).ConfigureAwait(false));
         }
 
         return results;
@@ -362,70 +378,66 @@ public class Expression
 
     private object? IterateParameters(CancellationToken cancellationToken)
     {
-        var parameterEnumerators = ParametersHelper.GetEnumerators(Parameters, out var size);
-
-        var evaluationVisitor = CreateEvaluationVisitor(cancellationToken);
-
+        var parameterEnumerators = ParametersHelper.GetEnumerators(Context.Parameters, out var size);
         if (LogicalExpression is null)
             return null;
 
-        if (size == null)
-            return LogicalExpression.Accept(evaluationVisitor);
+        var visitor = CreateEvaluationVisitor(Context, cancellationToken);
+        if (size is null)
+            return LogicalExpression.Accept(visitor);
 
         var results = new List<object?>(size.Value);
-
         for (var i = 0; i < size; i++)
         {
-            foreach (var kvp in parameterEnumerators)
+            foreach (var parameter in parameterEnumerators)
             {
-                kvp.Value.MoveNext();
-                Parameters[kvp.Key] = kvp.Value.Current;
+                parameter.Value.MoveNext();
+                Context.Parameters[parameter.Key] = parameter.Value.Current;
             }
 
-            results.Add(LogicalExpression.Accept(evaluationVisitor));
+            results.Add(LogicalExpression.Accept(visitor));
         }
 
         return results;
     }
 
     /// <summary>
-    /// Returns a list with all parameter names from the expression.
+    /// Returns all parameter names from the expression.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Parameter names used by the expression.</returns>
     public List<string> GetParameterNames(CancellationToken cancellationToken = default)
     {
-        var parameterExtractionVisitor = new ParameterExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
-        return LogicalExpression.Accept(parameterExtractionVisitor);
+        LogicalExpression ??= CreateLogicalExpression(cancellationToken);
+        return LogicalExpression.Accept(new ParameterExtractionVisitor());
+    }
+
+    private LogicalExpression CreateLogicalExpression(CancellationToken cancellationToken)
+    {
+        return LogicalExpressionFactory.Create(ExpressionString!, ParserOptions, CultureInfo, cancellationToken);
     }
 
     /// <summary>
-    /// Returns a list with all function names from the expression.
+    /// Returns all function names from the expression.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Function names used by the expression.</returns>
     public List<string> GetFunctionNames(CancellationToken cancellationToken = default)
     {
-        var functionExtractionVisitor = new FunctionExtractionVisitor();
-        LogicalExpression ??= LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
-        return LogicalExpression.Accept(functionExtractionVisitor);
+        LogicalExpression ??= CreateLogicalExpression(cancellationToken);
+        return LogicalExpression.Accept(new FunctionExtractionVisitor());
     }
 
     /// <summary>
-    /// Create the LogicalExpression in order to check syntax errors.
-    /// If errors are detected, the Error property contains the exception.
+    /// Creates the logical expression to check for syntax errors.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>True if the expression syntax is correct, otherwise False.</returns>
+    /// <returns><c>true</c> if errors were detected; otherwise, <c>false</c>.</returns>
     [MemberNotNullWhen(true, nameof(Error))]
     public bool HasErrors(CancellationToken cancellationToken = default)
     {
         try
         {
             Error = null;
-            LogicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
-
-            // In case HasErrors() is called multiple times for the same expression
-            return LogicalExpression != null && Error != null;
+            LogicalExpression = CreateLogicalExpression(cancellationToken);
+            return false;
         }
         catch (Exception exception)
         {
@@ -434,54 +446,55 @@ public class Expression
         }
     }
 
+    /// <summary>
+    /// Gets the parsed logical expression, using the cache when enabled.
+    /// </summary>
+    /// <returns>The parsed logical expression, or <c>null</c> when parsing fails.</returns>
     public LogicalExpression? GetLogicalExpression(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(ExpressionString))
         {
-            if (Options.HasFlag(ExpressionOptions.AllowNullOrEmptyExpressions))
-            {
+            if (EvaluationOptions.AllowNullOrEmptyExpressions)
                 return ExpressionString?.Length == 0 ? new ValueExpression(string.Empty) : null;
-            }
 
             throw new NCalcException($"{nameof(ExpressionString)} cannot be null or empty.");
         }
 
-        var isCacheEnabled = !Options.HasFlag(ExpressionOptions.NoCache);
-
-        LogicalExpression? logicalExpression = null;
-
-        if (isCacheEnabled && LogicalExpressionCache.TryGetValue(ExpressionString!, out logicalExpression))
-            return logicalExpression!;
+        if (Configuration.CacheEnabled && LogicalExpressionCache.TryGetValue(ExpressionString!, out var cached))
+            return cached;
 
         try
         {
             Error = null;
-
-            logicalExpression = LogicalExpressionFactory.Create(ExpressionString!, CultureInfo, Context.Options, cancellationToken);
-            if (isCacheEnabled)
-                LogicalExpressionCache.Set(ExpressionString!, logicalExpression);
+            var expression = CreateLogicalExpression(cancellationToken);
+            if (Configuration.CacheEnabled)
+                LogicalExpressionCache.Set(ExpressionString!, expression);
+            return expression;
         }
         catch (Exception exception)
         {
             Error = exception;
+            return null;
         }
-
-        return logicalExpression;
     }
 
+    /// <summary>
+    /// Returns the normalized expression string.
+    /// </summary>
+    /// <param name="evaluateParameters">Whether parameter values should be substituted.</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The expression string.</returns>
     public string ToExpressionString(bool evaluateParameters = false, CancellationToken cancellationToken = default)
     {
         var logicalExpression = GetLogicalExpression(cancellationToken);
-
         if (Error is not null)
             throw Error;
-
         if (logicalExpression is null)
             return string.Empty;
-
         if (!evaluateParameters)
             return logicalExpression.ToExpressionString();
 
-        return logicalExpression.Accept(new ParameterSubstitutionVisitor(Context, cancellationToken)).TrimEnd();
+        return logicalExpression.Accept(new ParameterSubstitutionVisitor(Context, EvaluationOptions, cancellationToken))
+            .TrimEnd();
     }
 }

@@ -10,7 +10,13 @@ By creating a custom evaluation visitor, you can modify how specific expressions
 example overrides the behavior of value expressions, returning a special string when encountering the number `42`:
 
 ```csharp
-private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
+private class CustomVisitor(
+    ExpressionContext context,
+    ExpressionEvaluationOptions options,
+    CultureInfo cultureInfo,
+    IEvaluationVisitorFactory? evaluationVisitorFactory = null,
+    CancellationToken cancellationToken = default)
+    : EvaluationVisitor(context, options, cultureInfo, evaluationVisitorFactory, cancellationToken)
 {
     public override object? Visit(ValueExpression expression)
     {
@@ -28,7 +34,13 @@ same configuration.
 If you also need to customize the async path, you can apply the same pattern:
 
 ```csharp
-private class CustomAsyncVisitor(ExpressionContext context) : AsyncEvaluationVisitor(context)
+private class CustomAsyncVisitor(
+    ExpressionContext context,
+    ExpressionEvaluationOptions options,
+    CultureInfo cultureInfo,
+    IEvaluationVisitorFactory? evaluationVisitorFactory = null,
+    CancellationToken cancellationToken = default)
+    : AsyncEvaluationVisitor(context, options, cultureInfo, evaluationVisitorFactory, cancellationToken)
 {
     public override Task<object?> Visit(ValueExpression expression)
     {
@@ -48,14 +60,22 @@ visitors from there.
 ```csharp
 private class CustomEvaluationVisitorFactory : IEvaluationVisitorFactory
 {
-    public EvaluationVisitor CreateEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+    public EvaluationVisitor CreateEvaluationVisitor(
+        ExpressionContext context,
+        ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo,
+        CancellationToken cancellationToken = default)
     {
-        return new CustomVisitor(context, this, cancellationToken);
+        return new CustomVisitor(context, options, cultureInfo, this, cancellationToken);
     }
 
-    public AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+    public AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(
+        ExpressionContext context,
+        ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo,
+        CancellationToken cancellationToken = default)
     {
-        return new CustomAsyncVisitor(context, this, cancellationToken);
+        return new CustomAsyncVisitor(context, options, cultureInfo, this, cancellationToken);
     }
 }
 ```
@@ -68,28 +88,32 @@ This is useful when a custom expression type must inject additional state or cha
 ```csharp
 internal class CustomExpression(
     string expression,
-    ExpressionContext context,
+    ExpressionConfiguration configuration,
     ILogicalExpressionFactory logicalExpressionFactory,
-    ILogicalExpressionCache cache) : Expression(expression, context, logicalExpressionFactory, cache)
+    ILogicalExpressionCache cache) : Expression(expression, configuration, logicalExpressionFactory, cache)
 {
     public CustomExpression(
         LogicalExpression logicalExpression,
-        ExpressionContext context,
+        ExpressionConfiguration configuration,
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache cache)
-        : this(string.Empty, context, logicalExpressionFactory, cache)
+        : this(string.Empty, configuration, logicalExpressionFactory, cache)
     {
         LogicalExpression = logicalExpression;
     }
 
-    protected override EvaluationVisitor CreateEvaluationVisitor(CancellationToken cancellationToken = default)
+    protected override EvaluationVisitor CreateEvaluationVisitor(
+        ExpressionContext context,
+        CancellationToken cancellationToken = default)
     {
-        return new CustomVisitor(Context, EvaluationVisitorFactory, cancellationToken);
+        return new CustomVisitor(context, EvaluationOptions, CultureInfo, EvaluationVisitorFactory, cancellationToken);
     }
 
-    protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(CancellationToken cancellationToken = default)
+    protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(
+        ExpressionContext context,
+        CancellationToken cancellationToken = default)
     {
-        return new CustomAsyncVisitor(Context, EvaluationVisitorFactory, cancellationToken);
+        return new CustomAsyncVisitor(context, EvaluationOptions, CultureInfo, EvaluationVisitorFactory, cancellationToken);
     }
 }
 ```

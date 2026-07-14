@@ -19,8 +19,7 @@ public class CpuBoundEvaluationBenchmark
     public void Setup()
     {
         var logicalExpression = LogicalExpressionFactory.Create(
-            "if(is_valid(a), calc(a, b), 0) + if(is_valid(c), calc(c, d), 0) + if(a > b, calc(a, c), calc(b, d))",
-            ExpressionOptions.NoCache);
+            "if(is_valid(a), calc(a, b), 0) + if(is_valid(c), calc(c, d), 0) + if(a > b, calc(a, c), calc(b, d))");
         var expression = new Expression(logicalExpression, ExpressionOptions.NoCache)
         {
             Parameters =

@@ -2,7 +2,7 @@ using NCalc.Exceptions;
 using Parlot;
 using Parlot.Fluent;
 
-namespace NCalc.Parser;
+namespace NCalc;
 
 /// <summary>
 /// Class responsible for parsing strings into <see cref="LogicalExpression"/> objects.
@@ -10,7 +10,7 @@ namespace NCalc.Parser;
 public static class LogicalExpressionParser
 {
     // Cache for different parser configurations
-    private static readonly ConcurrentDictionary<LogicalExpressionParserOptions, Parser<LogicalExpression>> ParserCache = new();
+    private static readonly ConcurrentDictionary<LogicalExpressionParserCacheKey, Parser<LogicalExpression>> ParserCache = new();
 
     private static readonly ValueExpression True = new(true);
     private static readonly ValueExpression False = new(false);
@@ -20,14 +20,13 @@ public static class LogicalExpressionParser
 
     private const string InvalidTokenMessage = "Invalid token in expression";
 
-    /// <summary>
-    /// Creates or retrieves a cached expression parser with the specified options.
-    /// </summary>
-    /// <param name="options">The parser options containing culture info and argument separator.</param>
-    /// <returns>A parser configured with the specified options.</returns>
-    public static Parser<LogicalExpression> GetOrCreateExpressionParser(LogicalExpressionParserOptions options)
+    public static Parser<LogicalExpression> GetOrCreateExpressionParser(
+        LogicalExpressionParserOptions options,
+        CultureInfo culture)
     {
-        return ParserCache.GetOrAdd(options, CreateExpressionParser);
+        var key = new LogicalExpressionParserCacheKey(options, culture);
+
+        return ParserCache.GetOrAdd(key, _ => CreateExpressionParser(options, culture));
     }
 
     /// <summary>
@@ -36,23 +35,23 @@ public static class LogicalExpressionParser
     /// <param name="separator">The ArgumentSeparator enum value.</param>
     /// <returns>The character representation of the separator.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the separator value is not a valid ArgumentSeparator enum value.</exception>
-    private static char[] GetSeparatorChars(LogicalExpressionArgumentSeparator separator)
+    private static char[] GetSeparatorChars(ArgumentSeparator separator)
     {
         var separators = new List<char>();
 
-        if (separator == LogicalExpressionArgumentSeparator.Default)
+        if (separator == ArgumentSeparator.Default)
         {
             separators.Add(',');
         }
         else
         {
-            if (separator.HasFlag(LogicalExpressionArgumentSeparator.Semicolon))
+            if (separator.HasFlag(ArgumentSeparator.Semicolon))
                 separators.Add(';');
 
-            if (separator.HasFlag(LogicalExpressionArgumentSeparator.Comma))
+            if (separator.HasFlag(ArgumentSeparator.Comma))
                 separators.Add(',');
 
-            if (separator.HasFlag(LogicalExpressionArgumentSeparator.Colon))
+            if (separator.HasFlag(ArgumentSeparator.Colon))
                 separators.Add(':');
         }
 
@@ -75,11 +74,10 @@ public static class LogicalExpressionParser
     /// <summary>
     /// Creates a new expression parser with the specified options.
     /// </summary>
-    /// <param name="options">The parser options containing culture info and argument separator.</param>
     /// <returns>A new parser configured with the specified options.</returns>
-    private static Parser<LogicalExpression> CreateExpressionParser(LogicalExpressionParserOptions options)
+    private static Parser<LogicalExpression> CreateExpressionParser(LogicalExpressionParserOptions options, CultureInfo cultureInfo)
     {
-        return CreateExpressionParser(options.CultureInfo, GetSeparatorChars(options.ArgumentSeparator));
+        return CreateExpressionParser(cultureInfo, GetSeparatorChars(options.ArgumentSeparator));
     }
 
     private static Parser<LogicalExpression> CreateStringValueParser(char quote, bool allowCharValues)
@@ -187,30 +185,27 @@ public static class LogicalExpressionParser
             .Then<LogicalExpression>(static d => new ValueExpression(d));
 
         var doubleNumber = Terms.Number<double>(NumberOptions.Float)
-            .Then<LogicalExpression>(static (ctx, val) =>
+            .Then<LogicalExpression>(static d => new ValueExpression(d));
+
+        var decimalFallbackNumber = Terms.Number<double>(NumberOptions.Float)
+            .Then<LogicalExpression>(static val =>
             {
-                bool useDecimal = ((LogicalExpressionParserContext)ctx).ParserOptions.DecimalAsDefault;
-                if (useDecimal)
+                return val switch
                 {
-                    if (val > MaxDecDouble)
-                        return new ValueExpression(double.PositiveInfinity);
-
-                    if (val < MinDecDouble)
-                        return new ValueExpression(double.NegativeInfinity);
-
-                    return new ValueExpression((decimal)val);
-                }
-
-                return new ValueExpression(val);
+                    > MaxDecDouble => new ValueExpression(double.PositiveInfinity),
+                    < MinDecDouble => new ValueExpression(double.NegativeInfinity),
+                    _ => new ValueExpression((decimal)val)
+                };
             });
 
-        var decimalOrDouble = OneOf(decimalNumber, doubleNumber);
-        var decimalOrDoubleNumber = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
+        var decimalOrDouble = OneOf(decimalNumber, decimalFallbackNumber);
+        var decimalOrDoubleNumber = Select<LogicalExpressionParseContext, LogicalExpression>(ctx =>
         {
-            if (ctx.ParserOptions.DecimalAsDefault)
-                return decimalOrDouble;
-
-            return doubleNumber;
+            return ctx.Options.FloatingPointNumberType switch
+            {
+                FloatingPointNumberType.Decimal => decimalOrDouble,
+                _ => doubleNumber
+            };
         });
 
         var argumentSeparatorTerm = CreateSeparatorParser(argumentSeparator);
@@ -297,8 +292,8 @@ public static class LogicalExpressionParser
         var booleanFalse = Terms.Text("false", true)
             .Then<LogicalExpression>(False);
 
-        var singleQuotesStringValue = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
-            CreateStringValueParser('\'', ctx.ParserOptions.AllowCharValues));
+        var singleQuotesStringValue = Select<LogicalExpressionParseContext, LogicalExpression>(ctx =>
+            CreateStringValueParser('\'', ctx.Options.AllowCharValues));
 
         var doubleQuotesStringValue = CreateStringValueParser('"', false);
 
@@ -415,12 +410,13 @@ public static class LogicalExpressionParser
 
         var intOrLong = OneOf(intNumber, longNumber);
 
-        var integralNumber = Select<LogicalExpressionParserContext, LogicalExpression>(ctx =>
+        var integralNumber = Select<LogicalExpressionParseContext, LogicalExpression>(ctx =>
         {
-            if (ctx.ParserOptions.LongAsDefault)
-                return longNumber;
-
-            return intOrLong;
+            return ctx.Options.IntegerNumberType switch
+            {
+                IntegerNumberType.Int64 => longNumber,
+                _ => intOrLong
+            };
         });
 
         // primary => GUID | NUMBER | identifier | DateTime | string | function | boolean | groupExpression | list ;
@@ -584,9 +580,9 @@ public static class LogicalExpressionParser
         return result;
     }
 
-    public static LogicalExpression Parse(LogicalExpressionParserContext context)
+    public static LogicalExpression Parse(LogicalExpressionParseContext context, CultureInfo? culture = null)
     {
-        var parser =  GetOrCreateExpressionParser(context.ParserOptions);
+        var parser = GetOrCreateExpressionParser(context.Options, culture ?? CultureInfo.CurrentCulture);
 
         if (parser.TryParse(context, out var result, out var error))
             return result;

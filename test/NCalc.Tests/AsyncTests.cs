@@ -1,6 +1,5 @@
 ﻿using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Parser;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NCalc.Tests;
@@ -303,9 +302,9 @@ public class AsyncTests
     [Test]
     public async Task ShouldEvaluateIfFalseBranchWhenIteratedConditionComparesNaNAsync()
     {
-        var logicalExpression = LogicalExpressionParser.Parse(new LogicalExpressionParserContext(
+        var logicalExpression = LogicalExpressionParser.Parse(new LogicalExpressionParseContext(
             "if((A - B) < 1; 0; (A - B))",
-            new LogicalExpressionParserOptions { ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon }));
+            new LogicalExpressionParserOptions { ArgumentSeparator = ArgumentSeparator.Semicolon }));
         var expression = new Expression(logicalExpression, ExpressionOptions.IterateParameters)
         {
             Parameters =

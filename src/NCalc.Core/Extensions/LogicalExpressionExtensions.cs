@@ -6,16 +6,6 @@ public static class LogicalExpressionExtensions
 {
     extension(LogicalExpression expression)
     {
-        public Task<object?> EvaluateAsync(ExpressionContext context, CancellationToken cancellationToken = default)
-        {
-            return expression.Accept(new AsyncEvaluationVisitor(context, cancellationToken: cancellationToken));
-        }
-
-        public object? Evaluate(ExpressionContext context, CancellationToken cancellationToken = default)
-        {
-            return expression.Accept(new EvaluationVisitor(context, cancellationToken: cancellationToken));
-        }
-
         public string ToExpressionString()
         {
             return expression.Accept(new SerializationVisitor()).TrimEnd();

@@ -15,36 +15,31 @@ public static partial class TypeHelper
         }
     }
 
-    public static bool HasNullOrTypeConflict(object? a, object? b, ExpressionOptions options)
+    public static bool HasNullOrTypeConflict(object? a, object? b, bool strictTypeMatching)
     {
         var na = IsNullOrWhiteSpace(a);
         var nb = IsNullOrWhiteSpace(b);
 
-        if (options.HasFlag(ExpressionOptions.StrictTypeMatching) && !na && !nb && a!.GetType() != b!.GetType())
+        if (strictTypeMatching && !na && !nb && a!.GetType() != b!.GetType())
             return true;
 
         return na != nb;
     }
 
-    public static StringComparer GetStringComparer(ComparisonOptions options)
+    public static bool IsOrdinal(StringComparer comparer)
     {
-        return options.IsOrdinal switch
-        {
-            true when options.IsCaseInsensitive => StringComparer.OrdinalIgnoreCase,
-            true => StringComparer.Ordinal,
-            false when options.IsCaseInsensitive => StringComparer.CurrentCultureIgnoreCase,
-            _ => StringComparer.CurrentCulture
-        };
+        return ReferenceEquals(comparer, StringComparer.Ordinal) ||
+               ReferenceEquals(comparer, StringComparer.OrdinalIgnoreCase);
     }
 
-    public static ComparisonResult CompareUsingMostPreciseType(object? a, object? b, ComparisonOptions options)
+    public static ComparisonResult CompareUsingMostPreciseType(object? a, object? b, StringComparer stringComparer, CultureInfo cultureInfo)
     {
         var mpt = GetMostPreciseType(a?.GetType(), b?.GetType());
 
         if (mpt == typeof(double))
         {
-            var left = Convert.ToDouble(a, options.CultureInfo);
-            var right = Convert.ToDouble(b, options.CultureInfo);
+            var left = Convert.ToDouble(a, cultureInfo);
+            var right = Convert.ToDouble(b, cultureInfo);
 
             if (double.IsNaN(left) || double.IsNaN(right))
                 return ComparisonResult.Unordered;
@@ -59,8 +54,8 @@ public static partial class TypeHelper
 
         if (mpt == typeof(float))
         {
-            var left = Convert.ToSingle(a, options.CultureInfo);
-            var right = Convert.ToSingle(b, options.CultureInfo);
+            var left = Convert.ToSingle(a, cultureInfo);
+            var right = Convert.ToSingle(b, cultureInfo);
 
             if (float.IsNaN(left) || float.IsNaN(right))
                 return ComparisonResult.Unordered;
@@ -73,12 +68,10 @@ public static partial class TypeHelper
             };
         }
 
-        var aValue = a != null ? Convert.ChangeType(a, mpt, options.CultureInfo) : null;
-        var bValue = b != null ? Convert.ChangeType(b, mpt, options.CultureInfo) : null;
+        var aValue = a != null ? Convert.ChangeType(a, mpt, cultureInfo) : null;
+        var bValue = b != null ? Convert.ChangeType(b, mpt, cultureInfo) : null;
 
-        var comparer = GetStringComparer(options);
-
-        return comparer.Compare(aValue, bValue) switch
+        return stringComparer.Compare(aValue, bValue) switch
         {
             < 0 => ComparisonResult.Less,
             > 0 => ComparisonResult.Greater,

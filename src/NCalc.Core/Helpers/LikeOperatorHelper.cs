@@ -33,31 +33,27 @@ public static class LikeOperatorHelper
     /// </summary>
     /// <param name="leftValue">The left operand.</param>
     /// <param name="rightValue">The right operand.</param>
-    /// <param name="context">The context containing options for the comparison.</param>
+    /// <param name="stringComparer">The comparer used for literal comparison.</param>
     /// <returns>
     /// <c>true</c> if the value matches the pattern; otherwise, <c>false</c>.
     /// </returns>
-    /// <remarks>
-    /// The comparison is case-insensitive if the <see cref="ExpressionOptions.CaseInsensitiveStringComparer"/> flag is set in the <paramref name="context"/>.
-    /// </remarks>
-    public static bool Like(object? leftValue, object? rightValue, ExpressionContext context)
+    public static bool Like(object? leftValue, object? rightValue, StringComparer stringComparer)
     {
         if (leftValue == null || rightValue == null)
             return false;
 
         var value = leftValue.ToString()!;
         var pattern = rightValue.ToString()!;
-        var comparisonOptions = context.ComparisonOptions;
-
-        return Like(value, pattern, comparisonOptions.IsCaseInsensitive, comparisonOptions.IsOrdinal, comparisonOptions.CultureInfo);
+        return Like(value, pattern, stringComparer);
     }
 
-    public static bool Like(string? value, string? pattern, bool ignoreCase, bool isOrdinal, CultureInfo cultureInfo)
+    public static bool Like(string? value, string? pattern, StringComparer stringComparer)
     {
         if (value == null || pattern == null)
             return false;
 
-        if (!isOrdinal)
+        //todo: i dont like this
+        if (!TypeHelper.IsOrdinal(stringComparer))
         {
             value = value.Normalize(NormalizationForm.FormC);
             pattern = pattern.Normalize(NormalizationForm.FormC);
@@ -95,22 +91,9 @@ public static class LikeOperatorHelper
                     patternAdvance++;
                 }
 
-                bool charactersEqual;
-                if (!ignoreCase)
-                {
-                    charactersEqual = value[valueIndex] == pattern[literalIndex];
-                }
-                else
-                {
-                    charactersEqual = cultureInfo.CompareInfo.Compare(
-                        value,
-                        valueIndex,
-                        1,
-                        pattern,
-                        literalIndex,
-                        1,
-                        CompareOptions.IgnoreCase) == 0;
-                }
+                var charactersEqual = stringComparer.Equals(
+                    value.Substring(valueIndex, 1),
+                    pattern.Substring(literalIndex, 1));
 
                 if (charactersEqual)
                 {

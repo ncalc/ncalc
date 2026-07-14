@@ -24,6 +24,21 @@ At your `Program.cs` simply:
 ```cs
 builder.Services.AddNCalc();
 
+builder.Services.AddSingleton(new ExpressionConfiguration
+{
+    Parsing = new LogicalExpressionParserOptions
+    {
+        FloatingPointNumberType = FloatingPointNumberType.Decimal
+    },
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        Math = new MathOptions
+        {
+            FloatingPointNumberType = FloatingPointNumberType.Decimal
+        }
+    }
+});
+
 builder.Services.AddTransient<MyService>(); // This is just an example.
 ```
 
@@ -32,12 +47,15 @@ You will need to use <xref:NCalc.Factories.IExpressionFactory> to create express
 ```cs
 using NCalc.Factories
 
-public class MyService(IExpressionFactory expressionFactory)
+public class MyService(
+    IExpressionFactory expressionFactory,
+    ExpressionConfiguration configuration)
 {
     public object? EvaluateExpression(string expressionString)
     {
-        var expression = expressionFactory.Create(expression, ExpressionOptions.DecimalAsDefault);
-        return expression.Evaluate(expressionString);
+        var expression = expressionFactory.Create(expressionString, configuration);
+
+        return expression.Evaluate();
     }
 }
 ```
@@ -51,6 +69,22 @@ Use this method to specify a custom implementation of <xref:NCalc.Factories.IExp
 responsible for creating
 <xref:NCalc.Expression> objets that NCalc will evaluate. You can for example create a custom implementation with an
 object pool to re-use expression objects.
+
+`IExpressionFactory.Create` accepts an <xref:NCalc.ExpressionConfiguration>. Runtime state such as parameters and
+functions should be assigned through the returned expression context:
+
+```csharp
+var configuration = new ExpressionConfiguration
+{
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        StringComparer = StringComparer.OrdinalIgnoreCase
+    }
+};
+
+var expression = expressionFactory.Create("name == 'admin'", configuration);
+expression.Parameters["name"] = "Admin";
+```
 
 ### `WithCache`
 

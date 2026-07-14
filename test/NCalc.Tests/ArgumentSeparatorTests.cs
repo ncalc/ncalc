@@ -1,5 +1,4 @@
 using NCalc.Exceptions;
-using NCalc.Parser;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;
@@ -7,20 +6,20 @@ namespace NCalc.Tests;
 public class ArgumentSeparatorTests
 {
     [Test]
-    [Arguments("Max(1, 2)", 2, LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments("Max(1; 2)", 2, LogicalExpressionArgumentSeparator.Semicolon)]
-    [Arguments("Min(3, 1)", 1, LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments("Min(3; 1)", 1, LogicalExpressionArgumentSeparator.Semicolon)]
-    [Arguments("Round(3.14159, 2)", 3.14, LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments("Round(3.14159; 2)", 3.14, LogicalExpressionArgumentSeparator.Semicolon)]
-    public async Task Should_Parse_Functions_With_Different_Separators(string expression, double expected, LogicalExpressionArgumentSeparator separator)
+    [Arguments("Max(1, 2)", 2, ArgumentSeparator.Comma)]
+    [Arguments("Max(1; 2)", 2, ArgumentSeparator.Semicolon)]
+    [Arguments("Min(3, 1)", 1, ArgumentSeparator.Comma)]
+    [Arguments("Min(3; 1)", 1, ArgumentSeparator.Semicolon)]
+    [Arguments("Round(3.14159, 2)", 3.14, ArgumentSeparator.Comma)]
+    [Arguments("Round(3.14159; 2)", 3.14, ArgumentSeparator.Semicolon)]
+    public async Task Should_Parse_Functions_With_Different_Separators(string expression, double expected, ArgumentSeparator separator)
     {
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -32,18 +31,18 @@ public class ArgumentSeparatorTests
     }
 
     [Test]
-    [Arguments("if(true, 'yes', 'no')", "yes", LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments("if(true; 'yes'; 'no')", "yes", LogicalExpressionArgumentSeparator.Semicolon)]
-    [Arguments("if(1 > 2, 10, 20)", 20, LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments("if(1 > 2; 10; 20)", 20, LogicalExpressionArgumentSeparator.Semicolon)]
-    public async Task Should_Parse_Conditional_Functions_With_Different_Separators(string expression, object expected, LogicalExpressionArgumentSeparator separator)
+    [Arguments("if(true, 'yes', 'no')", "yes", ArgumentSeparator.Comma)]
+    [Arguments("if(true; 'yes'; 'no')", "yes", ArgumentSeparator.Semicolon)]
+    [Arguments("if(1 > 2, 10, 20)", 20, ArgumentSeparator.Comma)]
+    [Arguments("if(1 > 2; 10; 20)", 20, ArgumentSeparator.Semicolon)]
+    public async Task Should_Parse_Conditional_Functions_With_Different_Separators(string expression, object expected, ArgumentSeparator separator)
     {
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -54,18 +53,18 @@ public class ArgumentSeparatorTests
     }
 
     [Test]
-    [Arguments("Max(1, 2)", LogicalExpressionArgumentSeparator.Semicolon)] // Using comma in expression but semicolon separator
-    [Arguments("Max(1; 2)", LogicalExpressionArgumentSeparator.Comma)] // Using semicolon in expression but comma separator
-    [Arguments("Min(1, 2)", LogicalExpressionArgumentSeparator.Semicolon)] // Multiple arguments with wrong separator
-    [Arguments("Round(3.14; 2)", LogicalExpressionArgumentSeparator.Comma)] // Different function with wrong separator
-    public void Should_Throw_Exception_With_Incorrect_Separator(string expression, LogicalExpressionArgumentSeparator separator)
+    [Arguments("Max(1, 2)", ArgumentSeparator.Semicolon)] // Using comma in expression but semicolon separator
+    [Arguments("Max(1; 2)", ArgumentSeparator.Comma)] // Using semicolon in expression but comma separator
+    [Arguments("Min(1, 2)", ArgumentSeparator.Semicolon)] // Multiple arguments with wrong separator
+    [Arguments("Round(3.14; 2)", ArgumentSeparator.Comma)] // Different function with wrong separator
+    public void Should_Throw_Exception_With_Incorrect_Separator(string expression, ArgumentSeparator separator)
     {
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act & Assert
         Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse(context));
@@ -77,19 +76,19 @@ public class ArgumentSeparatorTests
         // Arrange
         var commaOptions = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Comma
+            ArgumentSeparator = ArgumentSeparator.Comma
         };
         var semicolonOptions = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
 
         var commaExpression = "Max(1, 2)";
         var semicolonExpression = "Max(3; 4)";
 
-        var commaContext = new LogicalExpressionParserContext(commaExpression, commaOptions);
+        var commaContext = new LogicalExpressionParseContext(commaExpression, commaOptions);
 
-        var semicolonContext = new LogicalExpressionParserContext(semicolonExpression, semicolonOptions);
+        var semicolonContext = new LogicalExpressionParseContext(semicolonExpression, semicolonOptions);
 
         // Act
         var commaResult = LogicalExpressionParser.Parse(commaContext);
@@ -107,27 +106,31 @@ public class ArgumentSeparatorTests
     public async Task Should_Cache_Parsers_For_Different_Separator_Options()
     {
         // Arrange
+        var culture = CultureInfo.InvariantCulture;
+
         var options1 = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Comma
+            ArgumentSeparator = ArgumentSeparator.Comma
         };
+
         var options2 = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
+
         var options3 = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Comma
-        }; // Same as options1
+            ArgumentSeparator = ArgumentSeparator.Comma
+        };
 
         // Act
-        var parser1 = LogicalExpressionParser.GetOrCreateExpressionParser(options1);
-        var parser2 = LogicalExpressionParser.GetOrCreateExpressionParser(options2);
-        var parser3 = LogicalExpressionParser.GetOrCreateExpressionParser(options3);
+        var parser1 = LogicalExpressionParser.GetOrCreateExpressionParser(options1, culture);
+        var parser2 = LogicalExpressionParser.GetOrCreateExpressionParser(options2, culture);
+        var parser3 = LogicalExpressionParser.GetOrCreateExpressionParser(options3, culture);
 
         // Assert
-        await Assert.That(parser2).IsNotSameReferenceAs(parser1); // Different separators should have different parsers
-        await Assert.That(parser3).IsSameReferenceAs(parser1); // Same options should return cached parser
+        await Assert.That(parser2).IsNotSameReferenceAs(parser1);
+        await Assert.That(parser3).IsSameReferenceAs(parser1);
     }
 
     [Test]
@@ -135,13 +138,16 @@ public class ArgumentSeparatorTests
     {
         // Arrange
         var germanCulture = new CultureInfo("de-DE");
-        var options = new LogicalExpressionParserOptions(germanCulture, LogicalExpressionArgumentSeparator.Semicolon);
+        var options = new LogicalExpressionParserOptions()
+        {
+            ArgumentSeparator = ArgumentSeparator.Semicolon
+        };
         var expression = "Max(1.5; 2.3)"; // Using dots for decimals to avoid confusion with argument separator
 
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
-        var result = LogicalExpressionParser.Parse(context);
+        var result = LogicalExpressionParser.Parse(context, germanCulture);
         var evaluationResult = new Expression(result).Evaluate(CancellationToken.None);
         // TODO: TUnit migration - xUnit Assert.Equal had additional argument(s) (precision: 1) that could not be converted.
 
@@ -150,10 +156,10 @@ public class ArgumentSeparatorTests
     }
 
     [Test]
-    [Arguments(LogicalExpressionArgumentSeparator.Comma)]
-    [Arguments(LogicalExpressionArgumentSeparator.Semicolon)]
-    [Arguments(LogicalExpressionArgumentSeparator.Colon)]
-    public async Task Should_Support_Various_Separator_Characters(LogicalExpressionArgumentSeparator separator)
+    [Arguments(ArgumentSeparator.Comma)]
+    [Arguments(ArgumentSeparator.Semicolon)]
+    [Arguments(ArgumentSeparator.Colon)]
+    public async Task Should_Support_Various_Separator_Characters(ArgumentSeparator separator)
     {
         // Arrange
         var options = new LogicalExpressionParserOptions
@@ -162,14 +168,14 @@ public class ArgumentSeparatorTests
         };
         var separatorChar = separator switch
         {
-            LogicalExpressionArgumentSeparator.Comma => ',',
-            LogicalExpressionArgumentSeparator.Semicolon => ';',
-            LogicalExpressionArgumentSeparator.Colon => ':',
+            ArgumentSeparator.Comma => ',',
+            ArgumentSeparator.Semicolon => ';',
+            ArgumentSeparator.Colon => ':',
             _ => ';'
         };
         var expression = $"Max(1{separatorChar}3)";
 
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -184,7 +190,7 @@ public class ArgumentSeparatorTests
     {
         // Arrange
         const string expression = "Max(2, 3)";
-        var context = new LogicalExpressionParserContext(expression);
+        var context = new LogicalExpressionParseContext(expression);
         // Not setting ParserOptions should default to comma separator
 
         // Act
@@ -202,9 +208,9 @@ public class ArgumentSeparatorTests
         const string expression = "Max(2; 3)";
         var options = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -220,11 +226,11 @@ public class ArgumentSeparatorTests
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
         var expression = "Max(Min(1; 2); Max(3; 4))";
 
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -235,18 +241,18 @@ public class ArgumentSeparatorTests
     }
 
     [Test]
-    [Arguments("Max(1 , 2)", LogicalExpressionArgumentSeparator.Comma)] // Spaces around separator
-    [Arguments("Max(1 ; 2)", LogicalExpressionArgumentSeparator.Semicolon)]
-    [Arguments("Max( 1, 2 )", LogicalExpressionArgumentSeparator.Comma)]  // Spaces around arguments
-    [Arguments("Max( 1; 2 )", LogicalExpressionArgumentSeparator.Semicolon)]
-    public async Task Should_Handle_Whitespace_Around_Separators(string expression, LogicalExpressionArgumentSeparator separator)
+    [Arguments("Max(1 , 2)", ArgumentSeparator.Comma)] // Spaces around separator
+    [Arguments("Max(1 ; 2)", ArgumentSeparator.Semicolon)]
+    [Arguments("Max( 1, 2 )", ArgumentSeparator.Comma)]  // Spaces around arguments
+    [Arguments("Max( 1; 2 )", ArgumentSeparator.Semicolon)]
+    public async Task Should_Handle_Whitespace_Around_Separators(string expression, ArgumentSeparator separator)
     {
         // Arrange
         var options = new LogicalExpressionParserOptions
         {
             ArgumentSeparator = separator
         };
-        var context = new LogicalExpressionParserContext(expression, options);
+        var context = new LogicalExpressionParseContext(expression, options);
 
         // Act
         var result = LogicalExpressionParser.Parse(context);
@@ -262,16 +268,16 @@ public class ArgumentSeparatorTests
         // Arrange
         var commaOptions = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Comma
+            ArgumentSeparator = ArgumentSeparator.Comma
         };
         var semicolonOptions = new LogicalExpressionParserOptions
         {
-            ArgumentSeparator = LogicalExpressionArgumentSeparator.Semicolon
+            ArgumentSeparator = ArgumentSeparator.Semicolon
         };
         var expression = "Abs(-5)"; // Single argument function
 
-        var commaContext = new LogicalExpressionParserContext(expression, commaOptions);
-        var semicolonContext = new LogicalExpressionParserContext(expression, semicolonOptions);
+        var commaContext = new LogicalExpressionParseContext(expression, commaOptions);
+        var semicolonContext = new LogicalExpressionParseContext(expression, semicolonOptions);
 
         // Act
         var commaResult = LogicalExpressionParser.Parse(commaContext);
@@ -288,7 +294,7 @@ public class ArgumentSeparatorTests
     [Test]
     public async Task Should_Support_Multiple_Separators_In_One_Parser()
     {
-        var argumentSeparators = LogicalExpressionArgumentSeparator.Comma | LogicalExpressionArgumentSeparator.Semicolon;
+        var argumentSeparators = ArgumentSeparator.Comma | ArgumentSeparator.Semicolon;
 
         // Arrange
         var argumentOptions = new LogicalExpressionParserOptions
@@ -299,9 +305,9 @@ public class ArgumentSeparatorTests
         var commaExpression = "Max(1, 2)";
         var semicolonExpression = "Max(3; 4)";
 
-        var commaContext = new LogicalExpressionParserContext(commaExpression, argumentOptions);
+        var commaContext = new LogicalExpressionParseContext(commaExpression, argumentOptions);
 
-        var semicolonContext = new LogicalExpressionParserContext(semicolonExpression, argumentOptions);
+        var semicolonContext = new LogicalExpressionParseContext(semicolonExpression, argumentOptions);
 
         // Act
         var commaResult = LogicalExpressionParser.Parse(commaContext);

@@ -10,7 +10,7 @@ public class LikeOperatorTests
     public async Task ShouldMatchSingleCharacterUsingLike()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C";
+        context.Parameters["LEP_COD_SAP_PROD"] = "A1B2C";
 
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B2C'", context))
             .Expression<bool>().IsTrue();
@@ -20,7 +20,7 @@ public class LikeOperatorTests
     public async Task ShouldNotMatchWhenSingleCharacterDoesNotMatch()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C";
+        context.Parameters["LEP_COD_SAP_PROD"] = "A1B2C";
 
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_12C'", context))
             .Expression<bool>().IsFalse();
@@ -30,7 +30,7 @@ public class LikeOperatorTests
     public async Task ShouldMatchAtStartUsingSingleCharacterWildcard()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "X12345";
+        context.Parameters["LEP_COD_SAP_PROD"] = "X12345";
 
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '_12345'", context))
             .Expression<bool>().IsTrue();
@@ -40,7 +40,7 @@ public class LikeOperatorTests
     public async Task ShouldMatchAtEndUsingMultipleCharactersWildcard()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "ABCX23YZ";
+        context.Parameters["LEP_COD_SAP_PROD"] = "ABCX23YZ";
 
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'ABCX__YZ'", context))
             .Expression<bool>().IsTrue();
@@ -50,7 +50,7 @@ public class LikeOperatorTests
     public async Task ShouldMatchMultipleWildcardsInString()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "A1B2C3D";
+        context.Parameters["LEP_COD_SAP_PROD"] = "A1B2C3D";
 
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B_C_D'", context))
             .Expression<bool>().IsTrue();
@@ -60,7 +60,7 @@ public class LikeOperatorTests
     public async Task ShouldNotMatchWhenStringLengthDiffers()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC";
+        context.Parameters["LEP_COD_SAP_PROD"] = "ABC";
 
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE 'A_B'", context))
             .Expression<bool>().IsFalse();
@@ -70,7 +70,7 @@ public class LikeOperatorTests
     public async Task ShouldEvaluateLikeOperatorWithWildcardAtEnd()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
+        context.Parameters["LEP_COD_SAP_PROD"] = "66ABC";
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context))
             .Expression<bool>().IsTrue();
     }
@@ -79,7 +79,7 @@ public class LikeOperatorTests
     public async Task ShouldEvaluateLikeOperatorWithWildcardAtStart()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC66";
+        context.Parameters["LEP_COD_SAP_PROD"] = "ABC66";
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '%66'", context))
             .Expression<bool>().IsTrue();
     }
@@ -88,7 +88,7 @@ public class LikeOperatorTests
     public async Task ShouldEvaluateLikeOperatorWithWildcardAtBothEnds()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "ABC66XYZ";
+        context.Parameters["LEP_COD_SAP_PROD"] = "ABC66XYZ";
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '%66%'", context))
             .Expression<bool>().IsTrue();
     }
@@ -97,7 +97,7 @@ public class LikeOperatorTests
     public async Task ShouldEvaluateLikeOperatorWithExactMatch()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "66";
+        context.Parameters["LEP_COD_SAP_PROD"] = "66";
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66'", context))
             .Expression<bool>().IsTrue();
     }
@@ -106,7 +106,7 @@ public class LikeOperatorTests
     public async Task ShouldEvaluateLikeOperatorWithNoMatch()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "77ABC";
+        context.Parameters["LEP_COD_SAP_PROD"] = "77ABC";
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context))
             .Expression<bool>().IsFalse();
     }
@@ -115,7 +115,7 @@ public class LikeOperatorTests
     public async Task ShouldEvaluateNotLikeOperator()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "77ABC";
+        context.Parameters["LEP_COD_SAP_PROD"] = "77ABC";
         await Assert.That(new Expression("{LEP_COD_SAP_PROD} NOT LIKE '66%'", context))
             .Expression<bool>().IsTrue();
     }
@@ -124,7 +124,7 @@ public class LikeOperatorTests
     public async Task ShouldMatchEscapedPercentUsingLike()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["Value"] = "100%";
+        context.Parameters["Value"] = "100%";
 
         await Assert.That(new Expression(@"{Value} LIKE '%\%'", context))
             .Expression<bool>().IsTrue();
@@ -134,7 +134,7 @@ public class LikeOperatorTests
     public async Task ShouldMatchEscapedUnderscoreUsingLike()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["Value"] = "Hello_world";
+        context.Parameters["Value"] = "Hello_world";
 
         await Assert.That(new Expression(@"{Value} LIKE '%\_%'", context))
             .Expression<bool>().IsTrue();
@@ -145,11 +145,11 @@ public class LikeOperatorTests
     {
         var context = new ExpressionContext();
 
-        context.StaticParameters["Value"] = "1000";
+        context.Parameters["Value"] = "1000";
         await Assert.That(new Expression(@"{Value} LIKE '%\%'", context))
             .Expression<bool>().IsFalse();
 
-        context.StaticParameters["Value"] = "Hello-world";
+        context.Parameters["Value"] = "Hello-world";
         await Assert.That(new Expression(@"{Value} LIKE '%\_%'", context))
             .Expression<bool>().IsFalse();
     }
@@ -168,7 +168,7 @@ public class LikeOperatorTests
     public async Task ShouldMatchEscapedUserInputUsingLike()
     {
         var context = new ExpressionContext();
-        context.StaticParameters["Value"] = "Hello_world";
+        context.Parameters["Value"] = "Hello_world";
 
         await Assert.That(new Expression("{Value} LIKE EscapeLike('Hello_world')", context))
             .Expression<bool>().IsTrue();
@@ -179,36 +179,39 @@ public class LikeOperatorTests
     [Test]
     public async Task LikeOperatorShouldRespectStringComparer()
     {
-        ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context))
+        var context = new ExpressionContext();
+        var configuration = ExpressionConfiguration.FromOptions(ExpressionOptions.CaseInsensitiveStringComparer);
+        context.Parameters["LEP_COD_SAP_PROD"] = "66ABC";
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", configuration, context))
             .Expression<bool>().IsTrue();
-        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context))
+        await Assert.That(new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", configuration, context))
             .Expression<bool>().IsTrue();
     }
 
     [Test]
     public async Task LikeOperatorShouldWorkAcrossCodepointBoundaries()
     {
-        ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
+        var context = new ExpressionContext();
+        var configuration = ExpressionConfiguration.FromOptions(ExpressionOptions.CaseInsensitiveStringComparer);
         const string source = "Cafe\u0301";
         const string pattern = "CAF\u00C9";
 
-        context.StaticParameters["source"] = source;
-        context.StaticParameters["pattern"] = pattern;
+        context.Parameters["source"] = source;
+        context.Parameters["pattern"] = pattern;
 
-        await Assert.That(new Expression("source LIKE pattern", context))
+        await Assert.That(new Expression("source LIKE pattern", configuration, context))
             .Expression<bool>().IsTrue();
     }
 
     [Test]
     public async Task LikeOperatorShouldWorkAsync()
     {
-        ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
-        context.StaticParameters["LEP_COD_SAP_PROD"] = "66ABC";
-        await Assert.That(await new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", context)
+        var context = new ExpressionContext();
+        var configuration = ExpressionConfiguration.FromOptions(ExpressionOptions.CaseInsensitiveStringComparer);
+        context.Parameters["LEP_COD_SAP_PROD"] = "66ABC";
+        await Assert.That(await new Expression("{LEP_COD_SAP_PROD} LIKE '66%'", configuration, context)
             .EvaluateAsync<bool>(CancellationToken.None)).IsTrue();
-        await Assert.That(await new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", context)
+        await Assert.That(await new Expression("{LEP_COD_SAP_PROD} LIKE '66abc%'", configuration, context)
             .EvaluateAsync<bool>(CancellationToken.None)).IsTrue();
     }
 }

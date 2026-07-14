@@ -1,3 +1,4 @@
+using NCalc.Helpers;
 #if NET
 using System.ComponentModel.DataAnnotations;
 #endif
@@ -5,116 +6,149 @@ using System.ComponentModel.DataAnnotations;
 namespace NCalc;
 
 /// <summary>
-/// Options used for both parsing and evaluation of an expression.
+/// Flag-based options that can be converted to <see cref="ExpressionConfiguration"/>.
 /// </summary>
+/// <remarks>
+/// Prefer configuring new code with <see cref="ExpressionConfiguration"/>,
+/// <see cref="LogicalExpressionParserOptions"/>, <see cref="ExpressionEvaluationOptions"/>,
+/// and <see cref="Helpers.MathOptions"/> directly. This enum is kept as a compatibility helper for
+/// older code paths and is converted by <see cref="ExpressionConfiguration.FromOptions(ExpressionOptions)"/>.
+/// </remarks>
 [Flags]
 public enum ExpressionOptions
 {
     /// <summary>
-    /// Specifies that no options are set.
+    /// No options are set.
     /// </summary>
     [Display(Name = "None")]
     None = 0,
 
-    /// <summary>
-    /// Specifies case-insensitive matching for built-in functions.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.IgnoreCaseAtBuiltInFunctions"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.IgnoreCaseAtBuiltInFunctions"/>.
+    /// </remarks>
     [Display(Name = "Ignore Case At Built-In Functions")]
     IgnoreCaseAtBuiltInFunctions = 1 << 1,
 
-    /// <summary>
-    /// No-cache mode. Ignores any pre-compiled expression in the cache.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionConfiguration.CacheEnabled"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionConfiguration.CacheEnabled"/> set to <see langword="false"/>,
+    /// disabling parsed expression cache usage.
+    /// </remarks>
     [Display(Name = "No Cache")]
     NoCache = 1 << 2,
 
-    /// <summary>
-    /// Treats parameters as arrays and returns a set of results.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.IterateParameters"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.IterateParameters"/>.
+    /// </remarks>
     [Display(Name = "Iterate Parameters")]
     IterateParameters = 1 << 3,
 
-    /// <summary>
-    /// When using Round(), if a number is halfway between two others, it is rounded toward the nearest number that is away from zero.
-    /// </summary>
+    /// <inheritdoc cref="Helpers.MathOptions.MidpointRounding"/>
+    /// <remarks>
+    /// Converts to <see cref="Helpers.MathOptions.MidpointRounding"/>.
+    /// </remarks>
     [Display(Name = "Round Away From Zero")]
     RoundAwayFromZero = 1 << 4,
 
-    /// <summary>
-    /// Specifies the use of CaseInsensitiveComparer for comparisons.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.StringComparer"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.StringComparer"/> as either
+    /// <see cref="StringComparer.CurrentCultureIgnoreCase"/> or <see cref="StringComparer.OrdinalIgnoreCase"/>,
+    /// using a case-insensitive string comparer for string comparisons,
+    /// depending on <see cref="OrdinalStringComparer"/>.
+    /// </remarks>
     [Display(Name = "Case-Insensitive String Comparer")]
     CaseInsensitiveStringComparer = 1 << 5,
 
-    /// <summary>
-    /// Uses decimals instead of doubles as default floating point data type.
-    /// </summary>
+    /// <inheritdoc cref="FloatingPointNumberType.Decimal"/>
+    /// <remarks>
+    /// Converts to <see cref="FloatingPointNumberType.Decimal"/> on parser options
+    /// and <see cref="Helpers.MathOptions.FloatingPointNumberType"/> on math options.
+    /// </remarks>
     [Display(Name = "Decimal As Default")]
     DecimalAsDefault = 1 << 6,
 
-    /// <summary>
-    /// Defines a "null" parameter and allows comparison of values to null.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.AllowNullParameter"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.AllowNullParameter"/>.
+    /// </remarks>
     [Display(Name = "Allow Null Parameter")]
     AllowNullParameter = 1 << 7,
 
-    /// <summary>
-    /// Use ordinal culture on string compare.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.StringComparer"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.StringComparer"/> as either
+    /// <see cref="StringComparer.Ordinal"/> or <see cref="StringComparer.OrdinalIgnoreCase"/>,
+    /// using ordinal string comparison instead of current-culture comparison,
+    /// depending on <see cref="CaseInsensitiveStringComparer"/>.
+    /// </remarks>
     [Display(Name = "Ordinal String Comparer")]
     OrdinalStringComparer = 1 << 8,
 
-    /// <summary>
-    /// Allow calculation with <see cref="bool"/> values.
-    /// </summary>
+    /// <inheritdoc cref="Helpers.MathOptions.AllowBooleanCalculation"/>
+    /// <remarks>
+    /// Converts to <see cref="Helpers.MathOptions.AllowBooleanCalculation"/>.
+    /// </remarks>
     [Display(Name = "Allow Boolean Calculation")]
     AllowBooleanCalculation = 1 << 9,
 
-    /// <summary>
-    /// Check for arithmetic binary operation overflow.
-    /// </summary>
+    /// <inheritdoc cref="Helpers.MathOptions.OverflowProtection"/>
+    /// <remarks>
+    /// Converts to <see cref="Helpers.MathOptions.OverflowProtection"/>.
+    /// </remarks>
     [Display(Name = "Overflow Protection")]
     OverflowProtection = 1 << 10,
 
-    /// <summary>
-    /// Concat values as strings instead of arithmetic addition.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.StringConcat"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.StringConcat"/>.
+    /// </remarks>
     [Display(Name = "String Concatenation")]
     StringConcat = 1 << 11,
 
-    /// <summary>
-    /// Parse single quoted strings as <see cref="char"/>.
-    /// </summary>
+    /// <inheritdoc cref="LogicalExpressionParserOptions.AllowCharValues"/>
+    /// <remarks>
+    /// Converts to <see cref="LogicalExpressionParserOptions.AllowCharValues"/>.
+    /// </remarks>
     [Display(Name = "Allow Char Values")]
     AllowCharValues = 1 << 12,
 
-    /// <summary>
-    /// Disables coercion of string values to other types.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.NoStringTypeCoercion"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.NoStringTypeCoercion"/>.
+    /// </remarks>
     [Display(Name = "No String Type Coercion")]
     NoStringTypeCoercion = 1 << 13,
 
-    /// <summary>
-    /// Return the value instead of throwing an exception when the expression is null or empty.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.AllowNullOrEmptyExpressions"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.AllowNullOrEmptyExpressions"/>.
+    /// </remarks>
     [Display(Name = "Allow Null Or Empty Expressions")]
     AllowNullOrEmptyExpressions = 1 << 14,
 
-    /// <summary>
-    /// Enables strict type matching, where comparisons between objects of different types will return false.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.StrictTypeMatching"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.StrictTypeMatching"/>.
+    /// </remarks>
     [Display(Name = "Strict Type Matching")]
     StrictTypeMatching = 1 << 15,
 
-    /// <summary>
-    /// Uses long instead of integer as default integral data type.
-    /// </summary>
+    /// <inheritdoc cref="IntegerNumberType.Int64"/>
+    /// <remarks>
+    /// Converts to <see cref="IntegerNumberType.Int64"/> on parser options
+    /// and <see cref="Helpers.MathOptions.IntegerNumberType"/> on math options,
+    /// unless <see cref="DecimalAsDefault"/> is also set.
+    /// </remarks>
     [Display(Name = "Long As Default")]
     LongAsDefault = 1 << 16,
 
-    /// <summary>
-    /// Converts null or empty string values to 0 during arithmetic operations.
-    /// </summary>
+    /// <inheritdoc cref="ExpressionEvaluationOptions.ArithmeticNullOrEmptyStringAsZero"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.ArithmeticNullOrEmptyStringAsZero"/>.
+    /// </remarks>
     [Display(Name = "Arithmetic Null Or Empty String As Zero")]
     ArithmeticNullOrEmptyStringAsZero = 1 << 17
 }

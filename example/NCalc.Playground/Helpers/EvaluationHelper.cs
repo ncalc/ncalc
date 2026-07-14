@@ -9,7 +9,8 @@ public static class EvaluationHelper
         try
         {
             var parameters = BuildParameters(variables, options);
-            var expression = new Expression(expressionText, options, CultureInfo.InvariantCulture);
+            var context = new ExpressionContext(parameters);
+            var expression = new Expression(expressionText, options, context, CultureInfo.InvariantCulture);
 
             foreach (var (name, value) in parameters)
                 expression.Parameters[name] = value;
@@ -31,7 +32,7 @@ public static class EvaluationHelper
         }
     }
 
-    private static Dictionary<string, object?> BuildParameters(IEnumerable<VariableInput> variables, ExpressionOptions options)
+    private static Dictionary<string, object?> BuildParameters(IEnumerable<VariableInput> variables, ExpressionConfiguration configuration)
     {
         var parameters = new Dictionary<string, object?>(StringComparer.Ordinal);
 
@@ -47,7 +48,7 @@ public static class EvaluationHelper
             var hasNumbers = value.Any(char.IsDigit);
 
             if(hasNumbers)
-                parameters[normalizedName] = new Expression(value, options).Evaluate();
+                parameters[normalizedName] = new Expression(value, configuration).Evaluate();
             else
                 parameters[normalizedName] = value;
         }

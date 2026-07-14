@@ -1,5 +1,4 @@
 ﻿using NCalc.Factories;
-using NCalc.Parser;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;
@@ -65,7 +64,10 @@ public class ParserTests
     {
         const string formula = "'c'";
 
-        var logicalExpression = LogicalExpressionFactory.Create(formula, ExpressionOptions.AllowCharValues, cancellationToken: CancellationToken.None);
+        var logicalExpression = LogicalExpressionFactory.Create(formula, new LogicalExpressionParserOptions
+        {
+            AllowCharValues = true
+        }, cancellationToken: CancellationToken.None);
 
         await Assert.That(logicalExpression).IsTypeOf<ValueExpression>();
 
@@ -162,7 +164,7 @@ public class ParserTests
         {
             try
             {
-                var context = new LogicalExpressionParserContext(c);
+                var context = new LogicalExpressionParseContext(c);
                 LogicalExpressionParser.Parse(context);
             }
             catch (Exception)
@@ -181,9 +183,9 @@ public class ParserTests
 
         try
         {
-            var expressionOptions = ExpressionOptions.DecimalAsDefault | ExpressionOptions.NoCache;
-            var expression = new Expression("0.3333333333333333333333 + 1.6666666666666666666667", expressionOptions, CultureInfo.InvariantCulture);
-            var result = expression.Evaluate(CancellationToken.None);
+            const ExpressionOptions expressionOptions = ExpressionOptions.DecimalAsDefault | ExpressionOptions.NoCache;
+            var expression = new Expression("0.3333333333333333333333 + 1.6666666666666666666667", expressionOptions, null,CultureInfo.InvariantCulture);
+            _ = expression.Evaluate(CancellationToken.None);
         }
         catch
         {

@@ -1,3 +1,28 @@
+# 7.0.0
+
+* Refactor expression configuration by separating immutable parsing/evaluation settings from runtime expression context.
+* Add `ExpressionConfiguration`, `ExpressionEvaluationOptions` for explicit configuration.
+* Add `FloatingPointNumberType` and `IntegerNumberType` to configure parser number handling and string-to-number coercion in math helpers.
+* Improve parser caching by including culture in the parser cache key.
+* Remove the `NCalc.Antlr` plugin and its tests/benchmarks from the solution, ANTLR is missing many features and is a cost to be maintained. If you use Antlr, please open an issue.
+
+## Breaking Changes
+* `ExpressionContext` now represents only per-evaluation runtime state. `StaticParameters` was renamed to `Parameters`, and `Options`, `CultureInfo`, `MathHelperOptions`, `ComparisonOptions`, and the implicit conversions from `ExpressionOptions`/`CultureInfo` were removed. Configure parsing and evaluation with `ExpressionConfiguration` instead.
+* `ExpressionContext` is no longer a `record` and all props are init only to incentive immutability.
+* `Expression.Options` no longer exposes the getter. It is kept only as a setter that replaces `Expression.Configuration` using `ExpressionConfiguration.FromOptions(...)`. Use `Expression.Configuration`, `Expression.ParserOptions`, `Expression.EvaluationOptions`, `Expression.CultureInfo`, and `Expression.Configuration.CacheEnabled`.
+* `Expression` constructors and `IExpressionFactory.Create` now accept `ExpressionConfiguration` and `CultureInfo`.
+*  `Parameters`, `DynamicParameters`, `AsyncParameters`, `Functions`, and `AsyncFunctions` on `Expression` no longer have setters. Mutate the dictionaries on `Expression.Context` or replace them through a new `ExpressionContext`.
+* `LogicalExpressionArgumentSeparator` was renamed to `ArgumentSeparator`.
+* `LogicalExpressionParserOptions` no longer exposes `DecimalAsDefault` and `LongAsDefault`. Use `FloatingPointNumberType` and `IntegerNumberType`.
+* `LogicalExpressionParser.GetOrCreateExpressionParser` now requires a `CultureInfo`, and `LogicalExpressionParser.Parse` accepts culture separately from parser options.
+* `ILogicalExpressionFactory.Create` now accepts `LogicalExpressionParserOptions?` and `CultureInfo?` instead of `ExpressionOptions`.
+* `IEvaluationVisitorFactory`, `EvaluationVisitor`, and `AsyncEvaluationVisitor` now require `ExpressionEvaluationOptions` and `CultureInfo`.
+* `LogicalExpression` extension methods `Evaluate(...)` and `EvaluateAsync(...)` were removed. Evaluate through `Expression` or instantiate the appropriate evaluation visitor.
+* `ComparisonOptions` was removed. Use `StringComparer` property.
+* `MathHelperOptions` was renamed to `MathOptions`.
+* `LogicalExpressionParserContext` was renamed to `LogicalExpressionParseContext` following Parlot convention
+* The `NCalc.Antlr` package/plugin was removed. Use the default Parlot parser or provide a custom `ILogicalExpressionFactory`.
+
 # 6.4.0
 * fix: small fix for Ln support in NCalc.LambdaCompilation by @gogolevsergey in https://github.com/ncalc/ncalc/pull/590
 * feat: Add LIKE escape support and EscapeLike helper by @gumbarros in https://github.com/ncalc/ncalc/pull/593

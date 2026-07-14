@@ -4,18 +4,19 @@ When <xref:NCalc.Expression.Evaluate(System.Threading.CancellationToken)> is cal
 
 Each parsed expression is cached internally, which means you do not need to manually reuse an <xref:NCalc.Expression> instance for the parser cache to help.
 
-The default cache now keeps strong references and evicts the least recently used entries when it reaches its capacity. This is more predictable than a weak-reference cache and avoids scanning the whole dictionary on every insert.
+The default cache keeps strong references and evicts the least recently used entries when it reaches its capacity.
 
-You can disable caching at the framework level by adding <xref:NCalc.ExpressionOptions.NoCache> at your [global expression context](../evaluation/expression_context.md).
-
-```csharp
-MyContext.Value.Options = ExpressionOptions.NoCache;
-```
-
-You can also tell a specific <xref:NCalc.Expression> instance not to use the cache.
+You can disable caching with <xref:NCalc.ExpressionConfiguration.CacheEnabled>.
 
 ```csharp
-var expression = new Expression("1 + 1", ExpressionOptions.NoCache);
+static readonly ExpressionConfiguration ExpressionConfiguration = new()
+{
+    CacheEnabled = false
+};
+
+// or...
+
+static readonly ExpressionConfiguration ExpressionConfiguration = ExpressionConfiguration.FromOptions(ExpressionOptions.NoCache);
 ```
 
 ## Default cache size
