@@ -7,7 +7,7 @@ namespace NCalc.Tests
         [Test]
         public async Task ShouldAllowReuseAfterFail()
         {
-            var e = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None, CultureInfo.InvariantCulture);
+            var e = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None, null, CultureInfo.InvariantCulture);
 
             try
             {
@@ -31,7 +31,7 @@ namespace NCalc.Tests
         [Test]
         public async Task HasErrorsShouldReturnCorrectResultAfterFail()
         {
-            var e = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None, CultureInfo.InvariantCulture);
+            var e = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None,null, CultureInfo.InvariantCulture);
             await Assert.That(e.HasErrors(CancellationToken.None)).IsTrue();
 
             e.CultureInfo = CultureInfo.GetCultureInfo("ru-RU");

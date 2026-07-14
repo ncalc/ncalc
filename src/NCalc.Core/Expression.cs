@@ -58,11 +58,7 @@ public class Expression
     /// <summary>
     /// Static parameters for the expression evaluation.
     /// </summary>
-    public IDictionary<string, object?> Parameters
-    {
-        get => Context.Parameters;
-        set => Context.Parameters = value;
-    }
+    public IDictionary<string, object?> Parameters => Context.Parameters;
 
     /// <summary>
     /// Replaces <see cref="Configuration"/> with a configuration converted from <see cref="ExpressionOptions"/> flags.
@@ -157,89 +153,101 @@ public class Expression
     /// </summary>
     protected IEvaluationVisitorFactory? EvaluationVisitorFactory { get; private set; }
 
-    protected Expression(IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+    protected Expression(
+        ExpressionConfiguration configuration,
+        ExpressionContext context,
+        CultureInfo cultureInfo,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
     {
         LogicalExpressionCache = Cache.LogicalExpressionCache.GetInstance();
         LogicalExpressionFactory = Factories.LogicalExpressionFactory.GetInstance();
         EvaluationVisitorFactory = evaluationVisitorFactory;
-        Configuration ??= new ExpressionConfiguration();
-        Context ??= new ExpressionContext();
-        CultureInfo ??= CultureInfo.CurrentCulture;
+        Configuration = configuration;
+        Context = context;
+        CultureInfo = cultureInfo;
     }
 
     protected internal Expression(
         string expressionString,
-        ExpressionConfiguration? configuration,
+        ExpressionConfiguration configuration,
+        ExpressionContext expressionContext,
+        CultureInfo cultureInfo,
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitorFactory? evaluationVisitorFactory = null)
-        : this(evaluationVisitorFactory)
+        : this(configuration, expressionContext, cultureInfo, evaluationVisitorFactory)
     {
         ExpressionString = expressionString;
-        Configuration = configuration ?? new ExpressionConfiguration();
+        Configuration = configuration;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
     }
 
     protected internal Expression(
         LogicalExpression logicalExpression,
-        ExpressionConfiguration? configuration,
+        ExpressionConfiguration configuration,
+        ExpressionContext expressionContext,
+        CultureInfo cultureInfo,
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache logicalExpressionCache,
         IEvaluationVisitorFactory? evaluationVisitorFactory = null)
-        : this(evaluationVisitorFactory)
+        : this(configuration, expressionContext, cultureInfo, evaluationVisitorFactory)
     {
-        LogicalExpression = logicalExpression ?? throw new ArgumentNullException(nameof(logicalExpression));
-        Configuration = configuration ?? new ExpressionConfiguration();
+        LogicalExpression = logicalExpression;
+        Configuration = configuration;
         LogicalExpressionCache = logicalExpressionCache;
         LogicalExpressionFactory = logicalExpressionFactory;
     }
 
-    public Expression(string? expression, ExpressionConfiguration? configuration = null, CultureInfo? cultureInfo = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(evaluationVisitorFactory)
+    public Expression(string? expression, CultureInfo cultureInfo) : this(new ExpressionConfiguration(),
+        new ExpressionContext(), cultureInfo)
     {
         ExpressionString = expression;
-        Configuration = configuration ?? new ExpressionConfiguration();
-        CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
     }
 
-    public Expression(string? expression, CultureInfo cultureInfo) : this()
+    public Expression(string? expression, ExpressionContext context) : this(new ExpressionConfiguration(), context, CultureInfo.CurrentCulture)
     {
         ExpressionString = expression;
-        CultureInfo = cultureInfo;
     }
 
-    public Expression(string? expression, ExpressionContext context) : this()
+    public Expression(
+        string? expression,
+        ExpressionConfiguration? configuration = null,
+        ExpressionContext? context = null,
+        CultureInfo? cultureInfo = null,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(
+        configuration ?? new ExpressionConfiguration(), context ?? new ExpressionContext(),
+        cultureInfo ?? CultureInfo.CurrentCulture, evaluationVisitorFactory)
     {
         ExpressionString = expression;
-        Context = context;
-        CultureInfo = CultureInfo.CurrentCulture;
     }
 
-    public Expression(string? expression, ExpressionConfiguration? configuration, ExpressionContext? context, CultureInfo? cultureInfo = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(evaluationVisitorFactory)
-    {
-        ExpressionString = expression;
-        Context = context ?? new ExpressionContext();
-        Configuration = configuration ?? new ExpressionConfiguration();
-        CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
-    }
-
-    public Expression(LogicalExpression logicalExpression, ExpressionConfiguration? configuration = null, CultureInfo? cultureInfo = null, IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(evaluationVisitorFactory)
+    public Expression(LogicalExpression logicalExpression,
+        ExpressionConfiguration? configuration = null,
+        ExpressionContext? context = null,
+        CultureInfo? cultureInfo = null,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(
+        configuration ?? new ExpressionConfiguration(), context ?? new ExpressionContext(),
+        cultureInfo ?? CultureInfo.CurrentCulture, evaluationVisitorFactory)
     {
         LogicalExpression = logicalExpression ?? throw new ArgumentNullException(nameof(logicalExpression));
-        Configuration = configuration ?? new ExpressionConfiguration();
-        CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
     }
 
-    protected virtual EvaluationVisitor CreateEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+    protected virtual EvaluationVisitor CreateEvaluationVisitor(ExpressionContext context,
+        CancellationToken cancellationToken = default)
     {
-        return EvaluationVisitorFactory?.CreateEvaluationVisitor(context, EvaluationOptions, CultureInfo, cancellationToken)
+        return EvaluationVisitorFactory?.CreateEvaluationVisitor(context, EvaluationOptions, CultureInfo,
+                   cancellationToken)
                ?? new EvaluationVisitor(context, EvaluationOptions, CultureInfo, cancellationToken: cancellationToken);
     }
 
-    protected virtual AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(ExpressionContext context, CancellationToken cancellationToken = default)
+    protected virtual AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(ExpressionContext context,
+        CancellationToken cancellationToken = default)
     {
-        return EvaluationVisitorFactory?.CreateAsyncEvaluationVisitor(context, EvaluationOptions, CultureInfo, cancellationToken)
-               ?? new AsyncEvaluationVisitor(context, EvaluationOptions, CultureInfo, cancellationToken: cancellationToken);
+        return EvaluationVisitorFactory?.CreateAsyncEvaluationVisitor(context, EvaluationOptions, CultureInfo,
+                   cancellationToken)
+               ?? new AsyncEvaluationVisitor(context, EvaluationOptions, CultureInfo,
+                   cancellationToken: cancellationToken);
     }
 
     internal void SetEvaluationVisitorFactory(IEvaluationVisitorFactory? evaluationVisitorFactory)
@@ -303,7 +311,8 @@ public class Expression
             if (LogicalExpression is null)
                 return null;
 
-            return await LogicalExpression.Accept(CreateAsyncEvaluationVisitor(Context, cancellationToken)).ConfigureAwait(false);
+            return await LogicalExpression.Accept(CreateAsyncEvaluationVisitor(Context, cancellationToken))
+                .ConfigureAwait(false);
         }
         catch (InvalidCastException exception)
         {
@@ -485,6 +494,7 @@ public class Expression
         if (!evaluateParameters)
             return logicalExpression.ToExpressionString();
 
-        return logicalExpression.Accept(new ParameterSubstitutionVisitor(Context, EvaluationOptions, cancellationToken)).TrimEnd();
+        return logicalExpression.Accept(new ParameterSubstitutionVisitor(Context, EvaluationOptions, cancellationToken))
+            .TrimEnd();
     }
 }

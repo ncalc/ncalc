@@ -65,15 +65,16 @@ public class MathsTests
                 try
                 {
                     var result = new Expression(expr, CultureInfo.InvariantCulture)
-                    {
-                        Parameters =
+                        {
+                            Parameters =
                             {
                                 ["x"] = Convert.ChangeType(lhsValue, typecodeA),
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
-                    }
+                        }
                         .Evaluate(CancellationToken.None);
-                    await Assert.That(Convert.ToInt64(result) == expectedResult).IsTrue().Because($"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                    await Assert.That(Convert.ToInt64(result) == expectedResult).IsTrue().Because(
+                        $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
                 }
                 catch (Exception ex)
                 {
@@ -86,14 +87,14 @@ public class MathsTests
             {
                 const string expr = $"x {operand} y";
                 Assert.Throws<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
-                {
-                    Parameters =
-                            {
-                                ["x"] = Convert.ChangeType(lhsValue, typecodeA),
-                                ["y"] = Convert.ChangeType(rhsValue, typecodeB)
-                            }
-                }
-                        .Evaluate(CancellationToken.None));
+                    {
+                        Parameters =
+                        {
+                            ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                            ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                        }
+                    }
+                    .Evaluate(CancellationToken.None));
             }
         }
     }
@@ -140,15 +141,16 @@ public class MathsTests
                 try
                 {
                     var result = new Expression(expr, CultureInfo.InvariantCulture)
-                    {
-                        Parameters =
+                        {
+                            Parameters =
                             {
                                 ["x"] = Convert.ChangeType(lhsValue, typecodeA),
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
-                    }
+                        }
                         .Evaluate(CancellationToken.None);
-                    await Assert.That(Convert.ToInt64(result) == expectedResult).IsTrue().Because($"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                    await Assert.That(Convert.ToInt64(result) == expectedResult).IsTrue().Because(
+                        $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
                 }
                 catch (Exception ex)
                 {
@@ -162,14 +164,14 @@ public class MathsTests
             {
                 const string expr = $"x {operand} y";
                 Assert.Throws<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
-                {
-                    Parameters =
-                            {
-                                ["x"] = Convert.ChangeType(1, typecodeA),
-                                ["y"] = Convert.ChangeType(1, typecodeB)
-                            }
-                }
-                        .Evaluate(CancellationToken.None));
+                    {
+                        Parameters =
+                        {
+                            ["x"] = Convert.ChangeType(1, typecodeA),
+                            ["y"] = Convert.ChangeType(1, typecodeB)
+                        }
+                    }
+                    .Evaluate(CancellationToken.None));
             }
         }
     }
@@ -216,15 +218,16 @@ public class MathsTests
                 try
                 {
                     var result = new Expression(expr, CultureInfo.InvariantCulture)
-                    {
-                        Parameters =
+                        {
+                            Parameters =
                             {
                                 ["x"] = Convert.ChangeType(lhsValue, typecodeA),
                                 ["y"] = Convert.ChangeType(rhsValue, typecodeB)
                             }
-                    }
+                        }
                         .Evaluate(CancellationToken.None);
-                    await Assert.That(Convert.ToInt64(result) == expectedResult).IsTrue().Because($"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
+                    await Assert.That(Convert.ToInt64(result) == expectedResult).IsTrue().Because(
+                        $"{expr}: {typecodeA} = {lhsValue}, {typecodeB} = {rhsValue} should return {expectedResult}");
                 }
                 catch (Exception ex)
                 {
@@ -240,10 +243,10 @@ public class MathsTests
                 Assert.Throws<InvalidOperationException>(() => new Expression(expr, CultureInfo.InvariantCulture)
                 {
                     Parameters =
-                        {
-                                ["x"] = Convert.ChangeType(lhsValue, typecodeA),
-                                ["y"] = Convert.ChangeType(rhsValue, typecodeB)
-                        }
+                    {
+                        ["x"] = Convert.ChangeType(lhsValue, typecodeA),
+                        ["y"] = Convert.ChangeType(rhsValue, typecodeB)
+                    }
                 }.Evaluate(CancellationToken.None));
             }
         }
@@ -311,7 +314,8 @@ public class MathsTests
     public async Task Overflow_Issue_190()
     {
         const decimal minValue = decimal.MinValue;
-        var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
+        var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), ExpressionOptions.DecimalAsDefault,
+            null, CultureInfo.InvariantCulture);
         await Assert.That(expr.Evaluate(CancellationToken.None)).IsEqualTo(minValue);
     }
 
@@ -392,7 +396,8 @@ public class MathsTests
     [Arguments(int.MaxValue, '*', int.MaxValue)]
     public void Should_Handle_Overflow_Int(int a, char op, int b)
     {
-        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, null,
+            CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
@@ -406,7 +411,8 @@ public class MathsTests
     [Arguments(double.MinValue, '/', 0.001d)]
     public void Should_Handle_Overflow_Double(double a, char op, double b)
     {
-        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, null,
+            CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
@@ -420,7 +426,8 @@ public class MathsTests
     [Arguments(float.MinValue, '/', 0.001f)]
     public void Should_Handle_Overflow_Float(float a, char op, float b)
     {
-        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, null,
+            CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
@@ -459,7 +466,8 @@ public class MathsTests
     [Arguments("'' + ''", 0)]
     public async Task ShouldUseArithmeticNullOrEmptyStringAsZero(string expressionString, object expected)
     {
-        const ExpressionOptions options = ExpressionOptions.ArithmeticNullOrEmptyStringAsZero | ExpressionOptions.AllowNullParameter | ExpressionOptions.NoCache;
+        const ExpressionOptions options = ExpressionOptions.ArithmeticNullOrEmptyStringAsZero |
+                                          ExpressionOptions.AllowNullParameter | ExpressionOptions.NoCache;
         var expression = new Expression(expressionString, options);
 
         await Assert.That(expression).Expression().IsEqualTo(expected);
@@ -547,7 +555,7 @@ public class MathsTests
         exp.Parameters["b"] = b;
         var result = exp.Evaluate(CancellationToken.None);
 
-		await Assert.That(result).IsEqualTo(expected);
+        await Assert.That(result).IsEqualTo(expected);
     }
 
     [Test]
@@ -563,7 +571,8 @@ public class MathsTests
     [Test]
     public async Task ShouldBeDoubleWithLongAsDefault()
     {
-        var exp = new Expression("10000000.1*1000", ExpressionOptions.LongAsDefault, CultureInfo.InvariantCulture);
+        var exp = new Expression("10000000.1*1000", ExpressionOptions.LongAsDefault, null,
+            CultureInfo.InvariantCulture);
         var result = exp.Evaluate(CancellationToken.None);
 
         const double expected = 10000000.1 * 1000;
@@ -573,20 +582,22 @@ public class MathsTests
     [Test]
     public async Task ShouldAddWithParenthesis()
     {
-        var expression = new Expression("(500 * {ml500}) + (250 * {ml250}) + (120 * {ml120}) + (60 * {ml60}) + (30 * {ml30}) + (10 * {ml10}) + (1 * {ml1}) + (0.5 * {ml05})");
-
-        var parameters = new Dictionary<string, object>
-        {
-            ["ml500"] = 2,
-            ["ml250"] = 0,
-            ["ml120"] = 1,
-            ["ml60"] = 0,
-            ["ml30"] = 3,
-            ["ml10"] = 0,
-            ["ml1"] = 10,
-            ["ml05"] = 4
-        };
-        expression.Parameters = parameters;
+        var expression =
+            new Expression(
+                "(500 * {ml500}) + (250 * {ml250}) + (120 * {ml120}) + (60 * {ml60}) + (30 * {ml30}) + (10 * {ml10}) + (1 * {ml1}) + (0.5 * {ml05})")
+            {
+                Parameters =
+                {
+                    ["ml500"] = 2,
+                    ["ml250"] = 0,
+                    ["ml120"] = 1,
+                    ["ml60"] = 0,
+                    ["ml30"] = 3,
+                    ["ml10"] = 0,
+                    ["ml1"] = 10,
+                    ["ml05"] = 4
+                }
+            };
 
         var result = expression.Evaluate()!;
 

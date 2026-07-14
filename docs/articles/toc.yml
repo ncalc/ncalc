@@ -97,6 +97,9 @@
     - name: Changelog
       icon: fa-solid fa-clock-rotate-left
       href: project/changelog.md
+    - name: Migrate from NCalc v6 to NCalc v7
+      icon: fa-solid fa-right-left
+      href: project/migrate_v6_to_v7.md
     - name: Publishing a New Release
       icon: fa-solid fa-rocket
       href: project/new_release.md

@@ -5,13 +5,21 @@ namespace NCalc;
 /// <summary>
 /// Per-evaluation runtime state, including parameters, functions, and event handlers.
 /// </summary>
-public sealed record ExpressionContext
+public sealed class ExpressionContext
 {
-    public IDictionary<string, object?> Parameters { get; set; }
-    public IDictionary<string, ExpressionParameter> DynamicParameters { get; set; }
-    public IDictionary<string, AsyncExpressionParameter> AsyncParameters { get; set; }
-    public IDictionary<string, ExpressionFunction> Functions { get; set; }
-    public IDictionary<string, AsyncExpressionFunction> AsyncFunctions { get; set; }
+    public IDictionary<string, object?> Parameters { get; init; }
+
+    [Obsolete("Please use Parameters instead.")]
+    public IDictionary<string, object?> StaticParameters
+    {
+        get => Parameters;
+        init => Parameters = value;
+    }
+
+    public IDictionary<string, ExpressionParameter> DynamicParameters { get; init; }
+    public IDictionary<string, AsyncExpressionParameter> AsyncParameters { get; init; }
+    public IDictionary<string, ExpressionFunction> Functions { get; init; }
+    public IDictionary<string, AsyncExpressionFunction> AsyncFunctions { get; init; }
 
     public EvaluateBinaryHandler? EvaluateBinaryHandler { get; set; }
     public EvaluateBinaryAsyncHandler? EvaluateBinaryAsyncHandler { get; set; }
@@ -20,6 +28,7 @@ public sealed record ExpressionContext
     public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
     public EvaluateAsyncFunctionHandler? EvaluateAsyncFunctionHandler { get; set; }
 
+    // ReSharper disable once ConvertToPrimaryConstructor
     public ExpressionContext(
         IDictionary<string, object?>? parameters = null,
         IDictionary<string, ExpressionParameter>? dynamicParameters = null,

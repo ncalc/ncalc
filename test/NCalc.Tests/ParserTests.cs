@@ -183,9 +183,9 @@ public class ParserTests
 
         try
         {
-            var expressionOptions = ExpressionOptions.DecimalAsDefault | ExpressionOptions.NoCache;
-            var expression = new Expression("0.3333333333333333333333 + 1.6666666666666666666667", expressionOptions, CultureInfo.InvariantCulture);
-            var result = expression.Evaluate(CancellationToken.None);
+            const ExpressionOptions expressionOptions = ExpressionOptions.DecimalAsDefault | ExpressionOptions.NoCache;
+            var expression = new Expression("0.3333333333333333333333 + 1.6666666666666666666667", expressionOptions, null,CultureInfo.InvariantCulture);
+            _ = expression.Evaluate(CancellationToken.None);
         }
         catch
         {
