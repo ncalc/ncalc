@@ -7,11 +7,11 @@ namespace NCalc;
 /// </summary>
 public sealed class ExpressionContext
 {
-    public IDictionary<string, object?> Parameters { get; set; }
-    public IDictionary<string, ExpressionParameter> DynamicParameters { get; set; }
-    public IDictionary<string, AsyncExpressionParameter> AsyncParameters { get; set; }
-    public IDictionary<string, ExpressionFunction> Functions { get; set; }
-    public IDictionary<string, AsyncExpressionFunction> AsyncFunctions { get; set; }
+    public IDictionary<string, object?> Parameters { get; init; }
+    public IDictionary<string, ExpressionParameter> DynamicParameters { get; init; }
+    public IDictionary<string, AsyncExpressionParameter> AsyncParameters { get; init; }
+    public IDictionary<string, ExpressionFunction> Functions { get; init; }
+    public IDictionary<string, AsyncExpressionFunction> AsyncFunctions { get; init; }
 
     public EvaluateBinaryHandler? EvaluateBinaryHandler { get; set; }
     public EvaluateBinaryAsyncHandler? EvaluateBinaryAsyncHandler { get; set; }

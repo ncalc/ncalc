@@ -8,10 +8,10 @@
 
 ## Breaking Changes
 * `ExpressionContext` now represents only per-evaluation runtime state. `StaticParameters` was renamed to `Parameters`, and `Options`, `CultureInfo`, `MathHelperOptions`, `ComparisonOptions`, and the implicit conversions from `ExpressionOptions`/`CultureInfo` were removed. Configure parsing and evaluation with `ExpressionConfiguration` instead.
-* `ExpressionContext` is no longer a `record`
+* `ExpressionContext` is no longer a `record` and all props are init only to incentive immutability.
 * `Expression.Options` no longer exposes the getter. It is kept only as a setter that replaces `Expression.Configuration` using `ExpressionConfiguration.FromOptions(...)`. Use `Expression.Configuration`, `Expression.ParserOptions`, `Expression.EvaluationOptions`, `Expression.CultureInfo`, and `Expression.Configuration.CacheEnabled`.
 * `Expression` constructors and `IExpressionFactory.Create` now accept `ExpressionConfiguration` and `CultureInfo`.
-* `DynamicParameters`, `AsyncParameters`, `Functions`, and `AsyncFunctions` on `Expression` no longer have setters. Mutate the dictionaries on `Expression.Context` or replace them through a new `ExpressionContext`.
+*  `Parameters`, `DynamicParameters`, `AsyncParameters`, `Functions`, and `AsyncFunctions` on `Expression` no longer have setters. Mutate the dictionaries on `Expression.Context` or replace them through a new `ExpressionContext`.
 * `LogicalExpressionArgumentSeparator` was renamed to `ArgumentSeparator`.
 * `LogicalExpressionParserOptions` no longer exposes `DecimalAsDefault` and `LongAsDefault`. Use `FloatingPointNumberType` and `IntegerNumberType`.
 * `LogicalExpressionParser.GetOrCreateExpressionParser` now requires a `CultureInfo`, and `LogicalExpressionParser.Parse` accepts culture separately from parser options.

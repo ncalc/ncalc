@@ -58,11 +58,7 @@ public class Expression
     /// <summary>
     /// Static parameters for the expression evaluation.
     /// </summary>
-    public IDictionary<string, object?> Parameters
-    {
-        get => Context.Parameters;
-        set => Context.Parameters = value;
-    }
+    public IDictionary<string, object?> Parameters => Context.Parameters;
 
     /// <summary>
     /// Replaces <see cref="Configuration"/> with a configuration converted from <see cref="ExpressionOptions"/> flags.
