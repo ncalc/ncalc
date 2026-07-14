@@ -13,11 +13,17 @@ internal sealed class NumericTypeDefinition
     [JsonPropertyName("isReal")]
     public bool IsReal { get; set; }
 
+    [JsonPropertyName("supportsNaN")]
+    public bool SupportsNaN { get; set; }
+
     [JsonPropertyName("isUnsigned")]
     public bool IsUnsigned { get; set; }
 
     [JsonPropertyName("supportsBinaryOperators")]
     public bool SupportsBinaryOperators { get; set; }
+
+    [JsonPropertyName("supportsSameTypeComparison")]
+    public bool SupportsSameTypeComparison { get; set; }
 
     [JsonPropertyName("expandBitsTypeCode")]
     public string? ExpandBitsTypeCode { get; set; }
