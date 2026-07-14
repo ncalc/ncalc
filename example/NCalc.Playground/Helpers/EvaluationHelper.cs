@@ -9,7 +9,8 @@ public static class EvaluationHelper
         try
         {
             var parameters = BuildParameters(variables, options);
-            var expression = new Expression(expressionText, options, CultureInfo.InvariantCulture);
+            var context = new ExpressionContext(parameters);
+            var expression = new Expression(expressionText, options, context, CultureInfo.InvariantCulture);
 
             foreach (var (name, value) in parameters)
                 expression.Parameters[name] = value;

@@ -110,24 +110,34 @@ public class ServiceCollectionExtensionsTests
     {
         public Expression Create(
             string expression,
-            ExpressionConfiguration? configuration = null)
+            ExpressionConfiguration? configuration = null,
+            ExpressionContext? context = null,
+            CultureInfo? cultureInfo = null)
         {
             return new CustomExpression(
                 expression,
                 configuration ?? new ExpressionConfiguration(),
                 logicalExpressionFactory,
-                cache);
+                cache)
+            {
+                CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture
+            };
         }
 
         public Expression Create(
             LogicalExpression logicalExpression,
-            ExpressionConfiguration? configuration = null)
+            ExpressionConfiguration? configuration = null,
+            ExpressionContext? context = null,
+            CultureInfo? cultureInfo = null)
         {
             return new CustomExpression(
                 logicalExpression,
                 configuration ?? new ExpressionConfiguration(),
                 logicalExpressionFactory,
-                cache);
+                cache)
+            {
+                CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture
+            };
         }
     }
 
@@ -159,7 +169,7 @@ public class ServiceCollectionExtensionsTests
         ExpressionConfiguration configuration,
         ILogicalExpressionFactory logicalExpressionFactory,
         ILogicalExpressionCache cache)
-        : Expression(expression, configuration, logicalExpressionFactory, cache)
+        : Expression(expression, configuration, new(), CultureInfo.CurrentCulture, logicalExpressionFactory, cache)
     {
         public CustomExpression(
             LogicalExpression logicalExpression,

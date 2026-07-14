@@ -648,9 +648,13 @@ public class LambdaTests
     [Arguments(int.MaxValue, '*', int.MaxValue)]
     public void ShouldHandleOverflowInt(int a, char op, int b)
     {
-        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
-        e.Parameters["a"] = a;
-        e.Parameters["b"] = b;
+        var parameters = new Dictionary<string, object?>
+        {
+            ["a"] = a,
+            ["b"] = b
+        };
+        var context = new ExpressionContext(parameters);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, context,CultureInfo.InvariantCulture);
 
         var lambda = e.ToLambda<int>(CancellationToken.None);
 
@@ -660,7 +664,7 @@ public class LambdaTests
     [Test]
     public async Task ShouldAllowPowWithDecimals()
     {
-        var e = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
+        var e = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
         var lambda = e.ToLambda<decimal>(CancellationToken.None);
         await Assert.That(lambda()).IsEqualTo(9.61m);
     }

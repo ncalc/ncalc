@@ -311,7 +311,7 @@ public class MathsTests
     public async Task Overflow_Issue_190()
     {
         const decimal minValue = decimal.MinValue;
-        var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
+        var expr = new Expression(minValue.ToString(CultureInfo.InvariantCulture), ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
         await Assert.That(expr.Evaluate(CancellationToken.None)).IsEqualTo(minValue);
     }
 
@@ -392,7 +392,7 @@ public class MathsTests
     [Arguments(int.MaxValue, '*', int.MaxValue)]
     public void Should_Handle_Overflow_Int(int a, char op, int b)
     {
-        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, null, CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
@@ -406,7 +406,7 @@ public class MathsTests
     [Arguments(double.MinValue, '/', 0.001d)]
     public void Should_Handle_Overflow_Double(double a, char op, double b)
     {
-        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, null, CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
@@ -420,7 +420,7 @@ public class MathsTests
     [Arguments(float.MinValue, '/', 0.001f)]
     public void Should_Handle_Overflow_Float(float a, char op, float b)
     {
-        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, CultureInfo.InvariantCulture);
+        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, null, CultureInfo.InvariantCulture);
         e.Parameters["a"] = a;
         e.Parameters["b"] = b;
 
@@ -563,7 +563,7 @@ public class MathsTests
     [Test]
     public async Task ShouldBeDoubleWithLongAsDefault()
     {
-        var exp = new Expression("10000000.1*1000", ExpressionOptions.LongAsDefault, CultureInfo.InvariantCulture);
+        var exp = new Expression("10000000.1*1000", ExpressionOptions.LongAsDefault, null, CultureInfo.InvariantCulture);
         var result = exp.Evaluate(CancellationToken.None);
 
         const double expected = 10000000.1 * 1000;

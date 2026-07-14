@@ -237,7 +237,7 @@ public class DecimalsTests
     [Test]
     public async Task ShouldParseBigNumbersAsDecimals()
     {
-        var expr = new Expression("25343463636363454545454544563464.12", ExpressionOptions.DecimalAsDefault, CultureInfo.InvariantCulture);
+        var expr = new Expression("25343463636363454545454544563464.12", ExpressionOptions.DecimalAsDefault, null,CultureInfo.InvariantCulture);
         var res = expr.Evaluate(CancellationToken.None);
         await Assert.That(res).IsEqualTo(double.PositiveInfinity);
     }

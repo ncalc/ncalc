@@ -5,7 +5,7 @@ namespace NCalc;
 /// <summary>
 /// Per-evaluation runtime state, including parameters, functions, and event handlers.
 /// </summary>
-public sealed record ExpressionContext
+public sealed class ExpressionContext
 {
     public IDictionary<string, object?> Parameters { get; set; }
     public IDictionary<string, ExpressionParameter> DynamicParameters { get; set; }
@@ -20,6 +20,7 @@ public sealed record ExpressionContext
     public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
     public EvaluateAsyncFunctionHandler? EvaluateAsyncFunctionHandler { get; set; }
 
+    // ReSharper disable once ConvertToPrimaryConstructor
     public ExpressionContext(
         IDictionary<string, object?>? parameters = null,
         IDictionary<string, ExpressionParameter>? dynamicParameters = null,
