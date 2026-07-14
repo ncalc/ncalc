@@ -6,31 +6,31 @@ Use <xref:NCalc.ExpressionConfiguration> for parsing, evaluation, math, comparis
 <xref:NCalc.ExpressionContext> for runtime data such as parameters, functions, and event handlers.
 
 ```csharp
-using NCalc;
-using NCalc.Helpers;
-using NCalc.Parser;
-
-static readonly ExpressionConfiguration Configuration = new(
-    parserOptions: new LogicalExpressionParserOptions
-    {
-        AllowCharValues = true,
-        FloatingPointNumberType = FloatingPointNumberType.Decimal,
-        IntegerNumberType = IntegerNumberType.Int32,
-        ArgumentSeparator = ArgumentSeparator.Comma | ArgumentSeparator.Semicolon
-    },
-    evaluationOptions: new ExpressionEvaluationOptions
-    {
-        IgnoreCaseAtBuiltInFunctions = true,
-        StringComparer = StringComparer.OrdinalIgnoreCase,
-        Math = new MathOptions
+public static class PriceCalculator
+{
+    private static readonly ExpressionConfiguration Configuration = new(
+        new LogicalExpressionParserOptions 
         {
-            FloatingPointNumberType = FloatingPointNumberType.Decimal,
-            OverflowProtection = true,
-            MidpointRounding = MidpointRounding.AwayFromZero
-        }
-    });
+            AllowCharValues = true
+        },
+        new ExpressionEvaluationOptions 
+        {
+            StringComparer = StringComparer.OrdinalIgnoreCase
+        });
 
-var expression = new Expression("ROUND('1.25'; 1)", Configuration, CultureInfo.InvariantCulture);
+    public static decimal Calculate(decimal price)
+    {
+        var context = new ExpressionContext 
+        {
+            Parameters = 
+            {
+                ["Price"] = price
+            }
+        };
+        var expression = new Expression("[Price] * 2", Configuration, context);
+        return expression.Evaluate<decimal>();
+    }
+}
 ```
 
 ## Thread safety
