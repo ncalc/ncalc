@@ -8,6 +8,14 @@ namespace NCalc;
 public sealed class ExpressionContext
 {
     public IDictionary<string, object?> Parameters { get; init; }
+
+    [Obsolete("Please use Parameters instead.")]
+    public IDictionary<string, object?> StaticParameters
+    {
+        get => Parameters;
+        init => Parameters = value;
+    }
+
     public IDictionary<string, ExpressionParameter> DynamicParameters { get; init; }
     public IDictionary<string, AsyncExpressionParameter> AsyncParameters { get; init; }
     public IDictionary<string, ExpressionFunction> Functions { get; init; }
