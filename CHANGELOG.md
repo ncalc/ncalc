@@ -4,7 +4,7 @@
 * Add `ExpressionConfiguration`, `ExpressionEvaluationOptions` for explicit configuration.
 * Add `FloatingPointNumberType` and `IntegerNumberType` to configure parser number handling and string-to-number coercion in math helpers.
 * Improve parser caching by including culture in the parser cache key.
-* Remove the `NCalc.Antlr` plugin and its tests/benchmarks from the solution, ANTLR is missing many features and is a cost to be maintained. If you use Antlr, please open an issue.
+* Refactor: Generate type-aware comparisons and optimize common numeric paths
 
 ## Breaking Changes
 * `ExpressionContext` now represents only per-evaluation runtime state. `StaticParameters` was renamed to `Parameters`, and `Options`, `CultureInfo`, `MathHelperOptions`, `ComparisonOptions`, and the implicit conversions from `ExpressionOptions`/`CultureInfo` were removed. Configure parsing and evaluation with `ExpressionConfiguration` instead.
