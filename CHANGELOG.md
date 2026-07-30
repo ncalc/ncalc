@@ -1,10 +1,11 @@
 # 7.0.0
 
-* Refactor expression configuration by separating immutable parsing/evaluation settings from runtime expression context.
+* Refactor expression configuration by separating immutable parsing/evaluation settings from runtime expression context by @gumbarros in https://github.com/ncalc/ncalc/pull/600
 * Add `ExpressionConfiguration`, `ExpressionEvaluationOptions` for explicit configuration.
 * Add `FloatingPointNumberType` and `IntegerNumberType` to configure parser number handling and string-to-number coercion in math helpers.
 * Improve parser caching by including culture in the parser cache key.
-* Refactor: Generate type-aware comparisons and optimize common numeric paths
+* Refactor: Generate type-aware comparisons and optimize common numeric paths by @gumbarros in https://github.com/ncalc/ncalc/pull/601
+* Fix serialization of floating-point numbers by @gumbarros in https://github.com/ncalc/ncalc/pull/605
 
 ## Breaking Changes
 * `ExpressionContext` now represents only per-evaluation runtime state. `StaticParameters` was renamed to `Parameters`, and `Options`, `CultureInfo`, `MathHelperOptions`, `ComparisonOptions`, and the implicit conversions from `ExpressionOptions`/`CultureInfo` were removed. Configure parsing and evaluation with `ExpressionConfiguration` instead.
