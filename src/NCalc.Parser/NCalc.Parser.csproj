@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Parlot" Version="1.5.7" />
+      <PackageReference Include="Parlot" />
     </ItemGroup>
 
     <ItemGroup>

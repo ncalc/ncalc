@@ -44,7 +44,7 @@
     <ItemGroup>
         <ProjectReference Include="..\NCalc.Core\NCalc.Core.csproj" />
     </ItemGroup>
-
+    
     <PropertyGroup Condition=" '$(Configuration)' == 'SignedRelease' ">
         <AssemblyName>NCalc.Sync.signed</AssemblyName>
         <PackageId>NCalcSync.signed</PackageId>
