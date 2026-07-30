@@ -4,7 +4,6 @@
 [![Coverage](https://img.shields.io/codecov/c/github/ncalc/ncalc.svg)](https://codecov.io/gh/ncalc/ncalc)
 [![NuGet](https://img.shields.io/nuget/v/NCalcSync.signed.svg?label=nuget&color=004880)](https://nuget.org/packages/NCalcSync.signed)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/NCalcSync.svg?color=004880)](https://nuget.org/packages/NCalcSync.signed)
-[![Discord](https://img.shields.io/discord/1237181265426387005?color=5b62ef&label=discord)](https://discord.gg/TeJkmXbqFk)
 
 NCalc is a fast, lightweight expression evaluator for .NET. It parses and evaluates mathematical and logical expressions
 with literals, operators, parameters, built-in functions, and custom functions.
