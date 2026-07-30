@@ -17,30 +17,31 @@
         </None>
 		<None Include="README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
-	
-    <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
-        <PackageReference Include="System.Collections.Immutable" Version="10.0.7" />    
-    </ItemGroup>
 
 
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-        <PackageReference Include="System.ValueTuple" Version="4.6.2" />
-        <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+        <PackageReference Include="Microsoft.CSharp" />
+        <PackageReference Include="System.Collections.Immutable" />
+        <PackageReference Include="System.ValueTuple" />
+        <PackageReference Include="NETStandard.Library" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+        <PackageReference Include="Microsoft.CSharp" />
+        <PackageReference Include="System.Collections.Immutable" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ExtendedNumerics.BigDecimal" Version="3003.0.0.346" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
-        <PackageReference Include="Parlot" Version="1.5.7" />
+        <PackageReference Include="ExtendedNumerics.BigDecimal" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="Parlot" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\NCalc.Parser\NCalc.Parser.csproj" />
       <ProjectReference Include="..\NCalc.SourceGenerators\NCalc.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+      <PackageReference Include="System.Collections.Immutable" />
     </ItemGroup>
 </Project>
