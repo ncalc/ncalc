@@ -203,4 +203,10 @@ public class SerializationTests
 
         await Assert.That(expression.ToExpressionString(evaluateParameters: true)).IsEqualTo("10 + [ValueB]");
     }
+
+    [Test]
+    public async Task ShouldSerializePreciseDecimalNumber()
+    {
+        await Assert.That(new ValueExpression(0.00001).ToExpressionString()).IsEqualTo("1E-05");
+    }
 }
