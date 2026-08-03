@@ -28,6 +28,31 @@ public sealed class ExpressionContext
     public EvaluateFunctionHandler? EvaluateFunctionHandler { get; set; }
     public EvaluateAsyncFunctionHandler? EvaluateAsyncFunctionHandler { get; set; }
 
+    /// <summary>
+    /// Creates a copy of another <see cref="ExpressionContext"/> with independent parameter and function dictionaries.
+    /// </summary>
+    /// <remarks>
+    /// Dictionary entries and event handlers are copied by reference.
+    /// </remarks>
+    /// <param name="context">The context to copy.</param>
+    public ExpressionContext(ExpressionContext context)
+    {
+        if (context is null)
+            throw new ArgumentNullException(nameof(context));
+
+        Parameters = new Dictionary<string, object?>(context.Parameters);
+        DynamicParameters = new Dictionary<string, ExpressionParameter>(context.DynamicParameters);
+        AsyncParameters = new Dictionary<string, AsyncExpressionParameter>(context.AsyncParameters);
+        Functions = new Dictionary<string, ExpressionFunction>(context.Functions);
+        AsyncFunctions = new Dictionary<string, AsyncExpressionFunction>(context.AsyncFunctions);
+        EvaluateBinaryHandler = context.EvaluateBinaryHandler;
+        EvaluateBinaryAsyncHandler = context.EvaluateBinaryAsyncHandler;
+        EvaluateParameterHandler = context.EvaluateParameterHandler;
+        EvaluateAsyncParameterHandler = context.EvaluateAsyncParameterHandler;
+        EvaluateFunctionHandler = context.EvaluateFunctionHandler;
+        EvaluateAsyncFunctionHandler = context.EvaluateAsyncFunctionHandler;
+    }
+
     // ReSharper disable once ConvertToPrimaryConstructor
     public ExpressionContext(
         IDictionary<string, object?>? parameters = null,
