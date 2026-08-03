@@ -48,6 +48,28 @@ var expression = new Expression("ABS(Value)", configuration, context);
 var result = expression.Evaluate();
 ```
 
+## Copying a context
+
+Create a context from an existing context when an evaluation needs the same parameters, functions, and event handlers
+without sharing its mutable dictionaries:
+
+```csharp
+var original = new ExpressionContext
+{
+    Parameters =
+    {
+        ["Price"] = 12.5m,
+        ["Quantity"] = 4
+    }
+};
+
+var copy = new ExpressionContext(original);
+copy.Parameters["Quantity"] = 10;
+```
+
+The constructor creates new dictionaries for parameters and functions, so adding, updating, or removing entries in
+`copy` does not modify `original`. Parameter values, function delegates, and event handlers are copied by reference.
+
 ## Lifetime
 
 <xref:NCalc.ExpressionContext> is mutable and not thread-safe. Do not cache a single context as global shared state because
