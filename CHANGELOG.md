@@ -1,3 +1,6 @@
+# 7.0.1
+* Add copy constructor to `ExpressionContext` by @gumbarros in https://github.com/ncalc/ncalc/pull/607
+
 # 7.0.0
 
 * Refactor expression configuration by separating immutable parsing/evaluation settings from runtime expression context by @gumbarros in https://github.com/ncalc/ncalc/pull/600
