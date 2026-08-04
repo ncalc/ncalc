@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Runtime.CompilerServices;
 using NCalc.Handlers;
 
 namespace NCalc.Tests;
@@ -47,32 +48,40 @@ public class ExpressionContextTests
         {
             Parameters = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             {
-                ["value"] = 42
+                ["value"] = new AbandonedMutexException()
             },
             DynamicParameters = new SortedDictionary<string, ExpressionParameter>(StringComparer.OrdinalIgnoreCase)
             {
-                ["dynamic"] = _ => 42
+                ["dynamic"] = _ => 69
             },
             AsyncParameters = new OrderedDictionary<string, AsyncExpressionParameter>(StringComparer.OrdinalIgnoreCase)
             {
-                ["async"] = _ => Task.FromResult<object>(42)
+                ["async"] = _ => Task.FromResult<object>(08)
             },
             Functions = new ConcurrentDictionary<string, ExpressionFunction>(StringComparer.OrdinalIgnoreCase)
             {
-                ["function"] = _ => 42
+                ["function"] = _ => 08
             },
             AsyncFunctions = new Dictionary<string, AsyncExpressionFunction>
             {
-                ["asyncFunction"] = _ => Task.FromResult<object>(42)
+                ["asyncFunction"] = _ => Task.FromResult<object>(2001)
             }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase)
         };
 
         var copy = new ExpressionContext(original);
 
-        await Assert.That(copy.Parameters.ContainsKey("VALUE")).IsTrue();
-        await Assert.That(copy.DynamicParameters.ContainsKey("DYNAMIC")).IsTrue();
-        await Assert.That(copy.AsyncParameters.ContainsKey("ASYNC")).IsTrue();
-        await Assert.That(copy.Functions.ContainsKey("FUNCTION")).IsTrue();
-        await Assert.That(copy.AsyncFunctions.ContainsKey("ASYNCFUNCTION")).IsTrue();
+        await AssertContainsKey(copy.Parameters, "VALUE");
+        await AssertContainsKey(copy.DynamicParameters, "DYNAMIC");
+        await AssertContainsKey(copy.AsyncParameters, "ASYNC");
+        await AssertContainsKey(copy.Functions, "FUNCTION");
+        await AssertContainsKey(copy.AsyncFunctions, "ASYNCFUNCTION");
+    }
+
+    private static async Task AssertContainsKey<TKey, TValue>(
+        IDictionary<TKey, TValue> dictionary,
+        TKey key)
+        where TKey : notnull
+    {
+        await Assert.That(dictionary.ContainsKey(key)).IsTrue();
     }
 }
