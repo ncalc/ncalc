@@ -71,26 +71,29 @@ public sealed class ExpressionContext
         AsyncFunctions = asyncFunctions ?? new Dictionary<string, AsyncExpressionFunction>();
     }
 
-    private static Dictionary<string, TValue> CopyDictionary<TValue>(IDictionary<string, TValue> source)
+    private static IDictionary<string, TValue> CopyDictionary<TValue>(IDictionary<string, TValue> source)
     {
-        var comparer = source switch
+        if (source is null)
+            throw new ArgumentNullException(nameof(source));
+
+        return source switch
         {
-            Dictionary<string, TValue> d => d.Comparer,
-#if NET //Comparer prop does not exist at .NET Standard.
-            ConcurrentDictionary<string, TValue> d => d.Comparer,
+            Dictionary<string, TValue> d => new Dictionary<string, TValue>(d, d.Comparer),
+#if NET
+            ConcurrentDictionary<string, TValue> d => new ConcurrentDictionary<string, TValue>(d, d.Comparer),
+#else
+            // The comparer cannot be retrieved on .NET Standard.
+            ConcurrentDictionary<string, TValue> d => new ConcurrentDictionary<string, TValue>(d),
 #endif
-            ImmutableDictionary<string, TValue> d => d.KeyComparer,
-            FrozenDictionary<string, TValue> d => d.Comparer,
+            ImmutableDictionary<string, TValue> d => d.ToBuilder().ToImmutable(),
+            FrozenDictionary<string, TValue> d => d.ToFrozenDictionary(d.Comparer),
 #if NET9_0_OR_GREATER
-            OrderedDictionary<string, TValue> d => d.Comparer,
+            OrderedDictionary<string, TValue> d => new OrderedDictionary<string, TValue>(d, d.Comparer),
 #endif
-            SortedDictionary<string, TValue> { Comparer: IEqualityComparer<string> c } => c,
-            SortedList<string, TValue> { Comparer: IEqualityComparer<string> c } => c,
-            ImmutableSortedDictionary<string, TValue> { KeyComparer: IEqualityComparer<string> c } => c,
-
-            _ => EqualityComparer<string>.Default
+            SortedDictionary<string, TValue> d => new SortedDictionary<string, TValue>(d, d.Comparer),
+            SortedList<string, TValue> d => new SortedList<string, TValue>(d, d.Comparer),
+            ImmutableSortedDictionary<string, TValue> d => d.ToBuilder().ToImmutable(),
+            _ => new Dictionary<string, TValue>(source)
         };
-
-        return new Dictionary<string, TValue>(source, comparer);
     }
 }

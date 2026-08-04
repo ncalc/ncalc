@@ -45,36 +45,29 @@ public class ExpressionContextTests
     {
         var original = new ExpressionContext
         {
-            Parameters = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
-            DynamicParameters = new SortedDictionary<string, ExpressionParameter>(StringComparer.OrdinalIgnoreCase),
-            AsyncParameters = new OrderedDictionary<string, AsyncExpressionParameter>(StringComparer.OrdinalIgnoreCase),
-            Functions = new ConcurrentDictionary<string, ExpressionFunction>(StringComparer.OrdinalIgnoreCase),
-            AsyncFunctions = new Dictionary<string, AsyncExpressionFunction>().ToFrozenDictionary(StringComparer.OrdinalIgnoreCase)
-        };
-
-        var copy = new ExpressionContext(original)
-        {
-            Parameters =
+            Parameters = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             {
                 ["value"] = 42
             },
-            DynamicParameters =
+            DynamicParameters = new SortedDictionary<string, ExpressionParameter>(StringComparer.OrdinalIgnoreCase)
             {
                 ["dynamic"] = _ => 42
             },
-            AsyncParameters =
+            AsyncParameters = new OrderedDictionary<string, AsyncExpressionParameter>(StringComparer.OrdinalIgnoreCase)
             {
                 ["async"] = _ => Task.FromResult<object>(42)
             },
-            Functions =
+            Functions = new ConcurrentDictionary<string, ExpressionFunction>(StringComparer.OrdinalIgnoreCase)
             {
                 ["function"] = _ => 42
             },
-            AsyncFunctions =
+            AsyncFunctions = new Dictionary<string, AsyncExpressionFunction>
             {
                 ["asyncFunction"] = _ => Task.FromResult<object>(42)
-            }
+            }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase)
         };
+
+        var copy = new ExpressionContext(original);
 
         await Assert.That(copy.Parameters.ContainsKey("VALUE")).IsTrue();
         await Assert.That(copy.DynamicParameters.ContainsKey("DYNAMIC")).IsTrue();
