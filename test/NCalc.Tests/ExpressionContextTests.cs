@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using NCalc.Handlers;
 
 namespace NCalc.Tests;
@@ -37,5 +38,48 @@ public class ExpressionContextTests
     public async Task ShouldRejectNullContextWhenCopying()
     {
         await Assert.That(() => new ExpressionContext(null!)).Throws<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task ShouldPreserveComparerForAllContextDictionaries()
+    {
+        var original = new ExpressionContext
+        {
+            Parameters = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
+            DynamicParameters = new SortedDictionary<string, ExpressionParameter>(StringComparer.OrdinalIgnoreCase),
+            AsyncParameters = new OrderedDictionary<string, AsyncExpressionParameter>(StringComparer.OrdinalIgnoreCase),
+            Functions = new ConcurrentDictionary<string, ExpressionFunction>(StringComparer.OrdinalIgnoreCase),
+            AsyncFunctions = new Dictionary<string, AsyncExpressionFunction>().ToFrozenDictionary(StringComparer.OrdinalIgnoreCase)
+        };
+
+        var copy = new ExpressionContext(original)
+        {
+            Parameters =
+            {
+                ["value"] = 42
+            },
+            DynamicParameters =
+            {
+                ["dynamic"] = _ => 42
+            },
+            AsyncParameters =
+            {
+                ["async"] = _ => Task.FromResult<object>(42)
+            },
+            Functions =
+            {
+                ["function"] = _ => 42
+            },
+            AsyncFunctions =
+            {
+                ["asyncFunction"] = _ => Task.FromResult<object>(42)
+            }
+        };
+
+        await Assert.That(copy.Parameters.ContainsKey("VALUE")).IsTrue();
+        await Assert.That(copy.DynamicParameters.ContainsKey("DYNAMIC")).IsTrue();
+        await Assert.That(copy.AsyncParameters.ContainsKey("ASYNC")).IsTrue();
+        await Assert.That(copy.Functions.ContainsKey("FUNCTION")).IsTrue();
+        await Assert.That(copy.AsyncFunctions.ContainsKey("ASYNCFUNCTION")).IsTrue();
     }
 }

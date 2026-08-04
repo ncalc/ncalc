@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+using System.Collections.Immutable;
 using NCalc.Handlers;
 
 namespace NCalc;
@@ -40,11 +42,12 @@ public sealed class ExpressionContext
         if (context is null)
             throw new ArgumentNullException(nameof(context));
 
-        Parameters = new Dictionary<string, object?>(context.Parameters);
-        DynamicParameters = new Dictionary<string, ExpressionParameter>(context.DynamicParameters);
-        AsyncParameters = new Dictionary<string, AsyncExpressionParameter>(context.AsyncParameters);
-        Functions = new Dictionary<string, ExpressionFunction>(context.Functions);
-        AsyncFunctions = new Dictionary<string, AsyncExpressionFunction>(context.AsyncFunctions);
+        Parameters = CopyDictionary(context.Parameters);
+        DynamicParameters = CopyDictionary(context.DynamicParameters);
+        AsyncParameters = CopyDictionary(context.AsyncParameters);
+        Functions = CopyDictionary(context.Functions);
+        AsyncFunctions = CopyDictionary(context.AsyncFunctions);
+
         EvaluateBinaryHandler = context.EvaluateBinaryHandler;
         EvaluateBinaryAsyncHandler = context.EvaluateBinaryAsyncHandler;
         EvaluateParameterHandler = context.EvaluateParameterHandler;
@@ -66,5 +69,28 @@ public sealed class ExpressionContext
         AsyncParameters = asyncParameters ?? new Dictionary<string, AsyncExpressionParameter>();
         Functions = functions ?? new Dictionary<string, ExpressionFunction>();
         AsyncFunctions = asyncFunctions ?? new Dictionary<string, AsyncExpressionFunction>();
+    }
+
+    private static Dictionary<string, TValue> CopyDictionary<TValue>(IDictionary<string, TValue> source)
+    {
+        var comparer = source switch
+        {
+            Dictionary<string, TValue> d => d.Comparer,
+#if NET //Comparer prop does not exist at .NET Standard.
+            ConcurrentDictionary<string, TValue> d => d.Comparer,
+#endif
+            ImmutableDictionary<string, TValue> d => d.KeyComparer,
+            FrozenDictionary<string, TValue> d => d.Comparer,
+#if NET9_0_OR_GREATER
+            OrderedDictionary<string, TValue> d => d.Comparer,
+#endif
+            SortedDictionary<string, TValue> { Comparer: IEqualityComparer<string> c } => c,
+            SortedList<string, TValue> { Comparer: IEqualityComparer<string> c } => c,
+            ImmutableSortedDictionary<string, TValue> { KeyComparer: IEqualityComparer<string> c } => c,
+
+            _ => EqualityComparer<string>.Default
+        };
+
+        return new Dictionary<string, TValue>(source, comparer);
     }
 }
