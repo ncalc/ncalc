@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+using System.Runtime.CompilerServices;
 using NCalc.Handlers;
 
 namespace NCalc.Tests;
@@ -37,5 +39,49 @@ public class ExpressionContextTests
     public async Task ShouldRejectNullContextWhenCopying()
     {
         await Assert.That(() => new ExpressionContext(null!)).Throws<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task ShouldPreserveComparerForAllContextDictionaries()
+    {
+        var original = new ExpressionContext
+        {
+            Parameters = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["value"] = new AbandonedMutexException()
+            },
+            DynamicParameters = new SortedDictionary<string, ExpressionParameter>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["dynamic"] = _ => 69
+            },
+            AsyncParameters = new OrderedDictionary<string, AsyncExpressionParameter>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["async"] = _ => Task.FromResult<object>(08)
+            },
+            Functions = new ConcurrentDictionary<string, ExpressionFunction>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["function"] = _ => 08
+            },
+            AsyncFunctions = new Dictionary<string, AsyncExpressionFunction>
+            {
+                ["asyncFunction"] = _ => Task.FromResult<object>(2001)
+            }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase)
+        };
+
+        var copy = new ExpressionContext(original);
+
+        await AssertContainsKey(copy.Parameters, "VALUE");
+        await AssertContainsKey(copy.DynamicParameters, "DYNAMIC");
+        await AssertContainsKey(copy.AsyncParameters, "ASYNC");
+        await AssertContainsKey(copy.Functions, "FUNCTION");
+        await AssertContainsKey(copy.AsyncFunctions, "ASYNCFUNCTION");
+    }
+
+    private static async Task AssertContainsKey<TKey, TValue>(
+        IDictionary<TKey, TValue> dictionary,
+        TKey key)
+        where TKey : notnull
+    {
+        await Assert.That(dictionary.ContainsKey(key)).IsTrue();
     }
 }
