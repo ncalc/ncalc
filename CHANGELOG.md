@@ -1,8 +1,10 @@
+# 7.0.2
+* Fix: Preserve dictionary comparers when copying `ExpressionContext` by @gumbarros in https://github.com/ncalc/ncalc/pull/608
+
 # 7.0.1
 * Add copy constructor to `ExpressionContext` by @gumbarros in https://github.com/ncalc/ncalc/pull/607
 
 # 7.0.0
-
 * Refactor expression configuration by separating immutable parsing/evaluation settings from runtime expression context by @gumbarros in https://github.com/ncalc/ncalc/pull/600
 * Add `ExpressionConfiguration`, `ExpressionEvaluationOptions` for explicit configuration.
 * Add `FloatingPointNumberType` and `IntegerNumberType` to configure parser number handling and string-to-number coercion in math helpers.
