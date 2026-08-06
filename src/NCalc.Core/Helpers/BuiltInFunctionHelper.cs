@@ -6,7 +6,7 @@ namespace NCalc.Helpers;
 
 public static class BuiltInFunctionHelper
 {
-    private static readonly BuiltInFunctionDefinition[] Definitions =
+    private static readonly FrozenSet<BuiltInFunctionDefinition> Definitions =
     [
         Unary("Abs", static (value, data) => MathHelper.Abs(value, data.EvaluationOptions.Math, data.CultureInfo)),
         Unary("Acos", static (value, data) => MathHelper.Acos(value, data.CultureInfo)),
