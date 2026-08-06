@@ -9,6 +9,23 @@ namespace NCalc.Tests;
 public class EvaluationTests
 {
     [Test]
+    public async Task ShouldExposeCanonicalBuiltInFunctionNames()
+    {
+        string[] expectedNames =
+        [
+            "Abs", "Acos", "Asin", "Atan", "Atan2", "Ceiling", "Cos", "Exp", "Floor",
+            "IEEERemainder", "Ln", "Log", "Log10", "Pow", "Round", "Sign", "Sin", "Sqrt",
+            "Tan", "Truncate", "Max", "Min", "if", "in", "ifs", "EscapeLike"
+        ];
+
+        var actualNames = BuiltInFunctionHelper.GetBuiltInFunctionNames();
+
+        await Assert.That(actualNames.Count).IsEqualTo(expectedNames.Length);
+        for (var i = 0; i < expectedNames.Length; i++)
+            await Assert.That(actualNames[i]).IsEqualTo(expectedNames[i]);
+    }
+
+    [Test]
     [MethodDataSource(typeof(EvaluationTestData), "GetEnumerator")]
     public async Task Expression_Should_Evaluate(string expression, object expected)
     {
