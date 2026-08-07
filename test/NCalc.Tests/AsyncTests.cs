@@ -33,6 +33,81 @@ public class AsyncTests
     }
 
     [Test]
+    public async Task ShouldEvaluateBinaryOperandsConcurrentlyWhenEnabled()
+    {
+        var operandsStarted = CreateCompletionSources();
+        var releaseOperands = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var expression = CreateConcurrentBinaryExpression("first() + second()");
+        expression.AsyncFunctions["first"] = async _ =>
+        {
+            operandsStarted[0].SetResult();
+            await releaseOperands.Task;
+            return 1;
+        };
+        expression.AsyncFunctions["second"] = async _ =>
+        {
+            operandsStarted[1].SetResult();
+            await releaseOperands.Task;
+            return 2;
+        };
+
+        var evaluationTask = expression.EvaluateAsync(CancellationToken.None);
+
+        await WaitForBothOperands(operandsStarted);
+        releaseOperands.SetResult();
+
+        await Assert.That(await evaluationTask).IsEqualTo(3);
+    }
+
+    [Test]
+    public async Task ShouldKeepShortCircuitingBinaryExpressionsLazyDuringConcurrentEvaluation()
+    {
+        foreach (var (expressionText, expected) in new (string, object)[]
+                 {
+                     ("false && skipped()", false),
+                     ("true || skipped()", true),
+                     ("'value' ?? skipped()", "value")
+                 })
+        {
+            var expression = CreateConcurrentBinaryExpression(expressionText);
+            expression.AsyncFunctions["skipped"] = _ =>
+                Task.FromException<object>(new InvalidOperationException("The right operand should not be evaluated."));
+
+            await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo(expected);
+        }
+    }
+
+    [Test]
+    public async Task ShouldKeepConditionalBranchesLazyDuringConcurrentEvaluation()
+    {
+        foreach (var expressionText in new[] { "true ? selected() : skipped()", "if(true, selected(), skipped())" })
+        {
+            var expression = CreateConcurrentBinaryExpression(expressionText);
+            expression.AsyncFunctions["selected"] = _ => Task.FromResult<object>(42);
+            expression.AsyncFunctions["skipped"] = _ =>
+                Task.FromException<object>(new InvalidOperationException("The unselected branch should not be evaluated."));
+
+            await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo(42);
+        }
+    }
+
+    [Test]
+    public async Task ShouldUseBinaryHandlerResultBeforeConcurrentOperandEvaluation()
+    {
+        var expression = CreateConcurrentBinaryExpression("left() + right()");
+        expression.AsyncFunctions["left"] = _ =>
+            Task.FromException<object>(new InvalidOperationException("The operands should not be evaluated."));
+        expression.AsyncFunctions["right"] = expression.AsyncFunctions["left"];
+        expression.EvaluateBinaryAsync += args =>
+        {
+            args.Result = 42;
+            return Task.CompletedTask;
+        };
+
+        await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo(42);
+    }
+
+    [Test]
     public async Task ShouldEvaluateAsyncFunctionHandler()
     {
         var expression = new Expression("database_operation('SELECT FOO') == 'FOO'");
@@ -497,5 +572,30 @@ public class AsyncTests
         await Assert.That(await expression.EvaluateAsync<bool>(CancellationToken.None)).IsTrue();
         await Assert.That(await new Expression("(0.0 / 0.0) == (0.0 / 0.0)").EvaluateAsync<bool>(CancellationToken.None))
             .IsFalse();
+    }
+
+    private static Expression CreateConcurrentBinaryExpression(string expression)
+    {
+        return new Expression(expression, new ExpressionConfiguration
+        {
+            Evaluation = new ExpressionEvaluationOptions
+            {
+                ConcurrentBinaryAsyncEvaluation = true
+            }
+        });
+    }
+
+    private static TaskCompletionSource[] CreateCompletionSources()
+    {
+        return
+        [
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)
+        ];
+    }
+
+    private static Task WaitForBothOperands(TaskCompletionSource[] operandsStarted)
+    {
+        return Task.WhenAll(operandsStarted.Select(started => started.Task)).WaitAsync(TimeSpan.FromSeconds(5));
     }
 }
