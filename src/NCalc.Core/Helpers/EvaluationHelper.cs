@@ -129,6 +129,9 @@ public static class EvaluationHelper
 
         if (noStringTypeCoercion)
         {
+            if (leftValue is string leftOnlyString && rightValue is string rightOnlyString)
+                return options.StringComparer.Equals(leftOnlyString, rightOnlyString);
+
             if (leftValue is string || rightValue is string)
                 return EqualityComparer<object?>.Default.Equals(leftValue, rightValue);
 
