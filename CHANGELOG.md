@@ -1,3 +1,9 @@
+# 7.1.0
+* Refactor: Unify built-in function registration and evaluation by @gumbarros in https://github.com/ncalc/ncalc/pull/610
+* Add isNull and isNullOrEmpty built-in functions by @gumbarros in https://github.com/ncalc/ncalc/pull/612
+* Added null coalescing operator by @gumbarros in https://github.com/ncalc/ncalc/pull/613
+* Fix: Honor StringComparer at `in` comparisons when NoStringTypeCoercion is set by @cokert in https://github.com/ncalc/ncalc/pull/614
+
 # 7.0.2
 * Fix: Preserve dictionary comparers when copying `ExpressionContext` by @gumbarros in https://github.com/ncalc/ncalc/pull/608
 
