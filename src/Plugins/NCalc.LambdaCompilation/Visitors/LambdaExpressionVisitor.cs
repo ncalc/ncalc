@@ -195,6 +195,16 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                     LinqExpression.Convert(args[0], typeof(object)));
                 return LinqExpression.GreaterThanOrEqual(r, LinqExpression.Constant(0));
 
+            case var s when string.Equals(s, "isNull", comparisonType):
+                CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 1);
+                return IsNull(args[0]);
+
+            case var s when string.Equals(s, "isNullOrEmpty", comparisonType):
+                CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 1);
+                var isNull = IsNull(args[0]);
+                var isEmpty = IsEmptyString(args[0]);
+                return LinqExpression.OrElse(isNull, isEmpty);
+
             case var s when string.Equals(s, "EscapeLike", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 1);
                 var escapeLikeMethod = typeof(LikeOperatorHelper).GetMethod(
@@ -235,6 +245,30 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         {
             if (argsNum != argsNeed)
                 throw new ArgumentException($"{funcStr} takes exactly {argsNeed} argument");
+        }
+
+        static LinqExpression IsNull(LinqExpression argument)
+        {
+            return argument.Type.IsValueType && Nullable.GetUnderlyingType(argument.Type) == null
+                ? LinqExpression.Constant(false)
+                : LinqExpression.Equal(argument, LinqExpression.Constant(null, argument.Type));
+        }
+
+        static LinqExpression IsEmptyString(LinqExpression argument)
+        {
+            if (argument.Type == typeof(string))
+                return LinqExpression.Equal(argument, LinqExpression.Constant(string.Empty));
+
+            if (!argument.Type.IsValueType && argument.Type.IsAssignableFrom(typeof(string)))
+            {
+                return LinqExpression.AndAlso(
+                    LinqExpression.TypeIs(argument, typeof(string)),
+                    LinqExpression.Equal(
+                        LinqExpression.Convert(argument, typeof(string)),
+                        LinqExpression.Constant(string.Empty)));
+            }
+
+            return LinqExpression.Constant(false);
         }
     }
 

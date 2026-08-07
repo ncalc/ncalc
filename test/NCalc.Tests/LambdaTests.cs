@@ -311,6 +311,19 @@ public class LambdaTests
     }
 
     [Test]
+    public async Task ShouldHandleNullCheckBuiltInFunctions()
+    {
+        var isNull = new Expression("isNull([FieldB])").ToLambda<Context, bool>(CancellationToken.None);
+        var isNullOrEmpty = new Expression("isNullOrEmpty([FieldB])")
+            .ToLambda<Context, bool>(CancellationToken.None);
+
+        await Assert.That(isNull(new Context())).IsTrue();
+        await Assert.That(isNullOrEmpty(new Context())).IsTrue();
+        await Assert.That(isNullOrEmpty(new Context { FieldB = string.Empty })).IsTrue();
+        await Assert.That(isNullOrEmpty(new Context { FieldB = "NCalc" })).IsFalse();
+    }
+
+    [Test]
     [Arguments("Min(CreateTestObject1(1), CreateTestObject1(2))", 1)]
     [Arguments("Max(CreateTestObject1(1), CreateTestObject1(2))", 2)]
     [Arguments("Min(1, 2)", 1)]
