@@ -340,6 +340,19 @@ public class AsyncTests
     }
 
     [Test]
+    [Arguments("isNull", true)]
+    [Arguments("isNullOrEmpty", true)]
+    public async Task ShouldHandleNullCheckBuiltInFunctionsAsync(string functionName, bool expected)
+    {
+        var expression = new Expression($"{functionName}([value])")
+        {
+            Parameters = { ["value"] = null }
+        };
+
+        await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo(expected);
+    }
+
+    [Test]
     public async Task ShouldHandleBuiltInFunctionCaseSensitivenessAsync()
     {
         var caseInsensitive = new Expression("aBs(-1)", ExpressionOptions.IgnoreCaseAtBuiltInFunctions);

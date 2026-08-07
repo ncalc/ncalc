@@ -33,6 +33,8 @@ public static class BuiltInFunctionHelper
         new("if", EvaluateIf, EvaluateIfAsync),
         new("in", EvaluateIn, EvaluateInAsync),
         new("ifs", EvaluateIfs, EvaluateIfsAsync),
+        Unary("isNull", static (value, _) => value is null),
+        Unary("isNullOrEmpty", static (value, _) => value is null or ""),
         Unary("EscapeLike", static (value, data) =>
             LikeOperatorHelper.EscapeLike(Convert.ToString(value, data.CultureInfo) ?? string.Empty))
     ];

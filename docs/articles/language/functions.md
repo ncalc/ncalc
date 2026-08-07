@@ -35,6 +35,8 @@ It also includes other general purpose ones.
 | in	        | Returns whether an element is in a set of values.	                                                | in(1 + 1, 1, 2, 3)	                               | true                                                                           |
 | if	        | Returns a value based on a condition.	                                                            | if(3 % 2 = 1, 'value is true', 'value is false')	 | 'value is true'                                                                |
 | ifs        | Returns a value based on evaluating a number of conditions, returning a default if none are true. | ifs(foo > 50, "bar", foo > 75, "baz", "quux")     | if foo is between 50 and 75 "bar", foo greater than 75 "baz", otherwise "quux" |  
+| isNull     | Returns whether a value is null.                                                                 | isNull(foo)                                       | true or false                                                                  |
+| isNullOrEmpty | Returns whether a value is null or an empty string.                                           | isNullOrEmpty(foo)                                | true or false                                                                  |
 | escapeLike | Escapes `%`, `_`, and `\` so a value is matched literally in a `LIKE` pattern.              | escapeLike('100%')                                | '100\%'                                                                        |
 
 By default, the comma is used as argument separator, but you can change it using <xref:NCalc.Parser.ArgumentSeparator>.

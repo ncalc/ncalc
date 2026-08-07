@@ -32,6 +32,9 @@ public class BuiltInFunctionsTestData : TheoryData<string, object, double?>
         Add("if(true,1,2)", 1, null);
         Add("in(2,1,2)", true, null);
         Add("ifs(false,1,2)", 2, null);
+        Add("isNull('')", false, null);
+        Add("isNullOrEmpty('')", true, null);
+        Add("isNullOrEmpty('NCalc')", false, null);
         Add("EscapeLike('100%')", @"100\%", null);
     }
 

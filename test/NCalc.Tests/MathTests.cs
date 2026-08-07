@@ -24,6 +24,19 @@ public class MathsTests
     }
 
     [Test]
+    [Arguments("isNull", true)]
+    [Arguments("isNullOrEmpty", true)]
+    public async Task ShouldHandleNullCheckBuiltInFunctions(string functionName, bool expected)
+    {
+        var expression = new Expression($"{functionName}([value])")
+        {
+            Parameters = { ["value"] = null }
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(expected);
+    }
+
+    [Test]
     public async Task Should_Modulo_All_Numeric_Types_Issue_58()
     {
         // https://github.com/ncalc/ncalc/issues/58
