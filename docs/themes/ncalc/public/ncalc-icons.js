@@ -47,10 +47,23 @@ function prependIcon(link, iconClass, iconTokenClass) {
   link.prepend(icon)
 }
 
+function flattenItems(items) {
+  const flattened = []
+
+  for (const item of items) {
+    flattened.push(item)
+    if (Array.isArray(item.items)) {
+      flattened.push(...flattenItems(item.items))
+    }
+  }
+
+  return flattened
+}
+
 async function renderSidebarIcons() {
     try {
         const items = await fetchItems("docfx:tocrel", "toc.html")
-        const iconMap = new Map(items.filter(item => item?.name && item?.icon).map(item => [item.name, item.icon]))
+        const iconMap = new Map(flattenItems(items).filter(item => item?.name && item?.icon).map(item => [item.name, item.icon]))
         const toc = document.getElementById("toc")
 
         observeAndApply(toc, "nav#toc a", links => {
@@ -67,7 +80,7 @@ async function renderSidebarIcons() {
 async function renderTopNavIcons() {
   try {
     const items = await fetchItems("docfx:navrel", "toc.html")
-    const iconMap = new Map(items.filter(item => item?.name && item?.icon).map(item => [item.name, item.icon]))
+    const iconMap = new Map(flattenItems(items).filter(item => item?.name && item?.icon).map(item => [item.name, item.icon]))
     const navbar = document.getElementById("navbar")
 
     observeAndApply(navbar, ".navbar-nav > .nav-item > .nav-link", links => {

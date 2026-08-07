@@ -1,26 +1,12 @@
-
-<style>
-.playground-container {
-  width: 100%;
-  height: calc(100vh - 220px);
-}
-
-.playground-container iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  background: transparent;
-}
-
-.actionbar,
-.affix {
-    display: none !important;
-}
-
-article {
-  display: contents !important;
-}
-</style>
+---
+_disableToc: true
+_disableAffix: true
+_disableBreadcrumb: true
+_disableContribution: true
+_disableNextArticle: true
+title: NCalc playground
+description: Try NCalc expressions in an interactive browser playground.
+---
 
 <div class="playground-container">
   <iframe

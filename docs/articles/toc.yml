@@ -1,105 +1,105 @@
 - name: Intro
-  icon: fa-solid fa-house
+  icon: bi bi-house
   href: index.md
 - name: Language
-  icon: fa-solid fa-calculator
+  icon: bi bi-calculator
   href: language/index.md
   items:
     - name: Functions
-      icon: fa-solid fa-function
+      icon: bi bi-code-square
       href: language/functions.md
     - name: Operators
-      icon: fa-solid fa-calculator
+      icon: bi bi-calculator
       href: language/operators.md
     - name: Values
-      icon: fa-solid fa-tag
+      icon: bi bi-tag
       href: language/values.md
     - name: Parameters
-      icon: fa-solid fa-sliders
+      icon: bi bi-sliders
       href: language/parameters.md
 - name: Evaluation
-  icon: fa-solid fa-sliders
+  icon: bi bi-sliders
   href: evaluation/index.md
   items:
     - name: Expression Context
-      icon: fa-solid fa-layer-group
+      icon: bi bi-layers
       href: evaluation/expression_context.md
     - name: Configuration
-      icon: fa-solid fa-gear
+      icon: bi bi-gear
       href: evaluation/configuration.md
     - name: Typed Evaluation
-      icon: fa-solid fa-code
+      icon: bi bi-braces
       href: evaluation/typed_evaluation.md
     - name: Handling Errors
-      icon: fa-solid fa-triangle-exclamation
+      icon: bi bi-exclamation-triangle
       href: evaluation/handling_errors.md
     - name: Case Sensitivity
-      icon: fa-solid fa-font
+      icon: bi bi-fonts
       href: evaluation/case_sensitivity.md
     - name: Overflow Protection
-      icon: fa-solid fa-shield-halved
+      icon: bi bi-shield-check
       href: evaluation/overflow_protection.md
     - name: String Concatenation
-      icon: fa-solid fa-link
+      icon: bi bi-link-45deg
       href: evaluation/string_concatenation.md
     - name: Strict Type Matching
-      icon: fa-solid fa-equals
+      icon: bi bi-list-check
       href: evaluation/strict_type_matching.md
 - name: Runtime
-  icon: fa-solid fa-gauge-high
+  icon: bi bi-speedometer2
   href: runtime/index.md
   items:
     - name: Async Support
-      icon: fa-solid fa-bolt
+      icon: bi bi-lightning-charge
       href: runtime/async.md
     - name: Performance
-      icon: fa-solid fa-gauge-high
+      icon: bi bi-speedometer2
       href: runtime/performance.md
     - name: Caching
-      icon: fa-solid fa-database
+      icon: bi bi-database
       href: runtime/caching.md
     - name: Cancellation Token Support
-      icon: fa-solid fa-ban
+      icon: bi bi-slash-circle
       href: runtime/cancellation.md
     - name: Logging
-      icon: fa-solid fa-file-lines
+      icon: bi bi-file-text
       href: runtime/logging.md
 - name: Extensibility
-  icon: fa-solid fa-puzzle-piece
+  icon: bi bi-puzzle
   href: extensibility/index.md
   items:
     - name: Lambda Compilation
-      icon: fa-solid fa-code-branch
+      icon: bi bi-git
       href: extensibility/lambda_compilation.md
     - name: Dependency Injection
-      icon: fa-solid fa-puzzle-piece
+      icon: bi bi-puzzle
       href: extensibility/dependency_injection.md
     - name: Overriding Evaluation Behavior
-      icon: fa-solid fa-wrench
+      icon: bi bi-wrench-adjustable
       href: extensibility/overriding_evaluation.md
     - name: Plugins
-      icon: fa-solid fa-plug
+      icon: bi bi-plug
       href: extensibility/plugins/index.md
       items:
         - name: Memory Cache
-          icon: fa-solid fa-memory
+          icon: bi bi-memory
           href: extensibility/plugins/memory_cache.md
 - name: Project
-  icon: fa-solid fa-diagram-project
+  icon: bi bi-diagram-3
   href: project/index.md
   items:
     - name: Architecture
-      icon: fa-solid fa-diagram-project
+      icon: bi bi-diagram-3
       href: project/architecture.md
     - name: Benchmarks
-      icon: fa-solid fa-gauge-high
+      icon: bi bi-graph-up
       href: project/benchmarks.md
     - name: Changelog
-      icon: fa-solid fa-clock-rotate-left
+      icon: bi bi-clock-history
       href: project/changelog.md
     - name: Migrate from NCalc v6 to NCalc v7
-      icon: fa-solid fa-right-left
+      icon: bi bi-arrow-left-right
       href: project/migrate_v6_to_v7.md
     - name: Publishing a New Release
-      icon: fa-solid fa-rocket
+      icon: bi bi-rocket-takeoff
       href: project/new_release.md

@@ -11,12 +11,13 @@
     {{/redirect_url}}
     {{^redirect_url}}
       <title>{{#title}}{{title}}{{/title}}{{^title}}{{>partials/title}}{{/title}} {{#_appTitle}}| {{_appTitle}} {{/_appTitle}}</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
       <meta name="title" content="{{#title}}{{title}}{{/title}}{{^title}}{{>partials/title}}{{/title}} {{#_appTitle}}| {{_appTitle}} {{/_appTitle}}">
       {{#_description}}<meta name="description" content="{{_description}}">{{/_description}}
       {{#description}}<meta name="description" content="{{description}}">{{/description}}
       <link rel="icon" href="{{_rel}}{{{_appFaviconPath}}}{{^_appFaviconPath}}favicon.ico{{/_appFaviconPath}}">
       <link rel="stylesheet" href="{{_rel}}public/docfx.min.css">
+      <link rel="stylesheet" href="{{_rel}}public/tokens.css">
       <link rel="stylesheet" href="{{_rel}}public/main.css">
       <meta name="docfx:navrel" content="{{_navRel}}">
       <meta name="docfx:tocrel" content="{{_tocRel}}">
@@ -40,6 +41,7 @@
 
       <script type="module" src="./{{_rel}}public/docfx.min.js"></script>
       <script type="module" src="./{{_rel}}public/ncalc-icons.js"></script>
+      <script type="module" src="./{{_rel}}public/ncalc-ui.js"></script>
 
       <script>
         const theme = localStorage.getItem('theme') || 'auto'
@@ -60,27 +62,27 @@
 
   {{^redirect_url}}
   <body class="tex2jax_ignore" data-layout="{{_layout}}{{layout}}" data-yaml-mime="{{yamlmime}}">
-    <header class="bg-body border-bottom">
+    <header class="site-header">
       {{^_disableNavbar}}
-      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+      <nav id="autocollapse" class="navbar navbar-expand-md" aria-label="Primary navigation">
         <div class="container-xxl flex-nowrap">
           <a class="navbar-brand" href="{{_appLogoUrl}}{{^_appLogoUrl}}{{_rel}}index.html{{/_appLogoUrl}}">
             <img id="logo" class="svg" src="{{_rel}}{{{_appLogoPath}}}{{^_appLogoPath}}logo.svg{{/_appLogoPath}}" alt="{{_appName}}" >
             {{_appName}}
           </a>
-          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
-            <i class="bi bi-three-dots"></i>
+          <button class="nav-toggle btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-list" aria-hidden="true"></i>
           </button>
           <div class="collapse navbar-collapse" id="navpanel">
-            <div id="navbar">
-              {{#_enableSearch}}
-              <form class="search" role="search" id="search">
-                <i class="bi bi-search"></i>
-                <input class="form-control" id="search-query" type="search" disabled placeholder="{{__global.search}}" autocomplete="off" aria-label="Search">
-              </form>
-              {{/_enableSearch}}
-            </div>
+            <div id="navbar"></div>
           </div>
+          {{#_enableSearch}}
+          <button class="search-trigger" id="search-trigger" type="button" aria-haspopup="dialog" aria-controls="search-dialog">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <span class="search-trigger__label">Search docs</span>
+            <kbd class="search-trigger__shortcut"><span class="platform-key">Ctrl</span><span>K</span></kbd>
+          </button>
+          {{/_enableSearch}}
         </div>
       </nav>
       {{/_disableNavbar}}
@@ -145,13 +147,33 @@
     </main>
 
     {{#_enableSearch}}
-    <div class="container-xxl search-results" id="search-results"></div>
+    <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-dialog-title">
+      <div class="search-dialog__header">
+        <div>
+          <p class="search-dialog__title" id="search-dialog-title">Search NCalc</p>
+          <p class="search-dialog__hint">Find guides, language features, and API symbols.</p>
+        </div>
+        <button class="search-dialog__close" id="search-dialog-close" type="button" aria-label="Close search">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <form class="search" role="search" id="search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input class="form-control" id="search-query" type="search" disabled placeholder="{{__global.search}}" autocomplete="off" aria-label="Search documentation">
+        <kbd>Esc</kbd>
+      </form>
+      <div class="search-results" id="search-results" aria-live="polite"></div>
+      <div class="search-dialog__footer" aria-hidden="true">
+        <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> navigate</span>
+        <span><kbd>&crarr;</kbd> open</span>
+      </div>
+    </dialog>
     {{/_enableSearch}}
 
-    <footer class="border-top text-secondary">
+    <footer class="site-footer">
       <div class="container-xxl">
         <div class="flex-fill">
-          {{{_appFooter}}}{{^_appFooter}}<span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>{{/_appFooter}}
+          {{{_appFooter}}}{{^_appFooter}}<span>NCalc documentation &middot; <a href="https://github.com/ncalc/ncalc">GitHub</a> &middot; MIT licensed</span>{{/_appFooter}}
         </div>
       </div>
     </footer>

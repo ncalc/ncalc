@@ -1,50 +1,64 @@
 @using NCalc.Playground.Extensions
-<div class="card">
-    <div class="card-header d-flex align-items-center gap-2">
-        <h2 class="h6 fw-semibold mb-0 d-inline-flex align-items-center gap-2">
-            <i class="bi bi-pencil" aria-hidden="true"></i>
-            <span>Expression</span>
-        </h2>
+<div class="workbench-surface expression-surface">
+    <div class="surface-header">
+        <div>
+            <h2>Expression</h2>
+            <p>Use square brackets to reference named parameters.</p>
+        </div>
     </div>
 
-    <div class="card-body">
+    <div class="surface-body">
         <EditForm Model="this" OnSubmit="HandleSubmit">
-            <div class="d-flex flex-column flex-sm-row gap-2 expression-row">
+            <label class="field-label" for="expressionInput">Expression</label>
+            <div class="expression-row">
                 <InputText id="expressionInput"
                            class="@ExpressionInputClass"
                            @bind-Value="_currentExpressionText"
                            autocomplete="off"
-                           aria-label="Expression"
-                           aria-invalid="@HasError" />
+                           aria-invalid="@HasError"
+                           aria-describedby="expressionHelper" />
 
-                <div class="btn-group expression-actions">
-                    <button class="btn btn-primary fw-semibold px-4" type="submit">
-                        <span class="bi bi-play-circle-fill bi-lg"></span>
+                <div class="expression-actions">
+                    <button class="btn btn-primary" type="submit">
+                        <span class="bi bi-play-fill" aria-hidden="true"></span>
                         Evaluate
                     </button>
-                    <button type="button"
-                            class="btn btn-primary dropdown-toggle dropdown-toggle-split"
-                            data-bs-toggle="dropdown"
-                            data-bs-auto-close="outside"
-                            aria-expanded="false">
-                        <span class="visually-hidden">Toggle options dropdown</span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end p-2 shadow">
-                        @foreach (var option in SelectableOptions)
-                        {
-                            <li>
-                                <label class="dropdown-item d-flex align-items-center gap-2 rounded-2 mb-0 expression-option-item">
-                                    <input class="form-check-input m-0"
-                                           type="checkbox"
-                                           checked="@HasOption(option)"
-                                           @onchange="eventArgs => ToggleOption(option, eventArgs)" />
-                                    <span>@option.GetDisplayName()</span>
-                                </label>
-                            </li>
-                        }
-                    </ul>
+                    <div class="dropdown">
+                        <button type="button"
+                                class="btn btn-secondary dropdown-toggle"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside"
+                                aria-expanded="false">
+                            Options
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end expression-options">
+                            @foreach (var option in SelectableOptions)
+                            {
+                                <li>
+                                    <label class="expression-option-item">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               checked="@HasOption(option)"
+                                               @onchange="eventArgs => ToggleOption(option, eventArgs)" />
+                                        <span>@option.GetDisplayName()</span>
+                                    </label>
+                                </li>
+                            }
+                        </ul>
+                    </div>
                 </div>
             </div>
+            <p class="field-helper @(HasError ? "field-helper--error" : null)" id="expressionHelper">
+                @if (HasError)
+                {
+                    <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                    <span>Evaluation failed. Review the expression or parameters, then run it again.</span>
+                }
+                else
+                {
+                    <span>Press Enter or choose Evaluate to run the expression.</span>
+                }
+            </p>
         </EditForm>
     </div>
 </div>
@@ -75,8 +89,8 @@
     private string _previousExpressionText = string.Empty;
 
     private string ExpressionInputClass => HasError
-        ? "form-control font-monospace is-invalid"
-        : "form-control font-monospace";
+        ? "form-control expression-input is-invalid"
+        : "form-control expression-input";
 
     protected override void OnParametersSet()
     {

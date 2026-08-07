@@ -1,11 +1,11 @@
 - name: Articles
-  icon: fa-solid fa-book-open
+  icon: bi bi-book
   href: articles/
   homepage: articles/index.md
 - name: API Reference
-  icon: fa-solid fa-code
+  icon: bi bi-braces
   href: api/
   homepage: api/NCalc.yml
 - name: Playground
-  icon: fa-solid fa-play
+  icon: bi bi-play-circle
   href: playground.md

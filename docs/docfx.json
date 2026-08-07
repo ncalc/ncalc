@@ -64,7 +64,9 @@
       },
       "_gitUrlPattern": "github",
       "_disableSideFilter":true,
-      "_appLogoPath": "NCalc.png"
+      "_appLogoPath": "NCalc.png",
+      "_appTitle": "NCalc documentation",
+      "_appFooter": "<span>NCalc documentation &middot; <a href=\"https://github.com/ncalc/ncalc\">GitHub</a> &middot; MIT licensed</span>"
     },
     "globalMetadataFiles": [],
     "fileMetadataFiles": [],
