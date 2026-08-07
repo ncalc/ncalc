@@ -29,6 +29,10 @@ public class BuiltInFunctionsTestData : TheoryData<string, object, double?>
         Add("Atan2(0,1)", 0d, 1e-16);
         Add("Max(1,10)", 10, null);
         Add("Min(1,10)", 1, null);
+        Add("if(true,1,2)", 1, null);
+        Add("in(2,1,2)", true, null);
+        Add("ifs(false,1,2)", 2, null);
+        Add("EscapeLike('100%')", @"100\%", null);
     }
 
     public static IEnumerable<object[]> GetEnumerator() => new BuiltInFunctionsTestData().Rows;

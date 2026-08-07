@@ -340,6 +340,17 @@ public class AsyncTests
     }
 
     [Test]
+    public async Task ShouldHandleBuiltInFunctionCaseSensitivenessAsync()
+    {
+        var caseInsensitive = new Expression("aBs(-1)", ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
+        await Assert.That(await caseInsensitive.EvaluateAsync(CancellationToken.None)).IsEqualTo(1d);
+
+        var caseSensitive = new Expression("aBs(-1)");
+        await Assert.ThrowsAsync<NCalcFunctionNotFoundException>(async () =>
+            await caseSensitive.EvaluateAsync(CancellationToken.None));
+    }
+
+    [Test]
     [MethodDataSource(typeof(ValuesTestData), "GetEnumerator")]
     public async Task ShouldParseValues(string input, object expectedValue)
     {
