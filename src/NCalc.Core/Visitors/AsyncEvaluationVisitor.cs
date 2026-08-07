@@ -63,6 +63,20 @@ public class AsyncEvaluationVisitor(
             return leftValue ?? await binaryEventArgs.RightValueAsync();
         }
 
+        if (options.ConcurrentBinaryAsyncEvaluation)
+        {
+            var values = await Task.WhenAll(
+                binaryEventArgs.LeftValueAsync(),
+                binaryEventArgs.RightValueAsync());
+
+            return EvaluationVisitorHelper.EvaluateBinary(
+                expression.Type,
+                values[0],
+                values[1],
+                options,
+                cultureInfo);
+        }
+
         var left = await binaryEventArgs.LeftValueAsync();
         var right = await binaryEventArgs.RightValueAsync();
 
