@@ -57,6 +57,12 @@ public class AsyncEvaluationVisitor(
             return Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), cultureInfo) || Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), cultureInfo);
         }
 
+        if (expression.Type == BinaryExpressionType.Coalesce)
+        {
+            var leftValue = await binaryEventArgs.LeftValueAsync();
+            return leftValue ?? await binaryEventArgs.RightValueAsync();
+        }
+
         var left = await binaryEventArgs.LeftValueAsync();
         var right = await binaryEventArgs.RightValueAsync();
 

@@ -169,6 +169,27 @@ public class LambdaTests
     }
 
     [Test]
+    public async Task ShouldHandleCoalesceOperator()
+    {
+        var referenceExpression = new Expression("[FieldB] ?? 'fallback'");
+        var nullableExpression = new Expression("[FieldE] ?? 42");
+        var parameterExpression = new Expression("[value] ?? 'fallback'")
+        {
+            Parameters = { ["value"] = null }
+        };
+
+        var referenceLambda = referenceExpression.ToLambda<Context, string>(CancellationToken.None);
+        var nullableLambda = nullableExpression.ToLambda<Context, int>(CancellationToken.None);
+        var parameterLambda = parameterExpression.ToLambda<string>(CancellationToken.None);
+
+        await Assert.That(referenceLambda(new Context())).IsEqualTo("fallback");
+        await Assert.That(referenceLambda(new Context { FieldB = "value" })).IsEqualTo("value");
+        await Assert.That(nullableLambda(new Context())).IsEqualTo(42);
+        await Assert.That(nullableLambda(new Context { FieldE = 7 })).IsEqualTo(7);
+        await Assert.That(parameterLambda()).IsEqualTo("fallback");
+    }
+
+    [Test]
     public async Task ShouldHandleOverloadingSameParamCount()
     {
         var expression = new Expression("Test('Hello', ' world!')");

@@ -125,7 +125,8 @@ public static class LogicalExpressionParser
         /*
          * Grammar:
          * expression     => ternary ( ( "-" | "+" ) ternary )* ;
-         * ternary        => logical ( "?" logical ":" logical)?
+         * ternary        => coalescing ( "?" coalescing ":" coalescing)?
+         * coalescing     => logical ( "??" coalescing)? ;
          * logical        => equality ( ( "and" | "or" ) equality )* ;
          * equality       => relational ( ( "=" | "!=" | ... ) relational )* ;
          * relational     => shift ( ( ">=" | ">" | ... ) shift )* ;
@@ -239,6 +240,7 @@ public static class LogicalExpressionParser
         var openCurlyBrace = Terms.Char('{');
         var closeCurlyBrace = Terms.Char('}');
         var questionMark = Terms.Char('?');
+        var coalesce = Terms.Text("??");
         var colon = Terms.Char(':');
         var exclamation = Terms.Char('!');
 
@@ -544,12 +546,17 @@ public static class LogicalExpressionParser
             ZeroOrMany(or.Then(BinaryExpressionType.Or).And(andParser)))
             .Then(ParseBinaryExpression);
 
-        // ternary => logical("?" logical ":" logical) ?
-        var ternary = logical.And(ZeroOrOne(questionMark.SkipAnd(logical).AndSkip(colon).And(logical)))
+        // coalescing => logical ( "??" coalescing)? ;
+        var coalescing = logical.RightAssociative(
+            (coalesce, static (left, right) =>
+                new BinaryExpression(BinaryExpressionType.Coalesce, left, right)));
+
+        // ternary => coalescing ("?" coalescing ":" coalescing) ?
+        var ternary = coalescing.And(ZeroOrOne(questionMark.SkipAnd(coalescing).AndSkip(colon).And(coalescing)))
             .Then(static x => x.Item2.Item1 == null
                 ? x.Item1
                 : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2))
-            .Or(logical);
+            .Or(coalescing);
 
         var operatorSequence = ternary.LeftAssociative(
             (OneOrMany(OneOf(

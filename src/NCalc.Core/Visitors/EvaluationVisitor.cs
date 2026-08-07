@@ -54,6 +54,12 @@ public class EvaluationVisitor(
                    Convert.ToBoolean(binaryEventArgs.RightValue(), cultureInfo);
         }
 
+        if (expression.Type == BinaryExpressionType.Coalesce)
+        {
+            var leftValue = binaryEventArgs.LeftValue();
+            return leftValue ?? binaryEventArgs.RightValue();
+        }
+
         var left = binaryEventArgs.LeftValue();
         var right = binaryEventArgs.RightValue();
 

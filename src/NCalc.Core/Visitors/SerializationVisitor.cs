@@ -48,6 +48,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             BinaryExpressionType.NotIn => "not in ",
             BinaryExpressionType.Like => "like ",
             BinaryExpressionType.NotLike => "not like ",
+            BinaryExpressionType.Coalesce => "?? ",
             BinaryExpressionType.Unknown => "unknown ",
             _ => throw new ArgumentOutOfRangeException()
         };

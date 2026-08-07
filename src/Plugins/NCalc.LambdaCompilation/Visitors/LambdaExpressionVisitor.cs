@@ -83,9 +83,32 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             BinaryExpressionType.NotLike => LinqExpression.Not(LikeOperator(left, right)),
             BinaryExpressionType.In => InOperator(left, right),
             BinaryExpressionType.NotIn => LinqExpression.Not(InOperator(left, right)),
+            BinaryExpressionType.Coalesce => Coalesce(left, right),
             BinaryExpressionType.Unknown => throw new ArgumentOutOfRangeException(),
             _ => throw new ArgumentOutOfRangeException()
         };
+    }
+
+    private static System.Linq.Expressions.BinaryExpression Coalesce(LinqExpression left, LinqExpression right)
+    {
+        if (Nullable.GetUnderlyingType(left.Type) is { } underlyingType)
+        {
+            if (right.Type != underlyingType && right.Type != left.Type)
+                right = LinqExpression.Convert(right, underlyingType);
+
+            return LinqExpression.Coalesce(left, right);
+        }
+
+        if (!left.Type.IsValueType)
+        {
+            if (right.Type != left.Type)
+                right = LinqExpression.Convert(right, left.Type);
+
+            return LinqExpression.Coalesce(left, right);
+        }
+
+        throw new InvalidOperationException(
+            $"The coalesce operator cannot be applied to a non-nullable value of type '{left.Type}'.");
     }
 
     public LinqExpression Visit(UnaryExpression expression)

@@ -110,6 +110,88 @@ public class OperatorsTests
     }
 
     [Test]
+    public async Task ShouldEvaluateCoalesceOperator()
+    {
+        var nullLiteral = new Expression("null ?? true", ExpressionOptions.AllowNullParameter);
+        var nullParameter = new Expression("[foo] ?? true")
+        {
+            Parameters = { ["foo"] = null }
+        };
+        var nonNullParameter = new Expression("[foo] ?? true")
+        {
+            Parameters = { ["foo"] = false }
+        };
+
+        await Assert.That((bool)nullLiteral.Evaluate(CancellationToken.None)!).IsTrue();
+        await Assert.That((bool)nullParameter.Evaluate(CancellationToken.None)!).IsTrue();
+        await Assert.That((bool)nonNullParameter.Evaluate(CancellationToken.None)!).IsFalse();
+    }
+
+    [Test]
+    public async Task ShouldShortCircuitCoalesceOperator()
+    {
+        var expression = new Expression("[foo] ?? fallback()")
+        {
+            Parameters = { ["foo"] = "value" },
+            Functions = { ["fallback"] = _ => throw new InvalidOperationException() }
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo("value");
+    }
+
+    [Test]
+    public async Task ShouldRespectCoalesceAssociativityAndPrecedence()
+    {
+        var logicalExpression = LogicalExpressionFactory.Create("[a] ?? [b] ?? [c]", cancellationToken: CancellationToken.None);
+        var expression = new Expression("[a] ?? [b] ? 1 : 2")
+        {
+            Parameters =
+            {
+                ["a"] = false,
+                ["b"] = true
+            }
+        };
+
+        await Assert.That(logicalExpression).IsTypeOf<BinaryExpression>();
+        await Assert.That(((BinaryExpression)logicalExpression).Type).IsEqualTo(BinaryExpressionType.Coalesce);
+        await Assert.That(((BinaryExpression)logicalExpression).RightExpression)
+            .IsTypeOf<BinaryExpression>();
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(2);
+    }
+
+    [Test]
+    public async Task ShouldAllowBinaryHandlerToOverrideCoalesceOperator()
+    {
+        var expression = new Expression("[foo] ?? false")
+        {
+            Parameters = { ["foo"] = null }
+        };
+        expression.EvaluateBinary += args =>
+        {
+            if (args.BinaryExpression.Type == BinaryExpressionType.Coalesce)
+                args.Result = "handled";
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo("handled");
+    }
+
+    [Test]
+    public async Task ShouldEvaluateNullCoalesceOperandOnlyOnce()
+    {
+        var evaluations = 0;
+        var expression = new Expression("[foo] ?? true");
+        expression.DynamicParameters["foo"] = _ =>
+        {
+            evaluations++;
+            return null;
+        };
+        expression.EvaluateBinary += args => _ = args.LeftValue();
+
+        await Assert.That((bool)expression.Evaluate(CancellationToken.None)!).IsTrue();
+        await Assert.That(evaluations).IsEqualTo(1);
+    }
+
+    [Test]
     [Arguments("0 | 0", 0ul)]
     [Arguments("0 | 1", 1ul)]
     [Arguments("1 | 0", 1ul)]
