@@ -450,6 +450,26 @@ public class AsyncTests
     }
 
     [Test]
+    public async Task ShouldEvaluateAndShortCircuitCoalesceAsync()
+    {
+        var expression = new Expression("[foo] ?? fallback()")
+        {
+            Parameters = { ["foo"] = "value" },
+            AsyncFunctions =
+            {
+                ["fallback"] = _ => Task.FromException<object>(new InvalidOperationException())
+            }
+        };
+
+        await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo("value");
+
+        expression.Parameters["foo"] = null;
+        expression.AsyncFunctions["fallback"] = _ => Task.FromResult<object>("fallback");
+
+        await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo("fallback");
+    }
+
+    [Test]
     public async Task ShouldEvaluatePowAsync()
     {
         var e = new Expression("2**2");

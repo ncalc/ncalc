@@ -9,6 +9,8 @@ Expressions can be combined using operators, each with a specific precedence pri
 5. **Additive**
 6. **Relational**
 7. **Logical**
+8. **Null coalescing**
+9. **Conditional**
 
 ## Primary
 
@@ -191,6 +193,23 @@ true or false and true    // Evaluates to true
 ```
 
 *Note:* The `and` operator has higher priority than the `or` operator. Hence, in the example above, `false and true` is evaluated first.
+
+## Null coalescing
+
+The `??` operator returns its left operand when it is not `null`; otherwise, it evaluates and returns its right operand.
+The right operand is evaluated only when needed, and chained coalesce operators are grouped from right to left.
+
+```csharp
+[displayName] ?? 'Anonymous'
+[preferredName] ?? [userName] ?? 'Anonymous'
+```
+
+Using the `null` identifier directly still requires
+<xref:NCalc.ExpressionEvaluationOptions.AllowNullParameter>:
+
+```csharp
+null ?? true // Evaluates to true when AllowNullParameter is enabled
+```
 
 ## Bitwise
 

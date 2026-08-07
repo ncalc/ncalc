@@ -25,5 +25,6 @@ public enum BinaryExpressionType
     NotIn,
     Like,
     NotLike,
+    Coalesce,
     Unknown = -1
 }

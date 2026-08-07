@@ -45,6 +45,20 @@ public class SerializationTests
         var expressionJson = JsonSerializer.Serialize(expression);
         await Assert.That(JsonSerializer.Deserialize<LogicalExpression>(expressionJson) is BinaryExpression).IsTrue();
     }
+
+    [Test]
+    public async Task CoalesceExpressionShouldSerializeAndDeserialize()
+    {
+        var logicalExpression = LogicalExpressionFactory.Create("[value] ?? 'fallback'", cancellationToken: CancellationToken.None);
+        var json = JsonSerializer.Serialize(logicalExpression);
+        var deserialized = JsonSerializer.Deserialize<LogicalExpression>(json);
+        var expression = new Expression(deserialized!)
+        {
+            Parameters = { ["value"] = null }
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo("fallback");
+    }
 #endif
 
     [Test]
@@ -74,6 +88,8 @@ public class SerializationTests
         await Assert.That(new BinaryExpression(BinaryExpressionType.Plus, new ValueExpression(1), new ValueExpression(2)).ToExpressionString()).IsEqualTo("1 + 2");
         await Assert.That(new BinaryExpression(BinaryExpressionType.Times, new ValueExpression(1), new ValueExpression(2))
                 .ToExpressionString()).IsEqualTo("1 * 2");
+        await Assert.That(new BinaryExpression(BinaryExpressionType.Coalesce, new Identifier("value"), new ValueExpression(true))
+                .ToExpressionString()).IsEqualTo("([value]) ?? True");
     }
 
     [Test]

@@ -40,16 +40,20 @@ public class BinaryEventArgs(
 
     private object? _leftResolvedValue;
     private object? _rightResolvedValue;
+    private bool _leftResolved;
+    private bool _rightResolved;
 
     /// <summary>
     /// Lazily evaluates and returns the left side expression. Resolved only once.
     /// </summary>
     public object? LeftValue()
     {
-        if (_leftResolvedValue != null)
+        if (_leftResolved)
             return _leftResolvedValue;
 
-        return _leftResolvedValue = BinaryExpression.LeftExpression.Accept(_syncVisitor!);
+        _leftResolvedValue = BinaryExpression.LeftExpression.Accept(_syncVisitor!);
+        _leftResolved = true;
+        return _leftResolvedValue;
     }
 
     /// <summary>
@@ -60,7 +64,11 @@ public class BinaryEventArgs(
         if (_asyncVisitor is null)
             throw new NCalcEvaluationException("Asynchronous binary value evaluation is not available in this context.");
 
-        _leftResolvedValue ??= await BinaryExpression.LeftExpression.Accept(_asyncVisitor);
+        if (!_leftResolved)
+        {
+            _leftResolvedValue = await BinaryExpression.LeftExpression.Accept(_asyncVisitor);
+            _leftResolved = true;
+        }
 
         return _leftResolvedValue;
     }
@@ -69,17 +77,23 @@ public class BinaryEventArgs(
     /// </summary>
     public object? RightValue()
     {
-        if (_rightResolvedValue != null)
+        if (_rightResolved)
             return _rightResolvedValue;
 
-        return _rightResolvedValue = BinaryExpression.RightExpression.Accept(_syncVisitor!);
+        _rightResolvedValue = BinaryExpression.RightExpression.Accept(_syncVisitor!);
+        _rightResolved = true;
+        return _rightResolvedValue;
     }
     public async Task<object?> RightValueAsync()
     {
         if (_asyncVisitor is null)
             throw new NCalcEvaluationException("Asynchronous binary value evaluation is not available in this context.");
 
-        _rightResolvedValue ??= await BinaryExpression.RightExpression.Accept(_asyncVisitor);
+        if (!_rightResolved)
+        {
+            _rightResolvedValue = await BinaryExpression.RightExpression.Accept(_asyncVisitor);
+            _rightResolved = true;
+        }
 
         return _rightResolvedValue;
     }
