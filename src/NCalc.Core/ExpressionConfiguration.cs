@@ -61,7 +61,9 @@ public sealed class ExpressionConfiguration
                 },
 
                 StrictTypeMatching = options.HasFlag(ExpressionOptions.StrictTypeMatching),
-                StringComparer = GetStringComparer(options)
+                StringComparer = GetStringComparer(options),
+
+                ConcurrentAsyncEvaluation = options.HasFlag(ExpressionOptions.ConcurrentAsyncEvaluation)
             }
         };
     }

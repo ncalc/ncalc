@@ -150,7 +150,14 @@ public enum ExpressionOptions
     /// Converts to <see cref="ExpressionEvaluationOptions.ArithmeticNullOrEmptyStringAsZero"/>.
     /// </remarks>
     [Display(Name = "Arithmetic Null Or Empty String As Zero")]
-    ArithmeticNullOrEmptyStringAsZero = 1 << 17
+    ArithmeticNullOrEmptyStringAsZero = 1 << 17,
+
+    /// <inheritdoc cref="ExpressionEvaluationOptions.ConcurrentAsyncEvaluation"/>
+    /// <remarks>
+    /// Converts to <see cref="ExpressionEvaluationOptions.ConcurrentAsyncEvaluation"/>.
+    /// </remarks>
+    [Display(Name = "Concurrent Async Evaluation")]
+    ConcurrentAsyncEvaluation = 1 << 18
 }
 
 #if NETFRAMEWORK || NETSTANDARD2_0
