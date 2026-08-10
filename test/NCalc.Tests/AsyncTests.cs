@@ -37,7 +37,7 @@ public class AsyncTests
     {
         var operandsStarted = CreateCompletionSources();
         var releaseOperands = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var expression = CreateConcurrentBinaryExpression("first() + second()");
+        var expression = CreateConcurrentExpression("first() + second()");
         expression.AsyncFunctions["first"] = async _ =>
         {
             operandsStarted[0].SetResult();
@@ -53,10 +53,68 @@ public class AsyncTests
 
         var evaluationTask = expression.EvaluateAsync(CancellationToken.None);
 
-        await WaitForBothOperands(operandsStarted);
+        await WaitForAll(operandsStarted);
         releaseOperands.SetResult();
 
         await Assert.That(await evaluationTask).IsEqualTo(3);
+    }
+
+    [Test]
+    public async Task ShouldEvaluateBuiltInFunctionArgumentsConcurrentlyWhenEnabled()
+    {
+        var argumentsStarted = CreateCompletionSources(2);
+        var releaseArguments = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var expression = CreateConcurrentExpression("Max(first(), second())");
+        expression.AsyncFunctions["first"] = async _ =>
+        {
+            argumentsStarted[0].SetResult();
+            await releaseArguments.Task;
+            return 1;
+        };
+        expression.AsyncFunctions["second"] = async _ =>
+        {
+            argumentsStarted[1].SetResult();
+            await releaseArguments.Task;
+            return 2;
+        };
+
+        var evaluationTask = expression.EvaluateAsync(CancellationToken.None);
+
+        await WaitForAll(argumentsStarted);
+        releaseArguments.SetResult();
+
+        await Assert.That(await evaluationTask).IsEqualTo(2);
+    }
+
+    [Test]
+    public async Task ShouldEvaluateListItemsConcurrentlyWhenEnabled()
+    {
+        var itemsStarted = CreateCompletionSources(3);
+        var releaseItems = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var expression = CreateConcurrentExpression("(first(), second(), third())");
+
+        for (var index = 0; index < itemsStarted.Length; index++)
+        {
+            var itemIndex = index;
+            expression.AsyncFunctions[index switch
+            {
+                0 => "first",
+                1 => "second",
+                _ => "third"
+            }] = async _ =>
+            {
+                itemsStarted[itemIndex].SetResult();
+                await releaseItems.Task;
+                return itemIndex + 1;
+            };
+        }
+
+        var evaluationTask = expression.EvaluateAsync(CancellationToken.None);
+
+        await WaitForAll(itemsStarted);
+        releaseItems.SetResult();
+
+        await Assert.That(await evaluationTask).IsEquivalentTo(new object[] { 1, 2, 3 });
     }
 
     [Test]
@@ -69,7 +127,7 @@ public class AsyncTests
                      ("'value' ?? skipped()", "value")
                  })
         {
-            var expression = CreateConcurrentBinaryExpression(expressionText);
+            var expression = CreateConcurrentExpression(expressionText);
             expression.AsyncFunctions["skipped"] = _ =>
                 Task.FromException<object>(new InvalidOperationException("The right operand should not be evaluated."));
 
@@ -82,7 +140,7 @@ public class AsyncTests
     {
         foreach (var expressionText in new[] { "true ? selected() : skipped()", "if(true, selected(), skipped())" })
         {
-            var expression = CreateConcurrentBinaryExpression(expressionText);
+            var expression = CreateConcurrentExpression(expressionText);
             expression.AsyncFunctions["selected"] = _ => Task.FromResult<object>(42);
             expression.AsyncFunctions["skipped"] = _ =>
                 Task.FromException<object>(new InvalidOperationException("The unselected branch should not be evaluated."));
@@ -94,7 +152,7 @@ public class AsyncTests
     [Test]
     public async Task ShouldUseBinaryHandlerResultBeforeConcurrentOperandEvaluation()
     {
-        var expression = CreateConcurrentBinaryExpression("left() + right()");
+        var expression = CreateConcurrentExpression("left() + right()");
         expression.AsyncFunctions["left"] = _ =>
             Task.FromException<object>(new InvalidOperationException("The operands should not be evaluated."));
         expression.AsyncFunctions["right"] = expression.AsyncFunctions["left"];
@@ -574,28 +632,26 @@ public class AsyncTests
             .IsFalse();
     }
 
-    private static Expression CreateConcurrentBinaryExpression(string expression)
+    private static Expression CreateConcurrentExpression(string expression)
     {
         return new Expression(expression, new ExpressionConfiguration
         {
             Evaluation = new ExpressionEvaluationOptions
             {
-                ConcurrentBinaryAsyncEvaluation = true
+                ConcurrentAsyncEvaluation = true
             }
         });
     }
 
-    private static TaskCompletionSource[] CreateCompletionSources()
+    private static TaskCompletionSource[] CreateCompletionSources(int count = 2)
     {
-        return
-        [
-            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
-            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)
-        ];
+        return Enumerable.Range(0, count)
+            .Select(_ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously))
+            .ToArray();
     }
 
-    private static Task WaitForBothOperands(TaskCompletionSource[] operandsStarted)
+    private static Task WaitForAll(TaskCompletionSource[] operationsStarted)
     {
-        return Task.WhenAll(operandsStarted.Select(started => started.Task)).WaitAsync(TimeSpan.FromSeconds(5));
+        return Task.WhenAll(operationsStarted.Select(started => started.Task)).WaitAsync(TimeSpan.FromSeconds(5));
     }
 }

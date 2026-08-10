@@ -48,12 +48,14 @@ public sealed class ExpressionEvaluationOptions
     public bool StrictTypeMatching { get; init; }
 
     /// <summary>
-    /// Evaluates both operands of non-short-circuiting binary expressions concurrently during asynchronous evaluation.
+    /// Evaluates independent parts of an expression concurrently during asynchronous evaluation.
     /// </summary>
     /// <remarks>
-    /// And, Or, and coalescing expressions remain lazy. Custom callbacks may run concurrently when this option is enabled.
+    /// Non-short-circuiting binary operands, eager built-in function arguments, and list items are evaluated concurrently.
+    /// And, Or, coalescing expressions, and conditional function branches remain lazy. Custom callbacks may run
+    /// concurrently when this option is enabled.
     /// </remarks>
-    public bool ConcurrentBinaryAsyncEvaluation { get; init; }
+    public bool ConcurrentAsyncEvaluation { get; init; }
 
     /// <summary>
     /// Gets math evaluation options.
