@@ -122,13 +122,3 @@ Using NCalc? Create a PR and add your project here!
 
 NCalc uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning). Each library build can be traced
 back to the original git commit. Read more in the [release documentation](https://ncalc.github.io/ncalc/articles/project/new_release.html).
-
-## Star History
-
-<a href="https://star-history.com/#ncalc/ncalc&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ncalc/ncalc&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ncalc/ncalc&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ncalc/ncalc&type=Date" />
- </picture>
-</a>
