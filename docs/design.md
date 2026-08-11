@@ -4,7 +4,7 @@ A locked design system for the NCalc DocFX site. Page-specific work extends this
 
 ## Genre
 
-Modern-minimal with a technical tone: precise navigation, strong code ergonomics, restrained motion, and a single violet signal color.
+Modern-minimal with a technical tone: precise navigation, strong code ergonomics, restrained motion, and an almost monochrome palette.
 
 ## Macrostructure family
 
@@ -15,14 +15,14 @@ Modern-minimal with a technical tone: precise navigation, strong code ergonomics
 
 ## Theme
 
-The established NCalc violet remains the anchor. Light and dark modes keep the same hue and change only lightness and chroma.
+The NCalc palette is graphite-first. Brand violet `#4E2ACA` anchors primary actions, while links use a slightly lighter derivative; focus rings and selected code tokens use softer variants. Surfaces and text remain achromatic.
 
-- Light paper: `oklch(98% 0.007 285)`
-- Light ink: `oklch(22% 0.025 285)`
-- Light accent: `oklch(40% 0.18 292)`
-- Dark paper: `oklch(14% 0.018 285)`
-- Dark ink: `oklch(94% 0.012 285)`
-- Dark accent: `oklch(72% 0.15 292)`
+- Light paper: `oklch(98% 0 0)`
+- Light ink: `oklch(20% 0 0)`
+- Light accent: `#4E2ACA` / `oklch(44.8% 0.2255 282.72)`
+- Dark paper: `oklch(12% 0 0)`
+- Dark ink: `oklch(95% 0 0)`
+- Dark accent: `#4E2ACA` / `oklch(44.8% 0.2255 282.72)`
 
 ## Typography
 
@@ -48,13 +48,13 @@ The established NCalc violet remains the anchor. Light and dark modes keep the s
 
 ## CTA voice
 
-- Primary: violet fill, 6px radius, destination-specific label.
+- Primary: `#4E2ACA` fill in both modes, 6px radius, destination-specific label.
 - Secondary: paper surface, visible rule, destination-specific label.
 - Never use “Click here”, generic “Learn more”, gradients, or pill-shaped marketing controls.
 
 ## What pages must share
 
-- NCalc logo and violet placement.
+- NCalc logo retains its original brand mark; the surrounding interface stays graphite.
 - Typography, spacing, focus, color, radius, and motion tokens.
 - Search-first header, sidebar behavior, article heading rhythm, and inline-rule footer.
 - Light/dark parity and the same Bootstrap Icons set.
@@ -79,9 +79,9 @@ The canonical, complete export is [`themes/ncalc/public/tokens.css`](themes/ncal
 
 ```css
 @theme {
-  --color-paper: oklch(98% 0.007 285);
-  --color-ink: oklch(22% 0.025 285);
-  --color-accent: oklch(40% 0.18 292);
+  --color-paper: oklch(98% 0 0);
+  --color-ink: oklch(20% 0 0);
+  --color-accent: oklch(44.8% 0.2255 282.72);
   --font-display: "Space Grotesk", sans-serif;
   --font-body: "Source Sans 3", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
@@ -100,9 +100,9 @@ The canonical, complete export is [`themes/ncalc/public/tokens.css`](themes/ncal
 {
   "$schema": "https://design-tokens.github.io/community-group/format/",
   "color": {
-    "paper": { "$value": "oklch(98% 0.007 285)", "$type": "color" },
-    "ink": { "$value": "oklch(22% 0.025 285)", "$type": "color" },
-    "accent": { "$value": "oklch(40% 0.18 292)", "$type": "color" }
+    "paper": { "$value": "oklch(98% 0 0)", "$type": "color" },
+    "ink": { "$value": "oklch(20% 0 0)", "$type": "color" },
+    "accent": { "$value": "oklch(44.8% 0.2255 282.72)", "$type": "color" }
   },
   "font": {
     "display": { "$value": "Space Grotesk, sans-serif", "$type": "fontFamily" },
@@ -121,31 +121,31 @@ The canonical, complete export is [`themes/ncalc/public/tokens.css`](themes/ncal
 
 ```css
 :root {
-  --background: 98% 0.007 285;
-  --foreground: 22% 0.025 285;
-  --card: 95.5% 0.012 285;
-  --card-foreground: 22% 0.025 285;
-  --primary: 40% 0.18 292;
-  --primary-foreground: 97% 0.008 285;
-  --muted: 92.5% 0.018 285;
-  --muted-foreground: 42% 0.025 285;
-  --border: 86% 0.018 285;
-  --input: 86% 0.018 285;
-  --ring: 62% 0.19 292;
+  --background: 98% 0 0;
+  --foreground: 20% 0 0;
+  --card: 95.5% 0 0;
+  --card-foreground: 20% 0 0;
+  --primary: 44.8% 0.2255 282.72;
+  --primary-foreground: 98% 0 0;
+  --muted: 92.5% 0 0;
+  --muted-foreground: 40% 0 0;
+  --border: 84% 0 0;
+  --input: 84% 0 0;
+  --ring: 58% 0.15 282.72;
   --radius: 0.375rem;
 }
 
 .dark {
-  --background: 14% 0.018 285;
-  --foreground: 94% 0.012 285;
-  --card: 18% 0.022 285;
-  --card-foreground: 94% 0.012 285;
-  --primary: 72% 0.15 292;
-  --primary-foreground: 15% 0.02 285;
-  --muted: 22% 0.026 285;
-  --muted-foreground: 72% 0.022 285;
-  --border: 30% 0.028 285;
-  --input: 30% 0.028 285;
-  --ring: 78% 0.16 292;
+  --background: 12% 0 0;
+  --foreground: 95% 0 0;
+  --card: 16% 0 0;
+  --card-foreground: 95% 0 0;
+  --primary: 44.8% 0.2255 282.72;
+  --primary-foreground: 98% 0 0;
+  --muted: 21% 0 0;
+  --muted-foreground: 73% 0 0;
+  --border: 30% 0 0;
+  --input: 30% 0 0;
+  --ring: 58% 0.16 282.72;
 }
 ```

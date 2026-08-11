@@ -1,4 +1,4 @@
-/* Hallmark · macrostructure: Workbench · genre: modern-minimal · tone: technical · theme: custom violet · nav: N9 · footer: Ft2 · design-system: docs/design.md · designed-as-app
+/* Hallmark · macrostructure: Workbench · genre: modern-minimal · tone: technical · theme: custom graphite + #4E2ACA · nav: N9 · footer: Ft2 · design-system: docs/design.md · designed-as-app
  * contrast: pass (40–41) · slop: pass (42–45) · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive: pass (49) · icons: pass (30) · mobile: pass (34, 49, 50–57)
  */
 /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V4 */
@@ -76,88 +76,92 @@
 }
 
 [data-bs-theme="light"] {
-    --color-paper: oklch(98% 0.007 285);
-    --color-paper-2: oklch(95.5% 0.012 285);
-    --color-paper-3: oklch(92.5% 0.018 285);
-    --color-ink: oklch(22% 0.025 285);
-    --color-ink-2: oklch(35% 0.028 285);
-    --color-rule: oklch(86% 0.018 285);
-    --color-rule-2: oklch(58% 0.03 285);
-    --color-muted: oklch(42% 0.025 285);
-    --color-neutral: oklch(38% 0.025 285);
-    --color-accent: oklch(40% 0.18 292);
-    --color-accent-hover: oklch(32% 0.17 292);
-    --color-accent-ink: oklch(97% 0.008 285);
-    --color-focus: oklch(62% 0.19 292);
-    --color-graphite: oklch(19% 0.025 285);
-    --color-graphite-ink: oklch(92% 0.012 285);
-    --color-code-key: oklch(78% 0.15 292);
-    --color-code-string: oklch(80% 0.1 155);
-    --color-code-number: oklch(82% 0.11 75);
-    --color-code-comment: oklch(68% 0.025 285);
-    --color-overlay: oklch(10% 0.02 285 / 0.68);
-    --color-info: oklch(94% 0.035 255);
-    --color-warning: oklch(94% 0.05 85);
-    --color-danger: oklch(94% 0.045 25);
-    --color-error: oklch(43% 0.16 25);
-    --color-success: oklch(38% 0.11 150);
-    --shadow-whisper: 0 1px 2px oklch(20% 0.02 285 / 0.08);
+    --color-paper: oklch(98% 0 0);
+    --color-paper-2: oklch(95.5% 0 0);
+    --color-paper-3: oklch(92.5% 0 0);
+    --color-ink: oklch(20% 0 0);
+    --color-ink-2: oklch(34% 0 0);
+    --color-rule: oklch(84% 0 0);
+    --color-rule-2: oklch(55% 0 0);
+    --color-muted: oklch(40% 0 0);
+    --color-neutral: oklch(35% 0 0);
+    --color-accent: oklch(44.8% 0.2255 282.72);
+    --color-accent-hover: oklch(38% 0.2 282.72);
+    --color-accent-ink: oklch(98% 0 0);
+    --color-link: oklch(52% 0.19 282.72);
+    --color-link-hover: oklch(44.8% 0.2255 282.72);
+    --color-focus: oklch(58% 0.15 282.72);
+    --color-graphite: oklch(16% 0 0);
+    --color-graphite-ink: oklch(92% 0 0);
+    --color-code-key: oklch(76% 0.1 282.72);
+    --color-code-string: oklch(76% 0 0);
+    --color-code-number: oklch(88% 0 0);
+    --color-code-comment: oklch(66% 0 0);
+    --color-overlay: oklch(8% 0 0 / 0.68);
+    --color-info: oklch(94% 0 0);
+    --color-warning: oklch(91% 0 0);
+    --color-danger: oklch(88% 0 0);
+    --color-error: oklch(32% 0 0);
+    --color-success: oklch(38% 0 0);
+    --shadow-whisper: 0 1px 2px oklch(20% 0 0 / 0.08);
 
     --bs-body-bg: var(--color-paper);
     --bs-body-color: var(--color-ink-2);
     --bs-secondary-color: var(--color-muted);
     --bs-tertiary-bg: var(--color-paper-3);
     --bs-border-color: var(--color-rule);
-    --bs-link-color: var(--color-accent);
-    --bs-link-hover-color: var(--color-accent-hover);
+    --bs-link-color: var(--color-link);
+    --bs-link-hover-color: var(--color-link-hover);
     --bs-heading-color: var(--color-ink);
     --bs-emphasis-color: var(--color-ink);
     --bs-primary: var(--color-accent);
-    --bs-primary-rgb: 65, 41, 153;
+    --bs-primary-rgb: 78, 42, 202;
     --bs-primary-text-emphasis: var(--color-accent-hover);
     --bs-primary-bg-subtle: var(--color-paper-3);
     --bs-primary-border-subtle: var(--color-rule-2);
 }
 
 [data-bs-theme="dark"] {
-    --color-paper: oklch(14% 0.018 285);
-    --color-paper-2: oklch(18% 0.022 285);
-    --color-paper-3: oklch(22% 0.026 285);
-    --color-ink: oklch(94% 0.012 285);
-    --color-ink-2: oklch(78% 0.018 285);
-    --color-rule: oklch(30% 0.028 285);
-    --color-rule-2: oklch(55% 0.035 285);
-    --color-muted: oklch(72% 0.022 285);
-    --color-neutral: oklch(78% 0.018 285);
-    --color-accent: oklch(72% 0.15 292);
-    --color-accent-hover: oklch(80% 0.12 292);
-    --color-accent-ink: oklch(15% 0.02 285);
-    --color-focus: oklch(78% 0.16 292);
-    --color-graphite: oklch(11% 0.018 285);
-    --color-graphite-ink: oklch(94% 0.012 285);
-    --color-code-key: oklch(78% 0.15 292);
-    --color-code-string: oklch(80% 0.1 155);
-    --color-code-number: oklch(82% 0.11 75);
-    --color-code-comment: oklch(68% 0.025 285);
-    --color-overlay: oklch(5% 0.015 285 / 0.78);
-    --color-info: oklch(23% 0.04 255);
-    --color-warning: oklch(25% 0.045 85);
-    --color-danger: oklch(24% 0.05 25);
-    --color-error: oklch(76% 0.13 25);
-    --color-success: oklch(76% 0.11 150);
-    --shadow-whisper: 0 1px 2px oklch(5% 0.015 285 / 0.3);
+    --color-paper: oklch(12% 0 0);
+    --color-paper-2: oklch(16% 0 0);
+    --color-paper-3: oklch(21% 0 0);
+    --color-ink: oklch(95% 0 0);
+    --color-ink-2: oklch(79% 0 0);
+    --color-rule: oklch(30% 0 0);
+    --color-rule-2: oklch(57% 0 0);
+    --color-muted: oklch(73% 0 0);
+    --color-neutral: oklch(79% 0 0);
+    --color-accent: oklch(44.8% 0.2255 282.72);
+    --color-accent-hover: oklch(52% 0.19 282.72);
+    --color-accent-ink: oklch(98% 0 0);
+    --color-link: oklch(62% 0.15 282.72);
+    --color-link-hover: oklch(70% 0.12 282.72);
+    --color-focus: oklch(58% 0.16 282.72);
+    --color-graphite: oklch(9% 0 0);
+    --color-graphite-ink: oklch(94% 0 0);
+    --color-code-key: oklch(68% 0.12 282.72);
+    --color-code-string: oklch(76% 0 0);
+    --color-code-number: oklch(88% 0 0);
+    --color-code-comment: oklch(66% 0 0);
+    --color-overlay: oklch(4% 0 0 / 0.78);
+    --color-info: oklch(20% 0 0);
+    --color-warning: oklch(24% 0 0);
+    --color-danger: oklch(28% 0 0);
+    --color-error: oklch(74% 0 0);
+    --color-success: oklch(80% 0 0);
+    --shadow-whisper: 0 1px 2px oklch(4% 0 0 / 0.3);
 
     --bs-body-bg: var(--color-paper);
     --bs-body-color: var(--color-ink-2);
     --bs-secondary-color: var(--color-muted);
     --bs-tertiary-bg: var(--color-paper-3);
     --bs-border-color: var(--color-rule);
-    --bs-link-color: var(--color-accent);
-    --bs-link-hover-color: var(--color-accent-hover);
+    --bs-link-color: var(--color-link);
+    --bs-link-hover-color: var(--color-link-hover);
     --bs-heading-color: var(--color-ink);
     --bs-emphasis-color: var(--color-ink);
     --bs-primary: var(--color-accent);
-    --bs-primary-rgb: 174, 145, 255;
+    --bs-primary-rgb: 78, 42, 202;
     --bs-primary-text-emphasis: var(--color-accent-hover);
     --bs-primary-bg-subtle: var(--color-paper-3);
     --bs-primary-border-subtle: var(--color-rule-2);

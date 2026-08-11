@@ -1,4 +1,4 @@
-/* Hallmark · macrostructure: Index-First / Long Document / Catalogue · genre: modern-minimal · tone: technical · theme: custom violet · nav: N13 · footer: Ft2 · design-system: docs/design.md · designed-as-app
+/* Hallmark · macrostructure: Index-First / Long Document / Catalogue · genre: modern-minimal · tone: technical · theme: custom graphite + #4E2ACA · nav: N13 · footer: Ft2 · design-system: docs/design.md · designed-as-app
  * contrast: pass (40–41) · slop: pass (42–45) · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive: pass (49) · icons: pass (30) · mobile: pass (34, 49, 50–57)
  */
 /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V4 */
@@ -23,19 +23,19 @@ body {
 }
 
 a {
-    color: var(--color-accent);
+    color: var(--color-link);
     text-decoration-color: transparent;
     text-decoration-thickness: var(--rule-hair);
     text-underline-offset: 0.2em;
 }
 
 a:hover {
-    color: var(--color-accent-hover);
+    color: var(--color-link-hover);
     text-decoration-color: currentColor;
 }
 
 a:active {
-    color: var(--color-accent-hover);
+    color: var(--color-link-hover);
 }
 
 :where(a, button, input, summary, [tabindex]):focus-visible {
@@ -115,6 +115,7 @@ input {
 #logo {
     width: auto;
     max-height: 1.875rem;
+    /*filter: grayscale(1); no need for the logo be black.*/
 }
 
 .nav-toggle {
@@ -155,7 +156,7 @@ input {
 
 #navbar .nav-link:hover,
 #navbar .nav-link.active {
-    color: var(--color-accent);
+    color: var(--color-link);
 }
 
 .jj-nav-icon,
@@ -605,7 +606,7 @@ article blockquote > :last-child {
 .toc li.active > a,
 .affix li > a:hover,
 .affix li.active > a {
-    color: var(--color-accent);
+    color: var(--color-link);
 }
 
 .toc > .nav.level1 > li > a {
@@ -794,7 +795,7 @@ article:has(.docs-home) {
 .docs-index__links a::after {
     content: "\2192";
     flex: 0 0 auto;
-    color: var(--color-accent);
+    color: var(--color-link);
     font-family: var(--font-display);
 }
 
@@ -945,7 +946,7 @@ article:has(.docs-home) {
 }
 
 #search-results > .sr-items .sr-item > .item-href {
-    color: var(--color-accent);
+    color: var(--color-link);
     font-size: var(--text-xs);
 }
 

@@ -1,4 +1,4 @@
-/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: custom violet · enrichment: none · nav: N9 · footer: Ft2 · design-system: docs/design.md · designed-as-app
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: custom graphite + #4E2ACA · enrichment: none · nav: N9 · footer: Ft2 · design-system: docs/design.md · designed-as-app
  * contrast: pass (40–41) · slop: pass (42–45) · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive: pass (49) · icons: pass (30) · mobile: pass (34, 49, 50–57)
  */
 /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 */
@@ -25,18 +25,18 @@ input {
 }
 
 a {
-    color: var(--color-accent);
+    color: var(--color-link);
     text-decoration-color: transparent;
     text-underline-offset: 0.2em;
 }
 
 a:hover {
-    color: var(--color-accent-hover);
+    color: var(--color-link-hover);
     text-decoration-color: currentColor;
 }
 
 a:active {
-    color: var(--color-accent-hover);
+    color: var(--color-link-hover);
 }
 
 :where(a, button, input, [tabindex]:not([tabindex="-1"])):focus-visible {
@@ -152,7 +152,7 @@ a:active {
 }
 
 .app-nav__link:hover {
-    color: var(--color-accent);
+    color: var(--color-link);
 }
 
 .theme-toggle {
