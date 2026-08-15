@@ -92,6 +92,33 @@ Debug.Assert((bool)result!);
 Calling `Evaluate()` for the same expression does not invoke `EvaluateAsyncFunction`. Register a synchronous
 `EvaluateFunction` handler or a `Functions` entry if the expression must also work through `Evaluate()`.
 
+## Concurrent Async Evaluation
+
+By default, `EvaluateAsync()` evaluates expression parts sequentially. Enable
+<xref:NCalc.ExpressionEvaluationOptions.ConcurrentAsyncEvaluation> to evaluate independent parts concurrently when they do not
+require short-circuit evaluation. This includes non-short-circuiting binary operands, eager built-in function arguments,
+and list items. It can reduce latency when independent expressions perform asynchronous I/O.
+
+```csharp
+var configuration = new ExpressionConfiguration
+{
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        ConcurrentAsyncEvaluation = true
+    }
+};
+
+var expression = new Expression("get_price() + get_shipping()", configuration);
+expression.AsyncFunctions["get_price"] = GetPriceAsync;
+expression.AsyncFunctions["get_shipping"] = GetShippingAsync;
+
+var total = await expression.EvaluateAsync<decimal>();
+```
+
+`And`, `Or`, and coalescing expressions remain lazy so that NCalc can skip their right operand. Ternary expressions and
+conditional built-in functions such as `if`, `ifs`, and `in` also retain their existing lazy behavior. Enabling concurrent
+evaluation can change execution order, so custom callbacks and any state they access must be safe for concurrent use.
+
 ## Async Parameters
 
 Parameters follow the same async rules as functions during `EvaluateAsync()`:

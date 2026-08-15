@@ -1,7 +1,6 @@
 namespace NCalc.Exceptions;
 
-public sealed class NCalcCastException :
-    InvalidCastException
+public sealed class NCalcCastException : InvalidCastException
 {
     public object? SourceValue { get; }
     public Type? TargetType { get; }

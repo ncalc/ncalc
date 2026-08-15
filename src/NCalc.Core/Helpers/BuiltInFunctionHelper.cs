@@ -105,6 +105,16 @@ public static class BuiltInFunctionHelper
             async functionData =>
             {
                 EnsureArgumentCount(functionData, 2, name);
+
+                if (functionData.EvaluationOptions.ConcurrentAsyncEvaluation)
+                {
+                    var values = await Task.WhenAll(
+                        functionData.EvaluateAsync(0),
+                        functionData.EvaluateAsync(1));
+
+                    return evaluator(values[0], values[1], functionData);
+                }
+
                 return evaluator(
                     await functionData.EvaluateAsync(0),
                     await functionData.EvaluateAsync(1),

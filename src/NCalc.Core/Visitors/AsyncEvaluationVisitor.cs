@@ -63,6 +63,20 @@ public class AsyncEvaluationVisitor(
             return leftValue ?? await binaryEventArgs.RightValueAsync();
         }
 
+        if (options.ConcurrentAsyncEvaluation)
+        {
+            var values = await Task.WhenAll(
+                binaryEventArgs.LeftValueAsync(),
+                binaryEventArgs.RightValueAsync());
+
+            return EvaluationVisitorHelper.EvaluateBinary(
+                expression.Type,
+                values[0],
+                values[1],
+                options,
+                cultureInfo);
+        }
+
         var left = await binaryEventArgs.LeftValueAsync();
         var right = await binaryEventArgs.RightValueAsync();
 
@@ -123,6 +137,9 @@ public class AsyncEvaluationVisitor(
     public virtual async Task<object?> Visit(LogicalExpressionList list)
     {
         if (list.Count == 0) return Array.Empty<object?>();
+
+        if (options.ConcurrentAsyncEvaluation)
+            return await Task.WhenAll(list.Select(EvaluateAsync));
 
         var listCount = list.Count;
         var result = new object?[listCount];
