@@ -157,7 +157,14 @@ public enum ExpressionOptions
     /// Converts to <see cref="ExpressionEvaluationOptions.ConcurrentAsyncEvaluation"/>.
     /// </remarks>
     [Display(Name = "Concurrent Async Evaluation")]
-    ConcurrentAsyncEvaluation = 1 << 18
+    ConcurrentAsyncEvaluation = 1 << 18,
+
+    /// <inheritdoc cref="LogicalExpressionParserOptions.DisallowSingleEquals"/>
+    /// <remarks>
+    /// Converts to <see cref="LogicalExpressionParserOptions.DisallowSingleEquals"/>.
+    /// </remarks>
+    [Display(Name = "Disallow Single Equals")]
+    DisallowSingleEquals = 1 << 19
 }
 
 #if NETFRAMEWORK || NETSTANDARD2_0

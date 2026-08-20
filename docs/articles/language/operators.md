@@ -105,6 +105,11 @@ These operators compare two values to check equality or inequality.
 * `=`, `==` : Equal to
 * `!=`, `<>` : Not equal to
 
+> **Note:** The single equals sign `=` is accepted as an equality operator for
+> convenience and legacy reasons, but you can require `==` by setting
+> `LogicalExpressionParserOptions.DisallowSingleEquals = true`. When disabled, expressions such
+> as `2 + 3 = 5` fail to parse, while `2 + 3 == 5` remains valid.
+
 **Examples:**
 ```csharp
 42 == 42            // true
