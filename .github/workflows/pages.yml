@@ -49,6 +49,12 @@ jobs:
         run: |
           dotnet publish example/NCalc.Playground/NCalc.Playground.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
 
+      - name: Rewrite Playground base href
+        uses: SteveSandersonMS/ghaction-rewrite-base-href@5b54862a8831e012d4f1a8b2660894415fdde8ec # v1.1.0
+        with:
+          html_path: ${{ env.PLAYGROUND_PUBLISH_DIR }}/index.html
+          base_href: /playground/
+
       - name: Stage GitHub Pages artifact
         run: |
           rm -rf artifacts/pages
