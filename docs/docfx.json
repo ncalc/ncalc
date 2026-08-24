@@ -66,7 +66,7 @@
       "_disableSideFilter":true,
       "_appLogoPath": "NCalc.png",
       "_appTitle": "NCalc documentation",
-      "_appFooter": "<span>NCalc documentation &middot; <a href=\"https://github.com/ncalc/ncalc\">GitHub</a> &middot; MIT licensed</span>"
+      "_appFooter": "<span>Made with <a href=\"https://dotnet.github.io/docfx/docs/basic-concepts.html\">DocFX</a> &middot; <a href=\"https://github.com/ncalc/ncalc\">GitHub</a> &middot; MIT licensed &middot; Created by <a href=\"https://github.com/sebastienros\">Sébastien Ros</a> &middot; Maintained by <a href=\"https://gumbarros.com.br\">Gustavo Barros</a></span>"
     },
     "globalMetadataFiles": [],
     "fileMetadataFiles": [],
