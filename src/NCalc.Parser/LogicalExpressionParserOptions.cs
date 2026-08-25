@@ -11,6 +11,11 @@ public sealed class LogicalExpressionParserOptions
     public bool AllowCharValues { get; init; }
 
     /// <summary>
+    /// Disallows the single equals sign (<c>=</c>) as an equality operator, requiring <c>==</c> instead.
+    /// </summary>
+    public bool DisallowSingleEquals { get; init; }
+
+    /// <summary>
     /// Gets the default parsed floating point number type.
     /// </summary>
     public FloatingPointNumberType FloatingPointNumberType { get; init; } = FloatingPointNumberType.Double;

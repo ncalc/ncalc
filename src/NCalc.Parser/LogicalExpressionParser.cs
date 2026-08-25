@@ -77,7 +77,7 @@ public static class LogicalExpressionParser
     /// <returns>A new parser configured with the specified options.</returns>
     private static Parser<LogicalExpression> CreateExpressionParser(LogicalExpressionParserOptions options, CultureInfo cultureInfo)
     {
-        return CreateExpressionParser(cultureInfo, GetSeparatorChars(options.ArgumentSeparator));
+        return CreateExpressionParser(cultureInfo, GetSeparatorChars(options.ArgumentSeparator), options.DisallowSingleEquals);
     }
 
     private static Parser<LogicalExpression> CreateStringValueParser(char quote, bool allowCharValues)
@@ -120,7 +120,7 @@ public static class LogicalExpressionParser
             });
     }
 
-    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, char[] argumentSeparator)
+    private static Parser<LogicalExpression> CreateExpressionParser(CultureInfo cultureInfo, char[] argumentSeparator, bool disallowSingleEquals)
     {
         /*
          * Grammar:
@@ -216,7 +216,14 @@ public static class LogicalExpressionParser
         var minus = Terms.Text("-");
         var plus = Terms.Text("+");
 
-        var equal = OneOf(Terms.Text("=="), Terms.Text("="));
+        var equals = Terms.Text("==");
+        var singleEquals = Terms.Text("=");
+
+        var equal = disallowSingleEquals
+            ? equals
+            : OneOf(equals, singleEquals);
+
+        var equalityGuard = OneOf(equals, singleEquals);
         var notEqual = OneOf(Terms.Text("<>"), Terms.Text("!="));
         var @in = Terms.Text("in", true);
         var notIn = Terms.Text("not in", true);
@@ -437,7 +444,7 @@ public static class LogicalExpressionParser
             list);
 
         // factorial => primary ( "!" )* ;
-        var factorial = primary.And(ZeroOrMany(exclamation.AndSkip(Not(equal))))
+        var factorial = primary.And(ZeroOrMany(exclamation.AndSkip(Not(equalityGuard))))
             .Then(static x =>
             {
                 var result = x.Item1;

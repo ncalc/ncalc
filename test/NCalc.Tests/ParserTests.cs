@@ -1,4 +1,5 @@
-﻿using NCalc.Factories;
+﻿using NCalc.Exceptions;
+using NCalc.Factories;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;
@@ -193,5 +194,46 @@ public class ParserTests
         }
 
         await Assert.That(exceptionThrown).IsFalse();
+    }
+
+    [Test]
+    public async Task ShouldAllowSingleEqualsByDefault()
+    {
+        await Assert.That((bool)new Expression("2 + 3 = 5").Evaluate(CancellationToken.None)!).IsTrue();
+    }
+
+    [Test]
+    public async Task ShouldDisallowSingleEqualsWhenConfigured()
+    {
+        var options = new LogicalExpressionParserOptions { DisallowSingleEquals = true };
+
+        Assert.Throws<NCalcParserException>(() =>
+            LogicalExpressionFactory.Create("2 + 3 = 5", options, cancellationToken: CancellationToken.None));
+    }
+
+    [Test]
+    public async Task ShouldStillAllowDoubleEqualsWhenSingleEqualsDisallowed()
+    {
+        var options = new LogicalExpressionParserOptions { DisallowSingleEquals = true };
+        var logicalExpression = LogicalExpressionFactory.Create("2 + 3 == 5", options, cancellationToken: CancellationToken.None);
+
+        await Assert.That((bool)new Expression(logicalExpression).Evaluate(CancellationToken.None)!).IsTrue();
+    }
+
+    [Test]
+    public async Task ShouldKeepNotEqualWorkingWhenSingleEqualsDisallowed()
+    {
+        var options = new LogicalExpressionParserOptions { DisallowSingleEquals = true };
+        var logicalExpression = LogicalExpressionFactory.Create("5 != 3", options, cancellationToken: CancellationToken.None);
+
+        await Assert.That((bool)new Expression(logicalExpression).Evaluate(CancellationToken.None)!).IsTrue();
+    }
+
+    [Test]
+    public async Task ShouldDisallowSingleEqualsWithLegacyFlag()
+    {
+        var expression = new Expression("2 + 3 = 5", ExpressionOptions.DisallowSingleEquals);
+
+        await Assert.That(expression.HasErrors(CancellationToken.None)).IsTrue();
     }
 }

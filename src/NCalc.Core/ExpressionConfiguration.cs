@@ -37,6 +37,7 @@ public sealed class ExpressionConfiguration
             Parsing = new LogicalExpressionParserOptions
             {
                 AllowCharValues = options.HasFlag(ExpressionOptions.AllowCharValues),
+                DisallowSingleEquals = options.HasFlag(ExpressionOptions.DisallowSingleEquals),
                 FloatingPointNumberType = GetFloatingPointNumberType(options),
                 IntegerNumberType = GetIntegerNumberType(options)
             },
