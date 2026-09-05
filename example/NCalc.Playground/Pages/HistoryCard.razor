@@ -1,0 +1,109 @@
+<div class="workbench-surface">
+    <div class="surface-header">
+        <div>
+            <h2>History</h2>
+            <p>Choose an expression to restore its inputs.</p>
+        </div>
+        <button class="btn btn-secondary btn-compact" type="button" @onclick="OnClear" disabled="@(History.Count == 0)">
+            Clear
+        </button>
+    </div>
+
+    <div class="surface-body history-body">
+        @if (History.Count == 0)
+        {
+            <div class="empty-state">
+                <i class="bi bi-clock-history" aria-hidden="true"></i>
+                <p>No evaluations yet. Run the expression above to start a local history.</p>
+            </div>
+        }
+        else
+        {
+            <div class="history-scroll">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Expression</th>
+                        <th scope="col">Result</th>
+                        <th class="type-column" scope="col">Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in History)
+                    {
+                        <tr @key="item" class="@(ReferenceEquals(item, SelectedItem) ? "is-selected" : null)">
+                            <td data-label="Expression">
+                                <button class="history-expression"
+                                        type="button"
+                                        aria-pressed="@ReferenceEquals(item, SelectedItem)"
+                                        @onclick="() => OnApply.InvokeAsync(item)">
+                                    @if (!string.Equals(item.Expression, item.OriginalExpressionString, StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        <span
+                                            title="@item.OriginalExpressionString"
+                                            >@item.Expression</span>
+                                    }
+                                    else
+                                    {
+                                        @item.Expression
+                                    }
+                                </button>
+                            </td>
+                            <td data-label="Result" class="history-result">
+                                    @switch (item.Result)
+                                    {
+                                        case true:
+                                            <span class="font-monospace text-success">True</span>
+                                            break;
+                                        case false:
+                                            <span class="font-monospace text-danger">False</span>
+                                            break;
+                                        case null:
+                                            <span class="font-monospace text-muted">null</span>
+                                            break;
+                                        case string when !item.HasError:
+                                            <span class="font-monospace text-muted">"@item.Result"</span>
+                                            break;
+                                        case IFormattable formattable:
+                                            @formattable.ToString(null, CultureInfo.InvariantCulture)
+                                            break;
+                                        default:
+                                            @item.Result?.ToString()
+                                            break;
+                                    }
+                            </td>
+                            <td data-label="Type">
+                                    @if (item.HasError)
+                                    {
+                                        <span class="badge text-bg-danger"
+                                              title="@item.ReturnType.Name">
+                                            Exception
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="font-monospace">@item.ReturnType.Name</span>
+                                    }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<EvaluationHistoryItem> History { get; set; } = [];
+
+    [Parameter]
+    public EvaluationHistoryItem? SelectedItem { get; set; }
+
+    [Parameter]
+    public EventCallback<EvaluationHistoryItem> OnApply { get; set; }
+
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+}

@@ -1,75 +1,105 @@
-using System.Text.RegularExpressions;
-using NCalc.Domain;
 using NCalc.Exceptions;
 
 namespace NCalc.Helpers;
 
-/// <summary>
-/// Provides helper methods for evaluating expressions.
-/// </summary>
-public static class EvaluationHelper<TExpressionContext> where TExpressionContext : ExpressionContextBase
+public static class EvaluationHelper
 {
-    /// <summary>
-    /// Adds two values, with special handling for string concatenation based on the context options.
-    /// </summary>
-    /// <param name="leftValue">The left operand.</param>
-    /// <param name="rightValue">The right operand.</param>
-    /// <param name="context">The evaluation context.</param>
-    /// <returns>The result of the addition or string concatenation.</returns>
-    public static object? Plus(object? leftValue, object? rightValue, TExpressionContext context)
+    private static (object? Left, object? Right) ConvertArithmeticNullOrEmptyStringsAsZero(
+        object? leftValue,
+        object? rightValue,
+        ExpressionEvaluationOptions options)
     {
-        if (context.Options.HasFlag(ExpressionOptions.StringConcat))
-            return string.Concat(
-                Convert.ToString(leftValue, context.CultureInfo),
-                Convert.ToString(rightValue, context.CultureInfo));
+        if (!options.ArithmeticNullOrEmptyStringAsZero)
+            return (leftValue, rightValue);
 
-        if (context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion) &&
+        if (leftValue is null or string { Length: 0 })
+            leftValue = 0;
+
+        if (rightValue is null or string { Length: 0 })
+            rightValue = 0;
+
+        return (leftValue, rightValue);
+    }
+
+    public static object? Plus(object? leftValue, object? rightValue, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
+    {
+        if (options.StringConcat)
+            return string.Concat(
+                Convert.ToString(leftValue, cultureInfo),
+                Convert.ToString(rightValue, cultureInfo));
+
+        (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, options);
+
+        if (options.NoStringTypeCoercion &&
             (leftValue is string || rightValue is string))
         {
-            return string.Concat(Convert.ToString(leftValue, context.CultureInfo), Convert.ToString(rightValue, context.CultureInfo));
+            return string.Concat(Convert.ToString(leftValue, cultureInfo), Convert.ToString(rightValue, cultureInfo));
         }
 
         try
         {
-            return MathHelper.Add(leftValue, rightValue, context);
+            return MathHelper.Add(leftValue, rightValue, options.Math, cultureInfo);
         }
         catch (FormatException) when (leftValue is string && rightValue is string)
         {
             return string.Concat(
-                Convert.ToString(leftValue, context.CultureInfo),
-                Convert.ToString(rightValue, context.CultureInfo));
+                Convert.ToString(leftValue, cultureInfo),
+                Convert.ToString(rightValue, cultureInfo));
         }
     }
 
-    /// <summary>
-    /// Determines if the left value is contained within the right value, which must be either an enumerable or a string.
-    /// </summary>
-    /// <param name="rightValue">The right operand.</param>
-    /// <param name="leftValue">The left operand.</param>
-    /// <param name="context">The evaluation context.</param>
-    /// <returns>True if the left value is contained within the right value, otherwise false.</returns>
-    /// <exception cref="NCalcEvaluationException">Thrown when the right value is not an enumerable or a string.</exception>
-    public static bool In(object? rightValue, object? leftValue, TExpressionContext context)
+    public static object? Minus(object? leftValue, object? rightValue, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
+    {
+        (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, options);
+        return MathHelper.Subtract(leftValue, rightValue, options.Math, cultureInfo);
+    }
+
+    public static object? Times(object? leftValue, object? rightValue, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
+    {
+        (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, options);
+        return MathHelper.Multiply(leftValue, rightValue, options.Math, cultureInfo);
+    }
+
+    public static object? Div(object? leftValue, object? rightValue, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
+    {
+        (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, options);
+        return MathHelper.Divide(leftValue, rightValue, options.Math, cultureInfo);
+    }
+
+    public static object? Modulo(object? leftValue, object? rightValue, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
+    {
+        (leftValue, rightValue) = ConvertArithmeticNullOrEmptyStringsAsZero(leftValue, rightValue, options);
+        return MathHelper.Modulo(leftValue, rightValue, options.Math, cultureInfo);
+    }
+
+    public static bool In(object? rightValue, object? leftValue, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
     {
         return rightValue switch
         {
-            string rightValueString => Contains(leftValue, rightValueString, context),
-            IEnumerable<object?> rightValueEnumerableOfObj => Contains(leftValue, rightValueEnumerableOfObj, context),
-            IEnumerable rightValueEnumerable => Contains(leftValue, rightValueEnumerable, context),
-            { } rightValueObject => Contains(leftValue, [rightValueObject], context),
+            string rightValueString => Contains(leftValue, rightValueString, options, cultureInfo),
+            object[] rightValueArray => Contains(leftValue, rightValueArray, options, cultureInfo),
+            IEnumerable rightValueEnumerable => Contains(leftValue, rightValueEnumerable, options, cultureInfo),
+            not null => ValuesEqual(leftValue, rightValue, options, cultureInfo),
             _ => throw new NCalcEvaluationException(
                 "'in' operator right value must implement IEnumerable, be a string or an object.")
         };
     }
 
-    private static bool Contains(object? leftValue, string rightValue, TExpressionContext context)
+    private static bool Contains(object? leftValue, string rightValue, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
     {
-        if (leftValue is not string && context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion))
+        if (leftValue is not string && options.NoStringTypeCoercion)
         {
             return false;
         }
 
-        var leftValueString = Convert.ToString(leftValue, CultureInfo.InvariantCulture);
+        var leftValueString = Convert.ToString(leftValue, cultureInfo);
 
         if (string.IsNullOrEmpty(leftValueString))
             return string.IsNullOrEmpty(rightValue);
@@ -77,119 +107,73 @@ public static class EvaluationHelper<TExpressionContext> where TExpressionContex
         return rightValue.Contains(leftValueString);
     }
 
-    private static bool Contains(object? leftValue, IEnumerable<object?> rightValue, TExpressionContext context)
+    private static bool Contains<T>(object? leftValue, T rightValue, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo) where T : IEnumerable
     {
-        var rightArray = rightValue as object[] ?? rightValue.ToArray();
-
-        var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
-
-        if (rightArray.All(v => v is string))
-        {
-            if (noStringTypeCoercion && leftValue is not string)
-            {
-                return false;
-            }
-
-            return rightArray.OfType<string>().Contains(Convert.ToString(leftValue, context.CultureInfo) ?? string.Empty,
-                TypeHelper.GetStringComparer(context));
-        }
-
-        return rightArray.Contains(leftValue,
-            noStringTypeCoercion ? EqualityComparer<object?>.Default : StringCoercionComparer.Default);
-    }
-
-    private static bool Contains(object? leftValue, IEnumerable rightValue, TExpressionContext context)
-    {
-        if (rightValue == null)
-            return false;
-
-        if (leftValue == null)
-        {
-            foreach (var item in rightValue)
-            {
-                if (item == null)
-                    return true;
-            }
-
-            return false;
-        }
-
-        var leftType = leftValue.GetType();
-
-        var noStringTypeCoercion = context.Options.HasFlag(ExpressionOptions.NoStringTypeCoercion);
-        var comparer = noStringTypeCoercion ? EqualityComparer<object?>.Default : StringCoercionComparer.Default;
-
         foreach (var item in rightValue)
         {
-            if (item != null)
-            {
-                var rightType = item.GetType();
-
-                if (rightType == leftType)
-                {
-                    if (leftValue.Equals(item))
-                        return true;
-                }
-                else if (comparer.Equals(leftValue, item))
-                {
-                    return true;
-                }
-            }
+            if (ValuesEqual(leftValue, item, options, cultureInfo))
+                return true;
         }
 
         return false;
     }
 
-    /// <summary>
-    /// Evaluates a unary expression.
-    /// </summary>
-    /// <param name="expression">The unary expression to evaluate.</param>
-    /// <param name="result">The result of evaluating the operand of the unary expression.</param>
-    /// <param name="context">The evaluation context.</param>
-    /// <returns>The result of the unary operation.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the unary expression type is unknown.</exception>
-    public static object? Unary(UnaryExpression expression, object? result, TExpressionContext context)
+    private static bool ValuesEqual(object? leftValue, object? rightValue, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
+    {
+        if (leftValue == null || rightValue == null)
+            return leftValue == rightValue;
+
+        var noStringTypeCoercion = options.NoStringTypeCoercion;
+
+        if (noStringTypeCoercion)
+        {
+            if (leftValue is string leftOnlyString && rightValue is string rightOnlyString)
+                return options.StringComparer.Equals(leftOnlyString, rightOnlyString);
+
+            if (leftValue is string || rightValue is string)
+                return EqualityComparer<object?>.Default.Equals(leftValue, rightValue);
+
+            return TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, options.StringComparer, cultureInfo) ==
+                   ComparisonResult.Equal;
+        }
+
+        if (TypeHelper.HasNullOrTypeConflict(leftValue, rightValue, options.StrictTypeMatching))
+            return false;
+
+        var stringComparer = options.StringComparer;
+
+        return (leftValue, rightValue) switch
+        {
+            (string leftString, string rightString) => stringComparer.Equals(leftString, rightString),
+            (string leftString, _) => stringComparer.Equals(
+                leftString,
+                Convert.ToString(rightValue, cultureInfo) ?? string.Empty),
+            (_, string rightString) => stringComparer.Equals(
+                Convert.ToString(leftValue, cultureInfo) ?? string.Empty,
+                rightString),
+            _ => TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, options.StringComparer, cultureInfo) ==
+                 ComparisonResult.Equal
+        };
+    }
+
+    public static object? Unary(UnaryExpression expression, object? result, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
     {
         return expression.Type switch
         {
-            UnaryExpressionType.Not => !Convert.ToBoolean(result, context.CultureInfo),
-            UnaryExpressionType.Negate => MathHelper.Subtract(0, result, context),
-            UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, context.CultureInfo),
+            UnaryExpressionType.Not => !Convert.ToBoolean(result, cultureInfo),
+            UnaryExpressionType.Negate => result switch
+            {
+                double doubleValue => -doubleValue,
+                float floatValue => -floatValue,
+                _ => MathHelper.Subtract(0, result, options.Math, cultureInfo)
+            },
+            UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, cultureInfo),
             UnaryExpressionType.Positive => result,
             UnaryExpressionType.Factorial => MathHelper.Factorial(result),
             _ => throw new InvalidOperationException("Unknown UnaryExpressionType")
         };
-    }
-
-    /// <summary>
-    /// Determines whether a specified string matches a pattern using SQL-like wildcards.
-    /// </summary>
-    /// <param name="leftValue">The left operand.</param>///
-    /// <param name="rightValue">The right operand.</param>
-    /// <param name="context">The context containing options for the comparison.</param>
-    /// <returns>
-    /// <c>true</c> if the <paramref name="value"/> matches the <paramref name="pattern"/>; otherwise, <c>false</c>.
-    /// </returns>
-    /// <remarks>
-    /// The comparison is case-insensitive if the <see cref="ExpressionOptions.CaseInsensitiveStringComparer"/> flag is set in the <paramref name="context"/>.
-    /// </remarks>
-    public static bool Like(object? leftValue, object? rightValue, TExpressionContext context)
-    {
-        if (leftValue == null || rightValue == null)
-            return false;
-
-        string value = leftValue.ToString()!;
-        string pattern = rightValue.ToString()!;
-
-        var regexPattern = Regex.Escape(pattern)
-            .Replace("%", ".*") // % matches zero or more characters
-            .Replace("_", "."); // _ matches exactly one character
-
-        var options = context.Options.HasFlag(ExpressionOptions.CaseInsensitiveStringComparer)
-            ? RegexOptions.IgnoreCase
-            : RegexOptions.None;
-
-        // Use ^ and $ to match the start and end of the string
-        return Regex.IsMatch(value, $"^{regexPattern}$", options);
     }
 }

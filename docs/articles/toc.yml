@@ -1,50 +1,105 @@
-- name: Intro  
+- name: Intro
+  icon: bi bi-house
   href: index.md
-- name: Functions
-  href: functions.md
-- name: Operators
-  href: operators.md
-- name: Values
-  href: values.md
-- name: Parameters
-  href: parameters.md
-- name: Expression Context
-  href: expression_context.md
-- name: Handling Errors
-  href: handling_errors.md
-- name: Case Sensitivity
-  href: case_sensitivity.md
-- name: Overflow Protection
-  href: overflow_protection.md
-- name: String Concatenation
-  href: string_concatenation.md
-- name: Strict Type Matching
-  href: strict_type_matching.md
-- name: Async Support
-  href: async.md
-- name: Caching
-  href: caching.md
-- name: Cancellation Token Support
-  href: cancellation.md
-- name: Logging
-  href: logging.md
-- name: Lambda Compilation
-  href: lambda_compilation.md
-- name: Dependency Injection
-  href: dependency_injection.md
-- name: Overriding Evaluation Behavior
-  href: overriding_evaluation.md
-- name: Plugins
+- name: Language
+  icon: bi bi-calculator
+  href: language/index.md
   items:
-    - name: ANTLR
-      href: plugins/antlr.md
-    - name: Memory Cache
-      href: plugins/memory_cache.md
-- name: Architecture
-  href: architecture.md
-- name: Benchmarks
-  href: benchmarks.md
-- name: Changelog
-  href: changelog.md
-- name: Publishing a New Release
-  href: new_release.md
+    - name: Functions
+      icon: bi bi-code-square
+      href: language/functions.md
+    - name: Operators
+      icon: bi bi-calculator
+      href: language/operators.md
+    - name: Values
+      icon: bi bi-tag
+      href: language/values.md
+    - name: Parameters
+      icon: bi bi-sliders
+      href: language/parameters.md
+- name: Evaluation
+  icon: bi bi-sliders
+  href: evaluation/index.md
+  items:
+    - name: Expression Context
+      icon: bi bi-layers
+      href: evaluation/expression_context.md
+    - name: Configuration
+      icon: bi bi-gear
+      href: evaluation/configuration.md
+    - name: Typed Evaluation
+      icon: bi bi-braces
+      href: evaluation/typed_evaluation.md
+    - name: Handling Errors
+      icon: bi bi-exclamation-triangle
+      href: evaluation/handling_errors.md
+    - name: Case Sensitivity
+      icon: bi bi-fonts
+      href: evaluation/case_sensitivity.md
+    - name: Overflow Protection
+      icon: bi bi-shield-check
+      href: evaluation/overflow_protection.md
+    - name: String Concatenation
+      icon: bi bi-link-45deg
+      href: evaluation/string_concatenation.md
+    - name: Strict Type Matching
+      icon: bi bi-list-check
+      href: evaluation/strict_type_matching.md
+- name: Runtime
+  icon: bi bi-speedometer2
+  href: runtime/index.md
+  items:
+    - name: Async Support
+      icon: bi bi-lightning-charge
+      href: runtime/async.md
+    - name: Performance
+      icon: bi bi-speedometer2
+      href: runtime/performance.md
+    - name: Caching
+      icon: bi bi-database
+      href: runtime/caching.md
+    - name: Cancellation Token Support
+      icon: bi bi-slash-circle
+      href: runtime/cancellation.md
+    - name: Logging
+      icon: bi bi-file-text
+      href: runtime/logging.md
+- name: Extensibility
+  icon: bi bi-puzzle
+  href: extensibility/index.md
+  items:
+    - name: Lambda Compilation
+      icon: bi bi-git
+      href: extensibility/lambda_compilation.md
+    - name: Dependency Injection
+      icon: bi bi-puzzle
+      href: extensibility/dependency_injection.md
+    - name: Overriding Evaluation Behavior
+      icon: bi bi-wrench-adjustable
+      href: extensibility/overriding_evaluation.md
+    - name: Plugins
+      icon: bi bi-plug
+      href: extensibility/plugins/index.md
+      items:
+        - name: Memory Cache
+          icon: bi bi-memory
+          href: extensibility/plugins/memory_cache.md
+- name: Project
+  icon: bi bi-diagram-3
+  href: project/index.md
+  items:
+    - name: Architecture
+      icon: bi bi-diagram-3
+      href: project/architecture.md
+    - name: Benchmarks
+      icon: bi bi-graph-up
+      href: project/benchmarks.md
+    - name: Changelog
+      icon: bi bi-clock-history
+      href: project/changelog.md
+    - name: Migrate from NCalc v6 to NCalc v7
+      icon: bi bi-arrow-left-right
+      href: project/migrate_v6_to_v7.md
+    - name: Publishing a New Release
+      icon: bi bi-rocket-takeoff
+      href: project/new_release.md

@@ -1,54 +1,113 @@
 ﻿using Microsoft.Extensions.Logging;
-using NCalc.Domain;
+using Microsoft.Extensions.Logging.Abstractions;
 using NCalc.Logging;
 
 namespace NCalc.Cache;
 
-public sealed class LogicalExpressionCache(ILogger<LogicalExpressionCache> logger) : ILogicalExpressionCache
+public sealed class LogicalExpressionCache : ILogicalExpressionCache
 {
-    private readonly ConcurrentDictionary<LogicalExpressionCacheKey, WeakReference<LogicalExpression>> _compiledExpressions = new();
+    private const string DefaultCapacitySwitchName = "NCalc.LogicalExpressionCache.DefaultCapacity";
+    private const int DefaultCapacity = 128;
+
+    private readonly Dictionary<string, LinkedListNode<CacheEntry>> _compiledExpressions = new(StringComparer.Ordinal);
+    private readonly LinkedList<CacheEntry> _lru = [];
+    #if NET10_0_OR_GREATER
+    private readonly Lock _lock = new();
+    #else
+    private readonly object _lock = new();
+    #endif
+    private readonly ILogger<LogicalExpressionCache> _logger;
+    private readonly int _capacity;
 
     private static readonly LogicalExpressionCache Instance;
 
     static LogicalExpressionCache()
     {
-        Instance = new LogicalExpressionCache(DefaultLoggerFactory.Value.CreateLogger<LogicalExpressionCache>());
+        Instance = new LogicalExpressionCache(NullLoggerFactory.Instance.CreateLogger<LogicalExpressionCache>(), GetDefaultCapacity());
+    }
+
+    public LogicalExpressionCache(ILogger<LogicalExpressionCache>? logger = null)
+    {
+        _capacity = GetDefaultCapacity();
+        _logger = logger ?? NullLogger<LogicalExpressionCache>.Instance;
+    }
+
+    internal LogicalExpressionCache(ILogger<LogicalExpressionCache>? logger, int capacity)
+    {
+        _capacity = capacity > 0 ? capacity : throw new ArgumentOutOfRangeException(nameof(capacity));
+        _logger = logger ?? NullLogger<LogicalExpressionCache>.Instance;
+    }
+
+    private static int GetDefaultCapacity()
+    {
+#if NET
+        var configuredCapacityValue = AppContext.GetData(DefaultCapacitySwitchName) as string;
+#else
+        const string? configuredCapacityValue = null;
+#endif
+        if (string.IsNullOrWhiteSpace(configuredCapacityValue))
+            return DefaultCapacity;
+
+        return int.TryParse(configuredCapacityValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var configuredCapacity) &&
+               configuredCapacity > 0
+            ? configuredCapacity
+            : throw new InvalidOperationException(
+                $"The AppContext switch '{DefaultCapacitySwitchName}' must contain a positive integer value.");
     }
 
     public static LogicalExpressionCache GetInstance() => Instance;
 
-    public bool TryGetValue(LogicalExpressionCacheKey key, out LogicalExpression? logicalExpression)
+    public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)
     {
-        logicalExpression = null;
+        lock (_lock)
+        {
+            if (!_compiledExpressions.TryGetValue(expression, out var node))
+            {
+                logicalExpression = null;
+                return false;
+            }
 
-        if (!_compiledExpressions.TryGetValue(key, out var wr))
-            return false;
-        if (!wr.TryGetTarget(out logicalExpression))
-            return false;
+            _lru.Remove(node);
+            _lru.AddFirst(node);
+            logicalExpression = node.Value.LogicalExpression;
+        }
 
-        logger.LogRetrievedFromCache(key.Expression);
+        _logger.LogRetrievedFromCache(expression);
 
         return true;
     }
 
-    public void Set(LogicalExpressionCacheKey key, LogicalExpression logicalExpression)
+    public void Set(string expression, LogicalExpression logicalExpression)
     {
-        _compiledExpressions[key] = new WeakReference<LogicalExpression>(logicalExpression);
-        ClearCache();
-        logger.LogAddedToCache(key.Expression);
-    }
-
-    private void ClearCache()
-    {
-        foreach (var kvp in _compiledExpressions)
+        lock (_lock)
         {
-            if (kvp.Value.TryGetTarget(out _))
-                continue;
-
-            if (_compiledExpressions.TryRemove(kvp.Key, out _))
+            if (_compiledExpressions.TryGetValue(expression, out var existingNode))
             {
-                logger.LogRemovedFromCache(kvp.Key.Expression);
+                _lru.Remove(existingNode);
+                _compiledExpressions.Remove(expression);
             }
+
+            var node = new LinkedListNode<CacheEntry>(new CacheEntry(expression, logicalExpression));
+            _lru.AddFirst(node);
+            _compiledExpressions[expression] = node;
+
+            if (_compiledExpressions.Count > _capacity)
+                RemoveLeastRecentlyUsed();
         }
+
+        _logger.LogAddedToCache(expression);
     }
+
+    private void RemoveLeastRecentlyUsed()
+    {
+        var node = _lru.Last;
+        if (node is null)
+            return;
+
+        _lru.RemoveLast();
+        _compiledExpressions.Remove(node.Value.Expression);
+        _logger.LogRemovedFromCache(node.Value.Expression);
+    }
+
+    private sealed record CacheEntry(string Expression, LogicalExpression LogicalExpression);
 }

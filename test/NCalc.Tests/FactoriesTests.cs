@@ -1,24 +1,37 @@
 ﻿using NCalc.Factories;
-using NCalc.Tests.Fixtures;
+using System.Threading.Tasks;
 
 namespace NCalc.Tests;
+[Property("Category", "DependencyInjection")]
 
-[Trait("Category", "DependencyInjection")]
-public class FactoriesTests(FactoriesFixture fixture) : IClassFixture<FactoriesFixture>
+[ClassDataSource<FactoriesFixture>(Shared = SharedType.PerClass)]
+public class FactoriesTests(FactoriesFixture fixture)
 {
     private readonly IExpressionFactory _expressionFactory = fixture.ExpressionFactory;
     private readonly ILogicalExpressionFactory _logicalExpressionFactory = fixture.LogicalExpressionFactory;
 
-    [Fact]
-    public void Expression_From_Factory_Should_Evaluate()
+    [Test]
+    public async Task Expression_From_Factory_Should_Evaluate()
     {
-        Assert.Equal(4, _expressionFactory.Create("2+2").Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(_expressionFactory.Create("2+2").Evaluate(CancellationToken.None)).IsEqualTo(4);
     }
 
-    [Fact]
-    public void Logical_Expression_From_Factory_Should_Evaluate()
+    [Test]
+    public async Task Expression_From_Factory_Should_Use_Specified_Culture()
     {
-        Assert.Equal(4, _expressionFactory.Create(_logicalExpressionFactory.Create("2+2", ct: TestContext.Current.CancellationToken))
-            .Evaluate(TestContext.Current.CancellationToken));
+        var culture = CultureInfo.GetCultureInfo("de-DE");
+
+        var expression = _expressionFactory.Create("[value] + 2", cultureInfo: culture);
+        expression.Parameters["value"] = "1,5";
+
+        await Assert.That(expression.CultureInfo).IsEqualTo(culture);
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(3.5d);
+    }
+
+    [Test]
+    public async Task Logical_Expression_From_Factory_Should_Evaluate()
+    {
+        await Assert.That(_expressionFactory.Create(_logicalExpressionFactory.Create("2+2", cancellationToken: CancellationToken.None))
+            .Evaluate(CancellationToken.None)).IsEqualTo(4);
     }
 }

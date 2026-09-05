@@ -1,65 +1,97 @@
 namespace NCalc.Tests;
 
-[Trait("Category", "Evaluations")]
+[Property("Category", "Evaluations")]
 public class InOperatorTests
 {
-    [Fact]
-    public void ShouldEvaluateInOperatorWithList()
+    [Test]
+    public async Task Should_Evaluate_In_Operator_When_Parameter_And_Literals_Have_Different_Types_Issue_586()
     {
-        var context = new ExpressionContext();
-        context.StaticParameters["PageState"] = "Insert";
-        Assert.Equal(true, new Expression("{PageState} in ('Insert','Update')", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        var context = new ExpressionContext
+        {
+            Parameters =
+            {
+                ["quantity"] = (short)12
+            }
+        };
+
+        await Assert.That("quantity in (1,2,3,12)").Expression<bool>(context).IsTrue();
     }
 
-    [Fact]
-    public void ShouldEvaluateInOperatorWithString()
+    [Test]
+    public async Task ShouldEvaluateInOperatorWithList()
     {
-        var context = new ExpressionContext();
-        context.StaticParameters["PageState"] = "Insert";
-
-        Assert.Equal(true, new Expression("{PageState} in 'Insert a quote, you must.'", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        var context = new ExpressionContext
+        {
+            Parameters =
+            {
+                ["PageState"] = "Insert"
+            }
+        };
+        await Assert.That(new Expression("{PageState} in ('Insert','Update')", context))
+            .Expression<bool>().IsTrue();
     }
 
-    [Fact]
-    public void ShouldEvaluateNotInOperator()
+    [Test]
+    public async Task ShouldEvaluateInOperatorWithString()
     {
-        var context = new ExpressionContext();
-        context.StaticParameters["PageState"] = "Import";
-        Assert.Equal(true, new Expression("{PageState} not in  ('Insert','Update')", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        var context = new ExpressionContext
+        {
+            Parameters =
+            {
+                ["PageState"] = "Insert"
+            }
+        };
+
+        await Assert.That(new Expression("{PageState} in 'Insert a quote, you must.'", context))
+            .Expression<bool>().IsTrue();
     }
 
-    [Fact]
-    public void InOperatorShouldRespectStringComparer()
+    [Test]
+    public async Task ShouldEvaluateNotInOperator()
     {
-        ExpressionContext context = ExpressionOptions.CaseInsensitiveStringComparer;
-        context.StaticParameters["PageState"] = "Insert";
-        Assert.Equal(true, new Expression("{PageState} in ('INSERT','UPDATE')", context)
-            .Evaluate(TestContext.Current.CancellationToken));
+        var expression = new Expression("{PageState} in ('INSERT','UPDATE')", ExpressionOptions.CaseInsensitiveStringComparer)
+        {
+            Parameters =
+            {
+                ["PageState"] = "Import"
+            }
+        };
+        await Assert.That(expression).Expression<bool>().IsFalse();
     }
 
-    [Fact]
-    public void ShouldEvaluateTrueInOperatorWithObjects()
+    [Test]
+    public async Task InOperatorShouldRespectStringComparer()
     {
-        Assert.Equal(true, new Expression("{tap_int_status} in (5)")
+        var expression = new Expression("{PageState} in ('INSERT','UPDATE')", ExpressionOptions.CaseInsensitiveStringComparer)
+            {
+                Parameters =
+                {
+                    ["PageState"] = "Insert"
+                }
+            };
+        await Assert.That(expression).Expression<bool>().IsTrue();
+    }
+
+    [Test]
+    public async Task ShouldEvaluateTrueInOperatorWithObjects()
+    {
+        await Assert.That(new Expression("{tap_int_status} in (5)")
         {
             Parameters = { { "tap_int_status", 5 } }
-        }.Evaluate(TestContext.Current.CancellationToken));
+        }).Expression<bool>().IsTrue();
     }
 
-    [Fact]
-    public void ShouldEvaluateFalseInOperatorWithObjects()
+    [Test]
+    public async Task ShouldEvaluateFalseInOperatorWithObjects()
     {
-        Assert.Equal(false, new Expression("{PageState} in 4")
+        await Assert.That(new Expression("{PageState} in 4")
         {
             Parameters = { { "PageState", "Insert" } }
-        }.Evaluate(TestContext.Current.CancellationToken));
+        }).Expression<bool>().IsFalse();
     }
 
-    [Fact]
-    public void ShouldEvaluateIntInOperatorWithParameters()
+    [Test]
+    public async Task ShouldEvaluateIntInOperatorWithParameters()
     {
         var x = 3;
         int[] y = [1, 2, 3];
@@ -68,11 +100,11 @@ public class InOperatorTests
         expression.Parameters["x"] = x;
         expression.Parameters["y"] = y;
 
-        Assert.True((bool)expression.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)expression.Evaluate(CancellationToken.None)).IsTrue();
     }
 
-    [Fact]
-    public void ShouldEvaluateStringInOperatorWithIntParameters()
+    [Test]
+    public async Task ShouldEvaluateStringInOperatorWithIntParameters()
     {
         var x = "3";
         int[] y = [1, 2, 3];
@@ -81,6 +113,6 @@ public class InOperatorTests
         expression.Parameters["x"] = x;
         expression.Parameters["y"] = y;
 
-        Assert.True((bool)expression.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That((bool)expression.Evaluate(CancellationToken.None)).IsTrue();
     }
 }

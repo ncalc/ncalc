@@ -1,0 +1,79 @@
+# Functions
+
+## Built-in Functions
+
+The framework includes a set of already math implemented functions.
+
+| Name		         | Description	                                                                                                                                                                                                     | Usage	               | Result |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|--------|
+| Abs		          | Returns the absolute value of a specified number.	                                                                                                                                                               | Abs(-1)	             | 1d     |
+| Acos		         | Returns the angle whose cosine is the specified number.	                                                                                                                                                         | Acos(1)	             | 0d     |
+| Asin		         | Returns the angle whose sine is the specified number.	                                                                                                                                                           | Asin(0)	             | 0d     |
+| Atan		         | Returns the angle whose tangent is the specified number.	                                                                                                                                                        | Atan(0)	             | 0d     |
+| Ceiling	       | Returns the smallest integer greater than or equal to the specified number.	                                                                                                                                     | Ceiling(1.5)	        | 2d     |
+| Cos		          | Returns the cosine of the specified angle.	                                                                                                                                                                      | Cos(0)	              | 1d     |
+| Exp		          | Returns e raised to the specified power.	                                                                                                                                                                        | Exp(0)	              | 1d     |
+| Floor		        | Returns the largest integer less than or equal to the specified number.	                                                                                                                                         | Floor(1.5)	          | 1d     |
+| IEEERemainder	 | Returns the remainder resulting from the division of a specified number by another specified number.	                                                                                                            | IEEERemainder(3, 2)	 | -1d    |
+| Ln		        | Returns the natural logarithm of a specified number.	                                                                                                                                                            | Ln(1)	            | 0d     |
+| Log		          | Returns the logarithm of a specified number.	                                                                                                                                                                    | Log(1, 10)	          | 0d     |
+| Log10		        | Returns the base 10 logarithm of a specified number.	                                                                                                                                                            | Log10(1)	            | 0d     |
+| Max		          | Returns the larger of two specified numbers.	                                                                                                                                                                    | Max(1, 2)	           | 2      |
+| Min		          | Returns the smaller of two numbers.	                                                                                                                                                                             | Min(1, 2)	           | 1      |
+| Pow		          | Returns a specified number raised to the specified power.	                                                                                                                                                       | Pow(3, 2)	           | 9d     |
+| Round		        | Rounds a value to the nearest integer or specified number of decimal places. The midpoint behavior can be changed with `ExpressionEvaluationOptions.Math.MidpointRounding`.	 | Round(3.222, 2)	     | 3.22d  |
+| Sign		         | Returns a value indicating the sign of a number.	                                                                                                                                                                | Sign(-10)	           | -1     |
+| Sin		          | Returns the sine of the specified angle.	                                                                                                                                                                        | Sin(0)	              | 0d     |
+| Sqrt		         | Returns the square root of a specified number.	                                                                                                                                                                  | Sqrt(4)	             | 2d     |
+| Tan		          | Returns the tangent of the specified angle.	                                                                                                                                                                     | Tan(0)	              | 0d     |
+| Truncate	      | Calculates the integral part of a number.	                                                                                                                                                                       | Truncate(1.7)	       | 1      |
+
+It also includes other general purpose ones.
+
+| Name		     | Description	                                                                                      | Usage	                                            | Result                                                                         |
+|------------|---------------------------------------------------------------------------------------------------|---------------------------------------------------|--------------------------------------------------------------------------------|
+| in	        | Returns whether an element is in a set of values.	                                                | in(1 + 1, 1, 2, 3)	                               | true                                                                           |
+| if	        | Returns a value based on a condition.	                                                            | if(3 % 2 = 1, 'value is true', 'value is false')	 | 'value is true'                                                                |
+| ifs        | Returns a value based on evaluating a number of conditions, returning a default if none are true. | ifs(foo > 50, "bar", foo > 75, "baz", "quux")     | if foo is between 50 and 75 "bar", foo greater than 75 "baz", otherwise "quux" |  
+| isNull     | Returns whether a value is null.                                                                 | isNull(foo)                                       | true or false                                                                  |
+| isNullOrEmpty | Returns whether a value is null or an empty string.                                           | isNullOrEmpty(foo)                                | true or false                                                                  |
+| escapeLike | Escapes `%`, `_`, and `\` so a value is matched literally in a `LIKE` pattern.              | escapeLike('100%')                                | '100\%'                                                                        |
+
+By default, the comma is used as argument separator, but you can change it using <xref:NCalc.Parser.ArgumentSeparator>.
+You can specify multiple separators.
+
+```csharp
+var configuration = new ExpressionConfiguration
+{
+    Parsing = new LogicalExpressionParserOptions
+    {
+        ArgumentSeparator = ArgumentSeparator.Comma | ArgumentSeparator.Semicolon
+    }
+};
+```
+
+Configure <xref:NCalc.Helpers.MathOptions.FloatingPointNumberType> and
+<xref:NCalc.Helpers.MathOptions.IntegerNumberType> to control how math functions coerce string numbers. The
+floating-point option also selects decimal precision for the applicable math functions.
+
+## Custom Functions
+Custom functions are created using the <xref:NCalc.Handlers.ExpressionFunction> delegate. The argument list is exposed as <xref:NCalc.Handlers.FunctionData>, which lets you evaluate parameters lazily when needed.
+```csharp
+expression.Functions["SecretOperation"] = args => {
+    return (int)args[0].Evaluate() + (int)args[1].Evaluate();
+};
+
+```
+
+## Using Event Handlers
+You can also use event handlers to handle functions.
+```csharp
+expression.EvaluateFunction += delegate(string name, FunctionEventArgs args)
+{
+    if (name == "SecretOperation")
+        args.Result = (int)args.Parameters.Evaluate(0) + (int)args.Parameters.Evaluate(1);
+};
+```
+
+## Case Sensitivity
+See [case_sensitivity](../evaluation/case_sensitivity.md) for more info.

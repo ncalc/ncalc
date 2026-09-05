@@ -2,54 +2,55 @@ namespace NCalc.Tests;
 
 public class FactorialTests
 {
-    [Fact]
-    public void Factorial_Of_Zero()
+    [Test]
+    [Arguments("171!")]
+    [Arguments("99999999999999!")]
+    [Arguments("9223372036854775807!")]
+    [Arguments("1.5e16!")]
+    public void Should_Reject_Factorial_Inputs_Above_The_Safe_Limit(string expression)
     {
-        var e = new Expression("0!");
-        Assert.Equal(1, e.Evaluate(TestContext.Current.CancellationToken));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Expression(expression).Evaluate(CancellationToken.None));
     }
 
-    [Fact]
-    public void Factorial_Of_Positive_Number()
+    [Test]
+    public async Task Factorial_Of_Zero()
     {
-        var e = new Expression("5!");
-
-        Assert.Equal(120, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That("0!").Expression().IsEqualTo(1);
     }
 
-    [Fact]
-    public void Multiple_Factorials()
+    [Test]
+    public async Task Factorial_Of_Positive_Number()
     {
-        var e = new Expression("3!!");
-        Assert.Equal(720, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That("5!").Expression().IsEqualTo(120);
     }
 
-    [Fact]
-    public void Factorial_With_Addition()
+    [Test]
+    public async Task Multiple_Factorials()
     {
-        var e = new Expression("3! + 2");
-        Assert.Equal(8, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That("3!!").Expression().IsEqualTo(720);
     }
 
-    [Fact]
-    public void Factorial_With_Exponential()
+    [Test]
+    public async Task Factorial_With_Addition()
     {
-        var e = new Expression("3! ** 2");
-        Assert.Equal(36d, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That("3! + 2").Expression().IsEqualTo(8);
     }
 
-    [Fact]
-    public void Factorial_In_Parentheses()
+    [Test]
+    public async Task Factorial_With_Exponential()
     {
-        var e = new Expression("(4)! + 1");
-        Assert.Equal(25, e.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That("3! ** 2").Expression().IsEqualTo(36d);
     }
 
-    [Fact]
-    public void Complex_Expression()
+    [Test]
+    public async Task Factorial_In_Parentheses()
     {
-        var e = new Expression("2 + 3! * 2");
+        await Assert.That("(4)! + 1").Expression().IsEqualTo(25);
+    }
 
-        Assert.Equal(14, e.Evaluate(TestContext.Current.CancellationToken));
+    [Test]
+    public async Task Complex_Expression()
+    {
+        await Assert.That("2 + 3! * 2").Expression().IsEqualTo(14);
     }
 }

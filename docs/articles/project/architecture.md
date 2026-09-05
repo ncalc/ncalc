@@ -1,0 +1,122 @@
+# Architecture
+
+The entire process of evaluating an expression can be demonstrated at this flowchart:
+
+```mermaid
+flowchart TB
+
+A["1+1"] -->|Parsing| B("new BinaryExpression(new ValueExpression(1), new ValueExpression(1), BinaryExpressionType.Plus)")
+B --> |Evaluation|2
+```
+
+## Domain
+
+The `NCalc.Domain` assembly contains the expression tree model and the visitor contract:
+
+- <xref:NCalc.LogicalExpression> and concrete nodes such as <xref:NCalc.BinaryExpression>, <xref:NCalc.Function>,
+  <xref:NCalc.Identifier>, <xref:NCalc.LogicalExpressionList>, and <xref:NCalc.ValueExpression>.
+- <xref:NCalc.Visitors.ILogicalExpressionVisitor`1>, used by evaluation, extraction, serialization, and extension
+  visitors.
+
+
+## Parsing
+
+Parsing is the process of analyzing the input expression and converting it into a structured format that can be easily
+evaluated. We use [Parlot](https://github.com/sebastienros/parlot) to handle parsing, but you can use any parser you
+want if you implement the interface <xref:NCalc.Factories.ILogicalExpressionFactory>.
+For our example, "1+1", the parsing step converts the string into an abstract syntax tree (AST).
+This tree is made up of different types of expressions, such as binary expressions, value expressions, or even
+functions.
+Our AST is represented by the <xref:NCalc.LogicalExpression> class.
+
+Parsing is isolated in the `NCalc.Parser` assembly. It contains the default Parlot parser, the parser context, parser
+options, and argument separator configuration. The parser depends only on the AST contracts from `NCalc.Domain`.
+`NCalc.Core` uses the parser through <xref:NCalc.Factories.ILogicalExpressionFactory>, so applications can keep using
+<xref:NCalc.Expression> without referencing parser internals directly.
+
+### Source-generated parser
+
+NCalc builds its Parlot parser at compile time. The generated parser is used automatically, without
+runtime parser compilation or an AppContext switch. Parlot `2.0.0-preview-743` is restored from the
+[Parlot preview feed](https://f.feedz.io/sebastienros/parlot/nuget/index.json), configured in `nuget.config`.
+
+Parsing options are supplied through `ExpressionConfiguration.Parsing` when using `Expression`.
+The lower-level parser API accepts the same options through `LogicalExpressionParseContext`:
+
+```csharp
+using System.Globalization;
+using NCalc;
+var options = new LogicalExpressionParserOptions
+{
+    FloatingPointNumberType = FloatingPointNumberType.Decimal,
+    ArgumentSeparator = ArgumentSeparator.Semicolon
+};
+
+var logicalExpression = LogicalExpressionParser.Parse(
+    new LogicalExpressionParseContext("Max(1.5; 2.5)", options),
+    CultureInfo.InvariantCulture);
+var expression = new Expression(logicalExpression, ExpressionOptions.DecimalAsDefault);
+var result = expression.Evaluate(); // 2.5m
+```
+
+`GetOrCreateExpressionParser(options, culture)` caches generated parsers for repeated use. Culture
+instances have independent weakly held caches, so custom formats do not collide solely because their
+culture names match. Culture,
+argument separators, and `DisallowSingleEquals` are bound through factory parameters. Numeric-type and
+character options remain per-parse context settings, preserving the existing parser API. When calling
+the returned parser directly, use `LogicalExpressionParseContext` with the intended options.
+Cancellation also remains per parse. Do not mutate a culture while its parser is shared.
+
+Both the grammar factory and its interception wrapper remain private. The intercepted call is inside
+`NCalc.Parser`, so callers of the public APIs do not need to enable interceptors in their own projects.
+
+### Debugging the parser
+
+Major grammar nodes are named with Parlot's `.Named(...)`, including `RelationalOperator`,
+`Coalescing`, `Function`, and the date/time parsers. Generated helper comments contain these names,
+making it easier to map a generated method to its grammar rule. Generated identifiers and helper
+methods remain private implementation details.
+
+Generated files are emitted below `src/NCalc.Parser/obj/<configuration>/<framework>/Parlot.SourceGenerator/`.
+Parlot emits `#line` mappings for callbacks, and named conversion methods such as `ParseDate`,
+`ParseTime`, and `ParseSingleQuotedString` can be debugged directly in the original parser source.
+Concrete AST construction stays in these normal methods so inspecting callbacks does not require
+the compiler host to load a different target framework's JSON dependency.
+
+## Evaluation
+
+Evaluation refers to the process of determining the value of an expression. We use the visitor pattern at evaluation.
+This pattern allows you to add new operations to existing object structures without modifying those structures.
+With the method <xref:NCalc.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVisitor{``0})> is possible to accept any kind of visitor that
+implements <xref:NCalc.Visitors.ILogicalExpressionVisitor`1>. Example implementations
+include <xref:NCalc.Visitors.EvaluationVisitor> that returns a <xref:System.Object>
+and <xref:NCalc.Visitors.SerializationVisitor> that converts the AST into a <xref:System.String>.
+
+If you are creating your custom implementation, beware it should be stateless to be easier to debug and read. This is
+enforced by the [PureAttribute](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.contracts.pureattribute0) and generic return at
+the <xref:NCalc.LogicalExpression.Accept``1(NCalc.Visitors.ILogicalExpressionVisitor{``0})> method.
+
+## <xref:NCalc.Expression> Class
+
+This is the main class of NCalc. It abstracts the process of parsing and evaluating the string.
+The method <xref:NCalc.Expression.Evaluate(System.Threading.CancellationToken)> returns the actual value of its <xref:System.String> representation.
+
+Example:
+
+```c#
+var expression = new Expression("2 * 3");
+var result = expression.Evaluate();
+  
+Console.WriteLine(result);
+```
+
+This example above first creates an instance of <xref:NCalc.Expression> using a valued constructor. This constructor
+takes a <xref:System.String> as parameter.
+Then the method <xref:NCalc.Expression.Evaluate(System.Threading.CancellationToken)> is called to parse the <xref:System.String> and returns the actual
+value represented by the <xref:System.String>.
+
+To create expressions you can combine several [Operators](../language/operators.md) and [Values](../language/values.md).
+
+## Learn More
+For additional information on the technique we used to create this library please read [this
+article](https://www.codeproject.com/articles/State-of-the-Art-Expression-Evaluation).

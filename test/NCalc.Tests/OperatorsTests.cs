@@ -1,110 +1,289 @@
 using NCalc.Factories;
+using System.Threading.Tasks;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "Operators")]
+[Property("Category", "Operators")]
 public class OperatorsTests
 {
-    [Theory]
-    [InlineData("NOT true")]
-    [InlineData("not true")]
-    public void Should_Evaluate_Not_Unary_Operator(string expression)
+    [Test]
+    [Arguments("NOT true")]
+    [Arguments("not true")]
+    public async Task Should_Evaluate_Not_Unary_Operator(string expression)
     {
-        var logicalExpression = LogicalExpressionFactory.Create(expression, ct: TestContext.Current.CancellationToken);
+        var logicalExpression = LogicalExpressionFactory.Create(expression, cancellationToken: CancellationToken.None);
         var expr = new Expression(logicalExpression);
-        Assert.False((bool)expr.Evaluate(TestContext.Current.CancellationToken)!);
+        await Assert.That((bool)expr.Evaluate(CancellationToken.None)!).IsFalse();
     }
 
-    [Theory]
-    [InlineData("!true", false)]
-    [InlineData("not false", true)]
-    [InlineData("Not false", true)]
-    [InlineData("NOT false", true)]
-    [InlineData("-10", -10)]
-    [InlineData("+20", 20)]
-    [InlineData("2**-1", 0.5)]
-    [InlineData("2**+2", 4.0)]
-    [InlineData("2 * 3", 6)]
-    [InlineData("6 / 2", 3d)]
-    [InlineData("7 % 2", 1)]
-    [InlineData("2 + 3", 5)]
-    [InlineData("2 - 1", 1)]
-    [InlineData("1 < 2", true)]
-    [InlineData("1 > 2", false)]
-    [InlineData("1 <= 2", true)]
-    [InlineData("1 <= 1", true)]
-    [InlineData("1 >= 2", false)]
-    [InlineData("1 >= 1", true)]
-    [InlineData("1 = 1", true)]
-    [InlineData("1 == 1", true)]
-    [InlineData("1 != 1", false)]
-    [InlineData("1 <> 1", false)]
-    [InlineData("1 & 1", 1UL)]
-    [InlineData("1 | 1", 1UL)]
-    [InlineData("1 ^ 1", 0UL)]
-    [InlineData("~1", ~1UL)]
-    [InlineData("2 >> 1", 1UL)]
-    [InlineData("2 << 1", 4UL)]
-    [InlineData("true && false", false)]
-    [InlineData("True and False", false)]
-    [InlineData("tRue aNd faLse", false)]
-    [InlineData("TRUE ANd fALSE", false)]
-    [InlineData("true AND FALSE", false)]
-    [InlineData("true || false", true)]
-    [InlineData("true or false", true)]
-    [InlineData("true Or false", true)]
-    [InlineData("true OR false", true)]
-    [InlineData("if(true, 0, 1)", 0)]
-    [InlineData("if(false, 0, 1)", 1)]
-    public void ShouldEvaluateOperators(string expression, object expected)
+    [Test]
+    [Arguments("!true", false)]
+    [Arguments("not false", true)]
+    [Arguments("Not false", true)]
+    [Arguments("NOT false", true)]
+    [Arguments("-10", -10)]
+    [Arguments("+20", 20)]
+    [Arguments("2**-1", 0.5)]
+    [Arguments("2**+2", 4.0)]
+    [Arguments("2 * 3", 6)]
+    [Arguments("6 / 2", 3d)]
+    [Arguments("7 % 2", 1)]
+    [Arguments("2 + 3", 5)]
+    [Arguments("2 - 1", 1)]
+    [Arguments("1 < 2", true)]
+    [Arguments("1 > 2", false)]
+    [Arguments("1 <= 2", true)]
+    [Arguments("1 <= 1", true)]
+    [Arguments("1 >= 2", false)]
+    [Arguments("1 >= 1", true)]
+    [Arguments("1 = 1", true)]
+    [Arguments("1 == 1", true)]
+    [Arguments("1 != 1", false)]
+    [Arguments("1 <> 1", false)]
+    [Arguments("1 & 1", 1UL)]
+    [Arguments("1 | 1", 1UL)]
+    [Arguments("1 ^ 1", 0UL)]
+    [Arguments("~1", ~1UL)]
+    [Arguments("2 >> 1", 1UL)]
+    [Arguments("2 << 1", 4UL)]
+    [Arguments("true && false", false)]
+    [Arguments("True and False", false)]
+    [Arguments("tRue aNd faLse", false)]
+    [Arguments("TRUE ANd fALSE", false)]
+    [Arguments("true AND FALSE", false)]
+    [Arguments("true || false", true)]
+    [Arguments("true or false", true)]
+    [Arguments("true Or false", true)]
+    [Arguments("true OR false", true)]
+    [Arguments("if(true, 0, 1)", 0)]
+    [Arguments("if(false, 0, 1)", 1)]
+    public async Task ShouldEvaluateOperators(string expression, object expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression(expression).Evaluate(CancellationToken.None)).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("2+2+2+2", 8)]
-    [InlineData("2*2*2*2", 16)]
-    [InlineData("2*2+2", 6)]
-    [InlineData("2+2*2", 6)]
-    [InlineData("1 + 2 + 3 * 4 / 2", 9d)]
-    [InlineData("18/2/2*3", 13.5)]
-    [InlineData("-1 ** 2", -1d)]
-    [InlineData("(-1) ** 2", 1d)]
-    [InlineData("2 ** 3 ** 2", 512d)]
-    [InlineData("(2 ** 3) ** 2", 64d)]
-    [InlineData("2 * 3 ** 2", 18d)]
-    [InlineData("2 ** 4 / 2", 8d)]
-    public void ShouldHandleOperatorsPriority(string expression, object expected)
+    [Test]
+    [Arguments("2+2+2+2", 8)]
+    [Arguments("2*2*2*2", 16)]
+    [Arguments("2*2+2", 6)]
+    [Arguments("2+2*2", 6)]
+    [Arguments("1 + 2 + 3 * 4 / 2", 9d)]
+    [Arguments("18/2/2*3", 13.5)]
+    [Arguments("-1 ** 2", -1d)]
+    [Arguments("(-1) ** 2", 1d)]
+    [Arguments("2 ** 3 ** 2", 512d)]
+    [Arguments("(2 ** 3) ** 2", 64d)]
+    [Arguments("2 * 3 ** 2", 18d)]
+    [Arguments("2 ** 4 / 2", 8d)]
+    public async Task ShouldHandleOperatorsPriority(string expression, object expected)
     {
-        Assert.Equal(expected, new Expression(expression).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(new Expression(expression).Evaluate(CancellationToken.None)).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void Should_Compare_Bool_Issue_122()
+    [Test]
+    public async Task Should_Compare_Bool_Issue_122()
     {
         var eif = new Expression("foo = true");
         eif.Parameters["foo"] = "true";
 
-        Assert.Equal(true, eif.Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(eif.Evaluate<bool>(CancellationToken.None)).IsTrue();
     }
 
-    [Fact]
-    public void Should_Use_Correct_BitwiseXOr_133()
+    [Test]
+    public async Task Should_Use_Correct_BitwiseXOr_133()
     {
-        var logicalExpression = LogicalExpressionFactory.Create(expression: "1 ^ 2", ct: TestContext.Current.CancellationToken);
+        var logicalExpression = LogicalExpressionFactory.Create(expression: "1 ^ 2", cancellationToken: CancellationToken.None);
 
-        var serializedString = logicalExpression.ToString();
+        var serializedString = logicalExpression.ToExpressionString();
 
-        Assert.Equal("1 ^ 2", serializedString);
-        Assert.Equal(3UL, new Expression(logicalExpression).Evaluate(TestContext.Current.CancellationToken));
+        await Assert.That(serializedString).IsEqualTo("1 ^ 2");
+        await Assert.That(new Expression(logicalExpression).Evaluate(CancellationToken.None)).IsEqualTo(3UL);
     }
 
-    [Fact]
-    public void Should_Short_Circuit_Boolean_Expressions()
+    [Test]
+    public async Task Should_Short_Circuit_Boolean_Expressions()
     {
         var e = new Expression("([a] != 0) && ([b]/[a]>2)");
         e.Parameters["a"] = 0;
 
-        Assert.False((bool)e.Evaluate(TestContext.Current.CancellationToken)!);
+        await Assert.That((bool)e.Evaluate(CancellationToken.None)!).IsFalse();
+    }
+
+    [Test]
+    public async Task ShouldEvaluateCoalesceOperator()
+    {
+        var nullLiteral = new Expression("null ?? true", ExpressionOptions.AllowNullParameter);
+        var nullParameter = new Expression("[foo] ?? true")
+        {
+            Parameters = { ["foo"] = null }
+        };
+        var nonNullParameter = new Expression("[foo] ?? true")
+        {
+            Parameters = { ["foo"] = false }
+        };
+
+        await Assert.That((bool)nullLiteral.Evaluate(CancellationToken.None)!).IsTrue();
+        await Assert.That((bool)nullParameter.Evaluate(CancellationToken.None)!).IsTrue();
+        await Assert.That((bool)nonNullParameter.Evaluate(CancellationToken.None)!).IsFalse();
+    }
+
+    [Test]
+    public async Task ShouldShortCircuitCoalesceOperator()
+    {
+        var expression = new Expression("[foo] ?? fallback()")
+        {
+            Parameters = { ["foo"] = "value" },
+            Functions = { ["fallback"] = _ => throw new InvalidOperationException() }
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo("value");
+    }
+
+    [Test]
+    public async Task ShouldRespectCoalesceAssociativityAndPrecedence()
+    {
+        var logicalExpression = LogicalExpressionFactory.Create("[a] ?? [b] ?? [c]", cancellationToken: CancellationToken.None);
+        var expression = new Expression("[a] ?? [b] ? 1 : 2")
+        {
+            Parameters =
+            {
+                ["a"] = false,
+                ["b"] = true
+            }
+        };
+
+        await Assert.That(logicalExpression).IsTypeOf<BinaryExpression>();
+        await Assert.That(((BinaryExpression)logicalExpression).Type).IsEqualTo(BinaryExpressionType.Coalesce);
+        await Assert.That(((BinaryExpression)logicalExpression).RightExpression)
+            .IsTypeOf<BinaryExpression>();
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo(2);
+    }
+
+    [Test]
+    public async Task ShouldAllowBinaryHandlerToOverrideCoalesceOperator()
+    {
+        var expression = new Expression("[foo] ?? false")
+        {
+            Parameters = { ["foo"] = null }
+        };
+        expression.EvaluateBinary += args =>
+        {
+            if (args.BinaryExpression.Type == BinaryExpressionType.Coalesce)
+                args.Result = "handled";
+        };
+
+        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo("handled");
+    }
+
+    [Test]
+    public async Task ShouldEvaluateNullCoalesceOperandOnlyOnce()
+    {
+        var evaluations = 0;
+        var expression = new Expression("[foo] ?? true");
+        expression.DynamicParameters["foo"] = _ =>
+        {
+            evaluations++;
+            return null;
+        };
+        expression.EvaluateBinary += args => _ = args.LeftValue();
+
+        await Assert.That((bool)expression.Evaluate(CancellationToken.None)!).IsTrue();
+        await Assert.That(evaluations).IsEqualTo(1);
+    }
+
+    [Test]
+    [Arguments("0 | 0", 0ul)]
+    [Arguments("0 | 1", 1ul)]
+    [Arguments("1 | 0", 1ul)]
+    [Arguments("1 | 1", 1ul)]
+    [Arguments("0 & 0", 0ul)]
+    [Arguments("0 & 1", 0ul)]
+    [Arguments("1 & 0", 0ul)]
+    [Arguments("1 & 1", 1ul)]
+    [Arguments("0 ^ 0", 0ul)]
+    [Arguments("0 ^ 1", 1ul)]
+    [Arguments("1 ^ 0", 1ul)]
+    [Arguments("1 ^ 1", 0ul)]
+    public async Task ShouldHandleSimpleBitwiseOperations(string expression, ulong expected)
+    {
+        var e = new Expression(expression);
+        var result = e.Evaluate(CancellationToken.None);
+
+        await Assert.That(result).IsEqualTo(expected);
+    }
+
+    [Test]
+    [Arguments("1 = 1 ^ 2 = 2 || 3 = 3", true)]
+    [Arguments("1 = 1 ^ 2 = 2 && 2 = 1", false)]
+    public async Task ShouldRespectBitwiseOperatorPrecedence(string exp, bool expected)
+    {
+        var e = new Expression(exp);
+        var result = e.Evaluate(CancellationToken.None);
+
+        await Assert.That(result).IsEqualTo(expected);
+    }
+
+    [Test]
+    public async Task Should_Use_IEEE754_Semantics_For_DoubleNaN_Comparisons()
+    {
+        var expression = new Expression("amount < 0")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        };
+
+        await Assert.That(expression.Evaluate<bool>(CancellationToken.None)).IsFalse();
+        await Assert.That(new Expression("amount <= amount")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        }.Evaluate<bool>(CancellationToken.None)).IsFalse();
+        await Assert.That(new Expression("amount == amount")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        }.Evaluate<bool>(CancellationToken.None)).IsFalse();
+        await Assert.That(new Expression("amount != amount")
+        {
+            Parameters =
+            {
+                ["amount"] = double.NaN
+            }
+        }.Evaluate<bool>(CancellationToken.None)).IsTrue();
+    }
+
+    [Test]
+    public async Task Should_Use_IEEE754_Semantics_For_Computed_And_FloatNaN_Comparisons()
+    {
+        await Assert.That(new Expression("(0.0 / 0.0) < 0").Evaluate<bool>(CancellationToken.None)).IsFalse();
+        await Assert.That(new Expression("(0.0 / 0.0) != (0.0 / 0.0)").Evaluate<bool>(CancellationToken.None)).IsTrue();
+        await Assert.That(new Expression("amount <= 0")
+        {
+            Parameters =
+            {
+                ["amount"] = float.NaN
+            }
+        }.Evaluate<bool>(CancellationToken.None)).IsFalse();
+    }
+
+    [Test]
+    public async Task Should_Preserve_Signed_Zero_For_Unary_Negation()
+    {
+        var expression = new Expression("-amount")
+        {
+            Parameters =
+            {
+                ["amount"] = 0.0
+            }
+        };
+
+        await Assert.That(BitConverter.DoubleToInt64Bits((double)expression.Evaluate(CancellationToken.None)!))
+            .IsEqualTo(BitConverter.DoubleToInt64Bits(-0.0d));
     }
 }

@@ -85,8 +85,7 @@ public static class LinqUtils
         if (argument == null)
             return false;
 
-        var convertingFromPrimitiveType = TypeHelper.ImplicitPrimitiveConversionTable.TryGetValue(from, out var possibleConversions);
-        if (!convertingFromPrimitiveType || !possibleConversions!.Contains(to))
+        if (!TypeHelper.CanConvertPrimitiveImplicitly(from, to))
         {
             argument = null;
             return false;

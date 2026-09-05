@@ -1,19 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
 using NCalc.Cache;
 using NCalc.DependencyInjection;
-using NCalc.Domain;
 using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Parser;
 using NCalc.Visitors;
+using System.Threading.Tasks;
 
 namespace NCalc.Tests;
 
-[Trait("Category", "DependencyInjection")]
+[Property("Category", "DependencyInjection")]
 public class ServiceCollectionExtensionsTests
 {
-    [Fact]
-    public void AddNCalc_ShouldRegisterServices()
+    [Test]
+    public async Task AddNCalc_ShouldRegisterServices()
     {
         var services = new ServiceCollection();
 
@@ -21,15 +19,13 @@ public class ServiceCollectionExtensionsTests
 
         var serviceProvider = services.BuildServiceProvider();
 
-        Assert.NotNull(serviceProvider.GetService<IExpressionFactory>());
-        Assert.NotNull(serviceProvider.GetService<ILogicalExpressionCache>());
-        Assert.NotNull(serviceProvider.GetService<ILogicalExpressionFactory>());
-        Assert.NotNull(serviceProvider.GetService<IEvaluationVisitorFactory>());
-        Assert.NotNull(serviceProvider.GetService<IAsyncEvaluationVisitorFactory>());
+        await Assert.That(serviceProvider.GetService<IExpressionFactory>()).IsNotNull();
+        await Assert.That(serviceProvider.GetService<ILogicalExpressionCache>()).IsNotNull();
+        await Assert.That(serviceProvider.GetService<ILogicalExpressionFactory>()).IsNotNull();
     }
 
-    [Fact]
-    public void WithExpressionFactory_ShouldReplaceExpressionFactory()
+    [Test]
+    public async Task WithExpressionFactory_ShouldReplaceExpressionFactory()
     {
         var services = new ServiceCollection();
 
@@ -39,11 +35,11 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         var factory = serviceProvider.GetService<IExpressionFactory>();
-        Assert.IsType<CustomExpressionFactory>(factory);
+        await Assert.That(factory).IsTypeOf<CustomExpressionFactory>();
     }
 
-    [Fact]
-    public void WithCache_ShouldReplaceCache()
+    [Test]
+    public async Task WithCache_ShouldReplaceCache()
     {
         var services = new ServiceCollection();
 
@@ -53,11 +49,11 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         var cache = serviceProvider.GetService<ILogicalExpressionCache>();
-        Assert.IsType<CustomCache>(cache);
+        await Assert.That(cache).IsTypeOf<CustomCache>();
     }
 
-    [Fact]
-    public void WithLogicalExpressionFactory_ShouldReplaceFactory()
+    [Test]
+    public async Task WithLogicalExpressionFactory_ShouldReplaceFactory()
     {
         var services = new ServiceCollection();
 
@@ -67,11 +63,28 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         var factory = serviceProvider.GetService<ILogicalExpressionFactory>();
-        Assert.IsType<CustomLogicalExpressionFactory>(factory);
+        await Assert.That(factory).IsTypeOf<CustomLogicalExpressionFactory>();
     }
 
-    [Fact]
-    public void WithEvaluationService_ShouldReplaceEvaluationService()
+    [Test]
+    public async Task WithExpressionFactory_ShouldUseCustomEvaluationVisitors()
+    {
+        var services = new ServiceCollection();
+
+        services.AddNCalc()
+            .WithExpressionFactory<CustomExpressionFactory>();
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
+
+        var exp = expFactory.Create("42");
+        await Assert.That(exp.Evaluate(CancellationToken.None)).IsEqualTo("The answer");
+        await Assert.That(await exp.EvaluateAsync(CancellationToken.None)).IsEqualTo("The answer async");
+    }
+
+    [Test]
+    public async Task WithEvaluationVisitorFactory_ShouldPropagateToNestedExpressions()
     {
         var services = new ServiceCollection();
 
@@ -80,93 +93,189 @@ public class ServiceCollectionExtensionsTests
 
         var serviceProvider = services.BuildServiceProvider();
 
-        var customVisitorFactory = serviceProvider.GetService<IEvaluationVisitorFactory>();
         var expFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
 
-        var exp = expFactory.Create("42");
-        Assert.Equal("The answer", exp.Evaluate(TestContext.Current.CancellationToken));
-        Assert.IsType<CustomEvaluationVisitorFactory>(customVisitorFactory);
-    }
+        var exp = expFactory.Create("value");
+        exp.Parameters["value"] = new Expression("42");
 
-    [Fact]
-    public async Task WithAsyncEvaluationService_ShouldReplaceEvaluationService()
-    {
-        var services = new ServiceCollection();
-
-        services.AddNCalc()
-            .WithAsyncEvaluationVisitorFactory<CustomAsyncEvaluationVisitorFactory>();
-
-        var serviceProvider = services.BuildServiceProvider();
-
-        var customVisitorFactory = serviceProvider.GetService<IAsyncEvaluationVisitorFactory>();
-        var expFactory = serviceProvider.GetRequiredService<IAsyncExpressionFactory>();
-
-        var exp = expFactory.Create("42");
-        Assert.Equal("The answer", await exp.EvaluateAsync(TestContext.Current.CancellationToken));
-        Assert.IsType<CustomAsyncEvaluationVisitorFactory>(customVisitorFactory);
+        await Assert.That(exp.Evaluate(CancellationToken.None)).IsEqualTo("The answer");
+        await Assert.That(await exp.EvaluateAsync(CancellationToken.None)).IsEqualTo("The answer async");
     }
 
     #region Custom Implementations Stubs
 
-    private class CustomExpressionFactory : IExpressionFactory
+    private class CustomExpressionFactory(
+        ILogicalExpressionFactory logicalExpressionFactory,
+        ILogicalExpressionCache cache) : IExpressionFactory
     {
-        public Expression Create(string expression, ExpressionContext expressionContext = null) => throw new NCalcException("Stub method intented for testing.");
-
-        public Expression Create(LogicalExpression logicalExpression, ExpressionContext expressionContext = null) => throw new NCalcException("Stub method intented for testing.");
-    }
-
-    private class CustomCache : ILogicalExpressionCache
-    {
-        public bool TryGetValue(LogicalExpressionCacheKey key, out LogicalExpression logicalExpression) => throw new NCalcException("Stub method intented for testing.");
-
-        public void Set(LogicalExpressionCacheKey key, LogicalExpression logicalExpression)
+        public Expression Create(
+            string expression,
+            ExpressionConfiguration? configuration = null,
+            ExpressionContext? context = null,
+            CultureInfo? cultureInfo = null)
         {
+            return new CustomExpression(
+                expression,
+                configuration ?? new ExpressionConfiguration(),
+                logicalExpressionFactory,
+                cache)
+            {
+                CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture
+            };
+        }
+
+        public Expression Create(
+            LogicalExpression logicalExpression,
+            ExpressionConfiguration? configuration = null,
+            ExpressionContext? context = null,
+            CultureInfo? cultureInfo = null)
+        {
+            return new CustomExpression(
+                logicalExpression,
+                configuration ?? new ExpressionConfiguration(),
+                logicalExpressionFactory,
+                cache)
+            {
+                CultureInfo = cultureInfo ?? CultureInfo.CurrentCulture
+            };
         }
     }
 
     private class CustomLogicalExpressionFactory : ILogicalExpressionFactory
     {
-        public LogicalExpression Create(string expression, ExpressionOptions options, CancellationToken ct = default) => throw new NCalcException("Stub method intented for testing.");
-
-        public LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
-            => throw new NCalcException("Stub method intented for testing.");
+        public LogicalExpression Create(
+            string expression,
+            LogicalExpressionParserOptions? options = null,
+            CultureInfo? cultureInfo = null,
+            CancellationToken cancellationToken = default)
+            => throw new NCalcException("Stub method intended for testing.");
     }
 
-    private class CustomVisitor(ExpressionContext context) : EvaluationVisitor(context)
+    private class CustomCache : ILogicalExpressionCache
     {
-        public override object Visit(ValueExpression expression, CancellationToken ct = default)
+        public bool TryGetValue(string expression, out LogicalExpression? logicalExpression)
         {
-            if (expression.Value is 42)
-                return "The answer";
+            logicalExpression = null;
+            return false;
+        }
 
-            return base.Visit(expression, ct);
+        public void Set(string expression, LogicalExpression logicalExpression)
+        {
+        }
+    }
+
+    private class CustomExpression(
+        string expression,
+        ExpressionConfiguration configuration,
+        ILogicalExpressionFactory logicalExpressionFactory,
+        ILogicalExpressionCache cache)
+        : Expression(expression, configuration, new(), CultureInfo.CurrentCulture, logicalExpressionFactory, cache)
+    {
+        public CustomExpression(
+            LogicalExpression logicalExpression,
+            ExpressionConfiguration configuration,
+            ILogicalExpressionFactory logicalExpressionFactory,
+            ILogicalExpressionCache cache)
+            : this(string.Empty, configuration, logicalExpressionFactory, cache)
+        {
+            LogicalExpression = logicalExpression;
+        }
+
+        protected override EvaluationVisitor CreateEvaluationVisitor(
+            ExpressionContext context,
+            CancellationToken cancellationToken = default)
+        {
+            return new CustomSyncVisitor(
+                context,
+                EvaluationOptions,
+                CultureInfo,
+                cancellationToken);
+        }
+
+        protected override AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(
+            ExpressionContext context,
+            CancellationToken cancellationToken = default)
+        {
+            return new CustomAsyncVisitor(
+                context,
+                EvaluationOptions,
+                CultureInfo,
+                cancellationToken);
         }
     }
 
     private class CustomEvaluationVisitorFactory : IEvaluationVisitorFactory
     {
-        public EvaluationVisitor Create(ExpressionContext context)
+        public EvaluationVisitor CreateEvaluationVisitor(
+            ExpressionContext context,
+            ExpressionEvaluationOptions options,
+            CultureInfo cultureInfo,
+            CancellationToken cancellationToken = default)
         {
-            return new CustomVisitor(context);
+            return new CustomSyncVisitor(
+                context,
+                options,
+                cultureInfo,
+                cancellationToken,
+                this);
+        }
+
+        public AsyncEvaluationVisitor CreateAsyncEvaluationVisitor(
+            ExpressionContext context,
+            ExpressionEvaluationOptions options,
+            CultureInfo cultureInfo,
+            CancellationToken cancellationToken = default)
+        {
+            return new CustomAsyncVisitor(
+                context,
+                options,
+                cultureInfo,
+                cancellationToken,
+                this);
         }
     }
 
-    private class CustomAsyncVisitor(AsyncExpressionContext context) : AsyncEvaluationVisitor(context)
+    private class CustomSyncVisitor(
+        ExpressionContext context,
+        ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo,
+        CancellationToken cancellationToken,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+        : EvaluationVisitor(
+            context,
+            options,
+            cultureInfo,
+            evaluationVisitorFactory,
+            cancellationToken)
     {
-        public override ValueTask<object> Visit(ValueExpression expression, CancellationToken ct = default)
+        public override object Visit(ValueExpression expression)
         {
             if (expression.Value is 42)
-                return new("The answer");
+                return "The answer";
 
-            return base.Visit(expression, ct);
+            return base.Visit(expression);
         }
     }
 
-    private class CustomAsyncEvaluationVisitorFactory : IAsyncEvaluationVisitorFactory
+    private class CustomAsyncVisitor(
+        ExpressionContext context,
+        ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo,
+        CancellationToken cancellationToken,
+        IEvaluationVisitorFactory? evaluationVisitorFactory = null)
+        : AsyncEvaluationVisitor(
+            context,
+            options,
+            cultureInfo,
+            evaluationVisitorFactory,
+            cancellationToken)
     {
-        public AsyncEvaluationVisitor Create(AsyncExpressionContext context)
+        public override Task<object> Visit(ValueExpression expression)
         {
-            return new CustomAsyncVisitor(context);
+            if (expression.Value is 42)
+                return Task.FromResult<object>("The answer async");
+
+            return base.Visit(expression);
         }
     }
 

@@ -1,60 +1,42 @@
 using Microsoft.Extensions.Logging;
-using NCalc.Domain;
+using Microsoft.Extensions.Logging.Abstractions;
 using NCalc.Exceptions;
+using NCalc.Extensions;
 using NCalc.Logging;
-using NCalc.Parser;
 
 namespace NCalc.Factories;
 
 /// <summary>
 /// Class responsible to create <see cref="LogicalExpression"/> objects. Parlot is used for parsing strings.
 /// </summary>
-public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory> logger) : ILogicalExpressionFactory
+public sealed class LogicalExpressionFactory(ILogger<LogicalExpressionFactory>? logger = null) : ILogicalExpressionFactory
 {
+    private readonly ILogger<LogicalExpressionFactory> _logger = logger ?? NullLogger<LogicalExpressionFactory>.Instance;
     private static readonly LogicalExpressionFactory Instance;
 
     static LogicalExpressionFactory()
     {
-        Instance = new LogicalExpressionFactory(DefaultLoggerFactory.Value.CreateLogger<LogicalExpressionFactory>());
+        Instance = new LogicalExpressionFactory(NullLoggerFactory.Instance.CreateLogger<LogicalExpressionFactory>());
     }
 
     public static LogicalExpressionFactory GetInstance() => Instance;
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, ExpressionOptions options, CancellationToken ct)
+    LogicalExpression ILogicalExpressionFactory.Create(string expression, LogicalExpressionParserOptions? options, CultureInfo? cultureInfo, CancellationToken cancellationToken)
     {
         try
         {
-            return Create(expression, options, ct);
+            return Create(expression, options, cultureInfo, cancellationToken);
         }
         catch (Exception exception)
         {
-            logger.LogErrorCreatingLogicalExpression(exception, expression);
+            _logger.LogErrorCreatingLogicalExpression(exception, expression);
             throw new NCalcParserException("Error parsing the expression.", exception);
         }
     }
 
-    LogicalExpression ILogicalExpressionFactory.Create(string expression, CultureInfo cultureInfo, ExpressionOptions options, CancellationToken ct)
+    public static LogicalExpression Create(string expression, LogicalExpressionParserOptions? options = null, CultureInfo? cultureInfo = null, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            return Create(expression, cultureInfo, options, ct);
-        }
-        catch (Exception exception)
-        {
-            logger.LogErrorCreatingLogicalExpression(exception, expression);
-            throw new NCalcParserException("Error parsing the expression.", exception);
-        }
-    }
-
-    public static LogicalExpression Create(string expression, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
-    {
-        var parserContext = new LogicalExpressionParserContext(expression, options, ct: ct);
-        return LogicalExpressionParser.Parse(parserContext);
-    }
-
-    public static LogicalExpression Create(string expression, CultureInfo cultureInfo, ExpressionOptions options = ExpressionOptions.None, CancellationToken ct = default)
-    {
-        var parserContext = new LogicalExpressionParserContext(expression, options, LogicalExpressionParserOptions.FromCultureInfo(cultureInfo), ct);
-        return LogicalExpressionParser.Parse(parserContext);
+        var parserContext = new LogicalExpressionParseContext(expression, options ?? new LogicalExpressionParserOptions(), cancellationToken);
+        return LogicalExpressionParser.Parse(parserContext, cultureInfo);
     }
 }

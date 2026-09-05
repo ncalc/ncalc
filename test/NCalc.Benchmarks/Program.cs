@@ -12,8 +12,8 @@ if (args.Contains("--allocation-profile"))
     return;
 }
 
-BenchmarkRunner.Run<LogicalExpressionFactoryBenchmark>(null, args);
 BenchmarkRunner.Run<ParserGenerationBenchmark>(null, args);
 BenchmarkRunner.Run<SimpleEvaluationBenchmark>(null, args);
+BenchmarkRunner.Run<CpuBoundEvaluationBenchmark>(null, args);
 BenchmarkRunner.Run<EvaluateVsLambdaBenchmark>(null, args);
 BenchmarkRunner.Run<NCalcVsDataTableBenchmark>(null, args);

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <IsRoslynComponent>true</IsRoslynComponent>
+
+        <RootNamespace>NCalc.SourceGenerators</RootNamespace>
+        <PackageId>NCalc.SourceGenerators</PackageId>
+        <DefaultItemExcludes>$(DefaultItemExcludes);NCalc.SourceGenerators/**</DefaultItemExcludes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+        <PackageReference Include="System.Text.Json" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Metadata\NumericTypeMetadata.json" />
+    </ItemGroup>
+</Project>

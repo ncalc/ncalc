@@ -1,6 +1,11 @@
 - name: Articles
+  icon: bi bi-book
   href: articles/
   homepage: articles/index.md
 - name: API Reference
+  icon: bi bi-braces
   href: api/
-  homepage: api/NCalc.html
+  homepage: api/NCalc.yml
+- name: Playground
+  icon: bi bi-play-circle
+  href: playground.md

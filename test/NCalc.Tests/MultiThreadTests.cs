@@ -1,11 +1,13 @@
+using System.Threading.Tasks;
+
 namespace NCalc.Tests;
 
-[Trait("Category", "Multiple Threads")]
+[Property("Category", "Multiple Threads")]
 public class MultiThreadTests
 {
     private List<Exception> _exceptions;
 
-    [Fact]
+    [Test]
     public void Should_Reuse_Compiled_Expressions_In_Multi_Threaded_Mode()
     {
         for (int cpt = 0; cpt < 20; cpt++)
@@ -36,7 +38,7 @@ public class MultiThreadTests
             if (_exceptions.Count > 0)
             {
                 Console.WriteLine(_exceptions[0].StackTrace);
-                Assert.Fail(_exceptions[0].Message);
+                Assert.Fail("Assertion failure");
             }
         }
     }
@@ -52,7 +54,10 @@ public class MultiThreadTests
 
             var exp = n1 + " + " + n2;
             var e = new Expression(exp);
-            Assert.True(e.Evaluate().Equals(n1 + n2));
+            if (!e.Evaluate().Equals(n1 + n2))
+            {
+                throw new InvalidOperationException("Expression should evaluate to the expected sum.");
+            }
         }
         catch (Exception e)
         {

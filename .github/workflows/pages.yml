@@ -1,0 +1,72 @@
+name: Publish Docs and Playground
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  actions: read
+  pages: write
+  id-token: write
+
+jobs:
+  publish-pages:
+    environment:
+      name: github-pages
+    runs-on: ubuntu-latest
+    env:
+      PLAYGROUND_PUBLISH_DIR: artifacts/playground-publish/wwwroot
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Dotnet Setup
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
+
+      - name: Build and Generate Documentation
+        env:
+          DocFx: true # Workaround https://github.com/dotnet/docfx/issues/10808
+        run: |
+          dotnet tool update -g docfx
+          cd docs
+          docfx metadata
+          docfx build
+
+      - name: Restore Playground Workloads
+        run: |
+          dotnet workload install wasm-tools
+          dotnet workload restore example/NCalc.Playground/NCalc.Playground.csproj
+
+      - name: Publish Playground
+        run: |
+          dotnet publish example/NCalc.Playground/NCalc.Playground.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
+
+      - name: Rewrite Playground base href
+        uses: SteveSandersonMS/ghaction-rewrite-base-href@5b54862a8831e012d4f1a8b2660894415fdde8ec # v1.1.0
+        with:
+          html_path: ${{ env.PLAYGROUND_PUBLISH_DIR }}/index.html
+          base_href: /playground/
+
+      - name: Stage GitHub Pages artifact
+        run: |
+          rm -rf artifacts/pages
+          mkdir -p artifacts/pages/playground
+          cp -a docs/_site/. artifacts/pages/
+          cp -a "$PLAYGROUND_PUBLISH_DIR"/. artifacts/pages/playground/
+          touch artifacts/pages/.nojekyll
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: artifacts/pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

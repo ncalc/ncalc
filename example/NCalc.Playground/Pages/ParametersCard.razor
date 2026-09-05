@@ -1,0 +1,58 @@
+<div class="workbench-surface">
+    <div class="surface-header">
+        <div>
+            <h2>Parameters</h2>
+            <p>Values are parsed before evaluation.</p>
+        </div>
+        <button class="btn btn-secondary btn-compact" type="button" @onclick="OnAdd">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            Add
+        </button>
+    </div>
+
+    <div class="surface-body parameter-list">
+        @foreach (var variable in Variables)
+        {
+            <div class="parameter-row" @key="variable">
+                <label>
+                    <span class="field-label">Name</span>
+                    <InputText class="form-control parameter-input"
+                               @bind-Value="variable.Name"
+                               autocomplete="off" />
+                </label>
+                <label>
+                    <span class="field-label">Value</span>
+                    <InputText class="form-control parameter-input"
+                               @bind-Value="variable.ValueText"
+                               autocomplete="off" />
+                </label>
+                <button class="icon-button icon-button--danger"
+                        type="button"
+                        aria-label="Remove parameter"
+                        title="Remove parameter"
+                        @onclick="() => OnRemove.InvokeAsync(variable)">
+                    <span class="bi bi-trash3" aria-hidden="true"></span>
+                </button>
+            </div>
+        }
+
+        @if (Variables.Count == 0)
+        {
+            <div class="empty-state">
+                <i class="bi bi-braces" aria-hidden="true"></i>
+                <p>No parameters. Add one when your expression needs a named value.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<VariableRow> Variables { get; set; } = [];
+
+    [Parameter]
+    public EventCallback OnAdd { get; set; }
+
+    [Parameter]
+    public EventCallback<VariableRow> OnRemove { get; set; }
+}

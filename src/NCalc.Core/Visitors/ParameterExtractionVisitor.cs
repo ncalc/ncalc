@@ -1,15 +1,13 @@
-﻿using NCalc.Domain;
-
-namespace NCalc.Visitors;
+﻿namespace NCalc.Visitors;
 
 /// <summary>
 /// Visitor dedicated to extract <see cref="Identifier"/> names from a <see cref="LogicalExpression"/>.
 /// </summary>
 public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<string>>
 {
-    public List<string> Visit(Identifier identifier, CancellationToken ct = default) => [identifier.Name];
+    public List<string> Visit(Identifier identifier) => [identifier.Name];
 
-    public List<string> Visit(LogicalExpressionList list, CancellationToken ct = default)
+    public List<string> Visit(LogicalExpressionList list)
     {
         var parameters = new List<string>();
         foreach (var value in list)
@@ -23,44 +21,44 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
             }
             else
             {
-                parameters.AddRange(value.Accept(this, ct));
+                parameters.AddRange(value.Accept(this));
             }
         }
         return parameters;
     }
 
-    public List<string> Visit(UnaryExpression expression, CancellationToken ct = default) =>
-        expression.Expression.Accept(this, ct);
+    public List<string> Visit(UnaryExpression expression) =>
+        expression.Expression.Accept(this);
 
-    public List<string> Visit(BinaryExpression expression, CancellationToken ct = default)
+    public List<string> Visit(BinaryExpression expression)
     {
-        var leftParameters = expression.LeftExpression.Accept(this, ct);
-        var rightParameters = expression.RightExpression.Accept(this, ct);
+        var leftParameters = expression.LeftExpression.Accept(this);
+        var rightParameters = expression.RightExpression.Accept(this);
 
         leftParameters.AddRange(rightParameters);
         return leftParameters.Distinct().ToList();
     }
 
-    public List<string> Visit(TernaryExpression expression, CancellationToken ct = default)
+    public List<string> Visit(TernaryExpression expression)
     {
-        var leftParameters = expression.LeftExpression.Accept(this, ct);
-        var middleParameters = expression.MiddleExpression.Accept(this, ct);
-        var rightParameters = expression.RightExpression.Accept(this, ct);
+        var leftParameters = expression.LeftExpression.Accept(this);
+        var middleParameters = expression.MiddleExpression.Accept(this);
+        var rightParameters = expression.RightExpression.Accept(this);
 
         leftParameters.AddRange(middleParameters);
         leftParameters.AddRange(rightParameters);
         return leftParameters.Distinct().ToList();
     }
 
-    public List<string> Visit(Function function, CancellationToken ct = default)
+    public List<string> Visit(Function function)
     {
         var parameters = new List<string>();
 
-        var innerParameters = function.Parameters.Accept(this, ct);
+        var innerParameters = function.Parameters.Accept(this);
         parameters.AddRange(innerParameters);
 
         return parameters.Distinct().ToList();
     }
 
-    public List<string> Visit(ValueExpression expression, CancellationToken ct = default) => [];
+    public List<string> Visit(ValueExpression expression) => [];
 }

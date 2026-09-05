@@ -1,3 +1,173 @@
+# 7.1.0
+* Refactor: Unify built-in function registration and evaluation by @gumbarros in https://github.com/ncalc/ncalc/pull/610
+* Add isNull and isNullOrEmpty built-in functions by @gumbarros in https://github.com/ncalc/ncalc/pull/612
+* Added null coalescing operator by @gumbarros in https://github.com/ncalc/ncalc/pull/613
+* Fix: Honor StringComparer at `in` comparisons when NoStringTypeCoercion is set by @cokert in https://github.com/ncalc/ncalc/pull/614
+
+# 7.0.2
+* Fix: Preserve dictionary comparers when copying `ExpressionContext` by @gumbarros in https://github.com/ncalc/ncalc/pull/608
+
+# 7.0.1
+* Add copy constructor to `ExpressionContext` by @gumbarros in https://github.com/ncalc/ncalc/pull/607
+
+# 7.0.0
+* Refactor expression configuration by separating immutable parsing/evaluation settings from runtime expression context by @gumbarros in https://github.com/ncalc/ncalc/pull/600
+* Add `ExpressionConfiguration`, `ExpressionEvaluationOptions` for explicit configuration.
+* Add `FloatingPointNumberType` and `IntegerNumberType` to configure parser number handling and string-to-number coercion in math helpers.
+* Improve parser caching by including culture in the parser cache key.
+* Refactor: Generate type-aware comparisons and optimize common numeric paths by @gumbarros in https://github.com/ncalc/ncalc/pull/601
+* Fix serialization of floating-point numbers by @gumbarros in https://github.com/ncalc/ncalc/pull/605
+
+## Breaking Changes
+* `ExpressionContext` now represents only per-evaluation runtime state. `StaticParameters` was renamed to `Parameters`, and `Options`, `CultureInfo`, `MathHelperOptions`, `ComparisonOptions`, and the implicit conversions from `ExpressionOptions`/`CultureInfo` were removed. Configure parsing and evaluation with `ExpressionConfiguration` instead.
+* `ExpressionContext` is no longer a `record` and all props are init only to incentive immutability.
+* `Expression.Options` no longer exposes the getter. It is kept only as a setter that replaces `Expression.Configuration` using `ExpressionConfiguration.FromOptions(...)`. Use `Expression.Configuration`, `Expression.ParserOptions`, `Expression.EvaluationOptions`, `Expression.CultureInfo`, and `Expression.Configuration.CacheEnabled`.
+* `Expression` constructors and `IExpressionFactory.Create` now accept `ExpressionConfiguration` and `CultureInfo`.
+*  `Parameters`, `DynamicParameters`, `AsyncParameters`, `Functions`, and `AsyncFunctions` on `Expression` no longer have setters. Mutate the dictionaries on `Expression.Context` or replace them through a new `ExpressionContext`.
+* `LogicalExpressionArgumentSeparator` was renamed to `ArgumentSeparator`.
+* `LogicalExpressionParserOptions` no longer exposes `DecimalAsDefault` and `LongAsDefault`. Use `FloatingPointNumberType` and `IntegerNumberType`.
+* `LogicalExpressionParser.GetOrCreateExpressionParser` now requires a `CultureInfo`, and `LogicalExpressionParser.Parse` accepts culture separately from parser options.
+* `ILogicalExpressionFactory.Create` now accepts `LogicalExpressionParserOptions?` and `CultureInfo?` instead of `ExpressionOptions`.
+* `IEvaluationVisitorFactory`, `EvaluationVisitor`, and `AsyncEvaluationVisitor` now require `ExpressionEvaluationOptions` and `CultureInfo`.
+* `LogicalExpression` extension methods `Evaluate(...)` and `EvaluateAsync(...)` were removed. Evaluate through `Expression` or instantiate the appropriate evaluation visitor.
+* `ComparisonOptions` was removed. Use `StringComparer` property.
+* `MathHelperOptions` was renamed to `MathOptions`.
+* `LogicalExpressionParserContext` was renamed to `LogicalExpressionParseContext` following Parlot convention
+* The `NCalc.Antlr` package/plugin was removed. Use the default Parlot parser or provide a custom `ILogicalExpressionFactory`.
+
+# 6.4.0
+* fix: small fix for Ln support in NCalc.LambdaCompilation by @gogolevsergey in https://github.com/ncalc/ncalc/pull/590
+* feat: Add LIKE escape support and EscapeLike helper by @gumbarros in https://github.com/ncalc/ncalc/pull/593
+* feat: Add optional evaluation visitor factory to Expression by @george-domingos in https://github.com/ncalc/ncalc/pull/591
+* feat: Add typed evaluation overloads by @gumbarros in https://github.com/ncalc/ncalc/pull/595
+* feat: Add async parameter callback support by @gumbarros in https://github.com/ncalc/ncalc/pull/596
+
+# 6.3.3
+* Fix `in` operator behavior for different types by @gumbarros in https://github.com/ncalc/ncalc/pull/588
+* Improve performance by caching expression helper options by @gumbarros in https://github.com/ncalc/ncalc/pull/589
+
+# 6.3.2
+* Fix numeric type coercion in `in` comparisons by @gumbarros in https://github.com/ncalc/ncalc/pull/587
+
+# 6.3.1
+* Changed `LogicalExpressionList` to implement `IReadOnlyList` instead of `IList` for improved performance by @george-domingos in https://github.com/ncalc/ncalc/pull/585
+
+# 6.3.0
+* Refactor: Restore dedicated sync evaluation path due reported performance regression by @gumbarros in https://github.com/ncalc/ncalc/pull/577
+* Refactor cancellation token usage by @gumbarros in https://github.com/ncalc/ncalc/pull/579
+* Add GetBuiltInFunctionNames method by @george-domingos in https://github.com/ncalc/ncalc/pull/581
+* Move 'if', 'in' functions to the top of Evaluate and EvaluateAsync in BultiIn by @george-domingos in https://github.com/ncalc/ncalc/pull/582
+
+# 6.2.0
+* Feature/evaluate binary handler by @george-domingos in https://github.com/ncalc/ncalc/pull/576
+
+# 6.1.1
+* Fix factorial input bounds and overflow handling by @gumbarros and @pawlos in https://github.com/ncalc/ncalc/pull/575
+
+# 6.1.0
+
+* Refactor math numeric helpers into source generators by @gumbarros in https://github.com/ncalc/ncalc/pull/570
+* Fix IEEE-754 NaN comparisons and unary negation semantics by @gumbarros in https://github.com/ncalc/ncalc/pull/571
+
+# 6.0.0
+
+* Unify sync and async paths into NCalc.Core by @gumbarros in https://github.com/ncalc/ncalc/pull/559
+* Refactor: Split parser and domain into dedicated assemblies by @gumbarros in https://github.com/ncalc/ncalc/pull/560
+* Refactor `EvaluationVisitor` removing `Lazy` to optimize binary expression handling. by @gumbarros in https://github.com/ncalc/ncalc/pull/561
+* Refactor function and parameter events to not depend on `Expression` and better handle null parameter. by @gumbarros in https://github.com/ncalc/ncalc/pull/562
+* Improve default expression cache by @gumbarros in https://github.com/ncalc/ncalc/pull/563
+* Fix minor docs issue at operators.md. This closes #549 by @gumbarros in https://github.com/ncalc/ncalc/pull/564
+* Wrap evaluation exceptions at `NCalcEvaluationException` by @gumbarros in https://github.com/ncalc/ncalc/pull/565
+* Add new constructors overloads to `ExpressionContext.cs`.  by @gumbarros in https://github.com/ncalc/ncalc/pull/566
+* Added `ToExpressionString` and `ParameterSubstitutionVisitor` by @gumbarros in https://github.com/ncalc/ncalc/pull/567
+* Rename `CancellationToken` parameters from ct to cancellationToken to align with Microsoft naming conventions. by @gumbarros in https://github.com/ncalc/ncalc/pull/568
+
+## Breaking Changes
+* Public domain types moved out of the `NCalc.Domain` namespace and into `NCalc`. For example, use `NCalc.LogicalExpression`, `NCalc.BinaryExpression`, `NCalc.Function`, and `NCalc.ValueExpression` instead of `NCalc.Domain.*`.
+* Parser types now live in the new `NCalc.Parser` assembly. Projects that use parser APIs directly must reference `NCalc.Parser` and `NCalc.Domain` in addition to `NCalc.Core` when those assemblies are not brought in transitively.
+* `ArgumentSeparator` was renamed to `LogicalExpressionArgumentSeparator`. `LogicalExpressionParserOptions` no longer exposes `Default`, `WithCultureInfo`, `WithArgumentSeparator`, `Create`, or the implicit `CultureInfo` conversion; use object initialization or the new constructors instead.
+* Sync and async evaluation were unified in `NCalc.Core`. `AsyncExpression`, `AsyncExpressionContext`, `IAsyncExpressionFactory`, `AsyncExpressionFactory`, `IAsyncEvaluationVisitorFactory`, `AsyncEvaluationVisitorFactory`, and `AsyncEvaluationVisitor` were removed; use `Expression`, `ExpressionContext`, `IExpressionFactory`, `IEvaluationVisitorFactory`, and `Expression.EvaluateAsync` instead.
+* Async DI customization methods were removed from `NCalcServiceBuilder`: use `WithExpressionFactory` and `WithEvaluationVisitorFactory` instead of `WithAsyncExpressionFactory` and `WithAsyncEvaluationVisitorFactory`.
+* Function and parameter callback delegates and argument types now use unified types in `NCalc.Handlers`. `FunctionArgs`, `ParameterArgs`, `ExpressionFunctionData`, `ExpressionParameterData`, `AsyncFunctionArgs`, `AsyncParameterArgs`, `AsyncExpressionFunctionData`, and `AsyncExpressionParameterData` were replaced by `FunctionEventArgs`, `ParameterEventArgs`, `FunctionData`, and `ParameterData`.
+* Function callback arguments no longer expose arrays of nested `Expression` or `AsyncExpression` instances. `FunctionData` exposes `LogicalExpression` arguments and provides `Evaluate(index)` / `EvaluateAsync(index)` helpers for evaluating them with the current `ExpressionContext`.
+* `AsyncExpressionFunction` now returns `Task<object?>` and receives `FunctionData`. `AsyncExpressionParameter` was removed; dynamic parameters now use `ExpressionParameter`.
+* `ExpressionBase<TExpressionContext>` and `ExpressionContextBase` were removed. Custom expression types should derive from or compose `Expression` and use `ExpressionContext`.
+* `LogicalExpression.ToString()` no longer serializes the expression tree. Use `ToExpressionString()` from `NCalc.Extensions` when an expression string representation is required.
+* Public `CancellationToken` parameter names were renamed from `ct` to `cancellationToken`. Calls that use named arguments must be updated.
+* Evaluation failures may now be wrapped in `NCalcEvaluationException`; inspect `InnerException` for the original exception.
+
+# 5.13.0
+* Arithmetic null or empty string as zero by @gumbarros in https://github.com/ncalc/ncalc/pull/546
+* Support for multiple argument separators in expression by @Bykiev in https://github.com/ncalc/ncalc/pull/541
+* Migrate unit tests to TUnit by @gumbarros in https://github.com/ncalc/ncalc/pull/553
+* Breaking change: Switch to `NullLoggerFactory` as default logger by @gumbarros in https://github.com/ncalc/ncalc/pull/554
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/556
+* New docs layout by @gumbarros in https://github.com/ncalc/ncalc/pull/555
+* Added basic AOT functionality by @vpenades in https://github.com/ncalc/ncalc/pull/523
+
+# 5.12.0
+* Update Parlot parser (v1.5.7) by @Bykiev in https://github.com/ncalc/ncalc/pull/534
+* Fix DateTime tests by @Bykiev in https://github.com/ncalc/ncalc/pull/535
+* Fix reusing expression with different options by @Bykiev in https://github.com/ncalc/ncalc/pull/537
+* Update .net packages by @Bykiev in https://github.com/ncalc/ncalc/pull/543
+* Fix incorrect bitwise operator precedence by @Bykiev in https://github.com/ncalc/ncalc/pull/542
+* Lambdas - allow to override if, in functions. Support for `ExpressionOptions.IgnoreCaseAtBuiltInFunctions` by @Bykiev in https://github.com/ncalc/ncalc/pull/536
+* Added `Assert.Expression` extension to unit tests by @gumbarros in https://github.com/ncalc/ncalc/pull/544
+* Fix json serialisation example by @joriszwart in https://github.com/ncalc/ncalc/pull/545
+* Arithmetic null or empty string as zero by @gumbarros in https://github.com/ncalc/ncalc/pull/546
+
+## New Contributors
+* @joriszwart made their first contribution in #545
+
+# 5.11.0
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/525
+* Disable parser loop detection by @Bykiev in https://github.com/ncalc/ncalc/pull/527
+* Replace hex and octal digits with Character by @Bykiev in https://github.com/ncalc/ncalc/pull/528
+
+# 5.10.0
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/525
+* Disable parser loop detection by @Bykiev in https://github.com/ncalc/ncalc/pull/527
+* Replace hex and octal digits with Character by @Bykiev in https://github.com/ncalc/ncalc/pull/528
+
+# 5.9.0
+* Throw InvalidOperationException instead of RuntimeBinderException by @Bykiev in https://github.com/ncalc/ncalc/pull/495
+* Update to .net 10 by @Bykiev in https://github.com/ncalc/ncalc/pull/496
+* Refactor null and type checks into `HasNullOrTypeConflict` by @gumbarros in https://github.com/ncalc/ncalc/pull/500
+* Extract non-scientific parser by @Bykiev in https://github.com/ncalc/ncalc/pull/503
+* Simplify things by @Bykiev in https://github.com/ncalc/ncalc/pull/504
+* Remove OR parser in NOT parser by @Bykiev in https://github.com/ncalc/ncalc/pull/507
+* Remove obsolete Like(string value, string pattern, ExpressionContextB… by @Bykiev in https://github.com/ncalc/ncalc/pull/509
+* Optimize In.Contains method by @Bykiev in https://github.com/ncalc/ncalc/pull/510
+* Refactor `EvaluationHelper` to support generic type context by @gumbarros in https://github.com/ncalc/ncalc/pull/512
+* Update to C# 14. by @gumbarros in https://github.com/ncalc/ncalc/pull/513
+* Add CancellationToken support by @Bykiev in https://github.com/ncalc/ncalc/pull/508
+* Parlot v1.5.6 by @Bykiev in https://github.com/ncalc/ncalc/pull/517
+* Add factorial unary expression support by @gumbarros in https://github.com/ncalc/ncalc/pull/519
+
+# 5.8.0
+* Mark functions in SerializationVistor as virtual by @randellhodges in https://github.com/ncalc/ncalc/pull/477
+* Add support for parsing milliseconds in time part by @Bykiev in https://github.com/ncalc/ncalc/pull/475
+* Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/476, https://github.com/ncalc/ncalc/pull/482, https://github.com/ncalc/ncalc/pull/492
+* docs: Fix broken link in `architecture.md` by @axunonb in https://github.com/ncalc/ncalc/pull/485
+* Fix function with parameters serialization by @Bykiev in https://github.com/ncalc/ncalc/pull/480
+* Add `LongAsDefault` option by @Bykiev in https://github.com/ncalc/ncalc/pull/484
+* Update benchmark results by @Bykiev in https://github.com/ncalc/ncalc/pull/488
+* Improve double parser by @Bykiev in https://github.com/ncalc/ncalc/pull/486
+* Add support for using IN operator with IEnumerable by @Bykiev in https://github.com/ncalc/ncalc/pull/491
+* Fix inequality comparer with StrictTypeMatching by @Bykiev in https://github.com/ncalc/ncalc/pull/489
+
+## Breaking Changes
+* Allow math operations with ulong types by @Bykiev in https://github.com/ncalc/ncalc/pull/481
+
+This change can cause upcasting types in some cases. Also after theese changes an operator overload can be used for any types. For example, subtracting 2 dates will return a `TimeSpan` value, in previous versions the `InvalidOperationException` was thrown.
+
+# 5.7.0
+* Improve MathHelper performance by @Bykiev in https://github.com/ncalc/ncalc/pull/457
+* Use static lambdas in parser where possible by @Bykiev in https://github.com/ncalc/ncalc/pull/461
+* Lambda compilation missing support for IN/NOT IN operators by @zkenda in https://github.com/ncalc/ncalc/pull/464
+* Lambda compilation missing support for LIKE/NOT LIKE operators by @zkenda in https://github.com/ncalc/ncalc/pull/463
+* Add dynamic argument separator support for function arguments by @attiqeurrehman in https://github.com/ncalc/ncalc/pull/467
+
 # 5.6.0
 * Improve SerializationVisitor perf by @Bykiev in https://github.com/ncalc/ncalc/pull/451
 * Update packages by @Bykiev in https://github.com/ncalc/ncalc/pull/452

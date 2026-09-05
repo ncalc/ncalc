@@ -3,8 +3,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
-using NCalc.Domain;
-using NCalc.Parser;
+using NCalc.Extensions;
 using Parlot.Fluent;
 
 namespace NCalc.Benchmarks;
@@ -17,24 +16,25 @@ namespace NCalc.Benchmarks;
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class ParserGenerationBenchmark
 {
-    private LogicalExpressionParserOptions ParserOptions { get; } =
-        LogicalExpressionParserOptions.FromCultureInfo(CultureInfo.InvariantCulture);
+    private const string SimpleExpression = "(3.2 < waterlevel AND 5.3 >= waterlevel)";
 
-    private Func<ExpressionOptions, LogicalExpressionParserOptions, Parser<LogicalExpression>> DynamicFactory { get; set; }
-    private Func<ExpressionOptions, LogicalExpressionParserOptions, Parser<LogicalExpression>> GeneratedFactory { get; set; }
+    private const string AdvancedExpression =
+        "PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3) && Name == 'Sergio'";
+
+    private LogicalExpressionParserOptions ParserOptions { get; } = new();
+    private CultureInfo ParserCulture { get; } = CultureInfo.InvariantCulture;
+
+    private Func<LogicalExpressionParserOptions, CultureInfo, Parser<LogicalExpression>> DynamicFactory { get; set; }
+    private Func<LogicalExpressionParserOptions, CultureInfo, Parser<LogicalExpression>> GeneratedFactory { get; set; }
     private Parser<LogicalExpression> DynamicParser { get; set; }
     private Parser<LogicalExpression> GeneratedParser { get; set; }
 
     [GlobalSetup]
     public void Setup()
     {
-        // A delegate to the original grammar bypasses call-site interception. Reflection runs only in setup.
-        var factory = typeof(LogicalExpressionParser).GetMethod(
-            "CreateGeneratedExpressionParser", BindingFlags.Static | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("The original Parlot grammar factory was not found.");
-
-        DynamicFactory = factory.CreateDelegate<Func<ExpressionOptions, LogicalExpressionParserOptions, Parser<LogicalExpression>>>();
-        GeneratedFactory = LogicalExpressionParser.CreateExpressionParser;
+        // The grammar delegate bypasses interception; the wrapper delegate constructs a fresh generated parser.
+        DynamicFactory = CreateFactory("CreateParserGrammar");
+        GeneratedFactory = CreateFactory("CreateExpressionParser");
         DynamicParser = ConstructDynamic();
         GeneratedParser = ConstructGenerated();
 
@@ -44,13 +44,9 @@ public class ParserGenerationBenchmark
             throw new InvalidOperationException("The comparison requires a runtime combinator graph and a source-generated parser.");
         }
 
-        foreach (var text in new[]
+        foreach (var text in new[] { SimpleExpression, AdvancedExpression })
         {
-            LogicalExpressionFactoryBenchmark.SimpleExpression,
-            LogicalExpressionFactoryBenchmark.AdvancedExpression
-        })
-        {
-            if (Parse(DynamicParser, text).ToString() != Parse(GeneratedParser, text).ToString())
+            if (Parse(DynamicParser, text).ToExpressionString() != Parse(GeneratedParser, text).ToExpressionString())
             {
                 throw new InvalidOperationException("The dynamic and generated parsers produced different expressions.");
             }
@@ -59,31 +55,44 @@ public class ParserGenerationBenchmark
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory("Construction")]
-    public Parser<LogicalExpression> ConstructDynamic() => DynamicFactory(ExpressionOptions.None, ParserOptions);
+    public Parser<LogicalExpression> ConstructDynamic() => DynamicFactory(ParserOptions, ParserCulture);
 
     [Benchmark]
     [BenchmarkCategory("Construction")]
-    public Parser<LogicalExpression> ConstructGenerated() => GeneratedFactory(ExpressionOptions.None, ParserOptions);
+    public Parser<LogicalExpression> ConstructGenerated() => GeneratedFactory(ParserOptions, ParserCulture);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory("Simple")]
-    public LogicalExpression ParseSimpleDynamic() => Parse(DynamicParser, LogicalExpressionFactoryBenchmark.SimpleExpression);
+    public LogicalExpression ParseSimpleDynamic() => Parse(DynamicParser, SimpleExpression);
 
     [Benchmark]
     [BenchmarkCategory("Simple")]
-    public LogicalExpression ParseSimpleGenerated() => Parse(GeneratedParser, LogicalExpressionFactoryBenchmark.SimpleExpression);
+    public LogicalExpression ParseSimpleGenerated() => Parse(GeneratedParser, SimpleExpression);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory("Advanced")]
-    public LogicalExpression ParseAdvancedDynamic() => Parse(DynamicParser, LogicalExpressionFactoryBenchmark.AdvancedExpression);
+    public LogicalExpression ParseAdvancedDynamic() => Parse(DynamicParser, AdvancedExpression);
 
     [Benchmark]
     [BenchmarkCategory("Advanced")]
-    public LogicalExpression ParseAdvancedGenerated() => Parse(GeneratedParser, LogicalExpressionFactoryBenchmark.AdvancedExpression);
+    public LogicalExpression ParseAdvancedGenerated() => Parse(GeneratedParser, AdvancedExpression);
+
+    private static Func<LogicalExpressionParserOptions, CultureInfo, Parser<LogicalExpression>> CreateFactory(string name)
+    {
+        var factory = typeof(LogicalExpressionParser).GetMethod(
+            name,
+            BindingFlags.Static | BindingFlags.NonPublic,
+            binder: null,
+            types: [typeof(LogicalExpressionParserOptions), typeof(CultureInfo)],
+            modifiers: null)
+            ?? throw new InvalidOperationException($"The parser factory '{name}' was not found.");
+
+        return factory.CreateDelegate<Func<LogicalExpressionParserOptions, CultureInfo, Parser<LogicalExpression>>>();
+    }
 
     private LogicalExpression Parse(Parser<LogicalExpression> parser, string text)
     {
-        var context = new LogicalExpressionParserContext(text, ExpressionOptions.None, ParserOptions);
+        var context = new LogicalExpressionParseContext(text, ParserOptions, CancellationToken.None);
         if (parser.TryParse(context, out var result, out var error))
         {
             return result;

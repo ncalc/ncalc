@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using NCalc.Antlr.Configuration;
-using NCalc.Cache.Configuration;
+﻿using NCalc.Cache.Configuration;
 using NCalc.DependencyInjection;
 using NCalc.Factories;
 
@@ -19,19 +17,6 @@ public sealed class FactoriesFixture : FactoriesFixtureBase
     {
         var serviceProvider = new ServiceCollection()
             .AddNCalc()
-            .Services.BuildServiceProvider();
-        ExpressionFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
-        LogicalExpressionFactory = serviceProvider.GetRequiredService<ILogicalExpressionFactory>();
-    }
-}
-
-public sealed class FactoriesWithAntlrFixture : FactoriesFixtureBase
-{
-    public FactoriesWithAntlrFixture()
-    {
-        var serviceProvider = new ServiceCollection()
-            .AddNCalc()
-            .WithAntlr()
             .Services.BuildServiceProvider();
         ExpressionFactory = serviceProvider.GetRequiredService<IExpressionFactory>();
         LogicalExpressionFactory = serviceProvider.GetRequiredService<ILogicalExpressionFactory>();

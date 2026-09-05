@@ -9,16 +9,24 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
+	  <PropertyGroup>
+			<!--
+			Explicitly disable AOT compatibility for this package since it
+			depends on FastExpressionCompiler which has stated not being AOT.
+			-->
+		  <IsAotCompatible>false</IsAotCompatible>
+	  </PropertyGroup>
+
     <ItemGroup>
         <None Include="../../../NCalc.png" Pack="true" PackagePath="/" />
         <None Include="README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\NCalc.Sync\NCalc.Sync.csproj" />
+      <ProjectReference Include="..\..\NCalc.Core\NCalc.Core.csproj" />
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="FastExpressionCompiler" Version="5.3.0" />
+        <PackageReference Include="FastExpressionCompiler" />
     </ItemGroup>
 </Project>

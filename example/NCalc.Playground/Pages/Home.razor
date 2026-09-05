@@ -1,0 +1,27 @@
+@page "/"
+
+<PageTitle>NCalc Playground</PageTitle>
+
+<main class="playground-main" id="main-content">
+    <div class="playground-workbench">
+        <section aria-label="Expression evaluator">
+            <ExpressionCard ExpressionText="@_expressionText"
+                            HasError="@(_selectedHistoryItem?.HasError == true)"
+                            @bind-SelectedOptions="_selectedOptions"
+                            OnEvaluate="Evaluate" />
+        </section>
+
+        <div class="playground-panels">
+            <section>
+                <ParametersCard Variables="_variables" OnAdd="AddVariable" OnRemove="RemoveVariable" />
+            </section>
+
+            <section>
+                <HistoryCard History="_history"
+                             SelectedItem="_selectedHistoryItem"
+                             OnApply="ApplyHistoryItem"
+                             OnClear="ClearHistory" />
+            </section>
+        </div>
+    </div>
+</main>

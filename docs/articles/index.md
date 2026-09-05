@@ -7,19 +7,11 @@ NCalc is a mathematical expression evaluator in .NET. NCalc can parse any expres
 NCalc is a mathematical expression evaluator in .NET. NCalc can parse any expression and evaluate the result, including static or dynamic parameters and custom functions.
 
 ## Table of Contents
-- [Operators](operators.md): Available standard operators and structures.
-- [Values](values.md): Authorized values like types and functions.
-- [Functions](functions.md):  List of already implemented functions.
-- [Parameters](parameters.md):  How to use parameters expressions.
-- [Handling Errors](handling_errors.md):  How to handle errors.
-- [Case Sensitivity](case_sensitivity.md): Options in how to handle case sensitivity.
-- [Overflow Handling](overflow_protection.md): How to handle overflow with binary arithmetic operations
-- [Async Support](async.md): How and when to use `async`.
-- [Caching](caching.md): How caching works.
-- [Improve performance](lambda_compilation.md): How to use compilation of expressions to CLR lambdas.
-- [Dependency Injection](dependency_injection.md): Bring expressions to the next level with dependency injection.
-- [Architecture](architecture.md): Check this article to learn how NCalc works.
-- [Benchmarks](benchmarks.md): Check some numbers about the speed of some NCalc components.
+- [Language](language/index.md): Core language reference for operators, values, functions, and parameters.
+- [Evaluation](evaluation/index.md): Behavioral rules and options for expression execution.
+- [Runtime](runtime/index.md): Execution-focused topics like async, caching, cancellation, and logging.
+- [Extensibility](extensibility/index.md): Lambda compilation, dependency injection, overrides, and plugins.
+- [Project](project/index.md): Architecture, benchmarks, changelog, and release process.
 
 ## Functionalities
 
@@ -34,6 +26,7 @@ Debug.Assert(17 == expression.Evaluate());
 
 ```c#
 Debug.Assert(123456 == new Expression("123456").Evaluate()); // integers
+Debug.Assert(123456 == new Expression("123456").Evaluate<int>()); // typed integers
 Debug.Assert(new DateTime(2001, 01, 01) == new Expression("#01/01/2001#").Evaluate()); // datetime
 Debug.Assert(123.456 == new Expression("123.456").Evaluate()); // floating point numbers
 Debug.Assert(true == new Expression("true").Evaluate()); // booleans
@@ -89,4 +82,16 @@ Debug.Assert(117.07 == expression.Evaluate());
 var expression = new Expression("1 + 2");
 Func<int> function = expression.ToLambda<int>();
 Debug.Assert(function()); //3
+```
+
+### Expression Serialization
+
+To convert an expression tree back to NCalc source text, use <xref:NCalc.Expression.ToExpressionString(System.Boolean,System.Threading.CancellationToken)>.
+This method delegates to <xref:NCalc.Visitors.SerializationVisitor>. In older versions it was possible using <xref:System.Object.ToString>, but it's not a good practice as documented at [Microsoft docs](https://learn.microsoft.com/en-us/dotnet/api/system.object.tostring#notes-to-inheritors).
+
+```csharp
+using NCalc;
+
+var expression = new Expression("1 + 2");
+var expressionText = expression.ToExpressionString();
 ```
