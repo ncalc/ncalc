@@ -21,9 +21,9 @@ public class LogicalExpressionFactoryBenchmark
 #pragma warning restore CA1859
     private ILogicalExpressionFactory ParlotFactory { get; set; }
 
-    private const string SimpleExpression = "(3.2 < waterlevel AND 5.3 >= waterlevel)";
+    internal const string SimpleExpression = "(3.2 < waterlevel AND 5.3 >= waterlevel)";
 
-    private const string AdvancedExpression =
+    internal const string AdvancedExpression =
         "PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3) && Name == 'Sergio'";
 
     [GlobalSetup]

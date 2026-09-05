@@ -22,9 +22,9 @@ public sealed record LogicalExpressionParserOptions
     public ArgumentSeparator ArgumentSeparator { get; private init; } = ArgumentSeparator.Comma;
 
     /// <summary>
-    /// Gets the default parser options.
+    /// Gets new default parser options using the current culture.
     /// </summary>
-    public static LogicalExpressionParserOptions Default { get; } = new();
+    public static LogicalExpressionParserOptions Default => new();
 
     /// <summary>
     /// Creates parser options with both culture info and argument separator.

@@ -19,6 +19,37 @@ This tree is made up of different types of expressions, such as binary expressio
 functions.
 Our AST is represented by <xref:NCalc.Domain.LogicalExpression> class.
 
+### Source-generated parser
+
+NCalc builds its Parlot parser at compile time. The generated parser is used automatically, without
+runtime parser compilation or an AppContext switch. Parlot `2.0.0-preview-743` is restored from the
+[Parlot preview feed](https://f.feedz.io/sebastienros/parlot/nuget/index.json), configured in `nuget.config`.
+
+To reuse a parser with a specific configuration, pass expression and parser options to
+`LogicalExpressionParser.CreateExpressionParser`:
+
+```csharp
+using System.Globalization;
+using NCalc;
+using NCalc.Parser;
+using Parlot.Fluent;
+
+var parser = LogicalExpressionParser.CreateExpressionParser(
+    ExpressionOptions.DecimalAsDefault,
+    LogicalExpressionParserOptions.Create(
+        CultureInfo.InvariantCulture, ArgumentSeparator.Semicolon));
+
+var logicalExpression = parser.Parse("Max(1.5; 2.5)");
+var expression = new Expression(logicalExpression, ExpressionOptions.DecimalAsDefault);
+var result = expression.Evaluate(); // 2.5m
+```
+
+Each parser binds its own options and can parse multiple inputs with ordinary Parlot parse contexts.
+Omitting parser options captures `CultureInfo.CurrentCulture` when the parser is created, not at build
+time or the first use of NCalc. Create a new parser to use different options, and do not mutate its
+`CultureInfo` while it is shared. Cancellation remains a per-parse setting. The higher-level
+`Expression` and `LogicalExpressionFactory` APIs continue to pass their options to the generated parser.
+
 ## Evaluation
 
 Evaluation refers to the process of determining the value of an expression. We use the visitor pattern at evaluation.
