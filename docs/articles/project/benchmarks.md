@@ -111,51 +111,6 @@ Codegen avoids runtime graph construction and its roughly 139-143 KB allocation.
 factory-call measurements, **not process startup or first-use JIT timings**. The construction saving
 must not be counted on every parse when an application caches its dynamic parser.
 
-### Historical allocation trace: original PR grammar with preview 737
-
-GC-verbose EventPipe traces of **preview 737, before the allocation fix**, located the difference in
-Parlot's collection emitters, not in NCalc's AST nodes or parser-option binding. These captures used
-the original PR grammar, before the `master` migration above. The runtime versions of
-[`ZeroOrMany`](https://github.com/sebastienros/parlot/blob/c6c3a472abf2ce9d34c95f25a24adb606c216341/src/Parlot/Fluent/ZeroOrMany.cs)
-and [`Separated`](https://github.com/sebastienros/parlot/blob/c6c3a472abf2ce9d34c95f25a24adb606c216341/src/Parlot/Fluent/Separated.cs)
-used `HybridList<T>`, which stores up to four elements inline. Their generated implementations instead
-allocated a `List<T>` and its backing array.
-
-The allocation events report these object sizes on ARM64:
-
-| Temporary collection | Runtime representation | Generated representation | Extra bytes |
-|----------------------|-----------------------:|-------------------------:|------------:|
-| Operator/operand tuples, up to four items | 96 B `HybridList<T>` | 32 B list + 88 B array | 24 B |
-| Function arguments, up to four items | 64 B `HybridList<T>` | 32 B list + 56 B array | 24 B |
-
-The simple expression creates three operator collections: `3 * 24 = 72 B` extra. The advanced
-expression creates seven operator collections and one argument collection: `7 * 24 + 24 = 192 B`
-extra. Both paths also allocate 48-byte enumerators while folding operator lists; those are common
-costs, not the source of the difference.
-
-Generated allocation stacks led from `List<T>.AddWithResize` into the generated repetition helpers.
-Dynamic stacks led into `ZeroOrMany.Parse` / `Separated.Parse` and `HybridList<T>`. The four analyzed
-.NET 10 traces each contain one million measured operations and report zero lost events. Analysis
-includes only the benchmark thread between `BenchmarkDotNet.EngineEventSource` actual-workload
-events 15 and 16, excluding setup, warmup, and harness overhead.
-
-To capture allocation traces for the currently referenced package without changing the normal
-benchmark configuration (the historical stacks above require preview 737):
-
-```shell
-UseSharedCompilation=false dotnet build test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release
-UseSharedCompilation=false dotnet test/NCalc.Benchmarks/bin/Release/net8.0/NCalc.Benchmarks.dll \
-  --allocation-profile --filter '*ParserGenerationBenchmark.Parse*' \
-  --launchCount 1 --warmupCount 3 --iterationCount 1 \
-  --invocationCount 1000000 --unrollFactor 1 \
-  --artifacts ./BenchmarkDotNet.Artifacts/allocations
-```
-
-The opt-in profiler uses `EventPipeProfile.GcVerbose` in an extra profiling run and preserves
-`.nettrace` files. The single-iteration configuration above is for allocation attribution only;
-do not use its timing estimates as performance results. Allocation ticks are sampled, so per-type
-byte estimates are approximate; the totals in the comparison tables come from `MemoryDiagnoser`.
-
 ### Published allocation fix: preview 743
 
 [sebastienros/parlot#335](https://github.com/sebastienros/parlot/pull/335), merged and published in
