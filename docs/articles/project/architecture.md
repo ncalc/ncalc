@@ -37,8 +37,7 @@ options, and argument separator configuration. The parser depends only on the AS
 ### Source-generated parser
 
 NCalc builds its Parlot parser at compile time. The generated parser is used automatically, without
-runtime parser compilation or an AppContext switch. Parlot `2.0.0-preview-743` is restored from the
-[Parlot preview feed](https://f.feedz.io/sebastienros/parlot/nuget/index.json), configured in `nuget.config`.
+runtime parser compilation or an AppContext switch.
 
 Parsing options are supplied through `ExpressionConfiguration.Parsing` when using `Expression`.
 The lower-level parser API accepts the same options through `LogicalExpressionParseContext`:
