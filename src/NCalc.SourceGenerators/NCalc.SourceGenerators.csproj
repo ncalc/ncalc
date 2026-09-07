@@ -1,5 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <IsPackable>false</IsPackable>
         <Nullable>enable</Nullable>
@@ -12,6 +12,10 @@
         <PackageId>NCalc.SourceGenerators</PackageId>
         <DefaultItemExcludes>$(DefaultItemExcludes);NCalc.SourceGenerators/**</DefaultItemExcludes>
     </PropertyGroup>
+
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);IL2026;IL3050;RS1041</NoWarn>
+	</PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
