@@ -36,11 +36,14 @@ options, and argument separator configuration. The parser depends only on the AS
 
 ### Source-generated parser
 
-NCalc builds its Parlot parser at compile time. The generated parser is used automatically, without
-runtime parser compilation or an AppContext switch.
+NCalc defines its Fluent grammar in `LogicalExpressionParser.parlot.cs`, a build-only file. The
+Parlot source generator implements a direct partial parsing method and emits internal support code
+into `NCalc.Parser`. The grammar factory is not compiled into the application, and NCalc packages
+do not depend on the Parlot runtime or analyzer. No interceptor configuration or runtime parser
+compilation is needed.
 
 Parsing options are supplied through `ExpressionConfiguration.Parsing` when using `Expression`.
-The lower-level parser API accepts the same options through `LogicalExpressionParseContext`:
+The lower-level parser API accepts the same options directly:
 
 ```csharp
 using System.Globalization;
@@ -52,35 +55,39 @@ var options = new LogicalExpressionParserOptions
 };
 
 var logicalExpression = LogicalExpressionParser.Parse(
-    new LogicalExpressionParseContext("Max(1.5; 2.5)", options),
-    CultureInfo.InvariantCulture);
+    "Max(1.5; 2.5)", options, CultureInfo.InvariantCulture);
 var expression = new Expression(logicalExpression, ExpressionOptions.DecimalAsDefault);
 var result = expression.Evaluate(); // 2.5m
 ```
 
-`GetOrCreateExpressionParser(options, culture)` caches generated parsers for repeated use. Culture
-instances have independent weakly held caches, so custom formats do not collide solely because their
-culture names match. Culture,
-argument separators, and `DisallowSingleEquals` are bound through factory parameters. Numeric-type and
-character options remain per-parse context settings, preserving the existing parser API. When calling
-the returned parser directly, use `LogicalExpressionParseContext` with the intended options.
-Cancellation also remains per parse. Do not mutate a culture while its parser is shared.
+Culture, argument separators, numeric types, character handling, and `DisallowSingleEquals` are
+supplied on every parse. No parser instance, grammar construction, or parser-instance cache is needed.
+Custom cultures with the same name remain independent. If culture is omitted, the current culture
+is resolved at the time of the call. Do not mutate a culture concurrently with parsing.
 
-Both the grammar factory and its interception wrapper remain private. The intercepted call is inside
-`NCalc.Parser`, so callers of the public APIs do not need to enable interceptors in their own projects.
+`Parse(LogicalExpressionParseContext, CultureInfo?)` remains available as a convenience overload.
+The context is now an NCalc-owned holder for input, options, and cancellation, not a Parlot context.
+The Parlot-returning `GetOrCreateExpressionParser` API is removed; callers should use `Parse` instead.
+Cancellation is checked cooperatively during parsing and propagates as `OperationCanceledException`
+from the parser API. Grammar callbacks retain NCalc parser exceptions and error positions.
+
+`NCalc.Parser` provides .NET Standard 2.0, .NET 8, and .NET 10 assets. NCalc's .NET Framework 4.6.2
+target uses the .NET Standard 2.0 parser asset and its `System.Memory` compatibility dependency.
+The parser package includes Parlot's BSD license in `THIRD-PARTY-NOTICES.txt` for the generated support.
 
 ### Debugging the parser
 
 Major grammar nodes are named with Parlot's `.Named(...)`, including `RelationalOperator`,
 `Coalescing`, `Function`, and the date/time parsers. Generated helper comments contain these names,
-making it easier to map a generated method to its grammar rule. Generated identifiers and helper
-methods remain private implementation details.
+making it easier to map a generated method to its grammar rule. Generated identifiers and support
+types remain implementation details.
 
 Generated files are emitted below `src/NCalc.Parser/obj/<configuration>/<framework>/Parlot.SourceGenerator/`.
-Parlot emits `#line` mappings for callbacks, and named conversion methods such as `ParseDate`,
-`ParseTime`, and `ParseSingleQuotedString` can be debugged directly in the original parser source.
-Concrete AST construction stays in these normal methods so inspecting callbacks does not require
-the compiler host to load a different target framework's JSON dependency.
+Parlot emits `#line` mappings to `.parlot.cs` callbacks, and named conversion methods such as
+`ParseDate`, `ParseTime`, and `ParseSingleQuotedString` can be debugged in
+`LogicalExpressionParser.Helpers.cs`. These helpers use only BCL and NCalc types.
+IDE analysis receives generated partial-method stubs without executing the grammar; a normal build
+produces the actual parser implementation.
 
 ## Evaluation
 

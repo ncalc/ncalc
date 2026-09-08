@@ -19,12 +19,14 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.10" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.8.118" />
     <PackageVersion Include="NETStandard.Library" Version="2.0.3" Condition="'$(TargetFramework)' == 'net462'" />
-    <PackageVersion Include="Parlot" Version="2.0.0-preview-751" />
+    <PackageVersion Include="Parlot" Version="2.0.0-preview-763" />
+    <PackageVersion Include="Parlot.SourceGenerator" Version="2.0.0-preview-763" />
     <PackageVersion Include="PolySharp" Version="1.15.0" />
     <PackageVersion Include="Roslynator.Analyzers" Version="4.15.0" />
     <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.15.0" />
     <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.15.0" />
     <PackageVersion Include="System.Collections.Immutable" Version="10.0.11" />
+    <PackageVersion Include="System.Memory" Version="4.6.3" />
     <PackageVersion Include="System.Text.Json" Version="10.0.10" />
     <PackageVersion Include="System.ValueTuple" Version="4.6.2" />
     <PackageVersion Include="TUnit" Version="1.63.0" />

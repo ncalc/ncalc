@@ -35,7 +35,6 @@
     <ItemGroup>
         <PackageReference Include="ExtendedNumerics.BigDecimal" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-        <PackageReference Include="Parlot" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\NCalc.Parser\NCalc.Parser.csproj" />

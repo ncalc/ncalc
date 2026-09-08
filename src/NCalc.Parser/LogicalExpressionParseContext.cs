@@ -1,13 +1,11 @@
-using Parlot;
-using Parlot.Fluent;
-
 namespace NCalc;
 
 public sealed class LogicalExpressionParseContext(
     string text,
     LogicalExpressionParserOptions? options = null,
     CancellationToken cancellationToken = default)
-    : ParseContext(new Scanner(text), useNewLines: false, disableLoopDetection: true, cancellationToken)
 {
+    public string Text { get; } = text ?? throw new ArgumentNullException(nameof(text));
     public LogicalExpressionParserOptions Options { get; } = options ?? new();
+    public CancellationToken CancellationToken { get; } = cancellationToken;
 }

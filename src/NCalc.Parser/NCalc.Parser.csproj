@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <!-- .NET Framework consumers use the .NET Standard 2.0 asset. -->
+        <TargetFrameworks>netstandard2.0;net8.0;net10.0</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -8,7 +10,6 @@
         <SignAssembly>true</SignAssembly>
         <RootNamespace>NCalc</RootNamespace>
         <AssemblyOriginatorKeyFile>../../NCalc.snk</AssemblyOriginatorKeyFile>
-        <InterceptorsNamespaces>$(InterceptorsNamespaces);NCalc</InterceptorsNamespaces>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>obj\$(Configuration)\$(TargetFramework)</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
@@ -18,7 +19,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Parlot" />
+      <PackageReference Include="Parlot.SourceGenerator" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+      <PackageReference Include="System.Memory" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,6 +31,7 @@
             <Pack>True</Pack>
             <PackagePath>/</PackagePath>
         </None>
+        <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,5 @@
+using NCalc.Exceptions;
 using NCalc.Factories;
-using Parlot;
-using Parlot.Fluent;
 
 namespace NCalc.Tests;
 
@@ -8,15 +7,31 @@ namespace NCalc.Tests;
 public class GeneratedParserTests
 {
     [Test]
-    public async Task ShouldReturnGeneratedParserAcrossAssemblies()
+    public async Task ShouldParseAndEvaluateGeneratedExpressionsAcrossAssemblies()
     {
-        var options = new LogicalExpressionParserOptions();
-        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(options, CultureInfo.InvariantCulture);
+        await AssertValue(LogicalExpressionParser.Parse("42", culture: CultureInfo.InvariantCulture), 42);
 
-        await Assert.That(parser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
-        await Assert.That(parser.GetType().Name.StartsWith("GeneratedParser", StringComparison.Ordinal)).IsTrue();
-        await Assert.That(parser.Name).IsEqualTo("Expression");
-        await AssertValue(Parse(parser, "42", options), 42);
+        var expression = LogicalExpressionParser.Parse("[value] + 2", culture: CultureInfo.InvariantCulture);
+        var sum = await AssertBinary(expression, BinaryExpressionType.Plus);
+        await AssertIdentifier(sum.LeftExpression, "value");
+        await AssertValue(sum.RightExpression, 2);
+
+        var evaluation = new Expression(expression);
+        evaluation.Parameters["value"] = 40;
+        await Assert.That(evaluation.Evaluate(CancellationToken.None)).IsEqualTo(42);
+    }
+
+    [Test]
+    [Arguments("42", 42)]
+    [Arguments("1.5", 1.5d)]
+    [Arguments("'x'", "x")]
+    [Arguments("\"x\"", "x")]
+    [Arguments(" 42 \t\r\n", 42)]
+    public async Task ShouldUseDefaultOptionsForBothPublicParseOverloads(string text, object expected)
+    {
+        await AssertValue(LogicalExpressionParser.Parse(text), expected);
+        await AssertValue(LogicalExpressionParser.Parse(text, new LogicalExpressionParserOptions()), expected);
+        await AssertValue(LogicalExpressionParser.Parse(new LogicalExpressionParseContext(text)), expected);
     }
 
     [Test]
@@ -38,24 +53,20 @@ public class GeneratedParserTests
             FloatingPointNumberType = floatingPointType,
             AllowCharValues = allowCharValues
         };
-        var defaultParser = LogicalExpressionParser.GetOrCreateExpressionParser(defaultOptions, CultureInfo.InvariantCulture);
-        var configuredParser = LogicalExpressionParser.GetOrCreateExpressionParser(configuredOptions, CultureInfo.InvariantCulture);
 
-        foreach (var parser in new[] { defaultParser, configuredParser })
+        for (var i = 0; i < 4; i++)
         {
-            await Assert.That(parser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
+            await AssertValue(LogicalExpressionParser.Parse("42", defaultOptions, CultureInfo.InvariantCulture), 42);
+            await AssertValue(LogicalExpressionParser.Parse("1.5", defaultOptions, CultureInfo.InvariantCulture), 1.5d);
+            await AssertValue(LogicalExpressionParser.Parse("'x'", defaultOptions, CultureInfo.InvariantCulture), "x");
 
-            for (var i = 0; i < 2; i++)
-            {
-                await AssertValue(Parse(parser, "42", defaultOptions), 42);
-                await AssertValue(Parse(parser, "1.5", defaultOptions), 1.5d);
-                await AssertValue(Parse(parser, "'x'", defaultOptions), "x");
-
-                await AssertValue(Parse(parser, "42", configuredOptions), integerType == IntegerNumberType.Int64 ? (object)42L : 42);
-                await AssertValue(Parse(parser, "1.5", configuredOptions), floatingPointType == FloatingPointNumberType.Decimal ? (object)1.5m : 1.5d);
-                await AssertValue(Parse(parser, "'x'", configuredOptions), allowCharValues ? (object)'x' : "x");
-                await AssertValue(Parse(parser, "\"x\"", configuredOptions), "x");
-            }
+            await AssertValue(LogicalExpressionParser.Parse("42", configuredOptions, CultureInfo.InvariantCulture),
+                integerType == IntegerNumberType.Int64 ? (object)42L : 42);
+            await AssertValue(LogicalExpressionParser.Parse("1.5", configuredOptions, CultureInfo.InvariantCulture),
+                floatingPointType == FloatingPointNumberType.Decimal ? (object)1.5m : 1.5d);
+            await AssertValue(LogicalExpressionParser.Parse("'x'", configuredOptions, CultureInfo.InvariantCulture),
+                allowCharValues ? (object)'x' : "x");
+            await AssertValue(LogicalExpressionParser.Parse("\"x\"", configuredOptions, CultureInfo.InvariantCulture), "x");
         }
     }
 
@@ -69,8 +80,6 @@ public class GeneratedParserTests
     [Arguments(ArgumentSeparator.Semicolon | ArgumentSeparator.Colon, "('x'; (42: 1.5))")]
     public async Task ShouldUseParseTimeOptionsRecursively(ArgumentSeparator separator, string text)
     {
-        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(
-            new LogicalExpressionParserOptions { ArgumentSeparator = separator }, CultureInfo.InvariantCulture);
         var options = new LogicalExpressionParserOptions
         {
             ArgumentSeparator = separator,
@@ -79,17 +88,22 @@ public class GeneratedParserTests
             FloatingPointNumberType = FloatingPointNumberType.Decimal
         };
 
-        var expression = Parse(parser, text, options);
-        await Assert.That(parser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
-        await Assert.That(expression).IsTypeOf<LogicalExpressionList>();
-        var list = (LogicalExpressionList)expression;
-        await Assert.That(list.Count).IsEqualTo(2);
-        await AssertValue(list[0], 'x');
-        await Assert.That(list[1]).IsTypeOf<LogicalExpressionList>();
-        var nested = (LogicalExpressionList)list[1];
-        await Assert.That(nested.Count).IsEqualTo(2);
-        await AssertValue(nested[0], 42L);
-        await AssertValue(nested[1], 1.5m);
+        foreach (var expression in new[]
+        {
+            LogicalExpressionParser.Parse(text, options, CultureInfo.InvariantCulture),
+            LogicalExpressionParser.Parse(new LogicalExpressionParseContext(text, options), CultureInfo.InvariantCulture)
+        })
+        {
+            await Assert.That(expression).IsTypeOf<LogicalExpressionList>();
+            var list = (LogicalExpressionList)expression;
+            await Assert.That(list.Count).IsEqualTo(2);
+            await AssertValue(list[0], 'x');
+            await Assert.That(list[1]).IsTypeOf<LogicalExpressionList>();
+            var nested = (LogicalExpressionList)list[1];
+            await Assert.That(nested.Count).IsEqualTo(2);
+            await AssertValue(nested[0], 42L);
+            await AssertValue(nested[1], 1.5m);
+        }
     }
 
     [Test]
@@ -102,10 +116,8 @@ public class GeneratedParserTests
             IntegerNumberType = IntegerNumberType.Int64,
             FloatingPointNumberType = FloatingPointNumberType.Decimal
         };
-        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(options, CultureInfo.InvariantCulture);
-        var expression = Parse(parser, "Outer('x', Inner(42; 1.5): 2)", options);
+        var expression = LogicalExpressionParser.Parse("Outer('x', Inner(42; 1.5): 2)", options, CultureInfo.InvariantCulture);
 
-        await Assert.That(parser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
         await Assert.That(expression).IsTypeOf<Function>();
         var function = (Function)expression;
         await Assert.That(function.Identifier.Name).IsEqualTo("Outer");
@@ -127,33 +139,22 @@ public class GeneratedParserTests
         var semicolonOptions = new LogicalExpressionParserOptions { ArgumentSeparator = ArgumentSeparator.Semicolon };
         var usCulture = CultureInfo.GetCultureInfo("en-US");
         var gbCulture = CultureInfo.GetCultureInfo("en-GB");
-        var usCommaParser = LogicalExpressionParser.GetOrCreateExpressionParser(commaOptions, usCulture);
-        var gbCommaParser = LogicalExpressionParser.GetOrCreateExpressionParser(commaOptions, gbCulture);
-        var gbSemicolonParser = LogicalExpressionParser.GetOrCreateExpressionParser(semicolonOptions, gbCulture);
-
-        await Assert.That(usCommaParser).IsNotSameReferenceAs(gbCommaParser);
-        await Assert.That(gbCommaParser).IsNotSameReferenceAs(gbSemicolonParser);
-        await Assert.That(usCommaParser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
-        await Assert.That(gbCommaParser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
-        await Assert.That(gbSemicolonParser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
 
         for (var i = 0; i < 2; i++)
         {
-            var usDates = Parse(usCommaParser, "(#01/02/2025#, #03/04/2025#)", commaOptions);
+            var usDates = LogicalExpressionParser.Parse("(#01/02/2025#, #03/04/2025#)", commaOptions, usCulture);
             await Assert.That(usDates).IsTypeOf<LogicalExpressionList>();
             await AssertValue(((LogicalExpressionList)usDates)[0], new DateTime(2025, 1, 2));
             await AssertValue(((LogicalExpressionList)usDates)[1], new DateTime(2025, 3, 4));
 
-            await AssertValue(Parse(gbCommaParser, "#01/02/2025#", commaOptions), new DateTime(2025, 2, 1));
-            var gbDates = Parse(gbSemicolonParser, "(#01/02/2025#; #03/04/2025#)", semicolonOptions);
+            await AssertValue(LogicalExpressionParser.Parse("#01/02/2025#", commaOptions, gbCulture), new DateTime(2025, 2, 1));
+            var gbDates = LogicalExpressionParser.Parse("(#01/02/2025#; #03/04/2025#)", semicolonOptions, gbCulture);
             await Assert.That(gbDates).IsTypeOf<LogicalExpressionList>();
             await AssertValue(((LogicalExpressionList)gbDates)[0], new DateTime(2025, 2, 1));
             await AssertValue(((LogicalExpressionList)gbDates)[1], new DateTime(2025, 4, 3));
 
-            await Assert.That(usCommaParser.TryParse(
-                new LogicalExpressionParseContext("Max(1; 2)", commaOptions), out _, out _)).IsFalse();
-            await Assert.That(gbSemicolonParser.TryParse(
-                new LogicalExpressionParseContext("Max(1, 2)", semicolonOptions), out _, out _)).IsFalse();
+            Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse("Max(1; 2)", commaOptions, usCulture));
+            Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse("Max(1, 2)", semicolonOptions, gbCulture));
         }
     }
 
@@ -173,24 +174,19 @@ public class GeneratedParserTests
         dayFirst = CultureInfo.ReadOnly(dayFirst);
 
         var options = new LogicalExpressionParserOptions();
-        var monthFirstParser = LogicalExpressionParser.GetOrCreateExpressionParser(options, monthFirst);
-        var dayFirstParser = LogicalExpressionParser.GetOrCreateExpressionParser(options, dayFirst);
         var text = $"#01{separator}02{separator}2025#";
 
         await Assert.That(monthFirst.Name).IsEqualTo(dayFirst.Name);
-        await Assert.That(monthFirstParser).IsNotSameReferenceAs(dayFirstParser);
-        await Assert.That(LogicalExpressionParser.GetOrCreateExpressionParser(options, monthFirst))
-            .IsSameReferenceAs(monthFirstParser);
 
         for (var i = 0; i < 2; i++)
         {
-            await AssertValue(Parse(monthFirstParser, text, options), new DateTime(2025, 1, 2));
-            await AssertValue(Parse(dayFirstParser, text, options), new DateTime(2025, 2, 1));
+            await AssertValue(LogicalExpressionParser.Parse(text, options, monthFirst), new DateTime(2025, 1, 2));
+            await AssertValue(LogicalExpressionParser.Parse(text, options, dayFirst), new DateTime(2025, 2, 1));
         }
     }
 
     [Test]
-    public async Task ShouldBindParserCultureButUseCurrentCultureAtPublicParseCall()
+    public async Task ShouldResolveCurrentCultureAtEachPublicParseCallIndependentlyOfExplicitCulture()
     {
         var originalCulture = CultureInfo.CurrentCulture;
 
@@ -198,20 +194,26 @@ public class GeneratedParserTests
         {
             var options = new LogicalExpressionParserOptions();
             var usCulture = CultureInfo.GetCultureInfo("en-US");
+            var gbCulture = CultureInfo.GetCultureInfo("en-GB");
             CultureInfo.CurrentCulture = usCulture;
-            var usParser = LogicalExpressionParser.GetOrCreateExpressionParser(options, CultureInfo.CurrentCulture);
-            var context = new LogicalExpressionParseContext("#01/02/2025#", options);
-            await AssertValue(LogicalExpressionFactory.Create("#01/02/2025#", options), new DateTime(2025, 1, 2));
+            const string text = "#01/02/2025#";
+            var context = new LogicalExpressionParseContext(text, options);
 
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-GB");
-            var gbParser = LogicalExpressionParser.GetOrCreateExpressionParser(options, CultureInfo.CurrentCulture);
+            for (var i = 0; i < 4; i++)
+            {
+                var useUsCulture = i % 2 == 0;
+                CultureInfo.CurrentCulture = useUsCulture ? usCulture : gbCulture;
+                var expected = useUsCulture ? new DateTime(2025, 1, 2) : new DateTime(2025, 2, 1);
 
-            await AssertValue(Parse(usParser, "#01/02/2025#", options), new DateTime(2025, 1, 2));
-            await AssertValue(Parse(gbParser, "#01/02/2025#", options), new DateTime(2025, 2, 1));
-            await AssertValue(LogicalExpressionParser.Parse(context), new DateTime(2025, 2, 1));
-            await AssertValue(LogicalExpressionParser.Parse(
-                new LogicalExpressionParseContext("#01/02/2025#", options), usCulture), new DateTime(2025, 1, 2));
-            await AssertValue(LogicalExpressionFactory.Create("#01/02/2025#", options), new DateTime(2025, 2, 1));
+                await AssertValue(LogicalExpressionParser.Parse(text), expected);
+                await AssertValue(LogicalExpressionParser.Parse(context), expected);
+                await AssertValue(LogicalExpressionParser.Parse(text, options, usCulture), new DateTime(2025, 1, 2));
+                await AssertValue(LogicalExpressionParser.Parse(context, usCulture), new DateTime(2025, 1, 2));
+                await AssertValue(LogicalExpressionParser.Parse(text, options, gbCulture), new DateTime(2025, 2, 1));
+                await AssertValue(LogicalExpressionParser.Parse(context, gbCulture), new DateTime(2025, 2, 1));
+                await AssertValue(LogicalExpressionParser.Parse(text, options), expected);
+                await AssertValue(LogicalExpressionFactory.Create(text, options), expected);
+            }
         }
         finally
         {
@@ -226,21 +228,15 @@ public class GeneratedParserTests
     {
         var defaultOptions = new LogicalExpressionParserOptions();
         var strictOptions = new LogicalExpressionParserOptions { DisallowSingleEquals = true };
-        var defaultParser = LogicalExpressionParser.GetOrCreateExpressionParser(defaultOptions, CultureInfo.InvariantCulture);
-        var strictParser = LogicalExpressionParser.GetOrCreateExpressionParser(strictOptions, CultureInfo.InvariantCulture);
-
-        await Assert.That(strictParser).IsNotSameReferenceAs(defaultParser);
-        await Assert.That(strictParser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
 
         for (var i = 0; i < 2; i++)
         {
-            await Assert.That(new Expression(Parse(defaultParser, singleEquals, defaultOptions))
+            await Assert.That(new Expression(LogicalExpressionParser.Parse(singleEquals, defaultOptions, CultureInfo.InvariantCulture))
                 .Evaluate<bool>(CancellationToken.None)).IsTrue();
-            await Assert.That(strictParser.TryParse(
-                new LogicalExpressionParseContext(singleEquals, strictOptions), out _, out _)).IsFalse();
-            await Assert.That(new Expression(Parse(strictParser, doubleEquals, strictOptions))
+            Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse(singleEquals, strictOptions, CultureInfo.InvariantCulture));
+            await Assert.That(new Expression(LogicalExpressionParser.Parse(doubleEquals, strictOptions, CultureInfo.InvariantCulture))
                 .Evaluate<bool>(CancellationToken.None)).IsTrue();
-            await Assert.That(new Expression(Parse(strictParser, "5 != 3", strictOptions))
+            await Assert.That(new Expression(LogicalExpressionParser.Parse("5 != 3", strictOptions, CultureInfo.InvariantCulture))
                 .Evaluate<bool>(CancellationToken.None)).IsTrue();
         }
     }
@@ -254,9 +250,8 @@ public class GeneratedParserTests
     public async Task ShouldPreserveStringEscaping(string text, string expected)
     {
         var options = new LogicalExpressionParserOptions { AllowCharValues = true };
-        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(options, CultureInfo.InvariantCulture);
 
-        await AssertValue(Parse(parser, text, options), expected);
+        await AssertValue(LogicalExpressionParser.Parse(text, options, CultureInfo.InvariantCulture), expected);
     }
 
     [Test]
@@ -265,13 +260,9 @@ public class GeneratedParserTests
     [Arguments(4)]
     public async Task ShouldPreserveNullCoalescingAssociativity(int operatorCount)
     {
-        var options = new LogicalExpressionParserOptions();
-        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(options, CultureInfo.InvariantCulture);
         var identifiers = new[] { "a", "b", "c", "d", "e" }.Take(operatorCount + 1).ToArray();
         var text = string.Join(" ?? ", identifiers.Select(name => $"[{name}]"));
-        var expression = Parse(parser, text, options);
-
-        await Assert.That(parser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
+        var expression = LogicalExpressionParser.Parse(text, culture: CultureInfo.InvariantCulture);
 
         var current = expression;
         for (var i = 0; i < operatorCount; i++)
@@ -296,12 +287,10 @@ public class GeneratedParserTests
     [Arguments("||", "&&")]
     public async Task ShouldPreserveCoalescingPrecedenceWithTernaryAndLogic(string orOperator, string andOperator)
     {
-        var options = new LogicalExpressionParserOptions();
-        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(options, CultureInfo.InvariantCulture);
-        var expression = Parse(parser,
-            $"[a] {orOperator} [b] ?? [c] {andOperator} [d] ?? [e] ?? [f] ? [g] ?? [h] : [i] ?? [j]", options);
+        var expression = LogicalExpressionParser.Parse(
+            $"[a] {orOperator} [b] ?? [c] {andOperator} [d] ?? [e] ?? [f] ? [g] ?? [h] : [i] ?? [j]",
+            culture: CultureInfo.InvariantCulture);
 
-        await Assert.That(parser.GetType().DeclaringType).IsEqualTo(typeof(LogicalExpressionParser));
         await Assert.That(expression).IsTypeOf<TernaryExpression>();
         var ternary = (TernaryExpression)expression;
 
@@ -329,30 +318,92 @@ public class GeneratedParserTests
     }
 
     [Test]
+    public async Task ShouldReportInvalidTokenPositionFromBothPublicParseOverloads()
+    {
+        var exception = Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse("42a"));
+        var contextException = Assert.Throws<NCalcParserException>(() =>
+            LogicalExpressionParser.Parse(new LogicalExpressionParseContext("42a")));
+
+        await Assert.That(exception.Message).IsEqualTo("Invalid token in expression at position (1:3)");
+        await Assert.That(contextException.Message).IsEqualTo(exception.Message);
+    }
+
+    [Test]
+    [Arguments("[value", "Brace not closed. at position ")]
+    [Arguments("{value", "Brace not closed. at position ")]
+    [Arguments("(1 + 2", "Parenthesis not closed. at position ")]
+    [Arguments("Max(1, 2", "Parenthesis not closed. at position ")]
+    public async Task ShouldPreserveUnmatchedDelimiterMessages(string text, string expectedMessage)
+    {
+        var exception = Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse(text));
+        var contextException = Assert.Throws<NCalcParserException>(() =>
+            LogicalExpressionParser.Parse(new LogicalExpressionParseContext(text)));
+
+        await Assert.That(exception.Message.StartsWith(expectedMessage, StringComparison.Ordinal)).IsTrue();
+        await Assert.That(contextException.Message).IsEqualTo(exception.Message);
+    }
+
+    [Test]
+    [Arguments("42a")]
+    [Arguments("42 43")]
+    [Arguments("42 'trailing'")]
+    [Arguments("Abs(-1) ]")]
+    [Arguments("(1 + 2))")]
+    [Arguments("[value] trailing")]
+    [Arguments("true false")]
+    [Arguments("42 +")]
+    public void ShouldRejectUnconsumedInputFromBothPublicParseOverloads(string text)
+    {
+        Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse(text));
+        Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse(new LogicalExpressionParseContext(text)));
+    }
+
+    [Test]
     public void ShouldHonorCancellation()
     {
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        var options = new LogicalExpressionParserOptions();
-        var context = new LogicalExpressionParseContext("1 + 2", options, cancellation.Token);
-        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(options, CultureInfo.InvariantCulture);
+
         Assert.Throws<OperationCanceledException>(() =>
-        {
-            var result = new ParseResult<LogicalExpression>();
-            parser.Parse(context, ref result);
-        });
+            LogicalExpressionParser.Parse("1 + 2", cancellationToken: cancellation.Token));
+        Assert.Throws<OperationCanceledException>(() => LogicalExpressionParser.Parse(
+            new LogicalExpressionParseContext("1 + 2", cancellationToken: cancellation.Token)));
     }
 
-    private static LogicalExpression Parse(
-        Parser<LogicalExpression> parser, string text, LogicalExpressionParserOptions options)
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task ShouldHonorCancellationDuringParsing(bool useContext)
     {
-        var context = new LogicalExpressionParseContext(text, options, CancellationToken.None);
-        if (parser.TryParse(context, out var expression, out var error))
-        {
-            return expression;
-        }
+        using var cancellation = new CancellationTokenSource();
+        var culture = new CancellingCulture(cancellation);
+        var text = "#01/02/2025# + " + string.Join(" + ", Enumerable.Repeat("1", 128));
 
-        throw new InvalidOperationException($"Failed to parse '{text}': {error?.Message}");
+        await Assert.That(cancellation.IsCancellationRequested).IsFalse();
+
+        var exception = Assert.Throws<OperationCanceledException>(() =>
+        {
+            if (useContext)
+                LogicalExpressionParser.Parse(new LogicalExpressionParseContext(text, cancellationToken: cancellation.Token), culture);
+            else
+                LogicalExpressionParser.Parse(text, culture: culture, cancellationToken: cancellation.Token);
+        });
+
+        await Assert.That(exception.CancellationToken).IsEqualTo(cancellation.Token);
+    }
+
+    private sealed class CancellingCulture(CancellationTokenSource cancellation) : CultureInfo("en-US")
+    {
+        public override DateTimeFormatInfo DateTimeFormat
+        {
+            get
+            {
+                // Cancel inside a grammar callback, after the generated entrypoint's initial check.
+                cancellation.Cancel();
+                return base.DateTimeFormat;
+            }
+            set => base.DateTimeFormat = value;
+        }
     }
 
     private static async Task<BinaryExpression> AssertBinary(LogicalExpression expression, BinaryExpressionType expectedType)

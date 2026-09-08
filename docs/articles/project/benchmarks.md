@@ -1,18 +1,17 @@
 ﻿# Benchmarks
 
-The timing results below were recorded on 2026-09-05 using Parlot `2.0.0-preview-743` from the
-[Parlot preview feed](https://f.feedz.io/sebastienros/parlot/nuget/index.json). The default parser is
-[source-generated](architecture.md#source-generated-parser); no runtime parser compilation switch is needed.
-All 28 current benchmark cases were rerun after merging `master` (`77674ff`) and porting the parser
-to the current NCalc architecture, at `c7945fb`. This uses the published package without a local
-override. Historical allocation data from the original PR grammar is explicitly labeled below.
-The obsolete Antlr comparison was removed with the Antlr plugin; CPU-bound evaluation is now included.
+The parser comparison was recorded on 2026-09-08 using published Parlot and Parlot.SourceGenerator
+`2.0.0-preview-763`, without local package overrides. All eight parser cases were rerun from the
+standalone-parser migration working tree based on `570cc7d`. The default parser is
+[source-generated](architecture.md#source-generated-parser), with no runtime Parlot dependency.
+The separate evaluation tables below retain their earlier measurements and are explicitly labeled.
 
-To reproduce the run, install the .NET 8 and .NET 10 runtimes and run this command from the repository root:
+To reproduce the parser comparison, install the .NET 8 and .NET 10 runtimes and run this command
+from the repository root:
 
 ```shell
 UseSharedCompilation=false dotnet run --project test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release -- \
-  --filter '*' --launchCount 1 --warmupCount 3 --iterationCount 15 \
+  --filter '*ParserGenerationBenchmark*' --launchCount 1 --warmupCount 10 --iterationCount 15 \
   --artifacts ./BenchmarkDotNet.Artifacts
 ```
 
@@ -21,6 +20,9 @@ Compare implementations within the same runtime; absolute timings are not direct
 results from different hardware. Compiler sharing was disabled and consumers rebuilt when switching
 packages, so the compiler server could not reuse a generator loaded from a different package build.
 The `UseSharedCompilation` environment variable also applies to BenchmarkDotNet's child builds.
+An initial three-warmup run flagged a bimodal .NET 8 advanced generated-parser result. All eight
+cases were repeated with ten warmups; the table below uses that entire repeat, not selected cases
+from the two runs. The repeat had no multimodal-distribution warning.
 
 ```text
 BenchmarkDotNet v0.15.8, macOS Sequoia 15.7.9 (24G830) [Darwin 24.6.0]
@@ -30,7 +32,7 @@ Apple M4 Pro, 1 CPU, 14 logical and 14 physical cores
   .NET 8.0  : .NET 8.0.30, Arm64 RyuJIT armv8.0-a
   .NET 10.0 : .NET 10.0.11, Arm64 RyuJIT armv8.0-a
 
-IterationCount=15  LaunchCount=1  WarmupCount=3
+IterationCount=15  LaunchCount=1  WarmupCount=10
 ```
 
 ## Legends
@@ -47,31 +49,25 @@ Allocated : Allocated memory per single operation (managed only, inclusive, 1KB 
 1 ns      : 1 Nanosecond (0.000000001 sec)
 ```
 
-## Runtime-built Parlot vs source-generated Parlot
+## Fluent vs source-generated parsing
 
 `ParserGenerationBenchmark` compares both implementations of the **same NCalc grammar**, using the
-same Parlot `2.0.0-preview-743` package, default `LogicalExpressionParserOptions`, invariant culture, comma separators,
-and parse-context settings. "Runtime-built" means the normal Parlot combinator graph, not the old
-optional runtime parser compilation mode.
+same published Parlot version, default `LogicalExpressionParserOptions`, invariant culture, comma
+separators, and `CancellationToken.None`. "Fluent" means the normal runtime-built Parlot combinator
+graph, not the old optional runtime parser compilation mode.
 
-The dynamic baseline invokes the original grammar factory through a delegate, bypassing C# call-site
-interception. Reflection is used only to create that delegate during setup, never inside a measurement.
-The generated factory delegate invokes the private interception wrapper, not the public parser cache.
-Setup checks that the implementations
-are distinct and that both produce the same serialized AST for each input.
+The benchmark project links the production `.parlot.cs` grammar and its normal C# conversion helpers.
+`PARLOT_FLUENT` changes only their containing class and excludes generator attributes, so the Fluent
+baseline does not use a copied grammar. Only the benchmark project references the Parlot runtime.
 
-To run only this comparison:
+The generated side calls the production `LogicalExpressionParser.Parse` entrypoint directly.
+There are no factory delegates, interceptors, or reflection in the measured operations. Setup
+checks that the baseline is a Fluent graph, the production parser assembly has no Parlot reference,
+and both implementations produce the same serialized AST for each input.
 
-```shell
-UseSharedCompilation=false dotnet run --project test/NCalc.Benchmarks/NCalc.Benchmarks.csproj -c Release -- \
-  --filter '*ParserGenerationBenchmark*' --launchCount 1 --warmupCount 3 --iterationCount 15 \
-  --artifacts ./BenchmarkDotNet.Artifacts
-```
-
-### Parsing with reused instances
-
-Both parsers are constructed once during setup and reused. Each operation includes a new parse context
-and AST construction, but **neither parser pays its factory-construction cost during parsing**.
+The Fluent graph is constructed once during setup and reused. The generated implementation has no
+parser instance to construct. Each operation includes a fresh parsing context and AST construction;
+**Fluent graph construction is excluded from the parsing baseline**.
 Inputs are unchanged from the original comparison:
 
 ```text
@@ -79,60 +75,36 @@ Simple:   (3.2 < waterlevel AND 5.3 >= waterlevel)
 Advanced: PageState == 'LIST' && a == 1 && customFunction() == true || in(1 + 1, 1, 2, 3) && Name == 'Sergio'
 ```
 
-Times are mean +/- the half-width of the 99.9% confidence interval; speedup is dynamic mean / generated mean.
+Times are mean +/- the half-width of the 99.9% confidence interval; speedup is Fluent mean / generated mean.
 
-| Runtime   | Input    | Dynamic parser           | Generated parser         | Speedup | Dynamic allocated | Generated allocated |
-|-----------|----------|-------------------------:|-------------------------:|--------:|------------------:|--------------------:|
-| .NET 8.0  | Simple   | 2.9881 +/- 0.0194 us      | 2.0648 +/- 0.0120 us      |   1.45x |            1040 B |              1040 B |
-| .NET 8.0  | Advanced | 8.3184 +/- 0.0447 us      | 6.1144 +/- 0.0487 us      |   1.36x |            2864 B |              2864 B |
-| .NET 10.0 | Simple   | 2.6335 +/- 0.0076 us      | 2.1862 +/- 0.0159 us      |   1.20x |            1040 B |              1040 B |
-| .NET 10.0 | Advanced | 7.6694 +/- 0.1297 us      | 6.4123 +/- 0.0281 us      |   1.20x |            2864 B |              2864 B |
+| Runtime   | Input    | Fluent parser            | Generated parser         | Speedup | Fluent allocated | Generated allocated |
+|-----------|----------|-------------------------:|-------------------------:|--------:|-----------------:|--------------------:|
+| .NET 8.0  | Simple   | 3.1106 +/- 0.0283 us      | 1.9263 +/- 0.0654 us      |   1.61x |           1032 B |              1048 B |
+| .NET 8.0  | Advanced | 8.3904 +/- 0.0626 us      | 5.5174 +/- 0.0590 us      |   1.52x |           2856 B |              2872 B |
+| .NET 10.0 | Simple   | 2.6384 +/- 0.0294 us      | 1.8535 +/- 0.0665 us      |   1.42x |           1032 B |              1048 B |
+| .NET 10.0 | Advanced | 7.3103 +/- 0.0270 us      | 4.9326 +/- 0.0625 us      |   1.48x |           2856 B |              2872 B |
 
-Source generation reduced mean parse time by **16-31%** in these cases, even when the dynamic parser
-was reused, with **identical per-parse allocations**. The upstream collection-allocation fix remains
-effective with the current grammar, including the updated string and null-coalescing support.
+Source generation reduced mean parse time by **approximately 30-38%** in these cases, even with a
+reused Fluent graph. The direct generated parser allocates **16 B more per parse** on this ARM64
+runtime: its per-call context stores the options and culture references that the Fluent graph
+captures during setup. Allocation parity from the previous parser-instance model no longer applies.
 
 Treat the exact speedups as indicative shared-workstation measurements, not fixed guarantees.
-These results do not establish a speedup for every grammar or input. Timings and allocation totals
-from before the `master` merge are not a regression baseline for this different grammar and API.
+These results do not establish a speedup for every grammar or input. They measure parsing, not
+process startup or first-use JIT.
 
-### Parser construction
+The former construction comparison is removed because the standalone generated parser has no
+runtime factory or options-bound parser instance. This is not a claim of zero startup/JIT cost,
+and graph-construction savings must not be counted on each parse of a reused Fluent graph.
 
-These measurements construct a fresh parser with an already-created options object; they do not parse
-an expression. Both factories are invoked through delegates. The dynamic factory builds the full
-combinator graph, whereas the generated factory creates only a small options-bound parser instance.
+## Earlier evaluation results (2026-09-05)
 
-| Runtime   | Dynamic construction      | Generated construction | Dynamic allocated | Generated allocated |
-|-----------|--------------------------:|-----------------------:|------------------:|--------------------:|
-| .NET 8.0  | 37.4129 +/- 0.4432 us      | 5.246 +/- 0.0627 ns    |          146656 B |                40 B |
-| .NET 10.0 | 29.8569 +/- 0.2638 us      | 4.743 +/- 0.0630 ns    |          142336 B |                40 B |
+The following 16 evaluation cases were measured at `c7945fb` with Parlot `2.0.0-preview-743`, on the
+same hardware and runtime versions, using one launch, three warmups, and fifteen measured iterations.
+They were **not rerun for the standalone-parser migration** and should not be read as preview 763
+measurements. Use `--filter '*'` to run the whole current benchmark suite.
 
-Codegen avoids runtime graph construction and its roughly 139-143 KB allocation. These are warmed
-factory-call measurements, **not process startup or first-use JIT timings**. The construction saving
-must not be counted on every parse when an application caches its dynamic parser.
-
-### Published allocation fix: preview 743
-
-[sebastienros/parlot#335](https://github.com/sebastienros/parlot/pull/335), merged and published in
-`2.0.0-preview-743`, makes generated `ZeroOrMany`,
-`OneOrMany`, and `Separated` use the same `HybridList<T>` as runtime parsers, returning the underlying
-`List<T>` after growth beyond four elements. This fixes the collector allocation difference without
-rewriting the NCalc grammar.
-
-On the original PR grammar, the published-package measurements confirmed exact allocation parity on
-both .NET 8 and .NET 10. This historical comparison predates the `master` merge: the before-fix column
-is preview 737 and the after-fix column is preview 743, with no grammar change between those two runs:
-
-| Input    | Dynamic parser | Generated, before fix | Generated, after fix | Extra allocation removed |
-|----------|---------------:|----------------------:|---------------------:|-------------------------:|
-| Simple   |         1040 B |                1112 B |               1040 B |                     72 B |
-| Advanced |         2776 B |                2968 B |               2776 B |                    192 B |
-
-The current grammar's results above independently confirm parity at **1040 B/simple** and
-**2864 B/advanced** with preview 743. The advanced total differs from this historical table because
-the `master` migration changed the grammar and AST implementation; it is not extra codegen allocation.
-
-## CPU-bound synchronous vs asynchronous evaluation
+### CPU-bound synchronous vs asynchronous evaluation
 
 This evaluates the same pre-parsed expression and synchronous custom functions through the synchronous
 and asynchronous evaluation APIs. It is a CPU-bound workload, not a comparison of asynchronous I/O.
@@ -144,7 +116,7 @@ and asynchronous evaluation APIs. It is a CPU-bound workload, not a comparison o
 | SyncEvaluate  | .NET 8.0  | 575.7 ns | 2.92 ns | 2.59 ns |    1 | 0.3204 |      - |   2.63 KB |
 | AsyncEvaluate | .NET 8.0  | 832.0 ns | 9.46 ns | 8.85 ns |    2 | 0.5016 | 0.0010 |    4.1 KB |
 
-## Evaluate vs Lambda
+### Evaluate vs Lambda
 
 This compares evaluation with compiling a lambda on each call and reusing a compiled lambda.
 The expression is parsed during setup, so these measurements do not include parsing.
@@ -161,7 +133,7 @@ The expression is parsed during setup, so these measurements do not include pars
 BenchmarkDotNet reported `0.0000 ns` for both cached-lambda jobs after subtracting harness overhead.
 This means the work was too small to resolve in this run, not that invoking a lambda is free.
 
-## NCalc vs DataTable
+### NCalc vs DataTable
 
 [DataTable.Compute](https://learn.microsoft.com/en-us/dotnet/api/system.data.datatable.compute)
 provides expression evaluation in .NET without a third-party library.
@@ -173,7 +145,7 @@ provides expression evaluation in .NET without a third-party library.
 | EvaluateDataTable | .NET 10.0 | 1,587.7 ns |  8.34 ns |  7.80 ns |    3 | 0.6714 |   5.58 KB |
 | EvaluateDataTable | .NET 8.0  | 1,838.8 ns | 19.62 ns | 17.40 ns |    4 | 0.6714 |   5.58 KB |
 
-## Simple evaluation
+### Simple evaluation
 
 This measures evaluation of a pre-parsed expression with a parameter and an `EvaluateParameter` handler.
 
