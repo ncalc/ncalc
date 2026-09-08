@@ -13,7 +13,7 @@
 		<PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageVersion Include="Nerdbank.GitVersioning" Version="3.8.118" />
 		<PackageVersion Include="NETStandard.Library" Version="2.0.3" Condition="'$(TargetFramework)' == 'net462'" />
-		<PackageVersion Include="Parlot" Version="1.5.8" />
+		<PackageVersion Include="Parlot" Version="1.5.9" />
 		<PackageVersion Include="PolySharp" Version="1.16.0" />
 		<PackageVersion Include="Roslynator.Analyzers" Version="4.16.1" />
 		<PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.16.1" />
@@ -31,7 +31,7 @@
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.*" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.*" />
 		<PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.*" />
-		<PackageVersion Include="System.Collections.Immutable" Version="10.0.*" />
+		<PackageVersion Include="System.Collections.Immutable" Version="8.0.*" />
 		<PackageVersion Include="System.Text.Json" Version="8.0.*" />
 	</ItemGroup>
 
