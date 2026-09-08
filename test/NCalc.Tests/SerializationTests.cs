@@ -1,10 +1,12 @@
-using NCalc.Factories;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 using System.Threading.Tasks;
+using NCalc.Factories;
+using NCalc.Tests.Attributes;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NCalc.Tests;
 
 [Property("Category", "Serialization")]
+[SkipInNativeAot]
 public class SerializationTests
 {
     [Test]
