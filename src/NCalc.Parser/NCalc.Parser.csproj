@@ -18,6 +18,10 @@
       <PackageReference Include="Parlot" />
     </ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net462' Or '$(TargetFramework)' == 'netstandard2.0'">
+		<PackageReference Include="System.Memory" />
+	</ItemGroup>
+
     <ItemGroup>
         <None Include="../../NCalc.png">
             <Pack>True</Pack>

@@ -22,7 +22,7 @@ internal static class NumericTypeMetadataProvider
             throw new InvalidOperationException($"Unable to find embedded resource '{ResourceName}'.");
         }
 
-        return JsonSerializer.Deserialize<NumericTypeMetadata>(stream)
+        return JsonSerializer.Deserialize(stream, NCalcJsonContext.Default.NumericTypeMetadata)
                ?? throw new InvalidOperationException("Unable to read numeric type metadata.");
     }
 }
