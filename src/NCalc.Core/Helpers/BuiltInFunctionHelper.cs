@@ -7,7 +7,7 @@ namespace NCalc.Helpers;
 public static class BuiltInFunctionHelper
 {
     private static readonly FrozenSet<BuiltInFunctionDefinition> Definitions =
-    [
+    ((BuiltInFunctionDefinition[])[
         Unary("Abs", static (value, data) => MathHelper.Abs(value, data.EvaluationOptions.Math, data.CultureInfo)),
         Unary("Acos", static (value, data) => MathHelper.Acos(value, data.CultureInfo)),
         Unary("Asin", static (value, data) => MathHelper.Asin(value, data.CultureInfo)),
@@ -37,7 +37,7 @@ public static class BuiltInFunctionHelper
         Unary("isNullOrEmpty", static (value, _) => value is null or ""),
         Unary("EscapeLike", static (value, data) =>
             LikeOperatorHelper.EscapeLike(Convert.ToString(value, data.CultureInfo) ?? string.Empty))
-    ];
+    ]).ToFrozenSet();
 
     private static readonly IReadOnlyList<string> BuiltInFunctionNames = Array.AsReadOnly([..Definitions.Select(static definition => definition.Name)]);
 
