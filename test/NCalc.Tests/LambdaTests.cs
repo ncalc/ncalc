@@ -1,6 +1,7 @@
 ﻿#if NET8_0_OR_GREATER
 #nullable enable
 using NCalc.LambdaCompilation;
+using NCalc.Tests.Attributes;
 using System.Threading.Tasks;
 
 // ReSharper disable MemberCanBeProtected.Local
@@ -13,7 +14,7 @@ namespace NCalc.Tests;
 [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Style")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local", Justification = "Reflection")]
 [Property("Category", "Lambdas")]
-
+[SkipInNativeAot]
 public class LambdaTests
 {
     private class Context

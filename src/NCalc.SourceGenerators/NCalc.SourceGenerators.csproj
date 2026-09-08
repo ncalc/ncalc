@@ -12,11 +12,10 @@
     </PropertyGroup>
 
 	<PropertyGroup>
-		<NoWarn>$(NoWarn);RS1041</NoWarn>
+		<NoWarn>$(NoWarn);IL2026;IL3050;RS1041</NoWarn>
 	</PropertyGroup>
 
-
-	<ItemGroup>
+    <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
