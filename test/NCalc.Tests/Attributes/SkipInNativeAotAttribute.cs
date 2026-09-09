@@ -2,7 +2,7 @@
 {
     public class SkipInNativeAotAttribute : SkipAttribute
     {
-        public SkipInNativeAotAttribute() : base("Reflection JSON deserialization is not supported under NativeAOT.")
+        public SkipInNativeAotAttribute() : base("Reflection is not supported under NativeAOT.")
         {
         }
 

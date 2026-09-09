@@ -1,6 +1,5 @@
 ﻿using NCalc.Exceptions;
 using NCalc.Factories;
-using NCalc.Tests.Attributes;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NCalc.Tests;
@@ -524,13 +523,12 @@ public class AsyncTests
     }
 
     [Test]
-    [SkipInNativeAot]
     [MethodDataSource(typeof(WaterLevelCheckTestData), "GetEnumerator")]
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
         var compiled = LogicalExpressionFactory.Create(expression, cancellationToken: CancellationToken.None);
-        var serialized = JsonSerializer.Serialize(compiled);
-        var deserialized = JsonSerializer.Deserialize<LogicalExpression>(serialized);
+        var serialized = JsonSerializer.Serialize(compiled, NCalcTestJsonContext.Default.LogicalExpression);
+        var deserialized = JsonSerializer.Deserialize(serialized, NCalcTestJsonContext.Default.LogicalExpression);
 
         var exp = new Expression(deserialized, ExpressionOptions.NoCache)
         {

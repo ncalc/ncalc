@@ -1,12 +1,9 @@
-using System.Threading.Tasks;
 using NCalc.Factories;
-using NCalc.Tests.Attributes;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NCalc.Tests;
 
 [Property("Category", "Serialization")]
-[SkipInNativeAot]
 public class SerializationTests
 {
     [Test]
@@ -14,8 +11,8 @@ public class SerializationTests
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
         var compiled = LogicalExpressionFactory.Create(expression, cancellationToken: CancellationToken.None);
-        var serialized = JsonSerializer.Serialize(compiled);
-        var deserialized = JsonSerializer.Deserialize<LogicalExpression>(serialized);
+        var serialized = JsonSerializer.Serialize(compiled, NCalcTestJsonContext.Default.LogicalExpression);
+        var deserialized = JsonSerializer.Deserialize(serialized, NCalcTestJsonContext.Default.LogicalExpression);
 
         var exp = new Expression(deserialized, ExpressionOptions.NoCache)
         {
@@ -44,16 +41,17 @@ public class SerializationTests
     public async Task SystemTextJsonPolymorphicSerializeAndDeserializeShouldWork()
     {
         var expression = LogicalExpressionFactory.Create("1 == 1", cancellationToken: CancellationToken.None);
-        var expressionJson = JsonSerializer.Serialize(expression);
-        await Assert.That(JsonSerializer.Deserialize<LogicalExpression>(expressionJson) is BinaryExpression).IsTrue();
+        var expressionJson = JsonSerializer.Serialize(expression, NCalcTestJsonContext.Default.LogicalExpression);
+        var deserialized = JsonSerializer.Deserialize(expressionJson, NCalcTestJsonContext.Default.LogicalExpression);
+        await Assert.That(deserialized is BinaryExpression).IsTrue();
     }
 
     [Test]
     public async Task CoalesceExpressionShouldSerializeAndDeserialize()
     {
         var logicalExpression = LogicalExpressionFactory.Create("[value] ?? 'fallback'", cancellationToken: CancellationToken.None);
-        var json = JsonSerializer.Serialize(logicalExpression);
-        var deserialized = JsonSerializer.Deserialize<LogicalExpression>(json);
+        var json = JsonSerializer.Serialize(logicalExpression, NCalcTestJsonContext.Default.LogicalExpression);
+        var deserialized = JsonSerializer.Deserialize(json, NCalcTestJsonContext.Default.LogicalExpression);
         var expression = new Expression(deserialized!)
         {
             Parameters = { ["value"] = null }
