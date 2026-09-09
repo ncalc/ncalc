@@ -527,8 +527,8 @@ public class AsyncTests
     public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
     {
         var compiled = LogicalExpressionFactory.Create(expression, cancellationToken: CancellationToken.None);
-        var serialized = JsonSerializer.Serialize(compiled);
-        var deserialized = JsonSerializer.Deserialize<LogicalExpression>(serialized);
+        var serialized = JsonSerializer.Serialize(compiled, NCalcTestJsonContext.Default.LogicalExpression);
+        var deserialized = JsonSerializer.Deserialize(serialized, NCalcTestJsonContext.Default.LogicalExpression);
 
         var exp = new Expression(deserialized, ExpressionOptions.NoCache)
         {

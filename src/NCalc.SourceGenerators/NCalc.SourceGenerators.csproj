@@ -1,17 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <IsPackable>false</IsPackable>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
-
         <RootNamespace>NCalc.SourceGenerators</RootNamespace>
         <PackageId>NCalc.SourceGenerators</PackageId>
         <DefaultItemExcludes>$(DefaultItemExcludes);NCalc.SourceGenerators/**</DefaultItemExcludes>
     </PropertyGroup>
+
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);RS1041</NoWarn>
+	</PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">

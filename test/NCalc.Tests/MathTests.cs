@@ -1,4 +1,5 @@
 using NCalc.LambdaCompilation;
+using NCalc.Tests.Attributes;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;
@@ -342,6 +343,7 @@ public class MathsTests
     [Arguments("1+(X1 = 1)", 2)]
     [Arguments("true-(X1 = 1)", 0)]
     [Arguments("true-(X1 = true - false)", 0)]
+    [SkipInNativeAot]
     public async Task ShouldOptionallyCalculateWithBoolean(string formula, object expectedValue)
     {
         var expression = new Expression(formula, ExpressionOptions.AllowBooleanCalculation);
