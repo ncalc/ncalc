@@ -705,6 +705,26 @@ public class LambdaTests
     }
 
     [Test]
+    [Arguments(2, 2)]
+    [Arguments(2.0, 2)]
+    [Arguments(2, 2.0)]
+    [Arguments(2.0, 2.0)]
+    public async Task ShouldAllowExponentiationWithDifferentTypes(object a, object b)
+    {
+        var parameters = new Dictionary<string, object?>
+        {
+            ["a"] = a,
+            ["b"] = b
+        };
+
+        var context = new ExpressionContext(parameters);
+        var e = new Expression($"[a] ** [b]", ExpressionOptions.OverflowProtection, context, CultureInfo.InvariantCulture);
+
+        var lambda = e.ToLambda<int>(CancellationToken.None);
+        await Assert.That(lambda()).IsEqualTo(4);
+    }
+
+    [Test]
     public async Task ShouldUseDecimalsWithDecimalAsDefault()
     {
         decimal val = 3.1m;
