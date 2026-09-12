@@ -78,7 +78,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             BinaryExpressionType.BitwiseXOr => LinqExpression.ExclusiveOr(left, right),
             BinaryExpressionType.LeftShift => LinqExpression.LeftShift(left, right),
             BinaryExpressionType.RightShift => LinqExpression.RightShift(left, right),
-            BinaryExpressionType.Exponentiation => LinqExpression.Power(left, right),
+            BinaryExpressionType.Exponentiation => ExponentiationOperator(left, right),
             BinaryExpressionType.Like => LikeOperator(left, right),
             BinaryExpressionType.NotLike => LinqExpression.Not(LikeOperator(left, right)),
             BinaryExpressionType.In => InOperator(left, right),
@@ -164,27 +164,8 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 return LinqExpression.Condition(LinqExpression.LessThan(arg0, arg1), arg0, arg1);
             case var s when string.Equals(s, "Pow", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
+                return ExponentiationOperator(args[0], args[1]);
 
-                if (args[0].Type == typeof(decimal))
-                {
-                    arg0 = LinqExpression.Convert(args[0], typeof(decimal));
-                    arg1 = LinqExpression.Convert(args[1], typeof(decimal));
-
-                    var @base = LinqExpression.Convert(arg0, typeof(BigDecimal));
-                    var exponent = LinqExpression.Convert(arg1, typeof(BigInteger));
-
-                    var methodInfo = typeof(BigDecimal).GetMethod("Pow", [typeof(BigDecimal), typeof(BigInteger)]);
-                    if (methodInfo != null)
-                    {
-                        var result = LinqExpression.Call(methodInfo, @base, exponent);
-                        return LinqExpression.Convert(result, typeof(decimal));
-                    }
-                }
-
-                arg0 = LinqExpression.Convert(args[0], typeof(double));
-                arg1 = LinqExpression.Convert(args[1], typeof(double));
-
-                return LinqExpression.Power(arg0, arg1);
             case var s when string.Equals(s, "Round", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
 
@@ -483,5 +464,32 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
         var anyNull = LinqExpression.OrElse(leftNull, rightNull);
 
         return LinqExpression.Condition(anyNull, LinqExpression.Constant(false), callIsMatch);
+    }
+
+    public static LinqExpression ExponentiationOperator(LinqExpression left, LinqExpression right)
+    {
+        Linq.UnaryExpression arg0;
+        Linq.UnaryExpression arg1;
+
+        if (left.Type == typeof(decimal))
+        {
+            arg0 = LinqExpression.Convert(left, typeof(decimal));
+            arg1 = LinqExpression.Convert(right, typeof(decimal));
+
+            var @base = LinqExpression.Convert(arg0, typeof(BigDecimal));
+            var exponent = LinqExpression.Convert(arg1, typeof(BigInteger));
+
+            var methodInfo = typeof(BigDecimal).GetMethod("Pow", [typeof(BigDecimal), typeof(BigInteger)]);
+            if (methodInfo != null)
+            {
+                var result = LinqExpression.Call(methodInfo, @base, exponent);
+                return LinqExpression.Convert(result, typeof(decimal));
+            }
+        }
+
+        arg0 = LinqExpression.Convert(left, typeof(double));
+        arg1 = LinqExpression.Convert(right, typeof(double));
+
+        return LinqExpression.Power(arg0, arg1);
     }
 }
