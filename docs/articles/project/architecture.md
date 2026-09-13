@@ -34,6 +34,61 @@ options, and argument separator configuration. The parser depends only on the AS
 `NCalc.Core` uses the parser through <xref:NCalc.Factories.ILogicalExpressionFactory>, so applications can keep using
 <xref:NCalc.Expression> without referencing parser internals directly.
 
+### Source-generated parser
+
+NCalc defines its Fluent grammar in `LogicalExpressionParser.parlot.cs`, a build-only file. The
+Parlot source generator implements a direct partial parsing method and emits internal support code
+into `NCalc.Parser`. The grammar factory is not compiled into the application, and NCalc packages
+do not depend on the Parlot runtime or analyzer. No interceptor configuration or runtime parser
+compilation is needed.
+
+Parsing options are supplied through `ExpressionConfiguration.Parsing` when using `Expression`.
+The lower-level parser API accepts the same options directly:
+
+```csharp
+using System.Globalization;
+using NCalc;
+var options = new LogicalExpressionParserOptions
+{
+    FloatingPointNumberType = FloatingPointNumberType.Decimal,
+    ArgumentSeparator = ArgumentSeparator.Semicolon
+};
+
+var logicalExpression = LogicalExpressionParser.Parse(
+    "Max(1.5; 2.5)", options, CultureInfo.InvariantCulture);
+var expression = new Expression(logicalExpression, ExpressionOptions.DecimalAsDefault);
+var result = expression.Evaluate(); // 2.5m
+```
+
+Culture, argument separators, numeric types, character handling, and `DisallowSingleEquals` are
+supplied on every parse. No parser instance, grammar construction, or parser-instance cache is needed.
+Custom cultures with the same name remain independent. If culture is omitted, the current culture
+is resolved at the time of the call. Do not mutate a culture concurrently with parsing.
+
+`Parse(LogicalExpressionParseContext, CultureInfo?)` remains available as a convenience overload.
+The context is now an NCalc-owned holder for input, options, and cancellation, not a Parlot context.
+The Parlot-returning `GetOrCreateExpressionParser` API is removed; callers should use `Parse` instead.
+Cancellation is checked cooperatively during parsing and propagates as `OperationCanceledException`
+from the parser API. Grammar callbacks retain NCalc parser exceptions and error positions.
+
+`NCalc.Parser` provides .NET Standard 2.0, .NET 8, and .NET 10 assets. NCalc's .NET Framework 4.6.2
+target uses the .NET Standard 2.0 parser asset and its `System.Memory` compatibility dependency.
+The parser package includes Parlot's BSD license in `THIRD-PARTY-NOTICES.txt` for the generated support.
+
+### Debugging the parser
+
+Major grammar nodes are named with Parlot's `.Named(...)`, including `RelationalOperator`,
+`Coalescing`, `Function`, and the date/time parsers. Generated helper comments contain these names,
+making it easier to map a generated method to its grammar rule. Generated identifiers and support
+types remain implementation details.
+
+Generated files are emitted below `src/NCalc.Parser/obj/<configuration>/<framework>/Parlot.SourceGenerator/`.
+Parlot emits `#line` mappings to `.parlot.cs` callbacks, and named conversion methods such as
+`ParseDate`, `ParseTime`, and `ParseSingleQuotedString` can be debugged in
+`LogicalExpressionParser.Helpers.cs`. These helpers use only BCL and NCalc types.
+IDE analysis receives generated partial-method stubs without executing the grammar; a normal build
+produces the actual parser implementation.
+
 ## Evaluation
 
 Evaluation refers to the process of determining the value of an expression. We use the visitor pattern at evaluation.

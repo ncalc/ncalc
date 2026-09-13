@@ -17,3 +17,4 @@ obj/
 .idea/
 /docs/api/
 *.user
+BenchmarkDotNet.Artifacts/
