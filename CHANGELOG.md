@@ -1,3 +1,12 @@
+# 7.2.0
+* Add `ConcurrentAsyncEvaluation` option by @gumbarros in https://github.com/ncalc/ncalc/pull/615
+* Add `DisallowSingleEquals` option by @gumbarros in https://github.com/ncalc/ncalc/pull/619
+* Pin package versions by @Bykiev in https://github.com/ncalc/ncalc/pull/622
+* Fix skipped CI steps by @Bykiev in https://github.com/ncalc/ncalc/pull/623
+* Fix issues by @Bykiev in https://github.com/ncalc/ncalc/pull/624
+* Allow to run serialization tests in NativeAOT by @Bykiev in https://github.com/ncalc/ncalc/pull/625
+* Fix exponentiation with lambdas by @Bykiev in https://github.com/ncalc/ncalc/pull/626
+
 # 7.1.0
 * Refactor: Unify built-in function registration and evaluation by @gumbarros in https://github.com/ncalc/ncalc/pull/610
 * Add isNull and isNullOrEmpty built-in functions by @gumbarros in https://github.com/ncalc/ncalc/pull/612
