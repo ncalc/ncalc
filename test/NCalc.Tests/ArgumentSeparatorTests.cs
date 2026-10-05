@@ -103,34 +103,36 @@ public class ArgumentSeparatorTests
     }
 
     [Test]
-    public async Task Should_Cache_Parsers_For_Different_Separator_Options()
+    public async Task ShouldKeepSeparatorOptionsIndependentAcrossAlternatingCalls()
     {
-        // Arrange
         var culture = CultureInfo.InvariantCulture;
-
-        var options1 = new LogicalExpressionParserOptions
+        var commaOptions = new LogicalExpressionParserOptions
         {
             ArgumentSeparator = ArgumentSeparator.Comma
         };
-
-        var options2 = new LogicalExpressionParserOptions
+        var semicolonOptions = new LogicalExpressionParserOptions
         {
             ArgumentSeparator = ArgumentSeparator.Semicolon
         };
-
-        var options3 = new LogicalExpressionParserOptions
+        var otherCommaOptions = new LogicalExpressionParserOptions
         {
             ArgumentSeparator = ArgumentSeparator.Comma
         };
 
-        // Act
-        var parser1 = LogicalExpressionParser.GetOrCreateExpressionParser(options1, culture);
-        var parser2 = LogicalExpressionParser.GetOrCreateExpressionParser(options2, culture);
-        var parser3 = LogicalExpressionParser.GetOrCreateExpressionParser(options3, culture);
+        for (var i = 0; i < 2; i++)
+        {
+            var commaResult = LogicalExpressionParser.Parse("Max(1, 2)", commaOptions, culture);
+            await Assert.That(new Expression(commaResult).Evaluate(CancellationToken.None)).IsEqualTo(2);
+            Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse("Max(1; 2)", commaOptions, culture));
 
-        // Assert
-        await Assert.That(parser2).IsNotSameReferenceAs(parser1);
-        await Assert.That(parser3).IsSameReferenceAs(parser1);
+            var semicolonResult = LogicalExpressionParser.Parse("Max(3; 4)", semicolonOptions, culture);
+            await Assert.That(new Expression(semicolonResult).Evaluate(CancellationToken.None)).IsEqualTo(4);
+            Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse("Max(3, 4)", semicolonOptions, culture));
+
+            var otherCommaResult = LogicalExpressionParser.Parse("Max(5, 6)", otherCommaOptions, culture);
+            await Assert.That(new Expression(otherCommaResult).Evaluate(CancellationToken.None)).IsEqualTo(6);
+            Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse("Max(5; 6)", otherCommaOptions, culture));
+        }
     }
 
     [Test]

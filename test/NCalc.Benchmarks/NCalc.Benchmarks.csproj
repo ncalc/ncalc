@@ -9,14 +9,18 @@
     <Platforms>AnyCPU</Platforms>
     <IsPackable>false</IsPackable>
     <Optimize>true</Optimize>
+    <DefineConstants>$(DefineConstants);PARLOT_FLUENT</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Parlot" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugins\NCalc.LambdaCompilation\NCalc.LambdaCompilation.csproj" />
+    <Compile Include="../../src/NCalc.Parser/LogicalExpressionParser.parlot.cs" Link="FluentExpressionParser.Grammar.cs" />
+    <Compile Include="../../src/NCalc.Parser/LogicalExpressionParser.Helpers.cs" Link="FluentExpressionParser.Helpers.cs" />
   </ItemGroup>
 
 </Project>
