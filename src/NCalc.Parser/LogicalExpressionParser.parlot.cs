@@ -88,8 +88,8 @@ public static partial class LogicalExpressionParser
         expression.Named("ExpressionBody");
 
         var hexNumber = Terms.Text("0x")
-            .SkipAnd(Terms.AnyOf(Character.HexDigits))
-            .Then(static x => Convert.ToInt64(x.ToString(), 16))
+            .SkipAnd(Terms.Hexadecimal<ulong>())
+            .Then(static value => unchecked((long)value))
             .Named("HexadecimalNumber");
 
         var octalNumber = Terms.Text("0o")
@@ -154,11 +154,11 @@ public static partial class LogicalExpressionParser
 
         var equalityGuard = OneOf(equals, singleEquals);
         var notEqual = OneOf(Terms.Text("<>"), Terms.Text("!="));
-        var @in = Terms.Text("in", true);
-        var notIn = Terms.Text("not in", true);
+        var @in = Terms.Keyword("in", true);
+        var notIn = Terms.Keyword("not in", true);
 
-        var like = Terms.Text("like", true);
-        var notLike = Terms.Text("not like", true);
+        var like = Terms.Keyword("like", true);
+        var notLike = Terms.Keyword("not like", true);
 
         var greater = Terms.Text(">");
         var greaterOrEqual = Terms.Text(">=");
@@ -183,10 +183,10 @@ public static partial class LogicalExpressionParser
         var identifier = Terms.Identifier();
 
         var not = OneOf(
-            Terms.Text("NOT", true).AndSkip(OneOf(Literals.WhiteSpace(), Not(AnyCharBefore(openParen)))),
+            Terms.Keyword("NOT", true).AndSkip(OneOf(Literals.WhiteSpace(), Not(AnyCharBefore(openParen)))),
             Terms.Text("!"));
-        var and = OneOf(Terms.Text("AND", true), Terms.Text("&&"));
-        var or = OneOf(Terms.Text("OR", true), Terms.Text("||"));
+        var and = OneOf(Terms.Keyword("AND", true), Terms.Text("&&"));
+        var or = OneOf(Terms.Keyword("OR", true), Terms.Text("||"));
 
         var bitwiseAnd = Terms.Text("&");
         var bitwiseOr = Terms.Text("|");
@@ -226,9 +226,9 @@ public static partial class LogicalExpressionParser
             .Then<LogicalExpression>(static x =>
                 new Function(new Identifier(x.Item1.ToString()), (LogicalExpressionList)x.Item2)).Named("Function");
 
-        var booleanTrue = Terms.Text("true", true)
+        var booleanTrue = Terms.Keyword("true", true)
             .Then<LogicalExpression>(static _ => True).Named("True");
-        var booleanFalse = Terms.Text("false", true)
+        var booleanFalse = Terms.Keyword("false", true)
             .Then<LogicalExpression>(static _ => False).Named("False");
 
         var singleQuotesStringValue = CreateStringParser('\'')
@@ -269,18 +269,18 @@ public static partial class LogicalExpressionParser
             .And(charIsNumber)
             .AndSkip(timeSeparator)
             .And(charIsNumber)
-            .AndSkip(ZeroOrOne(decimalSeparator))
-            .And(ZeroOrOne(charIsNumber));
+            .AndSkip(decimalSeparator.Optional())
+            .And(charIsNumber.Optional().Then(static value => value.HasValue ? value.Value.ToString() : string.Empty));
 
         var time = timeDefinition.Then(value => ParseTime(
-            value.Item1.ToString(), value.Item2.ToString(), value.Item3.ToString(), value.Item4.ToString(), cultureInfo)).Named("Time");
+            value.Item1.ToString(), value.Item2.ToString(), value.Item3.ToString(), value.Item4, cultureInfo)).Named("Time");
 
         // dateAndTime => number/number/number number:number:number{.fractional}
         var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition)
             .Then(value => ParseDateAndTime(
                 value.Item1.ToString(), value.Item2.ToString(), value.Item3.ToString(),
                 value.Item4.Item1.ToString(), value.Item4.Item2.ToString(), value.Item4.Item3.ToString(),
-                value.Item4.Item4.ToString(), cultureInfo)).Named("DateAndTime");
+                value.Item4.Item4, cultureInfo)).Named("DateAndTime");
 
         // datetime => '#' dateAndTime | date | time  '#';
         var dateTime = Terms
@@ -449,10 +449,10 @@ public static partial class LogicalExpressionParser
             .Then(ParseCoalescingExpression).Named("Coalescing");
 
         // ternary => coalescing ("?" coalescing ":" coalescing) ?
-        var ternary = coalescing.And(ZeroOrOne(questionMark.SkipAnd(coalescing).AndSkip(colon).And(coalescing)))
-            .Then(static x => x.Item2.Item1 == null
+        var ternary = coalescing.And(questionMark.SkipAnd(coalescing).AndSkip(colon).And(coalescing).Optional())
+            .Then(static x => !x.Item2.HasValue
                 ? x.Item1
-                : new TernaryExpression(x.Item1, x.Item2.Item1, x.Item2.Item2))
+                : new TernaryExpression(x.Item1, x.Item2.Value.Item1, x.Item2.Value.Item2))
             .Or(coalescing).Named("Ternary");
 
         // Parlot's source generator can struggle to infer the operator parser's generic type

@@ -35,6 +35,23 @@ public class GeneratedParserTests
     }
 
     [Test]
+    [Arguments("0x0", 0)]
+    [Arguments("0x2a", 42)]
+    [Arguments("0x2A", 42)]
+    [Arguments(" 0x 2a ", 42)]
+    [Arguments("0x00000000000000002a", 42)]
+    [Arguments("0x7fffffff", int.MaxValue)]
+    [Arguments("0x80000000", 2147483648L)]
+    [Arguments("0x7fffffffffffffff", long.MaxValue)]
+    [Arguments("0x8000000000000000", long.MinValue)]
+    [Arguments("0xffffffffffffffff", -1)]
+    public async Task ShouldPreserveHexadecimalIntegerValuesAndTypes(string text, object expected)
+    {
+        await AssertValue(LogicalExpressionParser.Parse(text, culture: CultureInfo.InvariantCulture), expected);
+        await AssertValue(LogicalExpressionParser.Parse(new LogicalExpressionParseContext(text), CultureInfo.InvariantCulture), expected);
+    }
+
+    [Test]
     [Arguments(IntegerNumberType.Int32, FloatingPointNumberType.Double, false)]
     [Arguments(IntegerNumberType.Int64, FloatingPointNumberType.Double, false)]
     [Arguments(IntegerNumberType.Int32, FloatingPointNumberType.Decimal, false)]
@@ -283,6 +300,23 @@ public class GeneratedParserTests
     }
 
     [Test]
+    [Arguments("42", 42)]
+    [Arguments("true ? 42 : 0", 42)]
+    [Arguments("false ? 0 : 42", 42)]
+    [Arguments("true ? (false ? 0 : 42) : 0", 42)]
+    public async Task ShouldPreserveOptionalTernaryExpressions(string text, int expected)
+    {
+        foreach (var expression in new[]
+        {
+            LogicalExpressionParser.Parse(text, culture: CultureInfo.InvariantCulture),
+            LogicalExpressionParser.Parse(new LogicalExpressionParseContext(text), CultureInfo.InvariantCulture)
+        })
+        {
+            await Assert.That(new Expression(expression).Evaluate(CancellationToken.None)).IsEqualTo(expected);
+        }
+    }
+
+    [Test]
     [Arguments("or", "and")]
     [Arguments("||", "&&")]
     public async Task ShouldPreserveCoalescingPrecedenceWithTernaryAndLogic(string orOperator, string andOperator)
@@ -352,6 +386,16 @@ public class GeneratedParserTests
     [Arguments("[value] trailing")]
     [Arguments("true false")]
     [Arguments("42 +")]
+    [Arguments("0x")]
+    [Arguments("0xg")]
+    [Arguments("0x2g")]
+    [Arguments("0X2a")]
+    [Arguments("0x10000000000000000")]
+    [Arguments("true ?")]
+    [Arguments("true ? 1")]
+    [Arguments("true ? 1 :")]
+    [Arguments("true ? : 1")]
+    [Arguments("true : 1")]
     public void ShouldRejectUnconsumedInputFromBothPublicParseOverloads(string text)
     {
         Assert.Throws<NCalcParserException>(() => LogicalExpressionParser.Parse(text));

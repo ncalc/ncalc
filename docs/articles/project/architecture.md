@@ -42,6 +42,9 @@ into `NCalc.Parser`. The grammar factory is not compiled into the application, a
 do not depend on the Parlot runtime or analyzer. No interceptor configuration or runtime parser
 compilation is needed.
 
+The source generator and the benchmark-only Parlot runtime use the same preview version, pinned
+in `Directory.Packages.props` and restored from the Feedz source configured in `nuget.config`.
+
 Parsing options are supplied through `ExpressionConfiguration.Parsing` when using `Expression`.
 The lower-level parser API accepts the same options directly:
 
