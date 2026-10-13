@@ -1,5 +1,6 @@
 ﻿using NCalc.Exceptions;
 using NCalc.Factories;
+using NCalc.Tests.Attributes;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;
@@ -8,19 +9,27 @@ namespace NCalc.Tests;
 public class ParserTests
 {
     [Test]
-    [Arguments("42a", "(1:3)", false)]
-    [Arguments("42a", "(1:3)", true)]
-    [Arguments("42 a", "(1:4)", false)]
-    [Arguments("42 a", "(1:4)", true)]
-    [Arguments("42\n a", "(2:2)", false)]
-    [Arguments("42\n a", "(2:2)", true)]
-    [Arguments("*", "(1:1)", false)]
-    [Arguments("*", "(1:1)", true)]
-    public async Task ShouldReportErrorPositionWithTrailingInput(string formula, string position, bool compiled)
+    [Arguments("42a", "(1:3)")]
+    [Arguments("42 a", "(1:4)")]
+    [Arguments("42\n a", "(2:2)")]
+    [Arguments("*", "(1:1)")]
+    public Task ShouldReportErrorPositionWithTrailingInput(string formula, string position)
+        => AssertErrorPosition(formula, position, compiled: false);
+
+    [Test]
+    [Arguments("42a", "(1:3)")]
+    [Arguments("42 a", "(1:4)")]
+    [Arguments("42\n a", "(2:2)")]
+    [Arguments("*", "(1:1)")]
+    [SkipInNativeAot]
+    public Task ShouldReportErrorPositionWithCompiledParser(string formula, string position)
+        => AssertErrorPosition(formula, position, compiled: true);
+
+    private static async Task AssertErrorPosition(string formula, string position, bool compiled)
     {
         var parser = LogicalExpressionParser.GetOrCreateExpressionParser(
             new LogicalExpressionParserOptions(), CultureInfo.InvariantCulture);
-        if (compiled)
+        if (compiled && System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
             parser = parser.Compile();
 
         var success = parser.TryParse(new LogicalExpressionParseContext(formula), out _, out var error);
@@ -32,13 +41,19 @@ public class ParserTests
     }
 
     [Test]
-    [Arguments(false)]
-    [Arguments(true)]
-    public async Task ShouldAcceptTrailingWhitespaceBeforeEof(bool compiled)
+    public Task ShouldAcceptTrailingWhitespaceBeforeEof()
+        => AssertTrailingWhitespace(compiled: false);
+
+    [Test]
+    [SkipInNativeAot]
+    public Task ShouldAcceptTrailingWhitespaceBeforeEofWithCompiledParser()
+        => AssertTrailingWhitespace(compiled: true);
+
+    private static async Task AssertTrailingWhitespace(bool compiled)
     {
         var parser = LogicalExpressionParser.GetOrCreateExpressionParser(
             new LogicalExpressionParserOptions(), CultureInfo.InvariantCulture);
-        if (compiled)
+        if (compiled && System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
             parser = parser.Compile();
 
         var success = parser.TryParse(new LogicalExpressionParseContext("42 \r\n "), out var result, out var error);

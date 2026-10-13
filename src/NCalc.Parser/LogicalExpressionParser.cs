@@ -580,6 +580,10 @@ public static class LogicalExpressionParser
 
         AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
 
+#if NET8_0_OR_GREATER
+        enableParserCompilation &= System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported;
+#endif
+
         return enableParserCompilation ? expressionParser.Compile() : expressionParser;
     }
 
