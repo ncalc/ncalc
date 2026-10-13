@@ -6,6 +6,7 @@
 * Fix issues by @Bykiev in https://github.com/ncalc/ncalc/pull/624
 * Allow to run serialization tests in NativeAOT by @Bykiev in https://github.com/ncalc/ncalc/pull/625
 * Fix exponentiation with lambdas by @Bykiev in https://github.com/ncalc/ncalc/pull/626
+* Update Parlot to 1.5.12 and use its standalone EOF parser to preserve trailing-input error positions in https://github.com/ncalc/ncalc/pull/627
 
 # 7.1.0
 * Refactor: Unify built-in function registration and evaluation by @gumbarros in https://github.com/ncalc/ncalc/pull/610

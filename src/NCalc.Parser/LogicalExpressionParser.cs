@@ -574,10 +574,15 @@ public static class LogicalExpressionParser
                 static (_, _) => throw new InvalidOperationException("Unknown operator sequence.")));
 
         expression.Parser = operatorSequence;
-        var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
+        var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true)))
+            .AndSkip(Eof().ElseError(InvalidTokenMessage))
             .ElseError(InvalidTokenMessage);
 
         AppContext.TryGetSwitch("NCalc.EnableParlotParserCompilation", out var enableParserCompilation);
+
+#if NET8_0_OR_GREATER
+        enableParserCompilation &= System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported;
+#endif
 
         return enableParserCompilation ? expressionParser.Compile() : expressionParser;
     }

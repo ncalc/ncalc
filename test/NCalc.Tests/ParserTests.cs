@@ -1,5 +1,6 @@
 ﻿using NCalc.Exceptions;
 using NCalc.Factories;
+using NCalc.Tests.Attributes;
 using System.Threading.Tasks;
 
 namespace NCalc.Tests;
@@ -7,6 +8,62 @@ namespace NCalc.Tests;
 [Property("Category", "Parser")]
 public class ParserTests
 {
+    [Test]
+    [Arguments("42a", "(1:3)")]
+    [Arguments("42 a", "(1:4)")]
+    [Arguments("42\n a", "(2:2)")]
+    [Arguments("*", "(1:1)")]
+    public Task ShouldReportErrorPositionWithTrailingInput(string formula, string position)
+        => AssertErrorPosition(formula, position, compiled: false);
+
+    [Test]
+    [Arguments("42a", "(1:3)")]
+    [Arguments("42 a", "(1:4)")]
+    [Arguments("42\n a", "(2:2)")]
+    [Arguments("*", "(1:1)")]
+    [SkipInNativeAot]
+    public Task ShouldReportErrorPositionWithCompiledParser(string formula, string position)
+        => AssertErrorPosition(formula, position, compiled: true);
+
+    private static async Task AssertErrorPosition(string formula, string position, bool compiled)
+    {
+        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(
+            new LogicalExpressionParserOptions(), CultureInfo.InvariantCulture);
+        if (compiled && System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+            parser = parser.Compile();
+
+        var success = parser.TryParse(new LogicalExpressionParseContext(formula), out _, out var error);
+
+        await Assert.That(success).IsFalse();
+        await Assert.That(error).IsNotNull();
+        await Assert.That(error.Message).IsEqualTo("Invalid token in expression");
+        await Assert.That(error.Position.ToString()).IsEqualTo(position);
+    }
+
+    [Test]
+    public Task ShouldAcceptTrailingWhitespaceBeforeEof()
+        => AssertTrailingWhitespace(compiled: false);
+
+    [Test]
+    [SkipInNativeAot]
+    public Task ShouldAcceptTrailingWhitespaceBeforeEofWithCompiledParser()
+        => AssertTrailingWhitespace(compiled: true);
+
+    private static async Task AssertTrailingWhitespace(bool compiled)
+    {
+        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(
+            new LogicalExpressionParserOptions(), CultureInfo.InvariantCulture);
+        if (compiled && System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+            parser = parser.Compile();
+
+        var success = parser.TryParse(new LogicalExpressionParseContext("42 \r\n "), out var result, out var error);
+
+        await Assert.That(success).IsTrue();
+        await Assert.That(error).IsNull();
+        await Assert.That(result).IsTypeOf<ValueExpression>();
+        await Assert.That(((ValueExpression)result).Value).IsEqualTo(42);
+    }
+
     [Test]
     [Arguments("11+33 ", 44)]
     [Arguments(" 11+33", 44)]

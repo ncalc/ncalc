@@ -72,3 +72,5 @@ Parlot parser, which is used as a default parser in NCalc, supports parser compi
 By default, it is disabled in NCalc, you can enable it by using AppContext switch:
 
 `AppContext.SetSwitch("NCalc.EnableParlotParserCompilation", true)`
+
+Parser compilation requires dynamic code support. Under NativeAOT, NCalc uses the interpreted parser even when this switch is enabled.

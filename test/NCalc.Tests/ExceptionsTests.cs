@@ -133,9 +133,13 @@ public class ExceptionsTests
     }
 
     [Test]
-    public async Task ShouldProvideErrorPosition()
+    [Arguments("42a", "(1:3)")]
+    [Arguments("42 a", "(1:4)")]
+    [Arguments("42\n a", "(2:2)")]
+    [Arguments("*", "(1:1)")]
+    public async Task ShouldProvideErrorPosition(string formula, string position)
     {
-        var expression = new Expression("42a");
+        var expression = new Expression(formula);
         try
         {
             expression.Evaluate(CancellationToken.None);
@@ -143,7 +147,7 @@ public class ExceptionsTests
         }
         catch (NCalcParserException ex)
         {
-            await Assert.That(ex.InnerException.Message).IsEqualTo("Invalid token in expression at position (1:3)");
+            await Assert.That(ex.InnerException.Message).IsEqualTo($"Invalid token in expression at position {position}");
         }
     }
 
