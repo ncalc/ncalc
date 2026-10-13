@@ -8,6 +8,48 @@ namespace NCalc.Tests;
 public class ParserTests
 {
     [Test]
+    [Arguments("42a", "(1:3)", false)]
+    [Arguments("42a", "(1:3)", true)]
+    [Arguments("42 a", "(1:4)", false)]
+    [Arguments("42 a", "(1:4)", true)]
+    [Arguments("42\n a", "(2:2)", false)]
+    [Arguments("42\n a", "(2:2)", true)]
+    [Arguments("*", "(1:1)", false)]
+    [Arguments("*", "(1:1)", true)]
+    public async Task ShouldReportErrorPositionWithTrailingInput(string formula, string position, bool compiled)
+    {
+        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(
+            new LogicalExpressionParserOptions(), CultureInfo.InvariantCulture);
+        if (compiled)
+            parser = parser.Compile();
+
+        var success = parser.TryParse(new LogicalExpressionParseContext(formula), out _, out var error);
+
+        await Assert.That(success).IsFalse();
+        await Assert.That(error).IsNotNull();
+        await Assert.That(error.Message).IsEqualTo("Invalid token in expression");
+        await Assert.That(error.Position.ToString()).IsEqualTo(position);
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task ShouldAcceptTrailingWhitespaceBeforeEof(bool compiled)
+    {
+        var parser = LogicalExpressionParser.GetOrCreateExpressionParser(
+            new LogicalExpressionParserOptions(), CultureInfo.InvariantCulture);
+        if (compiled)
+            parser = parser.Compile();
+
+        var success = parser.TryParse(new LogicalExpressionParseContext("42 \r\n "), out var result, out var error);
+
+        await Assert.That(success).IsTrue();
+        await Assert.That(error).IsNull();
+        await Assert.That(result).IsTypeOf<ValueExpression>();
+        await Assert.That(((ValueExpression)result).Value).IsEqualTo(42);
+    }
+
+    [Test]
     [Arguments("11+33 ", 44)]
     [Arguments(" 11+33", 44)]
     [Arguments(" 11+33 ", 44)]
