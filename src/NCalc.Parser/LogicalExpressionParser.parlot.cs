@@ -469,8 +469,11 @@ public static partial class LogicalExpressionParser
             (op: invalidOperatorSequence, factory: ThrowUnknownOperatorSequence));
 
         expression.Parser = operatorSequence;
-        var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).Eof()
-            .Else(static context => throw new NCalcParserException($"Invalid token in expression at position {context.Scanner.Cursor.Position}"))
+        // The error is raised by the end-of-input check itself so the reported position is where parsing stopped,
+        // not the start of the enclosing sequence, which is reset when the sequence fails.
+        var endOfInput = Eof()
+            .Else(static context => throw new NCalcParserException($"Invalid token in expression at position {context.Scanner.Cursor.Position}"));
+        var expressionParser = expression.AndSkip(ZeroOrMany(Literals.WhiteSpace(true))).AndSkip(endOfInput)
             .Named("Expression");
 
         return expressionParser;
