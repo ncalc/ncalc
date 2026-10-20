@@ -13,7 +13,7 @@
 		<PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageVersion Include="Nerdbank.GitVersioning" Version="3.8.118" />
 		<PackageVersion Include="NETStandard.Library" Version="2.0.3" Condition="'$(TargetFramework)' == 'net462'" />
-		<PackageVersion Include="Parlot" Version="2.0.0-preview-834" />
+		<PackageVersion Include="Parlot" Version="2.0.0-preview-953" />
 		<PackageVersion Include="Parlot.SourceGenerator" Version="2.0.0-preview-834" />
 		<PackageVersion Include="PolySharp" Version="1.16.0" />
 		<PackageVersion Include="Roslynator.Analyzers" Version="4.16.1" />
