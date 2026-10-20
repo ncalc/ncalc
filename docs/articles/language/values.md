@@ -83,7 +83,8 @@ Must be enclosed between sharps.
 ```
 
 ## Booleans
-Booleans can be either `true` or `false`.
+Booleans can be either `true` or `false`, matched case-insensitively as keywords.
+Names such as `trueValue` and `falsePositive` are identifiers, not boolean prefixes.
 
 ```
 true

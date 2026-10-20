@@ -12,6 +12,14 @@ Expressions can be combined using operators, each with a specific precedence pri
 8. **Null coalescing**
 9. **Conditional**
 
+Word operators (`and`, `or`, `not`, `in`, `not in`, `like`, and `not like`) are case-insensitive
+keywords, not prefixes of longer ASCII words. For example, `true orElse` is invalid, while
+`true or orElse` refers to a parameter named `orElse`. Use whitespace or punctuation to separate
+keywords from operands.
+
+`not in` and `not like` require a single space between their words. Unary `not` requires
+whitespace or `(` before its operand; `not(true)` is valid, but `not[flag]` is not.
+
 ## Primary
 
 Primary are the first thing to be evaluated. They are direct values or a list of them.
