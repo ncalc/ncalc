@@ -1,3 +1,8 @@
+# 7.3.0
+* Use Parlot source generator by @sebastienros in https://github.com/ncalc/ncalc/pull/533
+Parlot v2.1.0 by @Bykiev in https://github.com/ncalc/ncalc/pull/628
+Update FastExpressionCompiler for new frameworks by @Bykiev in https://github.com/ncalc/ncalc/pull/629
+
 # 7.2.0
 * Add `ConcurrentAsyncEvaluation` option by @gumbarros in https://github.com/ncalc/ncalc/pull/615
 * Add `DisallowSingleEquals` option by @gumbarros in https://github.com/ncalc/ncalc/pull/619
