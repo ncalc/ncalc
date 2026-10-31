@@ -376,77 +376,56 @@ public static partial class LogicalExpressionParser
                 return result;
             }).Named("Exponentiation");
 
-        // ( "-" | "not" ) unary | primary;
-        var unary = exponential.Unary(
-            (not, static value => new UnaryExpression(UnaryExpressionType.Not, value)),
-            (minus, static value => new UnaryExpression(UnaryExpressionType.Negate, value)),
-            (bitwiseNot, static value => new UnaryExpression(UnaryExpressionType.BitwiseNot, value))
-        ).Named("Unary");
-
+        // The operator levels, from the one which binds the tightest, are parsed by a single precedence parser which looks
+        // for the operator following an operand once, whatever the number of levels. An operator that isn't followed by an
+        // operand is not read, and the looser levels try their operators at its position: "&&" after "&", "<=" after "<".
+        //
+        // unary          => ( "-" | "not" | "!" | "~" ) unary | exponential ;
         // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
-        var multiplicative = unary.LeftAssociative(
-            (divided, static (a, b) => new BinaryExpression(BinaryExpressionType.Div, a, b)),
-            (times, static (a, b) => new BinaryExpression(BinaryExpressionType.Times, a, b)),
-            (modulo, static (a, b) => new BinaryExpression(BinaryExpressionType.Modulo, a, b))
-        ).Named("Multiplicative");
-
-        // additive => multiplicative ( ( "-" | "+" ) multiplicative )* ;
-        var additive = multiplicative.LeftAssociative(
-            (plus, static (a, b) => new BinaryExpression(BinaryExpressionType.Plus, a, b)),
-            (minus, static (a, b) => new BinaryExpression(BinaryExpressionType.Minus, a, b))
-        ).Named("Additive");
-
-        // shift => additive ( ( "<<" | ">>" ) additive )* ;
-        var shift = additive.LeftAssociative(
-            (leftShift, static (a, b) => new BinaryExpression(BinaryExpressionType.LeftShift, a, b)),
-            (rightShift, static (a, b) => new BinaryExpression(BinaryExpressionType.RightShift, a, b))
-        ).Named("Shift");
-
-        // relational => shift ( ( ">=" | "<=" | "<" | ">" | "in" | "not in" ) shift )* ;
-        var relational = shift.And(ZeroOrMany(OneOf(
-                    greaterOrEqual.Then(BinaryExpressionType.GreaterOrEqual),
-                    lesserOrEqual.Then(BinaryExpressionType.LesserOrEqual),
-                    lesser.Then(BinaryExpressionType.Lesser),
-                    greater.Then(BinaryExpressionType.Greater),
-                    @in.Then(BinaryExpressionType.In),
-                    notIn.Then(BinaryExpressionType.NotIn),
-                    like.Then(BinaryExpressionType.Like),
-                    notLike.Then(BinaryExpressionType.NotLike)
-                ).Named("RelationalOperator")
-                .And(shift)))
-            .Then(ParseBinaryExpression).Named("Relational");
-
-        var equality = relational.And(ZeroOrMany(OneOf(
-                    equal.Then(BinaryExpressionType.Equal),
-                    notEqual.Then(BinaryExpressionType.NotEqual)).Named("EqualityOperator")
-                .And(relational)))
-            .Then(ParseBinaryExpression).Named("Equality");
-
-        var bitwiseAndExpression = equality.And(
-            ZeroOrMany(bitwiseAnd.Then(BinaryExpressionType.BitwiseAnd).And(equality)))
-            .Then(ParseBinaryExpression).Named("BitwiseAnd");
-
-        var bitwiseXOrExpression = bitwiseAndExpression.And(
-            ZeroOrMany(bitwiseXOr.Then(BinaryExpressionType.BitwiseXOr).And(bitwiseAndExpression)))
-            .Then(ParseBinaryExpression).Named("BitwiseXor");
-
-        var bitwiseOrExpression = bitwiseXOrExpression.And(
-            ZeroOrMany(bitwiseOr.Then(BinaryExpressionType.BitwiseOr).And(bitwiseXOrExpression)))
-            .Then(ParseBinaryExpression).Named("BitwiseOr");
-
-        var andParser = bitwiseOrExpression.And(
-            ZeroOrMany(and.Then(BinaryExpressionType.And).And(bitwiseOrExpression)))
-            .Then(ParseBinaryExpression).Named("LogicalAnd");
-
-        // logical => equality ( ("&" | "^" | "|" | "and" | "or") equality )* ;
-        var logical = andParser.And(
-            ZeroOrMany(or.Then(BinaryExpressionType.Or).And(andParser)))
-            .Then(ParseBinaryExpression).Named("LogicalOr");
-
-        // coalescing => logical ( "??" coalescing)? ;
-        // RightAssociative stores delegates as parser results, which code generation cannot emit.
-        var coalescing = logical.And(ZeroOrMany(coalesce.SkipAnd(logical)))
-            .Then(ParseCoalescingExpression).Named("Coalescing");
+        // additive       => multiplicative ( ( "+" | "-" ) multiplicative )* ;
+        // shift          => additive ( ( "<<" | ">>" ) additive )* ;
+        // relational     => shift ( ( ">=" | "<=" | "<" | ">" | "in" | "not in" | "like" | "not like" ) shift )* ;
+        // equality       => relational ( ( "==" | "=" | "!=" | "<>" ) relational )* ;
+        // bitwiseAnd     => equality ( "&" equality )* ;
+        // bitwiseXor     => bitwiseAnd ( "^" bitwiseAnd )* ;
+        // bitwiseOr      => bitwiseXor ( "|" bitwiseXor )* ;
+        // logicalAnd     => bitwiseOr ( ( "and" | "&&" ) bitwiseOr )* ;
+        // logicalOr      => logicalAnd ( ( "or" | "||" ) logicalAnd )* ;
+        // coalescing     => logicalOr ( "??" coalescing )? ;
+        var coalescing = exponential.Operators()
+            .Unary(
+                (not, static value => new UnaryExpression(UnaryExpressionType.Not, value)),
+                (minus, static value => new UnaryExpression(UnaryExpressionType.Negate, value)),
+                (bitwiseNot, static value => new UnaryExpression(UnaryExpressionType.BitwiseNot, value)))
+            .LeftAssociative(
+                (divided, static (a, b) => new BinaryExpression(BinaryExpressionType.Div, a, b)),
+                (times, static (a, b) => new BinaryExpression(BinaryExpressionType.Times, a, b)),
+                (modulo, static (a, b) => new BinaryExpression(BinaryExpressionType.Modulo, a, b)))
+            .LeftAssociative(
+                (plus, static (a, b) => new BinaryExpression(BinaryExpressionType.Plus, a, b)),
+                (minus, static (a, b) => new BinaryExpression(BinaryExpressionType.Minus, a, b)))
+            .LeftAssociative(
+                (leftShift, static (a, b) => new BinaryExpression(BinaryExpressionType.LeftShift, a, b)),
+                (rightShift, static (a, b) => new BinaryExpression(BinaryExpressionType.RightShift, a, b)))
+            .LeftAssociative(
+                (greaterOrEqual, static (a, b) => new BinaryExpression(BinaryExpressionType.GreaterOrEqual, a, b)),
+                (lesserOrEqual, static (a, b) => new BinaryExpression(BinaryExpressionType.LesserOrEqual, a, b)),
+                (lesser, static (a, b) => new BinaryExpression(BinaryExpressionType.Lesser, a, b)),
+                (greater, static (a, b) => new BinaryExpression(BinaryExpressionType.Greater, a, b)),
+                (@in, static (a, b) => new BinaryExpression(BinaryExpressionType.In, a, b)),
+                (notIn, static (a, b) => new BinaryExpression(BinaryExpressionType.NotIn, a, b)),
+                (like, static (a, b) => new BinaryExpression(BinaryExpressionType.Like, a, b)),
+                (notLike, static (a, b) => new BinaryExpression(BinaryExpressionType.NotLike, a, b)))
+            .LeftAssociative(
+                (equal, static (a, b) => new BinaryExpression(BinaryExpressionType.Equal, a, b)),
+                (notEqual, static (a, b) => new BinaryExpression(BinaryExpressionType.NotEqual, a, b)))
+            .LeftAssociative((bitwiseAnd, static (a, b) => new BinaryExpression(BinaryExpressionType.BitwiseAnd, a, b)))
+            .LeftAssociative((bitwiseXOr, static (a, b) => new BinaryExpression(BinaryExpressionType.BitwiseXOr, a, b)))
+            .LeftAssociative((bitwiseOr, static (a, b) => new BinaryExpression(BinaryExpressionType.BitwiseOr, a, b)))
+            .LeftAssociative((and, static (a, b) => new BinaryExpression(BinaryExpressionType.And, a, b)))
+            .LeftAssociative((or, static (a, b) => new BinaryExpression(BinaryExpressionType.Or, a, b)))
+            .RightAssociative((coalesce, static (a, b) => new BinaryExpression(BinaryExpressionType.Coalesce, a, b)))
+            .Named("Coalescing");
 
         // ternary => coalescing ("?" coalescing ":" coalescing) ?
         var ternary = coalescing.And(questionMark.SkipAnd(coalescing).AndSkip(colon).And(coalescing).Optional())
