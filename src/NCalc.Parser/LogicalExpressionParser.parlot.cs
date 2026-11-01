@@ -58,7 +58,7 @@ public static partial class LogicalExpressionParser
         /*
          * Grammar:
          * expression     => ternary ( ( "-" | "+" ) ternary )* ;
-         * ternary        => coalescing ( "?" coalescing ":" coalescing)?
+         * ternary        => coalescing ( "?" coalescing ":" ternary )?
          * coalescing     => logical ( "??" coalescing)? ;
          * logical        => equality ( ( "and" | "or" ) equality )* ;
          * equality       => relational ( ( "=" | "!=" | ... ) relational )* ;
@@ -384,14 +384,11 @@ public static partial class LogicalExpressionParser
             .LeftAssociative((bitwiseOr, static (a, b) => new BinaryExpression(BinaryExpressionType.BitwiseOr, a, b)))
             .LeftAssociative((and, static (a, b) => new BinaryExpression(BinaryExpressionType.And, a, b)))
             .LeftAssociative((or, static (a, b) => new BinaryExpression(BinaryExpressionType.Or, a, b)))
-            .RightAssociative((coalesce, static (a, b) => new BinaryExpression(BinaryExpressionType.Coalesce, a, b)))
-            .Named("Coalescing");
+            .RightAssociative((coalesce, static (a, b) => new BinaryExpression(BinaryExpressionType.Coalesce, a, b)));
 
-        // ternary => coalescing ("?" coalescing ":" coalescing) ?
-        var ternary = coalescing.And(questionMark.SkipAnd(coalescing).AndSkip(colon).And(coalescing).Optional())
-            .Then(static x => !x.Item2.HasValue
-                ? x.Item1
-                : new TernaryExpression(x.Item1, x.Item2.Value.Item1, x.Item2.Value.Item2))
+        // ternary => coalescing ( "?" coalescing ":" ternary )? ;
+        var ternary = coalescing
+            .Ternary(questionMark, coalescing, colon, static (condition, whenTrue, whenFalse) => new TernaryExpression(condition, whenTrue, whenFalse))
             .Named("Ternary");
 
         // Parlot's source generator can struggle to infer the operator parser's generic type

@@ -63,6 +63,15 @@ public class EvaluationTests
     }
 
     [Test]
+    [Arguments("true ? 1 : false ? 2 : 3", 1)]
+    [Arguments("false ? 1 : true ? 2 : 3", 2)]
+    [Arguments("false ? 1 : false ? 2 : 3", 3)]
+    public async Task ShouldEvaluateNestedTernaryExpression(string expression, object expected)
+    {
+        await Assert.That(new Expression(expression).Evaluate(CancellationToken.None)).IsEqualTo(expected);
+    }
+
+    [Test]
     public async Task Should_Not_Throw_Function_Not_Found_Issue_110()
     {
         const string expressionStr = "IN([acp_associated_person_transactions], 'T', 'Z', 'A')";
