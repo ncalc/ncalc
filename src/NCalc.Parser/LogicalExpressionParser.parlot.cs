@@ -41,9 +41,7 @@ public static partial class LogicalExpressionParser
                     _ => "\\" + escaped
                 };
             });
-        var text = (quote == '\''
-                ? Literals.Pattern(static c => c != '\'' && c != '\\' && c != '\r' && c != '\n')
-                : Literals.Pattern(static c => c != '"' && c != '\\' && c != '\r' && c != '\n'))
+        var text = Literals.NoneOf(quote == '\'' ? "'\\\r\n" : "\"\\\r\n")
             .Then(static value => value.ToString());
 
         return Between(openingDelimiter, ZeroOrMany(OneOf(escapedUnicode, escapedCharacter, text)), closingDelimiter)
@@ -204,12 +202,10 @@ public static partial class LogicalExpressionParser
             openCurlyBrace.SkipAnd(AnyCharBefore(closeCurlyBrace, failOnEof: true, consumeDelimiter: true)
                 .Else(static context => throw new NCalcParserException($"Brace not closed. at position {context.Scanner.Cursor.Position}")));
 
-        // ("[" | "{") identifier ("]" | "}")
-        var identifierExpression = OneOf(
-                braceIdentifier,
-                curlyBraceIdentifier,
-                identifier)
-            .Then<LogicalExpression>(static x => new Identifier(x.ToString())).Named("Identifier");
+        // ("[" | "{") anything ("]" | "}"). The names come from a pool, so the trees of parsed expressions share them.
+        var bracedIdentifier = OneOf(braceIdentifier, curlyBraceIdentifier)
+            .ToPooledString()
+            .Then<LogicalExpression>(static x => new Identifier(x)).Named("Identifier");
 
         // list => "(" (expression (argumentSeparator expression)*)? ")"
         var populatedList =
@@ -221,10 +217,13 @@ public static partial class LogicalExpressionParser
 
         var list = OneOf(emptyList, populatedList).Named("List");
 
-        var function = identifier
-            .And(list)
-            .Then<LogicalExpression>(static x =>
-                new Function(new Identifier(x.Item1.ToString()), (LogicalExpressionList)x.Item2)).Named("Function");
+        // function | identifier: the identifier is read once, then a list makes it a function.
+        var identifierOrFunction = identifier
+            .ToPooledString()
+            .And(list.Optional())
+            .Then<LogicalExpression>(static x => x.Item2.TryGetValue(out var arguments)
+                ? new Function(new Identifier(x.Item1), (LogicalExpressionList)arguments)
+                : new Identifier(x.Item1)).Named("IdentifierOrFunction");
 
         var booleanTrue = Terms.Keyword("true", true)
             .Then<LogicalExpression>(static _ => True).Named("True");
@@ -328,9 +327,9 @@ public static partial class LogicalExpressionParser
             booleanFalse,
             dateTime,
             stringValue,
-            function,
+            identifierOrFunction,
             groupExpression,
-            identifierExpression,
+            bracedIdentifier,
             list).Named("Primary");
 
         // factorial => primary ( "!" )* ;
