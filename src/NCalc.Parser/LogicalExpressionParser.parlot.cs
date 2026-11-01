@@ -392,7 +392,7 @@ public static partial class LogicalExpressionParser
             .Then(static x => !x.Item2.HasValue
                 ? x.Item1
                 : new TernaryExpression(x.Item1, x.Item2.Value.Item1, x.Item2.Value.Item2))
-            .Or(coalescing).Named("Ternary");
+            .Named("Ternary");
 
         // Parlot's source generator can struggle to infer the operator parser's generic type
         // here, so we force it to a simple, known type and specify LeftAssociative's type args.
