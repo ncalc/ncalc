@@ -332,53 +332,12 @@ public static partial class LogicalExpressionParser
             bracedIdentifier,
             list).Named("Primary");
 
-        // factorial => primary ( "!" )* ;
-        var factorial = primary.And(ZeroOrMany(exclamation.AndSkip(Not(equalityGuard))))
-            .Then(static x =>
-            {
-                var result = x.Item1;
-                var count = x.Item2.Count;
-
-                for (var i = 0; i < count; i++)
-                    result = new UnaryExpression(UnaryExpressionType.Factorial, result);
-
-                return result;
-            }).Named("Factorial");
-
-        // exponential => unary ( "**" unary )* ;
-        var exponential = factorial.And(ZeroOrMany(exponent.And(primary)))
-            .Then(static x =>
-            {
-                LogicalExpression result = null!;
-
-                switch (x.Item2.Count)
-                {
-                    case 0:
-                        result = x.Item1;
-                        break;
-                    case 1:
-                        result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, x.Item2[0].Item2);
-                        break;
-                    default:
-                    {
-                        for (int i = x.Item2.Count - 1; i > 0; i--)
-                        {
-                            result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item2[i - 1].Item2,
-                                x.Item2[i].Item2);
-                        }
-
-                        result = new BinaryExpression(BinaryExpressionType.Exponentiation, x.Item1, result);
-                        break;
-                    }
-                }
-
-                return result;
-            }).Named("Exponentiation");
-
         // The operator levels, from the one which binds the tightest, are parsed by a single precedence parser which looks
         // for the operator following an operand once, whatever the number of levels. An operator that isn't followed by an
         // operand is not read, and the looser levels try their operators at its position: "&&" after "&", "<=" after "<".
         //
+        // factorial      => primary ( "!" )* ;
+        // exponential    => factorial ( "**" exponential )? ;
         // unary          => ( "-" | "not" | "!" | "~" ) unary | exponential ;
         // multiplicative => unary ( ( "/" | "*" | "%" ) unary )* ;
         // additive       => multiplicative ( ( "+" | "-" ) multiplicative )* ;
@@ -391,7 +350,9 @@ public static partial class LogicalExpressionParser
         // logicalAnd     => bitwiseOr ( ( "and" | "&&" ) bitwiseOr )* ;
         // logicalOr      => logicalAnd ( ( "or" | "||" ) logicalAnd )* ;
         // coalescing     => logicalOr ( "??" coalescing )? ;
-        var coalescing = exponential.Operators()
+        var coalescing = primary.Operators()
+            .Postfix((exclamation.AndSkip(Not(equalityGuard)), static value => new UnaryExpression(UnaryExpressionType.Factorial, value)))
+            .RightAssociative((exponent, static (a, b) => new BinaryExpression(BinaryExpressionType.Exponentiation, a, b)))
             .Unary(
                 (not, static value => new UnaryExpression(UnaryExpressionType.Not, value)),
                 (minus, static value => new UnaryExpression(UnaryExpressionType.Negate, value)),
