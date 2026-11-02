@@ -98,28 +98,4 @@ public static partial class LogicalExpressionParser
     {
         throw new InvalidOperationException("Unknown operator sequence.");
     }
-
-    private static LogicalExpression ParseCoalescingExpression((LogicalExpression Left, IReadOnlyList<LogicalExpression> Right) expression)
-    {
-        if (expression.Right.Count == 0)
-            return expression.Left;
-
-        var result = expression.Right[expression.Right.Count - 1];
-        for (var i = expression.Right.Count - 2; i >= 0; i--)
-            result = new BinaryExpression(BinaryExpressionType.Coalesce, expression.Right[i], result);
-
-        return new BinaryExpression(BinaryExpressionType.Coalesce, expression.Left, result);
-    }
-
-    private static LogicalExpression ParseBinaryExpression((LogicalExpression, IReadOnlyList<(BinaryExpressionType, LogicalExpression)>) x)
-    {
-        var result = x.Item1;
-
-        foreach (var op in x.Item2)
-        {
-            result = new BinaryExpression(op.Item1, result, op.Item2);
-        }
-
-        return result;
-    }
 }

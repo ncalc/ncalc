@@ -72,6 +72,8 @@ public class OperatorsTests
     [Arguments("-1 ** 2", -1d)]
     [Arguments("(-1) ** 2", 1d)]
     [Arguments("2 ** 3 ** 2", 512d)]
+    [Arguments("2 ** 3 ** 2 ** 0", 8d)]
+    [Arguments("2 ** 3!", 64d)]
     [Arguments("(2 ** 3) ** 2", 64d)]
     [Arguments("2 * 3 ** 2", 18d)]
     [Arguments("2 ** 4 / 2", 8d)]
