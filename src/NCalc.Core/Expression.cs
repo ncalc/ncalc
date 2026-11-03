@@ -230,7 +230,9 @@ public class Expression
         configuration ?? new ExpressionConfiguration(), context ?? new ExpressionContext(),
         cultureInfo ?? CultureInfo.CurrentCulture, evaluationVisitorFactory)
     {
-        LogicalExpression = logicalExpression ?? throw new ArgumentNullException(nameof(logicalExpression));
+        ArgumentNullException.ThrowIfNull(logicalExpression);
+
+        LogicalExpression = logicalExpression;
     }
 
     protected virtual EvaluationVisitor CreateEvaluationVisitor(ExpressionContext context,

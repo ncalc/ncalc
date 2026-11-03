@@ -7,8 +7,7 @@ public static class LikeOperatorHelper
     /// </summary>
     public static string EscapeLike(string value)
     {
-        if (value is null)
-            throw new ArgumentNullException(nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
 
         StringBuilder? result = null;
 

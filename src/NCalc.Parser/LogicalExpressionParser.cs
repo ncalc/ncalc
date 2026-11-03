@@ -23,8 +23,7 @@ public static partial class LogicalExpressionParser
 
     public static LogicalExpression Parse(LogicalExpressionParseContext context, CultureInfo? culture = null)
     {
-        if (context is null)
-            throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
 
         return Parse(context.Text, context.Options, culture, context.CancellationToken);
     }
