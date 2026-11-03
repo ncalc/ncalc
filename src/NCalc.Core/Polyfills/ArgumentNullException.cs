@@ -3,20 +3,19 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace NCalc
+namespace NCalc;
+
+internal static class ArgumentNullExceptionPolyfills
 {
-    internal static class ArgumentNullExceptionPolyfills
+    extension(ArgumentNullException)
     {
-        extension(ArgumentNullException)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ThrowIfNull(
+            [NotNull] object? argument,
+            [CallerArgumentExpression(nameof(argument))] string? paramName = null)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void ThrowIfNull(
-                [NotNull] object? argument,
-                [CallerArgumentExpression(nameof(argument))] string? paramName = null)
-            {
-                if (argument is null)
-                    throw new ArgumentNullException(paramName);
-            }
+            if (argument is null)
+                throw new ArgumentNullException(paramName);
         }
     }
 }
