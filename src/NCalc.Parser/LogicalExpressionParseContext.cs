@@ -1,11 +1,20 @@
 namespace NCalc;
 
-public sealed class LogicalExpressionParseContext(
+public sealed class LogicalExpressionParseContext
+{
+    public string Text { get; }
+    public LogicalExpressionParserOptions Options { get; }
+    public CancellationToken CancellationToken { get; }
+
+    public LogicalExpressionParseContext(
     string text,
     LogicalExpressionParserOptions? options = null,
     CancellationToken cancellationToken = default)
-{
-    public string Text { get; } = text ?? throw new ArgumentNullException(nameof(text));
-    public LogicalExpressionParserOptions Options { get; } = options ?? new();
-    public CancellationToken CancellationToken { get; } = cancellationToken;
+    {
+        ArgumentNullException.ThrowIfNull(text);
+
+        Text = text;
+        Options = options ?? new();
+        CancellationToken = cancellationToken;
+    }
 }

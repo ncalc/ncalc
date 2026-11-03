@@ -39,8 +39,7 @@ public sealed class ExpressionContext
     /// <param name="context">The context to copy.</param>
     public ExpressionContext(ExpressionContext context)
     {
-        if (context is null)
-            throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
 
         Parameters = CopyDictionary(context.Parameters);
         DynamicParameters = CopyDictionary(context.DynamicParameters);
@@ -73,8 +72,7 @@ public sealed class ExpressionContext
 
     private static IDictionary<string, TValue> CopyDictionary<TValue>(IDictionary<string, TValue> source)
     {
-        if (source is null)
-            throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
 
         return source switch
         {
