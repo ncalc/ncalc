@@ -262,6 +262,9 @@ public class Expression
     /// </summary>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
     public object? Evaluate(CancellationToken cancellationToken = default)
+        => Evaluate(Context, cancellationToken);
+
+    internal object? Evaluate(ExpressionContext context, CancellationToken cancellationToken)
     {
         LogicalExpression ??= GetLogicalExpression(cancellationToken);
 
@@ -271,9 +274,9 @@ public class Expression
         try
         {
             if (EvaluationOptions.IterateParameters)
-                return IterateParameters(cancellationToken);
+                return IterateParameters(context, cancellationToken);
 
-            return LogicalExpression?.Accept(CreateEvaluationVisitor(Context, cancellationToken));
+            return LogicalExpression?.Accept(CreateEvaluationVisitor(context, cancellationToken));
         }
         catch (InvalidCastException exception)
         {
@@ -298,7 +301,10 @@ public class Expression
     /// </summary>
     /// <returns>The result of the evaluation.</returns>
     /// <exception cref="NCalcException">Thrown when there is an error in the expression.</exception>
-    public async ValueTask<object?> EvaluateAsync(CancellationToken cancellationToken = default)
+    public ValueTask<object?> EvaluateAsync(CancellationToken cancellationToken = default)
+        => EvaluateAsync(Context, cancellationToken);
+
+    internal async ValueTask<object?> EvaluateAsync(ExpressionContext context, CancellationToken cancellationToken)
     {
         LogicalExpression ??= GetLogicalExpression(cancellationToken);
 
@@ -308,12 +314,12 @@ public class Expression
         try
         {
             if (EvaluationOptions.IterateParameters)
-                return await IterateParametersAsync(cancellationToken).ConfigureAwait(false);
+                return await IterateParametersAsync(context, cancellationToken).ConfigureAwait(false);
 
             if (LogicalExpression is null)
                 return null;
 
-            return await LogicalExpression.Accept(CreateAsyncEvaluationVisitor(Context, cancellationToken))
+            return await LogicalExpression.Accept(CreateAsyncEvaluationVisitor(context, cancellationToken))
                 .ConfigureAwait(false);
         }
         catch (InvalidCastException exception)
@@ -353,13 +359,14 @@ public class Expression
         }
     }
 
-    private async ValueTask<object?> IterateParametersAsync(CancellationToken cancellationToken)
+    private async ValueTask<object?> IterateParametersAsync(ExpressionContext context, CancellationToken cancellationToken)
     {
-        var parameterEnumerators = ParametersHelper.GetEnumerators(Context.Parameters, out var size);
+        var parameterEnumerators = ParametersHelper.GetEnumerators(context.Parameters, out var size);
         if (LogicalExpression is null)
             return null;
 
-        var visitor = CreateAsyncEvaluationVisitor(Context, cancellationToken);
+        var iteration = size.HasValue ? context.CreateIterationContext() : context;
+        var visitor = CreateAsyncEvaluationVisitor(iteration, cancellationToken);
         if (size is null)
             return await LogicalExpression.Accept(visitor).ConfigureAwait(false);
 
@@ -369,7 +376,7 @@ public class Expression
             foreach (var parameter in parameterEnumerators)
             {
                 parameter.Value.MoveNext();
-                Context.Parameters[parameter.Key] = parameter.Value.Current;
+                iteration.Parameters[parameter.Key] = parameter.Value.Current;
             }
 
             results.Add(await LogicalExpression.Accept(visitor).ConfigureAwait(false));
@@ -378,13 +385,14 @@ public class Expression
         return results;
     }
 
-    private object? IterateParameters(CancellationToken cancellationToken)
+    private object? IterateParameters(ExpressionContext context, CancellationToken cancellationToken)
     {
-        var parameterEnumerators = ParametersHelper.GetEnumerators(Context.Parameters, out var size);
+        var parameterEnumerators = ParametersHelper.GetEnumerators(context.Parameters, out var size);
         if (LogicalExpression is null)
             return null;
 
-        var visitor = CreateEvaluationVisitor(Context, cancellationToken);
+        var iteration = size.HasValue ? context.CreateIterationContext() : context;
+        var visitor = CreateEvaluationVisitor(iteration, cancellationToken);
         if (size is null)
             return LogicalExpression.Accept(visitor);
 
@@ -394,7 +402,7 @@ public class Expression
             foreach (var parameter in parameterEnumerators)
             {
                 parameter.Value.MoveNext();
-                Context.Parameters[parameter.Key] = parameter.Value.Current;
+                iteration.Parameters[parameter.Key] = parameter.Value.Current;
             }
 
             results.Add(LogicalExpression.Accept(visitor));
