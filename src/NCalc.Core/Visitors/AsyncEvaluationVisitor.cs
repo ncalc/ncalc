@@ -125,10 +125,12 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(Identifier identifier)
     {
-        var value = await GetIdentifierValueAsync(identifier);
+        var (value, childContext) = await GetIdentifierValueAsync(identifier);
 
         return value is Expression expression
-            ? await expression.EvaluateAsync(CancellationToken)
+            ? childContext is null
+                ? await expression.EvaluateAsync(CancellationToken)
+                : await expression.EvaluateAsync(childContext, CancellationToken)
             : value;
     }
 
@@ -174,7 +176,7 @@ public class AsyncEvaluationVisitor(
         return expression.Accept(this);
     }
 
-    private async Task<object?> GetIdentifierValueAsync(Identifier identifier)
+    private async Task<(object? Value, ExpressionContext? ChildContext)> GetIdentifierValueAsync(Identifier identifier)
     {
         var identifierName = identifier.Name;
 
@@ -186,36 +188,41 @@ public class AsyncEvaluationVisitor(
             await (context.EvaluateAsyncParameterHandler?.Invoke(identifierName, parameterArgs) ?? Task.CompletedTask);
 
         if (parameterArgs.HasResult)
-            return parameterArgs.Result;
+            return (parameterArgs.Result, null);
 
         if (context.Parameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
-                ShareParametersWithChildExpression(expression);
-                return expression;
+                return (expression, ShareParametersWithChildExpression(expression));
             }
 
-            return parameter;
+            return (parameter, null);
         }
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
-            return dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken));
+            return (dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken)), null);
 
         if (context.AsyncParameters.TryGetValue(identifierName, out var asyncParameter))
-            return await asyncParameter(new ParameterData(identifier.Id, context, CancellationToken));
+            return (await asyncParameter(new ParameterData(identifier.Id, context, CancellationToken)), null);
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
             options.AllowNullParameter)
         {
-            return null;
+            return (null, null);
         }
 
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    private void ShareParametersWithChildExpression(Expression expression)
+    private ExpressionContext? ShareParametersWithChildExpression(Expression expression)
     {
+        if (context.IterationSource is not null)
+        {
+            expression.SetEvaluationVisitorFactory(EvaluationVisitorFactory);
+            return context.CreateChildIterationContext(expression.Context);
+        }
+
         foreach (var parameter in context.Parameters)
             expression.Parameters[parameter.Key] = parameter.Value;
 
@@ -233,5 +240,6 @@ public class AsyncEvaluationVisitor(
         expression.EvaluateAsyncParameter += context.EvaluateAsyncParameterHandler;
         expression.EvaluateBinary += context.EvaluateBinaryHandler;
         expression.EvaluateBinaryAsync += context.EvaluateBinaryAsyncHandler;
+        return null;
     }
 }
