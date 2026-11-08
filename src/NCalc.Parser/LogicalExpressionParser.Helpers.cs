@@ -1,3 +1,5 @@
+using System.Numerics;
+
 #if PARLOT_FLUENT
 namespace NCalc.Benchmarks;
 
@@ -26,6 +28,32 @@ public static partial class LogicalExpressionParser
     private static LogicalExpression CreateValueExpression(decimal value) => new ValueExpression(value);
     private static LogicalExpression CreateValueExpression(double value) => new ValueExpression(value);
     private static LogicalExpression CreateValueExpression(string value) => new ValueExpression(value);
+
+    private static bool ContainsHexLetter(ReadOnlySpan<char> value)
+    {
+        foreach (var character in value)
+        {
+            if (character is >= 'a' and <= 'f' or >= 'A' and <= 'F')
+                return true;
+        }
+
+        return false;
+    }
+
+    private static LogicalExpression ParseBigInteger(ReadOnlySpan<char> digits, int radix)
+    {
+        if (radix == 10)
+            return new ValueExpression(BigInteger.Parse(digits.ToString(), NumberStyles.None, CultureInfo.InvariantCulture));
+
+        var value = BigInteger.Zero;
+        foreach (var digit in digits)
+        {
+            var number = digit <= '9' ? digit - '0' : char.ToUpperInvariant(digit) - 'A' + 10;
+            value = value * radix + number;
+        }
+
+        return new ValueExpression(value);
+    }
 
     private static LogicalExpression ParseBasedInteger(long value)
     {

@@ -1,5 +1,6 @@
 ﻿#if NET8_0_OR_GREATER
 #nullable enable
+using System.Numerics;
 using NCalc.LambdaCompilation;
 using NCalc.Tests.Attributes;
 using System.Threading.Tasks;
@@ -17,6 +18,47 @@ namespace NCalc.Tests;
 [SkipInNativeAot]
 public class LambdaTests
 {
+    private sealed class BigIntegerContext
+    {
+        public BigInteger Value { get; set; }
+        public BigInteger? OptionalValue { get; set; }
+        public BigInteger GetValue() => Value;
+        public BigInteger? GetOptionalValue() => OptionalValue;
+    }
+
+    [Test]
+    public async Task ShouldPassThroughBigIntegerParametersWithDefaultLambdaOptions()
+    {
+        var value = (BigInteger.One << 192) + 7;
+        var expression = new Expression("x") { Parameters = { ["x"] = value } };
+        var lambda = expression.ToLambda<BigInteger>();
+        await Assert.That(lambda()).IsEqualTo(value);
+    }
+
+    [Test]
+    public async Task ShouldPassThroughBigIntegerContextPropertiesWithDefaultLambdaOptions()
+    {
+        var context = new BigIntegerContext { Value = (BigInteger.One << 192) + 11 };
+        var lambda = new Expression("Value").ToLambda<BigIntegerContext, BigInteger>();
+        await Assert.That(lambda(context)).IsEqualTo(context.Value);
+        var optional = new Expression("OptionalValue").ToLambda<BigIntegerContext, BigInteger?>();
+        await Assert.That(optional(context)).IsNull();
+        context.OptionalValue = context.Value;
+        await Assert.That(optional(context)).IsEqualTo(context.OptionalValue);
+    }
+
+    [Test]
+    public async Task ShouldPassThroughBigIntegerContextMethodResultsWithDefaultLambdaOptions()
+    {
+        var context = new BigIntegerContext { Value = (BigInteger.One << 192) + 13 };
+        var lambda = new Expression("GetValue()").ToLambda<BigIntegerContext, BigInteger>();
+        await Assert.That(lambda(context)).IsEqualTo(context.Value);
+        var optional = new Expression("GetOptionalValue()").ToLambda<BigIntegerContext, BigInteger?>();
+        await Assert.That(optional(context)).IsNull();
+        context.OptionalValue = context.Value;
+        await Assert.That(optional(context)).IsEqualTo(context.OptionalValue);
+    }
+
     private class Context
     {
         public int FieldA { get; set; }

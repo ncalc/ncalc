@@ -58,6 +58,10 @@ public static class LambdaCompilationExtensions
 
         private LinqExpressionWithParameter ToLinqExpressionInternal<TContext, TResult>(CancellationToken cancellationToken)
         {
+            if (expression.ParserOptions.IntegerNumberType == IntegerNumberType.BigInteger ||
+                expression.EvaluationOptions.Math.IntegerNumberType == IntegerNumberType.BigInteger)
+                throw new NotSupportedException("Lambda compilation does not support BigInteger. Use Evaluate or EvaluateAsync instead.");
+
             expression.LogicalExpression ??= expression.GetLogicalExpression(cancellationToken);
 
             if (expression.LogicalExpression is null)

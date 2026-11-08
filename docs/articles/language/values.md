@@ -22,6 +22,78 @@ They are represented using numbers.
 
 They are evaluated as <xref:System.Int32>. If the value is too big, it will be evaluated as <xref:System.Int64>.
 
+## Arbitrary-precision integers
+
+Select `IntegerNumberType.BigInteger` explicitly to parse whole-number literals
+without narrowing them to `Int64` or floating point. Configure math coercion as
+well when integer parameters or numeric strings should use the same mode:
+
+```csharp
+using System.Numerics;
+using NCalc;
+using NCalc.Helpers;
+
+var configuration = new ExpressionConfiguration
+{
+    Parsing = new LogicalExpressionParserOptions
+    {
+        IntegerNumberType = IntegerNumberType.BigInteger
+    },
+    Evaluation = new ExpressionEvaluationOptions
+    {
+        Math = new MathOptions
+        {
+            IntegerNumberType = IntegerNumberType.BigInteger
+        }
+    }
+};
+var expression = new Expression(
+    "99999999999999999999999999*888888888888888888888888888888888888888",
+    configuration);
+var result = (BigInteger)expression.Evaluate()!;
+```
+
+Decimal whole-number literals, and `0x`, `0o` and `0b` literals, are arbitrary
+precision in this mode. Signs use the existing unary operators. A bare
+32-digit decimal sequence is an integer in this mode; hexadecimal GUIDs and
+hyphenated GUIDs retain their normal syntax. Decimal fractions and scientific
+notation still use `FloatingPointNumberType`.
+
+`+`, `-`, `*`, `/`, `%`, unary negation and comparisons preserve integral values.
+Fixed-width integer operands promote exactly when combined with a `BigInteger`;
+setting the math option also promotes fixed-width integer parameters for `Abs`
+and comparisons as well as arithmetic. Strict type matching is checked before
+comparison promotion. Integer `/` truncates toward zero and `%` follows
+`BigInteger` remainder semantics.
+Division by zero still throws. Supplied `BigInteger` parameters are supported
+without changing how other parameter types are evaluated. `Abs`, `Sign`, `Min`
+and `Max` support integral `BigInteger` operands.
+
+There is no implicit conversion between `BigInteger` and `float`, `double` or
+`decimal` during arithmetic or comparison. Convert parameters to the intended
+real type explicitly if a real-valued calculation is needed; use real literals
+(such as `1.0`) or default integer parsing for the rest of that calculation. Trigonometric,
+logarithmic, exponential and rounding functions do not provide arbitrary
+precision; they reject `BigInteger` operands. `Pow` and bitwise/shift operations
+do not accept `BigInteger` operands. Lambda compilation does not support this
+configuration. Use `Evaluate` or `EvaluateAsync`
+for supported operations. The existing factorial limit and result type are
+unchanged.
+Default lambda compilation still permits existing non-arithmetic pass-through
+of `BigInteger` parameters, context properties and context method results.
+
+Text serialization emits invariant integer digits; parse that text with the
+same integer option. JSON AST serialization records `ValueType.BigInteger` and
+an exact integer token, retaining the type even for small values.
+Legacy AST values retain the caller's registered JSON object conversions,
+including null callbacks when the converter enables `HandleNull`;
+`BigInteger` values use their exact numeric token instead.
+Opt-in parsed ASTs bypass the shared text-only cache, even when `CacheEnabled` is true, so
+parser options and custom cultures cannot reuse an incompatible tree. Default
+`Int32`/`Int64` selection, overflow wrapping/protection, real arithmetic and
+Boolean/string options are unchanged; this mode does not automatically promote
+an overflowing default calculation.
+
 ## Floating point numbers
 
 Use the dot to define the decimal part. 

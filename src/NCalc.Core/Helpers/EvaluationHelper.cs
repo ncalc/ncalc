@@ -1,3 +1,4 @@
+using System.Numerics;
 using NCalc.Exceptions;
 
 namespace NCalc.Helpers;
@@ -125,6 +126,10 @@ public static class EvaluationHelper
         if (leftValue == null || rightValue == null)
             return leftValue == rightValue;
 
+        if (options.Math.IntegerNumberType == IntegerNumberType.BigInteger &&
+            TypeHelper.HasNullOrTypeConflict(leftValue, rightValue, options.StrictTypeMatching))
+            return false;
+
         var noStringTypeCoercion = options.NoStringTypeCoercion;
 
         if (noStringTypeCoercion)
@@ -135,7 +140,7 @@ public static class EvaluationHelper
             if (leftValue is string || rightValue is string)
                 return EqualityComparer<object?>.Default.Equals(leftValue, rightValue);
 
-            return TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, options.StringComparer, cultureInfo) ==
+            return CompareValues(leftValue, rightValue, options, cultureInfo) ==
                    ComparisonResult.Equal;
         }
 
@@ -153,9 +158,17 @@ public static class EvaluationHelper
             (_, string rightString) => stringComparer.Equals(
                 Convert.ToString(leftValue, cultureInfo) ?? string.Empty,
                 rightString),
-            _ => TypeHelper.CompareUsingMostPreciseType(leftValue, rightValue, options.StringComparer, cultureInfo) ==
+            _ => CompareValues(leftValue, rightValue, options, cultureInfo) ==
                  ComparisonResult.Equal
         };
+    }
+
+    internal static ComparisonResult CompareValues(object? left, object? right, ExpressionEvaluationOptions options,
+        CultureInfo cultureInfo)
+    {
+        left = MathHelper.PromoteIntegerIfNeeded(left, options.Math, cultureInfo);
+        right = MathHelper.PromoteIntegerIfNeeded(right, options.Math, cultureInfo);
+        return TypeHelper.CompareUsingMostPreciseType(left, right, options.StringComparer, cultureInfo);
     }
 
     public static object? Unary(UnaryExpression expression, object? result, ExpressionEvaluationOptions options,
@@ -168,8 +181,11 @@ public static class EvaluationHelper
             {
                 double doubleValue => -doubleValue,
                 float floatValue => -floatValue,
+                decimal decimalValue => -decimalValue,
                 _ => MathHelper.Subtract(0, result, options.Math, cultureInfo)
             },
+            UnaryExpressionType.BitwiseNot when result is BigInteger => throw new NotSupportedException(
+                "Bitwise operations are not supported for BigInteger operands."),
             UnaryExpressionType.BitwiseNot => ~Convert.ToUInt64(result, cultureInfo),
             UnaryExpressionType.Positive => result,
             UnaryExpressionType.Factorial => MathHelper.Factorial(result),

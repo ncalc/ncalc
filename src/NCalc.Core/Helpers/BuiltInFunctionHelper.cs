@@ -152,11 +152,7 @@ public static class BuiltInFunctionHelper
         var parameter = functionData.Evaluate(0);
         for (var i = 1; i < functionData.Count; i++)
         {
-            if (TypeHelper.CompareUsingMostPreciseType(
-                    parameter,
-                    functionData.Evaluate(i),
-                    functionData.EvaluationOptions.StringComparer,
-                    functionData.CultureInfo) == ComparisonResult.Equal)
+            if (InValuesEqual(parameter, functionData.Evaluate(i), functionData))
                 return true;
         }
 
@@ -171,15 +167,21 @@ public static class BuiltInFunctionHelper
         var parameter = await functionData.EvaluateAsync(0);
         for (var i = 1; i < functionData.Count; i++)
         {
-            if (TypeHelper.CompareUsingMostPreciseType(
-                    parameter,
-                    await functionData.EvaluateAsync(i),
-                    functionData.EvaluationOptions.StringComparer,
-                    functionData.CultureInfo) == ComparisonResult.Equal)
+            if (InValuesEqual(parameter, await functionData.EvaluateAsync(i), functionData))
                 return true;
         }
 
         return false;
+    }
+
+    private static bool InValuesEqual(object? left, object? right, FunctionData functionData)
+    {
+        var options = functionData.EvaluationOptions;
+        if (options.Math.IntegerNumberType == IntegerNumberType.BigInteger &&
+            TypeHelper.HasNullOrTypeConflict(left, right, options.StrictTypeMatching))
+            return false;
+
+        return EvaluationHelper.CompareValues(left, right, options, functionData.CultureInfo) == ComparisonResult.Equal;
     }
 
     private static object? EvaluateIfs(FunctionData functionData)

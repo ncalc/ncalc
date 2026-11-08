@@ -12,6 +12,9 @@ NCalc targets modern .NET, .NET Standard 2.0, and .NET Framework 4.8.
 
 Want to try it first? Open the [NCalc playground](https://ncalc.github.io/ncalc/playground.html) and run expressions directly in your browser powered by Blazor WASM.
 
+Arbitrary-precision integer parsing and evaluation are available through the explicit
+[`IntegerNumberType.BigInteger` configuration](docs/articles/language/values.md#arbitrary-precision-integers).
+
 ## Documentation
 
 Start with the [NCalc docs](https://ncalc.github.io/ncalc) for the full language reference, runtime options, plugins, and
