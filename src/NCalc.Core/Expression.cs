@@ -462,14 +462,17 @@ public class Expression
             throw new NCalcException($"{nameof(ExpressionString)} cannot be null or empty.");
         }
 
-        if (Configuration.CacheEnabled && LogicalExpressionCache.TryGetValue(ExpressionString!, out var cached))
+        // The shared cache accepts only raw expression text, not parser options or custom cultures.
+        // Keep its existing behavior for default parsing; opt-in BigInteger parsing bypasses it.
+        var useCache = Configuration.CacheEnabled && ParserOptions.IntegerNumberType != IntegerNumberType.BigInteger;
+        if (useCache && LogicalExpressionCache.TryGetValue(ExpressionString!, out var cached))
             return cached;
 
         try
         {
             Error = null;
             var expression = CreateLogicalExpression(cancellationToken);
-            if (Configuration.CacheEnabled)
+            if (useCache)
                 LogicalExpressionCache.Set(ExpressionString!, expression);
             return expression;
         }

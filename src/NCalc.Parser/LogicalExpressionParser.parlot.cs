@@ -307,20 +307,42 @@ public static partial class LogicalExpressionParser
             .Then(static value => ParseGuid(value.Span));
 
         var guidWithoutHyphens = thirtyTwoHexSequence
+            .When((_, value) => options.IntegerNumberType != IntegerNumberType.BigInteger ||
+                                ContainsHexLetter(value.Span))
             .AndSkip(Not(decimalOrDoubleNumber))
             .Then(static value => ParseGuid(value.Span));
 
         var guid = OneOf(guidWithHyphens, guidWithoutHyphens).Named("Guid");
 
+        var bigIntegerDigits = OneOf(
+            Terms.Pattern(static c => c >= '0' && c <= '9', 1),
+            Terms.Char('+').SkipAnd(Literals.Pattern(static c => c >= '0' && c <= '9', 1)));
+        var bigIntegerNumber = bigIntegerDigits
+            .AndSkip(nonScientificParser)
+            .Then<LogicalExpression>(static value => ParseBigInteger(value.Span, 10))
+            .Named("BigInteger");
+
+        var bigHexNumber = Terms.Text("0x").SkipAnd(Terms.AnyOf(Character.HexDigits))
+            .Then<LogicalExpression>(static value => ParseBigInteger(value.Span, 16));
+        var bigOctalNumber = Terms.Text("0o").SkipAnd(Terms.AnyOf(Character.OctalDigits))
+            .Then<LogicalExpression>(static value => ParseBigInteger(value.Span, 8));
+        var bigBinaryNumber = Terms.Text("0b").SkipAnd(Terms.AnyOf(Character.BinaryDigits))
+            .Then<LogicalExpression>(static value => ParseBigInteger(value.Span, 2));
+        var basedInteger = If(
+            () => options.IntegerNumberType == IntegerNumberType.BigInteger,
+            OneOf(bigHexNumber, bigOctalNumber, bigBinaryNumber), hexOctBinNumber);
+
         var intOrLong = OneOf(intNumber, longNumber);
         var integralNumber = If(
-            () => options.IntegerNumberType == IntegerNumberType.Int64,
-            longNumber, intOrLong).Named("Integer");
+            () => options.IntegerNumberType == IntegerNumberType.BigInteger,
+            bigIntegerNumber,
+            If(() => options.IntegerNumberType == IntegerNumberType.Int64, longNumber, intOrLong))
+            .Named("Integer");
 
         // primary => GUID | NUMBER | identifier | DateTime | string | function | boolean | groupExpression | list ;
         var primary = OneOf(
             guid,
-            hexOctBinNumber,
+            basedInteger,
             integralNumber,
             decimalOrDoubleNumber,
             booleanTrue,

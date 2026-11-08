@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Reflection;
 using ExtendedNumerics;
 using NCalc.Exceptions;

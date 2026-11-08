@@ -1,3 +1,4 @@
+using System.Numerics;
 using NCalc.Helpers;
 
 namespace NCalc.Visitors;
@@ -11,6 +12,11 @@ internal static class EvaluationVisitorHelper
         ExpressionEvaluationOptions options,
         CultureInfo cultureInfo)
     {
+        if ((left is BigInteger || right is BigInteger) && expressionType is
+            BinaryExpressionType.BitwiseAnd or BinaryExpressionType.BitwiseOr or BinaryExpressionType.BitwiseXOr or
+            BinaryExpressionType.LeftShift or BinaryExpressionType.RightShift)
+            throw new NotSupportedException("Bitwise and shift operations are not supported for BigInteger operands.");
+
         switch (expressionType)
         {
             case BinaryExpressionType.Div:
@@ -96,6 +102,8 @@ internal static class EvaluationVisitorHelper
         if (TypeHelper.HasNullOrTypeConflict(a, b, options.StrictTypeMatching))
             return comparisonType == ComparisonType.NotEqual;
 
+        a = MathHelper.PromoteIntegerIfNeeded(a, options.Math, cultureInfo);
+        b = MathHelper.PromoteIntegerIfNeeded(b, options.Math, cultureInfo);
         var result = TypeHelper.CompareUsingMostPreciseType(a, b, options.StringComparer, cultureInfo);
 
         return comparisonType switch

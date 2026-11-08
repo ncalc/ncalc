@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NCalc.Exceptions;
@@ -7,6 +8,7 @@ namespace NCalc;
 
 public sealed class ValueExpression : LogicalExpression , IJsonOnDeserialized
 {
+    [JsonConverter(typeof(ValueExpressionValueJsonConverter))]
     public object? Value { get; set; }
     public ValueType Type { get; set; }
 
@@ -18,6 +20,7 @@ public sealed class ValueExpression : LogicalExpression , IJsonOnDeserialized
     {
         Type = value switch
         {
+            BigInteger => ValueType.BigInteger,
             bool => ValueType.Boolean,
             DateTime => ValueType.DateTime,
             TimeSpan => ValueType.TimeSpan,
@@ -94,6 +97,11 @@ public sealed class ValueExpression : LogicalExpression , IJsonOnDeserialized
 
     void IJsonOnDeserialized.OnDeserialized()
     {
+        if (Value is ValueExpressionValueJsonConverter.DeferredValue deferred)
+        {
+            Value = Type == ValueType.BigInteger ? deferred.Element : deferred.ReadLegacyValue();
+        }
+
         if (Value is not JsonElement element)
             return;
 
@@ -109,6 +117,7 @@ public sealed class ValueExpression : LogicalExpression , IJsonOnDeserialized
         {
             ValueType.Boolean => element.GetBoolean(),
             ValueType.Integer => element.GetInt64(),
+            ValueType.BigInteger => BigInteger.Parse(element.GetRawText(), CultureInfo.InvariantCulture),
             ValueType.Float => element.GetDouble(),
             ValueType.String => element.GetString(),
             ValueType.Char => ReadChar(element),

@@ -67,6 +67,10 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
         builder.AppendLine("    public static ComparisonResult CompareUsingMostPreciseType(object? a, object? b, StringComparer stringComparer, CultureInfo cultureInfo)");
         builder.AppendLine("    {");
 
+        builder.AppendLine("        if (a is System.Numerics.BigInteger || b is System.Numerics.BigInteger)");
+        builder.AppendLine("            return CompareBigIntegers(a, b, cultureInfo);");
+        builder.AppendLine();
+
         foreach (var type in metadata.BuiltInTypeOrder)
         {
             if (type == "object")
@@ -195,6 +199,9 @@ public sealed class TypeHelperGenerator : IIncrementalGenerator
     {
         builder.AppendLine("    public static Type? GetMostPreciseNumberType(Type a, Type b)");
         builder.AppendLine("    {");
+        builder.AppendLine("        if (a == typeof(System.Numerics.BigInteger) || b == typeof(System.Numerics.BigInteger))");
+        builder.AppendLine("            return IsIntegerType(a) && IsIntegerType(b) ? typeof(System.Numerics.BigInteger) : null;");
+        builder.AppendLine();
         builder.AppendLine("        if (!IsNumberType(a) || !IsNumberType(b))");
         builder.AppendLine("        {");
         builder.AppendLine("            return null;");

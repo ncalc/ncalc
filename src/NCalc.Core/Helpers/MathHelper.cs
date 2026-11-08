@@ -18,6 +18,9 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options, cultureInfo);
         b = ConvertIfNeeded(b, options, cultureInfo);
 
+        if (a is BigInteger || b is BigInteger)
+            return TypeHelper.ToBigInteger(a, cultureInfo) + TypeHelper.ToBigInteger(b, cultureInfo);
+
         ConvertToHighestPrecision(ref a, ref b, cultureInfo);
         return BinaryOperators.Add(a, b, options.OverflowProtection);
     }
@@ -29,6 +32,9 @@ public static class MathHelper
 
         a = ConvertIfNeeded(a, options, cultureInfo);
         b = ConvertIfNeeded(b, options, cultureInfo);
+
+        if (a is BigInteger || b is BigInteger)
+            return TypeHelper.ToBigInteger(a, cultureInfo) - TypeHelper.ToBigInteger(b, cultureInfo);
 
         ConvertToHighestPrecision(ref a, ref b, cultureInfo);
         return BinaryOperators.Subtract(a, b, options.OverflowProtection);
@@ -42,6 +48,9 @@ public static class MathHelper
         a = ConvertIfNeeded(a, options, cultureInfo);
         b = ConvertIfNeeded(b, options, cultureInfo);
 
+        if (a is BigInteger || b is BigInteger)
+            return TypeHelper.ToBigInteger(a, cultureInfo) * TypeHelper.ToBigInteger(b, cultureInfo);
+
         ConvertToHighestPrecision(ref a, ref b, cultureInfo);
         return BinaryOperators.Multiply(a, b, options.OverflowProtection);
     }
@@ -53,6 +62,9 @@ public static class MathHelper
 
         a = ConvertIfNeeded(a, options, cultureInfo);
         b = ConvertIfNeeded(b, options, cultureInfo);
+
+        if (a is BigInteger || b is BigInteger)
+            return TypeHelper.ToBigInteger(a, cultureInfo) / TypeHelper.ToBigInteger(b, cultureInfo);
 
         if (!(TypeHelper.IsReal(a) || TypeHelper.IsReal(b)))
             a = Convert.ToDouble(a, cultureInfo);
@@ -68,6 +80,9 @@ public static class MathHelper
 
         a = ConvertIfNeeded(a, options, cultureInfo);
         b = ConvertIfNeeded(b, options, cultureInfo);
+
+        if (a is BigInteger || b is BigInteger)
+            return TypeHelper.ToBigInteger(a, cultureInfo) % TypeHelper.ToBigInteger(b, cultureInfo);
 
         ConvertToHighestPrecision(ref a, ref b, cultureInfo);
         return BinaryOperators.Modulo(a, b);
@@ -90,6 +105,9 @@ public static class MathHelper
 
         a = ConvertIfNeeded(a, options, cultureInfo);
         b = ConvertIfNeeded(b, options, cultureInfo);
+
+        if (a is BigInteger || b is BigInteger)
+            return BigInteger.Max(TypeHelper.ToBigInteger(a, cultureInfo), TypeHelper.ToBigInteger(b, cultureInfo));
 
         var typeCode = ConvertToHighestPrecision(ref a, ref b, cultureInfo);
 
@@ -129,6 +147,9 @@ public static class MathHelper
 
         a = ConvertIfNeeded(a, options, cultureInfo);
         b = ConvertIfNeeded(b, options, cultureInfo);
+
+        if (a is BigInteger || b is BigInteger)
+            return BigInteger.Min(TypeHelper.ToBigInteger(a, cultureInfo), TypeHelper.ToBigInteger(b, cultureInfo));
 
         var typeCode = ConvertToHighestPrecision(ref a, ref b, cultureInfo);
 
@@ -189,6 +210,10 @@ public static class MathHelper
 
     public static object Abs(object? a, MathOptions options, CultureInfo cultureInfo)
     {
+        a = PromoteIntegerIfNeeded(a, options, cultureInfo);
+        if (a is BigInteger integer)
+            return BigInteger.Abs(integer);
+
         if (a is decimal aDecimal)
         {
             return Math.Abs(aDecimal);
@@ -323,6 +348,9 @@ public static class MathHelper
 
     public static object Sign(object? a, MathOptions options, CultureInfo cultureInfo)
     {
+        if (a is BigInteger integer)
+            return integer.Sign;
+
         if (a is decimal aDecimal)
         {
             return Math.Sign(aDecimal);
@@ -368,17 +396,31 @@ public static class MathHelper
 
     private static object ConvertIfNeeded(object value, MathOptions options, CultureInfo cultureInfo)
     {
-        return value switch
+        value = value switch
         {
             char ch => (int)ch,
             string s => ParseNumber(s, options, cultureInfo),
             bool boolean when options.AllowBooleanCalculation => boolean ? 1 : 0,
             _ => value
         };
+
+        return PromoteIntegerIfNeeded(value, options, cultureInfo)!;
+    }
+
+    internal static object? PromoteIntegerIfNeeded(object? value, MathOptions options, CultureInfo cultureInfo)
+    {
+        return value is not null && options.IntegerNumberType == IntegerNumberType.BigInteger &&
+               TypeHelper.IsIntegerType(value.GetType())
+            ? TypeHelper.ToBigInteger(value, cultureInfo)
+            : value;
     }
 
     private static object ParseNumber(string value, MathOptions options, CultureInfo cultureInfo)
     {
+        if (options.IntegerNumberType == IntegerNumberType.BigInteger &&
+            BigInteger.TryParse(value, NumberStyles.Integer, cultureInfo, out var integer))
+            return integer;
+
         if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
             return decimal.Parse(value, cultureInfo);
 
@@ -392,6 +434,8 @@ public static class MathHelper
     {
         return value switch
         {
+            BigInteger => throw new NotSupportedException(
+                "Real-valued functions do not accept BigInteger operands. Convert the operand explicitly first."),
             double @double => @double,
             char ch => Convert.ToDouble(ch.ToString(), cultureInfo),
             _ => Convert.ToDouble(value, cultureInfo)
@@ -402,6 +446,8 @@ public static class MathHelper
     {
         return value switch
         {
+            BigInteger => throw new NotSupportedException(
+                "Real-valued functions do not accept BigInteger operands. Convert the operand explicitly first."),
             char ch => Convert.ToDecimal(ch.ToString(), cultureInfo),
             decimal @decimal => @decimal,
             _ => Convert.ToDecimal(value, cultureInfo)
