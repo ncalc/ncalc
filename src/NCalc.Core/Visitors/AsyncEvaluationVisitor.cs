@@ -125,13 +125,13 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(Identifier identifier)
     {
-        var (value, childContext) = await GetIdentifierValueAsync(identifier);
+        var result = await GetIdentifierValueAsync(identifier);
 
-        return value is Expression expression
-            ? childContext is null
+        return result.Value is Expression expression
+            ? result.ChildContext is null
                 ? await expression.EvaluateAsync(CancellationToken)
-                : await expression.EvaluateAsync(childContext, CancellationToken)
-            : value;
+                : await expression.EvaluateAsync(result.ChildContext, CancellationToken)
+            : result.Value;
     }
 
     public virtual Task<object?> Visit(ValueExpression expression) => Task.FromResult(expression.Value);
@@ -176,7 +176,7 @@ public class AsyncEvaluationVisitor(
         return expression.Accept(this);
     }
 
-    private async Task<(object? Value, ExpressionContext? ChildContext)> GetIdentifierValueAsync(Identifier identifier)
+    private async Task<IdentifierEvaluationResult> GetIdentifierValueAsync(Identifier identifier)
     {
         var identifierName = identifier.Name;
 
@@ -188,28 +188,28 @@ public class AsyncEvaluationVisitor(
             await (context.EvaluateAsyncParameterHandler?.Invoke(identifierName, parameterArgs) ?? Task.CompletedTask);
 
         if (parameterArgs.HasResult)
-            return (parameterArgs.Result, null);
+            return new IdentifierEvaluationResult(parameterArgs.Result);
 
         if (context.Parameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
-                return (expression, ShareParametersWithChildExpression(expression));
+                return new IdentifierEvaluationResult(expression, ShareParametersWithChildExpression(expression));
             }
 
-            return (parameter, null);
+            return new IdentifierEvaluationResult(parameter);
         }
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
-            return (dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken)), null);
+            return new IdentifierEvaluationResult(dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken)));
 
         if (context.AsyncParameters.TryGetValue(identifierName, out var asyncParameter))
-            return (await asyncParameter(new ParameterData(identifier.Id, context, CancellationToken)), null);
+            return new IdentifierEvaluationResult(await asyncParameter(new ParameterData(identifier.Id, context, CancellationToken)));
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
             options.AllowNullParameter)
         {
-            return (null, null);
+            return new IdentifierEvaluationResult(null);
         }
 
         throw new NCalcParameterNotDefinedException(identifierName);

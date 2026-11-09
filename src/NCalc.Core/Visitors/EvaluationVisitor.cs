@@ -100,13 +100,13 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(Identifier identifier)
     {
-        var (value, childContext) = GetIdentifierValue(identifier);
+        var result = GetIdentifierValue(identifier);
 
-        return value is Expression expression
-            ? childContext is null
+        return result.Value is Expression expression
+            ? result.ChildContext is null
                 ? expression.Evaluate(CancellationToken)
-                : expression.Evaluate(childContext, CancellationToken)
-            : value;
+                : expression.Evaluate(result.ChildContext, CancellationToken)
+            : result.Value;
     }
 
     public virtual object? Visit(ValueExpression expression) => expression.Value;
@@ -139,7 +139,7 @@ public class EvaluationVisitor(
         context.EvaluateBinaryHandler?.Invoke(args);
     }
 
-    private (object? Value, ExpressionContext? ChildContext) GetIdentifierValue(Identifier identifier)
+    private IdentifierEvaluationResult GetIdentifierValue(Identifier identifier)
     {
         var identifierName = identifier.Name;
 
@@ -148,25 +148,25 @@ public class EvaluationVisitor(
         context.EvaluateParameterHandler?.Invoke(identifierName, parameterArgs);
 
         if (parameterArgs.HasResult)
-            return (parameterArgs.Result, null);
+            return new IdentifierEvaluationResult(parameterArgs.Result);
 
         if (context.Parameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
-                return (expression, ShareParametersWithChildExpression(expression));
+                return new IdentifierEvaluationResult(expression, ShareParametersWithChildExpression(expression));
             }
 
-            return (parameter, null);
+            return new IdentifierEvaluationResult(parameter);
         }
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
-            return (dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken)), null);
+            return new IdentifierEvaluationResult(dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken)));
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
             options.AllowNullParameter)
         {
-            return (null, null);
+            return new IdentifierEvaluationResult(null);
         }
 
         throw new NCalcParameterNotDefinedException(identifierName);
