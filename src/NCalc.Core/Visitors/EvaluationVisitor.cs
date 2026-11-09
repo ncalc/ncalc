@@ -100,9 +100,13 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(Identifier identifier)
     {
-        var value = GetIdentifierValue(identifier);
+        var result = GetIdentifierValue(identifier);
 
-        return value is Expression expression ? expression.Evaluate(CancellationToken) : value;
+        return result.Value is Expression expression
+            ? result.ChildContext is null
+                ? expression.Evaluate(CancellationToken)
+                : expression.Evaluate(result.ChildContext, CancellationToken)
+            : result.Value;
     }
 
     public virtual object? Visit(ValueExpression expression) => expression.Value;
@@ -135,7 +139,7 @@ public class EvaluationVisitor(
         context.EvaluateBinaryHandler?.Invoke(args);
     }
 
-    private object? GetIdentifierValue(Identifier identifier)
+    private IdentifierEvaluationResult GetIdentifierValue(Identifier identifier)
     {
         var identifierName = identifier.Name;
 
@@ -144,33 +148,38 @@ public class EvaluationVisitor(
         context.EvaluateParameterHandler?.Invoke(identifierName, parameterArgs);
 
         if (parameterArgs.HasResult)
-            return parameterArgs.Result;
+            return new IdentifierEvaluationResult(parameterArgs.Result);
 
         if (context.Parameters.TryGetValue(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
-                ShareParametersWithChildExpression(expression);
-                return expression;
+                return new IdentifierEvaluationResult(expression, ShareParametersWithChildExpression(expression));
             }
 
-            return parameter;
+            return new IdentifierEvaluationResult(parameter);
         }
 
         if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
-            return dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken));
+            return new IdentifierEvaluationResult(dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken)));
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
             options.AllowNullParameter)
         {
-            return null;
+            return new IdentifierEvaluationResult(null);
         }
 
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    private void ShareParametersWithChildExpression(Expression expression)
+    private ExpressionContext? ShareParametersWithChildExpression(Expression expression)
     {
+        if (context.IterationSource is not null)
+        {
+            expression.SetEvaluationVisitorFactory(EvaluationVisitorFactory);
+            return context.CreateChildIterationContext(expression.Context);
+        }
+
         foreach (var parameter in context.Parameters)
             expression.Parameters[parameter.Key] = parameter.Value;
 
@@ -188,5 +197,6 @@ public class EvaluationVisitor(
         expression.EvaluateAsyncParameter += context.EvaluateAsyncParameterHandler;
         expression.EvaluateBinary += context.EvaluateBinaryHandler;
         expression.EvaluateBinaryAsync += context.EvaluateBinaryAsyncHandler;
+        return null;
     }
 }
