@@ -1,4 +1,4 @@
-﻿using NCalc.Exceptions;
+using NCalc.Exceptions;
 using NCalc.Factories;
 using System.Threading.Tasks;
 
@@ -7,47 +7,6 @@ namespace NCalc.Tests;
 [Property("Category", "Parser")]
 public class ParserTests
 {
-    [Test]
-    [Arguments("11+33 ", 44)]
-    [Arguments(" 11+33", 44)]
-    [Arguments(" 11+33 ", 44)]
-    [Arguments("0.0-1.1", -1.1)]
-    public async Task ShouldIgnoreWhitespacesIssue222(string formula, object expectedValue)
-    {
-        var expression = new Expression(formula, CultureInfo.InvariantCulture);
-        var result = expression.Evaluate(CancellationToken.None);
-
-        await Assert.That(result).IsEqualTo(expectedValue);
-    }
-
-    [Test]
-    [Arguments("not( true )", false)]
-    [Arguments("not ( true )", false)]
-    [Arguments("not(true)", false)]
-    [Arguments(" not(true) ", false)]
-    public async Task NotBehaviorIssue226(string formula, object expectedValue)
-    {
-        var expression = new Expression(formula, CultureInfo.InvariantCulture);
-        var result = expression.Evaluate(CancellationToken.None);
-
-        await Assert.That(result).IsEqualTo(expectedValue);
-    }
-
-    [Test]
-    public async Task ShouldHandleNewLines()
-    {
-        const string formula = """
-                               2+3
-
-
-                               """;
-
-        var expression = new Expression(formula, CultureInfo.InvariantCulture);
-        var result = expression.Evaluate(CancellationToken.None);
-
-        await Assert.That(result).IsEqualTo(5);
-    }
-
     [Test]
     public async Task RequireClosingAtIdentifiersIssue244()
     {
@@ -141,12 +100,6 @@ public class ParserTests
     }
 
     [Test]
-    public async Task OperatorPriorityIssue337()
-    {
-        await Assert.That((bool)new Expression("true or true and false").Evaluate(CancellationToken.None)!).IsTrue();
-    }
-
-    [Test]
     public async Task ShouldNotFailIssue372()
     {
         var chars = new List<string>();
@@ -175,58 +128,6 @@ public class ParserTests
         }
 
         await Assert.That(failed).IsEmpty();
-    }
-
-    [Test]
-    public async Task ShouldNotFailIssue399()
-    {
-        bool exceptionThrown = false;
-
-        try
-        {
-            const ExpressionOptions expressionOptions = ExpressionOptions.DecimalAsDefault | ExpressionOptions.NoCache;
-            var expression = new Expression("0.3333333333333333333333 + 1.6666666666666666666667", expressionOptions, null,CultureInfo.InvariantCulture);
-            _ = expression.Evaluate(CancellationToken.None);
-        }
-        catch
-        {
-            exceptionThrown = true;
-        }
-
-        await Assert.That(exceptionThrown).IsFalse();
-    }
-
-    [Test]
-    public async Task ShouldAllowSingleEqualsByDefault()
-    {
-        await Assert.That((bool)new Expression("2 + 3 = 5").Evaluate(CancellationToken.None)!).IsTrue();
-    }
-
-    [Test]
-    public async Task ShouldDisallowSingleEqualsWhenConfigured()
-    {
-        var options = new LogicalExpressionParserOptions { DisallowSingleEquals = true };
-
-        Assert.Throws<NCalcParserException>(() =>
-            LogicalExpressionFactory.Create("2 + 3 = 5", options, cancellationToken: CancellationToken.None));
-    }
-
-    [Test]
-    public async Task ShouldStillAllowDoubleEqualsWhenSingleEqualsDisallowed()
-    {
-        var options = new LogicalExpressionParserOptions { DisallowSingleEquals = true };
-        var logicalExpression = LogicalExpressionFactory.Create("2 + 3 == 5", options, cancellationToken: CancellationToken.None);
-
-        await Assert.That((bool)new Expression(logicalExpression).Evaluate(CancellationToken.None)!).IsTrue();
-    }
-
-    [Test]
-    public async Task ShouldKeepNotEqualWorkingWhenSingleEqualsDisallowed()
-    {
-        var options = new LogicalExpressionParserOptions { DisallowSingleEquals = true };
-        var logicalExpression = LogicalExpressionFactory.Create("5 != 3", options, cancellationToken: CancellationToken.None);
-
-        await Assert.That((bool)new Expression(logicalExpression).Evaluate(CancellationToken.None)!).IsTrue();
     }
 
     [Test]

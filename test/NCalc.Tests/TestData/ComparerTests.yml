@@ -1,0 +1,112 @@
+- name: Should_Use_Case_Insensitive_Comparer_Issue_85
+  configuration:
+    evaluation:
+      stringComparer: currentCultureIgnoreCase
+  parameters:
+    PageState: List
+  cases:
+  - input: PageState == 'LIST'
+    output: true
+- name: Compare_Using_Most_Precise_Type_Issue_102
+  cases:
+  - input: a == b
+    output: false
+    parameters:
+      a: null
+      b: 2
+  - input: a == b
+    output: true
+    parameters:
+      a: 2
+      b:
+        type: Int64
+        value: '2'
+  - input: a == b
+    output: false
+    parameters:
+      a: Hello
+      b: World
+- name: ExpressionShouldHandleNullRightParameters
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  cases:
+  - input: '''a string'' == null'
+    output: false
+- name: ExpressionShouldHandleNullLeftParameters
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  cases:
+  - input: null == 'a string'
+    output: false
+- name: ExpressionShouldHandleNullBothParameters
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  cases:
+  - input: null == null
+    output: true
+- name: ShouldCompareNullToNull
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  parameters:
+    x: null
+  cases:
+  - input: '[x] = null'
+    output: true
+- name: ShouldCompareNullableToNonNullable
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  cases:
+  - input: '[x] = 5'
+    output: true
+    parameters:
+      x: 5
+  - input: '[x] = 5'
+    output: false
+    parameters:
+      x: 6
+- name: ShouldCompareNullableNullToNonNullable
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  parameters:
+    x: null
+  cases:
+  - input: '[x] = 5'
+    output: false
+- name: ShouldCompareNullToString
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  parameters:
+    x: null
+  cases:
+  - input: '[x] = ''foo'''
+    output: false
+- name: CompareWithNullShouldReturnFalse
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  parameters:
+    x: null
+  cases:
+  - input: (10/null)<0
+    output: false
+  - input: (10/null)>0
+    output: false
+- name: ShouldCompareInequlityWithStrictTypeMatching
+  configuration:
+    evaluation:
+      noStringTypeCoercion: true
+      strictTypeMatching: true
+  cases:
+  - input: 1 != ''
+    output: true
+- name: ShouldCompareWithEmptyString
+  cases:
+  - input: 1 == ''
+    output: false

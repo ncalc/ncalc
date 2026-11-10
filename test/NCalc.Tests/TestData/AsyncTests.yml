@@ -1,0 +1,44 @@
+- name: ShouldEvaluateTernaryAsync
+  cases:
+  - input: '1 == 1 ? 42 : 3/0'
+    output: 42
+- name: ShouldEvaluatePowAsync
+  cases:
+  - input: 2**2
+    output: 4.0
+- name: Should_Use_IEEE754_Semantics_For_NaN_Comparisons_Async
+  resultType: bool
+  cases:
+  - input: (0.0 / 0.0) == (0.0 / 0.0)
+    output: false
+- name: ShouldHandleBuiltInFunctionCaseSensitivenessAsync
+  cases:
+  - input: aBs(-1)
+    output: 1.0
+    configuration:
+      evaluation:
+        ignoreCaseAtBuiltInFunctions: true
+  - input: aBs(-1)
+    throws: NCalcFunctionNotFoundException
+- name: ShouldEvaluateIfFalseBranchWhenIteratedConditionComparesNaN
+  configuration:
+    parsing:
+      argumentSeparator: Semicolon
+    evaluation:
+      iterateParameters: true
+  cases:
+  - input: if((A - B) < 1; 0; (A - B))
+    output:
+    - type: Double
+      value: NaN
+    parameters:
+      A:
+        type: Double[]
+        value:
+        - type: Double
+          value: NaN
+      B:
+        type: Double[]
+        value:
+        - type: Double
+          value: NaN

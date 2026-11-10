@@ -1,0 +1,58 @@
+- name: ShouldGetParametersOneTimeIssue141
+  operation: parameterCount
+  configuration:
+    evaluation:
+      stringComparer: currentCultureIgnoreCase
+  cases:
+  - input: if(x=0,x,y)
+    output: 2
+- name: ShouldGetParametersWithUnary
+  operation: parameterCount
+  cases:
+  - input: '-0.68'
+    output: 0
+- name: ShouldGetParameters
+  operation: parameterCount
+  cases:
+  - input: (a, b, c)
+    output: 3
+  - input: 725 - 1 == result * secret_operation(secretValue)
+    output: 2
+  - input: getLightsaberColor(selectedJedi) == selectedColor
+    output: 2
+- name: ShouldGetFunctions
+  operation: functionCount
+  cases:
+  - input: (a, drop_database(), c) == toUpper(getName())
+    output: 3
+  - input: Abs(523/2) == Abs(523/2)
+    output: 1
+  - input: getLightsaberColor('Yoda') == selectedColor
+    output: 1
+- name: ShouldGetParametersInsideFunctionsIssue305
+  operation: parameterCount
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  cases:
+  - input: 'if([Value] >= 50, ''background-color: #80ffcc;'', null)'
+    output: 2
+- name: ShouldGetFunctionsInsideFunctionsIssue305
+  operation: functionCount
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  cases:
+  - input: 'if(getValue() >= 50, ''background-color: #80ffcc;'', null)'
+    output: 2
+- name: ShouldGetNestedFunctionsIssue334
+  operation: functionNames
+  configuration:
+    parsing:
+      argumentSeparator: Semicolon
+  cases:
+  - input: '[a] + GetTimeValue(if([c] > [d]; test([e] > 0; [g]; [h]); [f]); 1; ''sec'')'
+    output:
+    - GetTimeValue
+    - if
+    - test

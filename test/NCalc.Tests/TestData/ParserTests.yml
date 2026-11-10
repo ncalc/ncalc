@@ -1,0 +1,79 @@
+- name: ShouldIgnoreWhitespacesIssue222
+  cases:
+  - input: '11+33 '
+    output: 44
+  - input: ' 11+33'
+    output: 44
+  - input: ' 11+33 '
+    output: 44
+  - input: 0.0-1.1
+    output: -1.1
+- name: NotBehaviorIssue226
+  cases:
+  - input: not( true )
+    output: false
+  - input: not ( true )
+    output: false
+  - input: not(true)
+    output: false
+  - input: ' not(true) '
+    output: false
+- name: ShouldHandleNewLines
+  cases:
+  - input: '2+3
+
+
+      '
+    output: 5
+- name: OperatorPriorityIssue337
+  cases:
+  - input: true or true and false
+    output: true
+- name: ShouldAllowSingleEqualsByDefault
+  cases:
+  - input: 2 + 3 = 5
+    output: true
+- name: ShouldStillAllowDoubleEqualsWhenSingleEqualsDisallowed
+  configuration:
+    parsing:
+      disallowSingleEquals: true
+  cases:
+  - input: 2 + 3 == 5
+    output: true
+- name: ShouldKeepNotEqualWorkingWhenSingleEqualsDisallowed
+  configuration:
+    parsing:
+      disallowSingleEquals: true
+  cases:
+  - input: 5 != 3
+    output: true
+- name: ShouldReportErrorsIssue239
+  operation: hasErrors
+  cases:
+  - input: 1a + ]
+    output: true
+  - input: sergio +
+    output: true
+  - input: 42 == 42
+    output: false
+- name: ShouldDisallowSingleEqualsWhenConfigured
+  throws: NCalcParserException
+  operation: createLogicalExpression
+  configuration:
+    parsing:
+      disallowSingleEquals: true
+  cases:
+  - input: 2 + 3 = 5
+- name: ShouldNotFailIssue399
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+    cacheEnabled: false
+  cases:
+  - input: 0.3333333333333333333333 + 1.6666666666666666666667
+    output:
+      type: Decimal
+      value: '2'

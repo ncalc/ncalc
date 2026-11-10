@@ -1,4 +1,4 @@
-﻿#if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
 #nullable enable
 using NCalc.LambdaCompilation;
 using NCalc.Tests.Attributes;
@@ -146,20 +146,6 @@ public class LambdaTests
     }
 
     [Test]
-    [Arguments("1+2", 3)]
-    [Arguments("1-2", -1)]
-    [Arguments("2*2", 4)]
-    [Arguments("10/2", 5)]
-    [Arguments("7%2", 1)]
-    public async Task ShouldHandleIntegers(string input, int expected)
-    {
-        var expression = new Expression(input);
-        var sut = expression.ToLambda<int>(CancellationToken.None);
-
-        await Assert.That(expected).IsEqualTo(sut());
-    }
-
-    [Test]
     public async Task ShouldHandleParameters()
     {
         var expression = new Expression("[FieldA] > 5 && [FieldB] = 'test'");
@@ -174,20 +160,13 @@ public class LambdaTests
     {
         var referenceExpression = new Expression("[FieldB] ?? 'fallback'");
         var nullableExpression = new Expression("[FieldE] ?? 42");
-        var parameterExpression = new Expression("[value] ?? 'fallback'")
-        {
-            Parameters = { ["value"] = null }
-        };
-
         var referenceLambda = referenceExpression.ToLambda<Context, string>(CancellationToken.None);
         var nullableLambda = nullableExpression.ToLambda<Context, int>(CancellationToken.None);
-        var parameterLambda = parameterExpression.ToLambda<string>(CancellationToken.None);
 
         await Assert.That(referenceLambda(new Context())).IsEqualTo("fallback");
         await Assert.That(referenceLambda(new Context { FieldB = "value" })).IsEqualTo("value");
         await Assert.That(nullableLambda(new Context())).IsEqualTo(42);
         await Assert.That(nullableLambda(new Context { FieldE = 7 })).IsEqualTo(7);
-        await Assert.That(parameterLambda()).IsEqualTo("fallback");
     }
 
     [Test]
@@ -306,33 +285,6 @@ public class LambdaTests
     }
 
     [Test]
-    public async Task Issue1()
-    {
-        var expr = new Expression("2 + 2 - a - b - x");
-
-        const decimal x = 5m;
-        const decimal a = 6m;
-        const decimal b = 7m;
-
-        expr.Parameters["x"] = x;
-        expr.Parameters["a"] = a;
-        expr.Parameters["b"] = b;
-
-        var f = expr.ToLambda<float>(CancellationToken.None); // Here it throws System.ArgumentNullException. Parameter name: expression
-        await Assert.That(f()).IsEqualTo(-14);
-    }
-
-    [Test]
-    [Arguments("if(true, true, false)")]
-    [Arguments("in(3, 1, 2, 3, 4)")]
-    public async Task ShouldHandleBuiltInFunctions(string input)
-    {
-        var expression = new Expression(input);
-        var sut = expression.ToLambda<bool>(CancellationToken.None);
-        await Assert.That(sut()).IsTrue();
-    }
-
-    [Test]
     public async Task ShouldHandleNullCheckBuiltInFunctions()
     {
         var isNull = new Expression("isNull([FieldB])").ToLambda<Context, bool>(CancellationToken.None);
@@ -385,48 +337,6 @@ public class LambdaTests
         var context = new Context { FieldA = 7, FieldB = "test", FieldC = 2.4m, FieldE = 2 };
 
         await Assert.That(sut(context)).IsEqualTo(expected);
-    }
-
-    [Test]
-    [Arguments("Min(3,2)", 2)]
-    [Arguments("Min(3.2,6.3)", 3.2)]
-    [Arguments("Max(2.6,9.6)", 9.6)]
-    [Arguments("Max(9,6)", 9.0)]
-    [Arguments("Pow(5,2)", 25)]
-    public async Task ShouldHandleNumericBuiltInFunctions(string input, double expected)
-    {
-        var expression = new Expression(input);
-        var sut = expression.ToLambda<object>(CancellationToken.None);
-        await Assert.That(sut()).IsEqualTo(expected);
-    }
-
-    [Test]
-    [Arguments("if(true, 1, 0.0)", 1.0)]
-    [Arguments("if(true, 1.0, 0)", 1.0)]
-    [Arguments("if(true, 1.0, 0.0)", 1.0)]
-    public async Task ShouldHandleFloatIfFunction(string input, double expected)
-    {
-        var expression = new Expression(input);
-        var sut = expression.ToLambda<object>(CancellationToken.None);
-        await Assert.That(sut()).IsEqualTo(expected);
-    }
-
-    [Test]
-    [Arguments("if(true, 1, 0)", 1)]
-    public async Task ShouldHandleIntIfFunction(string input, int expected)
-    {
-        var expression = new Expression(input);
-        var sut = expression.ToLambda<object>(CancellationToken.None);
-        await Assert.That(sut()).IsEqualTo(expected);
-    }
-
-    [Test]
-    [Arguments("if(true, 'a', 'b')", "a")]
-    public async Task ShouldHandleStringIfFunction(string input, string expected)
-    {
-        var expression = new Expression(input);
-        var sut = expression.ToLambda<object>(CancellationToken.None);
-        await Assert.That(sut()).IsEqualTo(expected);
     }
 
     [Test]
@@ -675,265 +585,6 @@ public class LambdaTests
         await Assert.That(actualCos).IsEqualTo(expectedCos);
         await Assert.That(actualLog1).IsEqualTo(expectedLog1);
         await Assert.That(actualLog2).IsEqualTo(expectedLog2);
-    }
-
-    [Test]
-    [Arguments(int.MaxValue, '+', int.MaxValue)]
-    [Arguments(int.MinValue, '-', int.MaxValue)]
-    [Arguments(int.MaxValue, '*', int.MaxValue)]
-    public void ShouldHandleOverflowInt(int a, char op, int b)
-    {
-        var parameters = new Dictionary<string, object?>
-        {
-            ["a"] = a,
-            ["b"] = b
-        };
-        var context = new ExpressionContext(parameters);
-        var e = new Expression($"[a] {op} [b]", ExpressionOptions.OverflowProtection, context,CultureInfo.InvariantCulture);
-
-        var lambda = e.ToLambda<int>(CancellationToken.None);
-
-        Assert.Throws<OverflowException>(() => lambda());
-    }
-
-    [Test]
-    public async Task ShouldAllowPowWithDecimals()
-    {
-        var e = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
-        var lambda = e.ToLambda<decimal>(CancellationToken.None);
-        await Assert.That(lambda()).IsEqualTo(9.61m);
-    }
-
-    [Test]
-    [Arguments(2, 2)]
-    [Arguments(2.0, 2)]
-    [Arguments(2, 2.0)]
-    [Arguments(2.0, 2.0)]
-    public async Task ShouldAllowExponentiationWithDifferentTypes(object a, object b)
-    {
-        var parameters = new Dictionary<string, object?>
-        {
-            ["a"] = a,
-            ["b"] = b
-        };
-
-        var context = new ExpressionContext(parameters);
-        var e = new Expression($"[a] ** [b]", ExpressionOptions.OverflowProtection, context, CultureInfo.InvariantCulture);
-
-        var lambda = e.ToLambda<int>(CancellationToken.None);
-        await Assert.That(lambda()).IsEqualTo(4);
-    }
-
-    [Test]
-    public async Task ShouldUseDecimalsWithDecimalAsDefault()
-    {
-        decimal val = 3.1m;
-
-        // Arrange
-        var expressionAbs = new Expression("Abs(x)", ExpressionOptions.DecimalAsDefault);
-        expressionAbs.Parameters["x"] = val;
-        var lambdaAbs = expressionAbs.ToLambda<decimal>(CancellationToken.None);
-
-        var expressionCeiling = new Expression("Ceiling(x)", ExpressionOptions.DecimalAsDefault);
-        expressionCeiling.Parameters["x"] = val;
-        var lambdaCeiling = expressionCeiling.ToLambda<decimal>(CancellationToken.None);
-
-        var expressionFloor = new Expression("Floor(x)", ExpressionOptions.DecimalAsDefault);
-        expressionFloor.Parameters["x"] = val;
-        var lambdaFloor = expressionFloor.ToLambda<decimal>(CancellationToken.None);
-
-        var expressionSign = new Expression("Sign(x)", ExpressionOptions.DecimalAsDefault);
-        expressionSign.Parameters["x"] = val;
-        var lambdaSign = expressionSign.ToLambda<decimal>(CancellationToken.None);
-
-        var expressionTruncate = new Expression("Truncate(x)", ExpressionOptions.DecimalAsDefault);
-        expressionTruncate.Parameters["x"] = val;
-        var lambdaTruncate = expressionTruncate.ToLambda<decimal>(CancellationToken.None);
-
-        // Act
-        var actualAbs = lambdaAbs();
-        var expectedAbs = Math.Abs(val);
-
-        var actualCeiling = lambdaCeiling();
-        var expectedCeiling = Math.Ceiling(val);
-
-        var actualFloor = lambdaFloor();
-        var expectedFloor = Math.Floor(val);
-
-        var actualSign = lambdaSign();
-        var expectedSign = Math.Sign(val);
-
-        var actualTruncate = lambdaTruncate();
-        var expectedTruncate = Math.Truncate(val);
-
-        // Assert
-        await Assert.That(actualAbs).IsEqualTo(expectedAbs);
-        await Assert.That(actualCeiling).IsEqualTo(expectedCeiling);
-        await Assert.That(actualFloor).IsEqualTo(expectedFloor);
-        await Assert.That(actualSign).IsEqualTo(expectedSign);
-        await Assert.That(actualTruncate).IsEqualTo(expectedTruncate);
-    }
-
-    [Test]
-    [Arguments("test", "%est", true, ExpressionOptions.None)]
-    [Arguments("TEST", "%est", false, ExpressionOptions.None)]
-    [Arguments("TEST", "%est", true, ExpressionOptions.CaseInsensitiveStringComparer)]
-    [Arguments("this is a test", "%is a%", true, ExpressionOptions.None)]
-    [Arguments("this is a test", "%ITS A%", false, ExpressionOptions.None)]
-    [Arguments("100%", @"%\%", true, ExpressionOptions.None)]
-    [Arguments("1000", @"%\%", false, ExpressionOptions.None)]
-    [Arguments("Hello_world", @"%\_%", true, ExpressionOptions.None)]
-    [Arguments("Hello-world", @"%\_%", false, ExpressionOptions.None)]
-    public async Task ShouldHandleLikeOperator(string val, string right, bool expected, ExpressionOptions opts)
-    {
-        string[] ops = ["like", "not like"];
-        // Arrange
-        foreach (var op in ops)
-        {
-            if (op == "not like")
-                expected = !expected;
-
-            var expressionLike = new Expression($"x {op} '{right}'", opts);
-            expressionLike.Parameters["x"] = val;
-
-            var lambdaAbs = expressionLike.ToLambda<bool>(CancellationToken.None);
-
-            // Act
-            var actualAbs = lambdaAbs();
-            var expectedAbs = expressionLike.Evaluate(CancellationToken.None);
-            Console.WriteLine($"Value: {val}, Pattern: {right}, Result: {actualAbs}");
-
-            // Assert
-            if (expected)
-            {
-                await Assert.That(actualAbs).IsTrue();
-            }
-            else
-            {
-                await Assert.That(actualAbs).IsFalse();
-            }
-            if ((bool)expectedAbs)
-            {
-                await Assert.That(actualAbs).IsTrue();
-            }
-            else
-            {
-                await Assert.That(actualAbs).IsFalse();
-            }
-        }
-    }
-
-    [Test]
-    public async Task ShouldHandleEscapeLikeFunction()
-    {
-        var expression = new Expression("EscapeLike(x)");
-        expression.Parameters["x"] = "100%_";
-
-        var lambda = expression.ToLambda<string>(CancellationToken.None);
-
-        var actual = lambda();
-
-        await Assert.That(actual).IsEqualTo(@"100\%\_");
-        await Assert.That(actual).IsEqualTo((string)expression.Evaluate(CancellationToken.None)!);
-    }
-
-    [Test]
-    [Arguments("test", "'a','test','z'", true, ExpressionOptions.None)]
-    [Arguments("TEST", "'a','test','z'", false, ExpressionOptions.None)]
-    [Arguments("TEST", "'a','test','z'", true, ExpressionOptions.CaseInsensitiveStringComparer)]
-    [Arguments("this", "'this','is','a','test'", true, ExpressionOptions.None)]
-    [Arguments("THIS", "'this','is','a','test'", false, ExpressionOptions.None)]
-    [Arguments("THIS", "'this','is','a','test'", true, ExpressionOptions.CaseInsensitiveStringComparer)]
-    public async Task ShouldHandleInOperator_String(string val, string list, bool expected, ExpressionOptions opts)
-    {
-        string[] ops = ["in", "not in"];
-
-        foreach (var op in ops)
-        {
-            var exp = expected;
-            if (op == "not in") exp = !exp;
-
-            var expression = new Expression($"x {op} ({list})", opts);
-            expression.Parameters["x"] = val;
-
-            var lambda = expression.ToLambda<bool>(CancellationToken.None);
-
-            var actual = lambda();
-            var expectedEval = (bool)expression.Evaluate(CancellationToken.None);
-
-            await Assert.That(actual).IsEqualTo(exp);
-            await Assert.That(actual).IsEqualTo(expectedEval);
-        }
-    }
-
-    [Test]
-    [Arguments("test", new[] { "a", "test", "z" }, true)]
-    [Arguments("nope", new[] { "a", "test", "z" }, false)]
-    [Arguments("x", new string[] { }, false)] // empty list
-    [Arguments("dup", new[] { "dup", "dup" }, true)]  // duplicates
-    [Arguments("Test", new[] { "a", "test", "z" }, false)] // case sensitivity
-    public async Task ShouldHandleInOperatorWithVariables_String(string x, string[] y, bool expected)
-    {
-        var expression = new Expression("x in y", ExpressionOptions.None);
-        expression.Parameters["x"] = x;
-        expression.Parameters["y"] = y; // string[] is fine
-
-        var lambda = expression.ToLambda<bool>(CancellationToken.None);
-
-        var actual = lambda();
-        var expectedEval = (bool)expression.Evaluate(CancellationToken.None);
-
-        await Assert.That(actual).IsEqualTo(expected);
-        await Assert.That(actual).IsEqualTo(expectedEval);
-    }
-
-    [Test]
-    [Arguments(3, new[] { 1, 2, 3 }, true)]
-    [Arguments(4, new[] { 1, 2, 3 }, false)]
-    [Arguments(7, new int[] { }, false)] // empty list
-    public async Task ShouldHandleInOperatorWithVariables_Int(int x, int[] y, bool expected)
-    {
-        var expression = new Expression("x in y", ExpressionOptions.None);
-        expression.Parameters["x"] = x;
-        // NCalc is happy with arrays; if needed you can box: y.Cast<object>().ToArray()
-        expression.Parameters["y"] = y;
-
-        var lambda = expression.ToLambda<bool>(CancellationToken.None);
-
-        var actual = lambda();
-
-        await Assert.That(actual).IsEqualTo(expected);
-    }
-
-    [Test]
-    public async Task ShouldHandleInOperatorWithVariables_ListInt()
-    {
-        var expression = new Expression("x in y", ExpressionOptions.None);
-        expression.Parameters["x"] = 3;
-        // NCalc is happy with arrays; if needed you can box: y.Cast<object>().ToArray()
-        expression.Parameters["y"] = new List<int> { 1, 2, 3 };
-
-        var lambda = expression.ToLambda<bool>(CancellationToken.None);
-
-        var actual = lambda();
-
-        await Assert.That(actual).IsTrue();
-    }
-
-    [Test]
-    [Arguments(3.0, new[] { 1.0, 2.0, 3.0 }, true)]
-    [Arguments(3.0, new[] { 1.1, 2.2, 3.3 }, false)]
-    public async Task ShouldHandleInOperatorWithVariables_Double(double x, double[] y, bool expected)
-    {
-        var expression = new Expression("x in y", ExpressionOptions.None);
-        expression.Parameters["x"] = x;
-        expression.Parameters["y"] = y;
-
-        var lambda = expression.ToLambda<bool>(CancellationToken.None);
-
-        var actual = lambda();
-
-        await Assert.That(actual).IsEqualTo(expected);
     }
 }
 #endif

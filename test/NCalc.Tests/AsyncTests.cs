@@ -1,4 +1,4 @@
-﻿using NCalc.Exceptions;
+using NCalc.Exceptions;
 using NCalc.Factories;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -7,15 +7,6 @@ namespace NCalc.Tests;
 [Property("Category", "Async")]
 public class AsyncTests
 {
-    [Test]
-    [MethodDataSource(typeof(EvaluationTestData), "GetEnumerator")]
-    public async Task ShouldEvaluateAsync(string expression, object expected)
-    {
-        var e =  new Expression(expression);
-        var res = await e.EvaluateAsync(CancellationToken.None);
-        await Assert.That(res).IsEqualTo(expected);
-    }
-
     [Test]
     public async Task ShouldEvaluateAsyncFunction()
     {
@@ -412,177 +403,6 @@ public class AsyncTests
     }
 
     [Test]
-    public async Task ShouldEvaluateArrayParameters()
-    {
-        var e = new Expression("x * x", ExpressionOptions.IterateParameters)
-        {
-            Parameters =
-            {
-                ["x"] = new [] { 0, 1, 2, 3, 4 }
-            }
-        };
-
-        var result = (IList<object>)await e.EvaluateAsync(CancellationToken.None);
-
-        await Assert.That(result).IsNotNull();
-        await Assert.That(result[0]).IsEqualTo(0);
-        await Assert.That(result[1]).IsEqualTo(1);
-        await Assert.That(result[2]).IsEqualTo(4);
-        await Assert.That(result[3]).IsEqualTo(9);
-        await Assert.That(result[4]).IsEqualTo(16);
-    }
-
-    [Test]
-    public async Task ShouldEvaluateIfFalseBranchWhenIteratedConditionComparesNaNAsync()
-    {
-        var logicalExpression = LogicalExpressionParser.Parse(new LogicalExpressionParseContext(
-            "if((A - B) < 1; 0; (A - B))",
-            new LogicalExpressionParserOptions { ArgumentSeparator = ArgumentSeparator.Semicolon }));
-        var expression = new Expression(logicalExpression, ExpressionOptions.IterateParameters)
-        {
-            Parameters =
-            {
-                ["A"] = new[] { double.NaN },
-                ["B"] = new[] { double.NaN }
-            }
-        };
-
-        var result = await expression.EvaluateAsync<IList<object>>(CancellationToken.None);
-
-        await Assert.That(result).IsNotNull();
-        await Assert.That(result.Count).IsEqualTo(1);
-        await Assert.That(double.IsNaN((double)result[0])).IsTrue();
-    }
-
-    [Test]
-    [MethodDataSource(typeof(BuiltInFunctionsTestData), "GetEnumerator")]
-    public async Task ShouldHandleBuiltInFunctions(string expression, object expected, double? tolerance)
-    {
-        var e = new Expression(expression);
-        var result = await e.EvaluateAsync(CancellationToken.None);
-
-        if (tolerance.HasValue)
-        {
-            // TODO: TUnit migration - xUnit Assert.Equal had additional argument(s) (precision: 15) that could not be converted.
-            await Assert.That((double)result).IsEqualTo((double)expected);
-        }
-        else
-        {
-            await Assert.That(result).IsEqualTo(expected);
-        }
-    }
-
-    [Test]
-    [Arguments("isNull", true)]
-    [Arguments("isNullOrEmpty", true)]
-    public async Task ShouldHandleNullCheckBuiltInFunctionsAsync(string functionName, bool expected)
-    {
-        var expression = new Expression($"{functionName}([value])")
-        {
-            Parameters = { ["value"] = null }
-        };
-
-        await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo(expected);
-    }
-
-    [Test]
-    public async Task ShouldHandleBuiltInFunctionCaseSensitivenessAsync()
-    {
-        var caseInsensitive = new Expression("aBs(-1)", ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
-        await Assert.That(await caseInsensitive.EvaluateAsync(CancellationToken.None)).IsEqualTo(1d);
-
-        var caseSensitive = new Expression("aBs(-1)");
-        await Assert.ThrowsAsync<NCalcFunctionNotFoundException>(async () =>
-            await caseSensitive.EvaluateAsync(CancellationToken.None));
-    }
-
-    [Test]
-    [MethodDataSource(typeof(ValuesTestData), "GetEnumerator")]
-    public async Task ShouldParseValues(string input, object expectedValue)
-    {
-        var expression = new Expression(input);
-        var result = await expression.EvaluateAsync(CancellationToken.None);
-
-        if (expectedValue is double expectedDouble)
-        {
-            // TODO: TUnit migration - xUnit Assert.Equal had additional argument(s) (precision: 15) that could not be converted.
-            await Assert.That((double)result).IsEqualTo(expectedDouble);
-        }
-        else
-        {
-            await Assert.That(result).IsEqualTo(expectedValue);
-        }
-    }
-
-    [Test]
-    [MethodDataSource(typeof(NullCheckTestData), "GetEnumerator")]
-    public async Task ShouldAllowOperatorsWithNulls(string expression, object expected)
-    {
-        var e = new Expression(expression, ExpressionOptions.AllowNullParameter);
-        await Assert.That(await e.EvaluateAsync(CancellationToken.None)).IsEqualTo(expected);
-    }
-
-    [Test]
-    [MethodDataSource(typeof(WaterLevelCheckTestData), "GetEnumerator")]
-    public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
-    {
-        var compiled = LogicalExpressionFactory.Create(expression, cancellationToken: CancellationToken.None);
-        var serialized = JsonSerializer.Serialize(compiled, NCalcTestJsonContext.Default.LogicalExpression);
-        var deserialized = JsonSerializer.Deserialize(serialized, NCalcTestJsonContext.Default.LogicalExpression);
-
-        var exp = new Expression(deserialized, ExpressionOptions.NoCache)
-        {
-            Parameters =
-            {
-                { "waterlevel", inputValue }
-            }
-        };
-
-        object evaluated;
-        try
-        {
-            evaluated = await exp.EvaluateAsync(CancellationToken.None);
-        }
-        catch
-        {
-            evaluated = false;
-        }
-
-        // Assert
-        await Assert.That(evaluated).IsEqualTo(expected);
-    }
-
-    [Test]
-    [Arguments("1a + ]", true)]
-    [Arguments("sergio +", true)]
-    [Arguments("42 == 42", false)]
-    public async Task HasErrorsIssue239(string expressionString, bool hasError)
-    {
-        var expression = new Expression(expressionString);
-        await Assert.That(expression.HasErrors(CancellationToken.None)).IsEqualTo(hasError);
-    }
-
-    [Test]
-    public async Task ShouldEvaluateSubExpressionsAsync()
-    {
-        var volume = new Expression("[surface] * h");
-        var surface = new Expression("[l] * [L]");
-        volume.Parameters["surface"] = surface;
-        volume.Parameters["h"] = 3;
-        surface.Parameters["l"] = 1;
-        surface.Parameters["L"] = 2;
-
-        await Assert.That(volume.Evaluate(CancellationToken.None)).IsEqualTo(6);
-    }
-
-    [Test]
-    public async Task ShouldEvaluateTernaryAsync()
-    {
-        var e = new Expression("1 == 1 ? 42 : 3/0");
-        await Assert.That(await e.EvaluateAsync(CancellationToken.None)).IsEqualTo(42);
-    }
-
-    [Test]
     public async Task ShouldEvaluateAndShortCircuitCoalesceAsync()
     {
         var expression = new Expression("[foo] ?? fallback()")
@@ -600,36 +420,6 @@ public class AsyncTests
         expression.AsyncFunctions["fallback"] = _ => Task.FromResult<object>("fallback");
 
         await Assert.That(await expression.EvaluateAsync(CancellationToken.None)).IsEqualTo("fallback");
-    }
-
-    [Test]
-    public async Task ShouldEvaluatePowAsync()
-    {
-        var e = new Expression("2**2");
-        await Assert.That(await e.EvaluateAsync(CancellationToken.None)).IsEqualTo(4d);
-    }
-
-    [Test]
-    public async Task Should_Use_IEEE754_Semantics_For_NaN_Comparisons_Async()
-    {
-        var expression = new Expression("amount != amount")
-        {
-            Parameters =
-            {
-                ["amount"] = double.NaN
-            }
-        };
-
-        await Assert.That(await new Expression("amount < 0")
-        {
-            Parameters =
-            {
-                ["amount"] = double.NaN
-            }
-        }.EvaluateAsync<bool>(CancellationToken.None)).IsFalse();
-        await Assert.That(await expression.EvaluateAsync<bool>(CancellationToken.None)).IsTrue();
-        await Assert.That(await new Expression("(0.0 / 0.0) == (0.0 / 0.0)").EvaluateAsync<bool>(CancellationToken.None))
-            .IsFalse();
     }
 
     private static Expression CreateConcurrentExpression(string expression)

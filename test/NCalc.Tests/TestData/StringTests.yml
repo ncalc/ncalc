@@ -1,0 +1,53 @@
+- name: ShouldHandleUnicode
+  cases:
+  - input: '''経済協力開発機構'''
+    output: 経済協力開発機構
+  - input: '''\u0048\u0065\u006C\u006C\u006F'''
+    output: Hello
+  - input: '''\u3060'''
+    output: だ
+  - input: '''\u0100'''
+    output: Ā
+- name: ShouldEscapeCharacters
+  cases:
+  - input: '''\''hello\'''''
+    output: '''hello'''
+  - input: ''' \'' hel lo \'' '''
+    output: ' '' hel lo '' '
+  - input: '''hel\nlo'''
+    output: 'hel
+
+      lo'
+- name: ShouldHandleStringConcatenation
+  configuration:
+    evaluation:
+      stringConcat: true
+  cases:
+  - input: '''to'' + ''to'''
+    output: toto
+  - input: '''one'' + 2'
+    output: one2
+  - input: 2 + 'one'
+    output: 2one
+  - input: '''1'' + ''2'''
+    output: '12'
+- name: ShouldHandleStringAddition
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+  cases:
+  - input: 1 + '2'
+    output:
+      type: Decimal
+      value: '3'
+  - input: '''1'' + 2'
+    output:
+      type: Decimal
+      value: '3'
+  - input: '''1'' + ''2'''
+    output:
+      type: Decimal
+      value: '3'

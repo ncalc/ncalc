@@ -1,0 +1,196 @@
+- name: Should_Correctly_Parse_Large_Decimal_Literals_Issue_335
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+  cases:
+  - input: '12.34'
+    output:
+      type: Decimal
+      value: '12.34'
+  - input: '12345678901234567890123456789'
+    output:
+      type: Decimal
+      value: '12345678901234567890123456789'
+  - input: '0.1234567890123456789'
+    output:
+      type: Decimal
+      value: '0.1234567890123456789'
+  - input: '10000000000000000.12'
+    output:
+      type: Decimal
+      value: '10000000000000000.12'
+  - input: '100000000000000000000000000.12'
+    output:
+      type: Decimal
+      value: '100000000000000000000000000.12'
+  - input: '123456789012345678901234567.89'
+    output:
+      type: Decimal
+      value: '123456789012345678901234567.89'
+  - input: '1234567890.1234567890123456789'
+    output:
+      type: Decimal
+      value: '1234567890.1234567890123456789'
+- name: Should_Return_PositiveInfinity_When_Overflow_Issue_335
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+  cases:
+  - input: 8E28
+    output:
+      type: Double
+      value: Infinity
+- name: Should_Return_NegativeInfinity_When_Overflow_Issue_335
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+  cases:
+  - input: -8E28
+    output:
+      type: Double
+      value: -Infinity
+- name: Decimals_Should_Not_Loose_Precision
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+  cases:
+  - input: 0.3 - 0.2 - 0.1
+    output:
+      type: Decimal
+      value: '0'
+- name: ShouldAddDoubleAndDecimal
+  parameters:
+    var1: 9.2
+  cases:
+  - input: 1.8 + Abs([var1])
+    output: 11.0
+- name: ShouldSubtractDoubleAndDecimal
+  parameters:
+    var1: 0.8
+  cases:
+  - input: 1.8 - Abs([var1])
+    output: 1.0
+- name: ShouldMultiplyDoubleAndDecimal
+  parameters:
+    var1: 9.2
+  cases:
+  - input: 1.8 * Abs([var1])
+    output: 16.56
+- name: ShouldDivideDoubleAndDecimal
+  parameters:
+    var1: 0.5
+  cases:
+  - input: 1.8 / Abs([var1])
+    output: 3.6
+- name: Should_Divide_Decimal_By_Double_Issue_16
+  parameters:
+    x:
+      type: Decimal
+      value: '1'
+  cases:
+  - input: x / 1.0
+    output:
+      type: Decimal
+      value: '1'
+- name: Should_Divide_Decimal_By_Single
+  parameters:
+    x:
+      type: Decimal
+      value: '1'
+    y:
+      type: Single
+      value: '1'
+  cases:
+  - input: x / y
+    output:
+      type: Decimal
+      value: '1'
+- name: ShouldHandleTrailingDecimalPoint
+  cases:
+  - input: 1. + 2.
+    output: 3.0
+- name: ShouldNotLoosePrecision
+  cases:
+  - input: 3/6
+    output: 0.5
+- name: ShouldNotRoundDecimalValues
+  resultType: bool
+  cases:
+  - input: 0 <= -0.6
+    output: false
+- name: ShouldAllowPowWithDecimals
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+  cases:
+  - input: 3.1 ** 2
+    output:
+      type: Decimal
+      value: '9.61'
+  - input: Pow(3.1, 2)
+    output:
+      type: Decimal
+      value: '9.61'
+- name: ShouldResolveHexadecimal
+  cases:
+  - input: 0x17 + 0x18
+    output: 47
+- name: ShouldResolveOctal
+  cases:
+  - input: 0o16 + 0o17
+    output: 29
+- name: ShouldResolveBinary
+  cases:
+  - input: 0b00001111 + 0b11110000
+    output: 255
+  - input: 0b00001111 & 0b11110000
+    output:
+      type: UInt64
+      value: '0'
+  - input: 0b00001111 | 0b11110000
+    output:
+      type: UInt64
+      value: '255'
+- name: ShouldParseBigNumbersAsDecimals
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+  cases:
+  - input: '25343463636363454545454544563464.12'
+    output:
+      type: Double
+      value: Infinity
+- name: ShouldNotTreatIntegersAsDecimals
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+  cases:
+  - input: '1'
+    output: 1
+  - input: 1+2
+    output: 3
+  - input: 4-3
+    output: 1
+  - input: 1*2
+    output: 2

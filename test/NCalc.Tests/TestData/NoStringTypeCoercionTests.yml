@@ -1,0 +1,82 @@
+- name: ShouldUseStringConcatenationIfEitherValueIsAString
+  configuration:
+    evaluation:
+      noStringTypeCoercion: true
+  cases:
+  - input: '''to'' + ''to'''
+    output: toto
+  - input: '''one'' + 2'
+    output: one2
+  - input: '''one'' + 2.1'
+    output: one2.1
+  - input: 2 + 'one'
+    output: 2one
+  - input: 2.1 + 'one'
+    output: 2.1one
+  - input: '''1'' + ''2'''
+    output: '12'
+  - input: '''1.1'' + ''2'''
+    output: '1.12'
+  - input: '''1'' + ''2.2'''
+    output: '12.2'
+  - input: 1 + 2
+    output: 3
+  - input: 1.5 + 2.5
+    output: 4.0
+  - input: '''10'' + ''mA - '' + (10 + 20) + ''mA'''
+    output: 10mA - 30mA
+- name: ShouldRespectDisabledCoercionAtInOperator
+  configuration:
+    evaluation:
+      noStringTypeCoercion: true
+  cases:
+  - input: 1 in ('1')
+    output: false
+  - input: '''1'' in (1)'
+    output: false
+  - input: 1 in ('1',2)
+    output: false
+- name: ShouldRespectCoercionAtInOperator
+  cases:
+  - input: 1 in ('1')
+    output: true
+  - input: '''1'' in (1)'
+    output: true
+  - input: 1 in ('1',2)
+    output: true
+  - input: ''''' in ('''')'
+    output: true
+  - input: ''''' not in ('''')'
+    output: false
+  - input: ''''' in ('''',''1'')'
+    output: true
+  - input: '''1'' in ('''')'
+    output: false
+  - input: '''1'' in ('''', 1)'
+    output: true
+  - input: ('1' ='1'  AND '' IN ('6') OR ( '1' ='2'  AND '' IN ('6')) OR ( '1' ='6'  AND '' IN ('6')))
+    output: false
+- name: ShouldRespectStringComparerAtInOperatorWhenCoercionIsDisabled
+  configuration:
+    evaluation:
+      noStringTypeCoercion: true
+      stringComparer: currentCultureIgnoreCase
+  cases:
+  - input: '''md'' in (''MD'',''DO'',''PA'')'
+    output: true
+  - input: '''MD'' in (''MD'',''DO'',''PA'')'
+    output: true
+  - input: '''xx'' in (''MD'',''DO'',''PA'')'
+    output: false
+  - input: '''md'' not in (''MD'',''DO'',''PA'')'
+    output: false
+- name: ShouldAgreeWithEqualityAtInOperatorWhenCoercionIsDisabled
+  configuration:
+    evaluation:
+      noStringTypeCoercion: true
+      stringComparer: currentCultureIgnoreCase
+  cases:
+  - input: '''md'' == ''MD'''
+    output: true
+  - input: '''md'' in (''MD'',''DO'')'
+    output: true

@@ -19,6 +19,4 @@ using NCalc;
 [JsonSerializable(typeof(TimeSpan))]
 [JsonSerializable(typeof(bool))]
 [JsonSerializable(typeof(Guid))]
-internal partial class NCalcTestJsonContext: JsonSerializerContext
-{
-}
+internal partial class NCalcTestJsonContext: JsonSerializerContext;

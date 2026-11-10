@@ -26,6 +26,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="TUnit" />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +34,10 @@
     <ProjectReference Include="..\..\src\NCalc.DependencyInjection\NCalc.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\src\Plugins\NCalc.LambdaCompilation\NCalc.LambdaCompilation.csproj" />
     <ProjectReference Include="..\..\src\Plugins\NCalc.MemoryCache\NCalc.MemoryCache.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestData/**/*.yml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

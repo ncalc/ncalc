@@ -1,0 +1,150 @@
+- name: ShouldMatchSingleCharacterUsingLike
+  parameters:
+    LEP_COD_SAP_PROD: A1B2C
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''A_B2C'''
+    output: true
+- name: ShouldNotMatchWhenSingleCharacterDoesNotMatch
+  parameters:
+    LEP_COD_SAP_PROD: A1B2C
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''A_12C'''
+    output: false
+- name: ShouldMatchAtStartUsingSingleCharacterWildcard
+  parameters:
+    LEP_COD_SAP_PROD: X12345
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''_12345'''
+    output: true
+- name: ShouldMatchAtEndUsingMultipleCharactersWildcard
+  parameters:
+    LEP_COD_SAP_PROD: ABCX23YZ
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''ABCX__YZ'''
+    output: true
+- name: ShouldMatchMultipleWildcardsInString
+  parameters:
+    LEP_COD_SAP_PROD: A1B2C3D
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''A_B_C_D'''
+    output: true
+- name: ShouldNotMatchWhenStringLengthDiffers
+  parameters:
+    LEP_COD_SAP_PROD: ABC
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''A_B'''
+    output: false
+- name: ShouldEvaluateLikeOperatorWithWildcardAtEnd
+  parameters:
+    LEP_COD_SAP_PROD: 66ABC
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''66%'''
+    output: true
+- name: ShouldEvaluateLikeOperatorWithWildcardAtStart
+  parameters:
+    LEP_COD_SAP_PROD: ABC66
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''%66'''
+    output: true
+- name: ShouldEvaluateLikeOperatorWithWildcardAtBothEnds
+  parameters:
+    LEP_COD_SAP_PROD: ABC66XYZ
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''%66%'''
+    output: true
+- name: ShouldEvaluateLikeOperatorWithExactMatch
+  parameters:
+    LEP_COD_SAP_PROD: '66'
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''66'''
+    output: true
+- name: ShouldEvaluateLikeOperatorWithNoMatch
+  parameters:
+    LEP_COD_SAP_PROD: 77ABC
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''66%'''
+    output: false
+- name: ShouldEvaluateNotLikeOperator
+  parameters:
+    LEP_COD_SAP_PROD: 77ABC
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} NOT LIKE ''66%'''
+    output: true
+- name: ShouldMatchEscapedPercentUsingLike
+  parameters:
+    Value: 100%
+  resultType: bool
+  cases:
+  - input: '{Value} LIKE ''%\%'''
+    output: true
+- name: ShouldMatchEscapedUnderscoreUsingLike
+  parameters:
+    Value: Hello_world
+  resultType: bool
+  cases:
+  - input: '{Value} LIKE ''%\_%'''
+    output: true
+- name: ShouldNotTreatEscapedWildcardsAsWildcardsUsingLike
+  resultType: bool
+  cases:
+  - input: '{Value} LIKE ''%\%'''
+    output: false
+    parameters:
+      Value: '1000'
+  - input: '{Value} LIKE ''%\_%'''
+    output: false
+    parameters:
+      Value: Hello-world
+- name: ShouldMatchEscapedUserInputUsingLike
+  parameters:
+    Value: Hello_world
+  resultType: bool
+  cases:
+  - input: '{Value} LIKE EscapeLike(''Hello_world'')'
+    output: true
+  - input: '{Value} LIKE EscapeLike(''Hello%world'')'
+    output: false
+- name: LikeOperatorShouldRespectStringComparer
+  configuration:
+    evaluation:
+      stringComparer: currentCultureIgnoreCase
+  parameters:
+    LEP_COD_SAP_PROD: 66ABC
+  resultType: bool
+  cases:
+  - input: '{LEP_COD_SAP_PROD} LIKE ''66%'''
+    output: true
+  - input: '{LEP_COD_SAP_PROD} LIKE ''66abc%'''
+    output: true
+- name: LikeOperatorShouldWorkAcrossCodepointBoundaries
+  configuration:
+    evaluation:
+      stringComparer: currentCultureIgnoreCase
+  parameters:
+    source: Café
+    pattern: CAFÉ
+  resultType: bool
+  cases:
+  - input: source LIKE pattern
+    output: true
+- name: ShouldEscapeUnderscore
+  cases:
+  - input: EscapeLike('Hello_world')
+    output: Hello\_world
+- name: ShouldEscapeLikePattern
+  operation: escapeLike
+  cases:
+  - input: C:\Temp_100%
+    output: C:\\Temp\_100\%

@@ -1,0 +1,159 @@
+- name: Should_Parse_Functions_With_Different_Separators
+  resultType: double
+  cases:
+  - input: Max(1, 2)
+    output: 2.0
+  - input: Max(1; 2)
+    output: 2.0
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+  - input: Min(3, 1)
+    output: 1.0
+  - input: Min(3; 1)
+    output: 1.0
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+  - input: Round(3.14159, 2)
+    output: 3.14
+  - input: Round(3.14159; 2)
+    output: 3.14
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+- name: Should_Parse_Conditional_Functions_With_Different_Separators
+  cases:
+  - input: if(true, 'yes', 'no')
+    output: 'yes'
+  - input: if(true; 'yes'; 'no')
+    output: 'yes'
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+  - input: if(1 > 2, 10, 20)
+    output: 20
+  - input: if(1 > 2; 10; 20)
+    output: 20
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+- name: Should_Support_Mixed_Separators_In_Different_Parsers
+  cases:
+  - input: Max(1, 2)
+    output: 2
+  - input: Max(3; 4)
+    output: 4
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+- name: Should_Support_Culture_And_Separator_Combination
+  configuration:
+    parsing:
+      argumentSeparator: Semicolon
+  culture: de-DE
+  resultType: double
+  cases:
+  - input: Max(1.5; 2.3)
+    output: 2.3
+- name: Should_Support_Nested_Functions_With_Custom_Separator
+  configuration:
+    parsing:
+      argumentSeparator: Semicolon
+  cases:
+  - input: Max(Min(1; 2); Max(3; 4))
+    output: 4
+- name: Should_Handle_Whitespace_Around_Separators
+  cases:
+  - input: Max(1 , 2)
+    output: 2
+  - input: Max(1 ; 2)
+    output: 2
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+  - input: Max( 1, 2 )
+    output: 2
+  - input: Max( 1; 2 )
+    output: 2
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+- name: Should_Handle_Single_Argument_Functions_Regardless_Of_Separator
+  cases:
+  - input: Abs(-5)
+    output: 5.0
+  - input: Abs(-5)
+    output: 5.0
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+- name: Should_Support_Multiple_Separators_In_One_Parser
+  configuration:
+    parsing:
+      argumentSeparator: Semicolon, Comma
+  cases:
+  - input: Max(1, 2)
+    output: 2
+  - input: Max(3; 4)
+    output: 4
+- name: ShouldSupportCommaSeparator
+  configuration:
+    parsing:
+      argumentSeparator: Comma
+  resultType: double
+  cases:
+  - input: Max(1,3)
+    output: 3.0
+- name: ShouldSupportSemicolonSeparator
+  configuration:
+    parsing:
+      argumentSeparator: Semicolon
+  resultType: double
+  cases:
+  - input: Max(1;3)
+    output: 3.0
+- name: ShouldSupportColonSeparator
+  configuration:
+    parsing:
+      argumentSeparator: Colon
+  resultType: double
+  cases:
+  - input: Max(1:3)
+    output: 3.0
+- name: ShouldMaintainDefaultCommaSeparator
+  configuration:
+    parsing:
+      argumentSeparator: Comma
+  resultType: double
+  cases:
+  - input: Max(2, 3)
+    output: 3.0
+- name: ShouldSupportExplicitSemicolonSeparator
+  configuration:
+    parsing:
+      argumentSeparator: Semicolon
+  resultType: double
+  cases:
+  - input: Max(2; 3)
+    output: 3.0
+- name: Should_Throw_Exception_With_Incorrect_Separator
+  throws: NCalcParserException
+  operation: parse
+  cases:
+  - input: Max(1, 2)
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+  - input: Max(1; 2)
+    configuration:
+      parsing:
+        argumentSeparator: Comma
+  - input: Min(1, 2)
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+  - input: Round(3.14; 2)
+    configuration:
+      parsing:
+        argumentSeparator: Comma

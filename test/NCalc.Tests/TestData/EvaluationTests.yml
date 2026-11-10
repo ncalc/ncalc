@@ -1,0 +1,280 @@
+- name: Expression_Should_Evaluate
+  cases:
+  - input: 2 + 3 + 5
+    output: 10
+  - input: 2 * 3 + 5
+    output: 11
+  - input: 2 * (3 + 5)
+    output: 16
+  - input: 2 * (2*(2*(2+1)))
+    output: 24
+  - input: 10 % 3
+    output: 1
+  - input: true or false
+    output: true
+  - input: not true
+    output: false
+  - input: false || not (false and true)
+    output: true
+  - input: 3 > 2 and 1 <= (3-2)
+    output: true
+  - input: 3 % 2 != 10 % 3
+    output: false
+- name: ShouldParseValues
+  cases:
+  - input: '123456'
+    output: 123456
+  - input: '.2'
+    output: 0.2
+  - input: '123.456'
+    output: 123.456
+  - input: '123.'
+    output: 123.0
+  - input: 123.0E2
+    output: 12300.0
+  - input: 'true'
+    output: true
+  - input: '''true'''
+    output: 'true'
+  - input: '''azerty'''
+    output: azerty
+- name: ShouldEvaluateInFunction
+  resultType: bool
+  cases:
+  - input: in((2 + 2), [1], [2], 1 + 2, 4, 1 / 0)
+    output: true
+    parameters:
+      '1': 2
+      '2': 5
+  - input: in((2 + 2), [1], [2], 1 + 2, 3)
+    output: false
+    parameters:
+      '1': 2
+      '2': 5
+  - input: in('to' + 'to', 'titi', 'toto')
+    output: true
+- name: ShouldEvaluateTernaryExpression
+  cases:
+  - input: '1+2<3 ? 3+4 : 1'
+    output: 1
+- name: ShouldEvaluateNestedTernaryExpression
+  cases:
+  - input: 'true ? 1 : false ? 2 : 3'
+    output: 1
+  - input: 'false ? 1 : true ? 2 : 3'
+    output: 2
+  - input: 'false ? 1 : false ? 2 : 3'
+    output: 3
+- name: Should_Not_Throw_Function_Not_Found_Issue_110
+  configuration:
+    evaluation:
+      ignoreCaseAtBuiltInFunctions: true
+  parameters:
+    acp_associated_person_transactions:
+      type: Char
+      value: T
+  resultType: bool
+  cases:
+  - input: IN([acp_associated_person_transactions], 'T', 'Z', 'A')
+    output: true
+- name: Should_Evaluate_Ifs
+  cases:
+  - input: ifs([divider] != 0, [divided] / [divider], -1)
+    output: 1.0
+    parameters:
+      divider: 5
+      divided: 5
+  - input: ifs([divider] != 0, [divided] / [divider], -1)
+    output: -1
+    parameters:
+      divider: 0
+      divided: 5
+  - input: ifs([number] == 3, 5, [number] == 5, 3, 8)
+    output: 3
+    parameters:
+      number: 5
+  - input: ifs([number] == 3, 5, [number] == 5, 3, 8)
+    output: 8
+    parameters:
+      number: 1337
+- name: ShouldEvaluateConditional
+  parameters:
+    divided: 5
+  cases:
+  - input: if([divider] <> 0, [divided] / [divider], 0)
+    output: 1.0
+    parameters:
+      divider: 5
+  - input: if([divider] <> 0, [divided] / [divider], 0)
+    output: 0
+    parameters:
+      divider: 0
+- name: ShouldUseConfiguredMidpointRounding
+  cases:
+  - input: Round(22.5, 0)
+    output: 22.0
+  - input: Round(22.5, 0)
+    output: 23.0
+    configuration:
+      evaluation:
+        math:
+          midpointRounding: AwayFromZero
+- name: ShouldEvaluateSubExpressions
+  parameters:
+    surface:
+      expression:
+        input: '[l] * [L]'
+        parameters:
+          l: 1
+          L: 2
+    h: 3
+  cases:
+  - input: '[surface] * h'
+    output: 6
+- name: ShouldAllowSemicolonAsArgumentSeparator
+  configuration:
+    parsing:
+      argumentSeparator: Semicolon
+  cases:
+  - input: Round(1.412;2)
+    output: 1.41
+  - input: Max(5.1;10.2)
+    output: 10.2
+  - input: Min(1.3;2)
+    output: 1.3
+  - input: Pow(5;2)
+    output: 25.0
+- name: ShouldAllowToUseCurlyBraces
+  parameters:
+    surface:
+      expression:
+        input: '{l} * {L}'
+        parameters:
+          l: 1
+          L: 2
+    h: 3
+  cases:
+  - input: '{surface} * h'
+    output: 6
+- name: ShouldAllowOperatorsWithNulls
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  cases:
+  - input: if((5 + null > 0), 1, 2)
+    output: 2
+  - input: if((5 - null > 0), 1, 2)
+    output: 2
+  - input: if((5 / null > 0), 1, 2)
+    output: 2
+  - input: if((5 * null > 0), 1, 2)
+    output: 2
+  - input: if((5 % null > 0), 1, 2)
+    output: 2
+- name: AllowNullOrEmptyExpressions
+  configuration:
+    evaluation:
+      allowNullOrEmptyExpressions: true
+  cases:
+  - input: ''
+    output: ''
+  - input: null
+    output: null
+- name: ShouldUseStrictTypeMatching
+  configuration:
+    evaluation:
+      strictTypeMatching: true
+  cases:
+  - input: 01 == ''
+    output: false
+  - input: ''' '' == 01'
+    output: false
+  - input: '" " == 01'
+    output: false
+  - input: '"dog" == 01'
+    output: false
+- name: SpaceCharacterComparisonShouldBeTrue
+  parameters:
+    Test:
+      type: Char
+      value: ' '
+  cases:
+  - input: '[Test] == '' '''
+    output: true
+- name: ShouldCompareEqualDates
+  resultType: bool
+  cases:
+  - input: '#1/1/2009#==#1/1/2009#'
+    output: true
+- name: ShouldCompareDifferentDates
+  resultType: bool
+  cases:
+  - input: '#2/1/2009#==#1/1/2009#'
+    output: false
+- name: ShouldEvaluateArrayParameters
+  configuration:
+    evaluation:
+      iterateParameters: true
+  parameters:
+    x:
+      type: Int32[]
+      value:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+  cases:
+  - input: x * x
+    output:
+    - 0
+    - 1
+    - 4
+    - 9
+    - 16
+- name: ShouldEvaluateArrayParametersWithFunctions
+  configuration:
+    evaluation:
+      iterateParameters: true
+  parameters:
+    x:
+      type: Double[]
+      value:
+      - 0.51
+      - 1.671
+      - 2.237
+      - 3.568
+      - 4.11
+  cases:
+  - input: Round(x, 2)
+    output:
+    - 0.51
+    - 1.67
+    - 2.24
+    - 3.57
+    - 4.11
+- name: ShouldHandleCaseSensitiveness
+  cases:
+  - input: aBs(-1)
+    output:
+      type: Decimal
+      value: '1'
+    configuration:
+      parsing:
+        floatingPointNumberType: Decimal
+      evaluation:
+        math:
+          floatingPointNumberType: Decimal
+        ignoreCaseAtBuiltInFunctions: true
+  - input: Abs(-1)
+    output:
+      type: Decimal
+      value: '1'
+    configuration:
+      parsing:
+        floatingPointNumberType: Decimal
+      evaluation:
+        math:
+          floatingPointNumberType: Decimal
+  - input: aBs(-1)
+    throws: NCalcFunctionNotFoundException

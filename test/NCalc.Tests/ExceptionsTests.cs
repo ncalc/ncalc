@@ -8,17 +8,6 @@ namespace NCalc.Tests;
 public class ExceptionsTests
 {
     [Test]
-    [Arguments("ifs()")]
-    [Arguments("ifs([divider] > 0)")]
-    [Arguments("ifs([divider] > 0, [divider] / [divided])")]
-    [Arguments("ifs([divider] > 0, [divider] / [divided], [divider < 0], [divider] + [divided])")]
-    public void Ifs_With_Improper_Arguments_Should_Throw_Exceptions(string expression)
-    {
-        Assert.Throws<NCalcEvaluationException>(() => new Expression(expression)
-            .Evaluate(CancellationToken.None));
-    }
-
-    [Test]
     [Arguments("()>0.")]
     [Arguments("009&()")]
     [Arguments("0000000000000000<<()")]
@@ -57,26 +46,6 @@ public class ExceptionsTests
     }
 
     [Test]
-    [Arguments(". + 2")]
-    [Arguments("(3 + 2")]
-    [Arguments("42a")]
-    [Arguments("42a.3")]
-    [Arguments("42.3a")]
-    [Arguments("42a.3b")]
-    [Arguments("42.3e-5a")]
-    [Arguments("42 + [a + 10")]
-    [Arguments("42 a")]
-    [Arguments("42 '")]
-    [Arguments("Abs(-1) ]")]
-    [Arguments("42. 3")]
-    [Arguments("42 .3")]
-    [Arguments("42 . 3")]
-    public void Should_Throw_Parse_Exception(string expression)
-    {
-        Assert.Throws<NCalcParserException>(() => new Expression(expression).Evaluate(CancellationToken.None));
-    }
-
-    [Test]
     public async Task Should_Detect_Syntax_Errors_Before_Evaluation()
     {
         //Yes, I know at v3 the test was a + b * ( , but it's impossible to define an empty expression.
@@ -89,24 +58,6 @@ public class ExceptionsTests
         await Assert.That(e.Error).IsNull();
         await Assert.That(e.HasErrors(CancellationToken.None)).IsTrue();
         await Assert.That(e.Error).IsNotNull();
-    }
-
-    [Test]
-    public void Should_Display_Error_If_UncompatibleTypes()
-    {
-        var e = new Expression("(a > b) + 10")
-        {
-            Parameters =
-            {
-                ["a"] = 1,
-                ["b"] = 2
-            }
-        };
-
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            e.Evaluate(CancellationToken.None);
-        });
     }
 
     [Test]
@@ -163,44 +114,6 @@ public class ExceptionsTests
         var exception = Assert.Throws<NCalcParameterNotDefinedException>(() =>
             expression.Evaluate(CancellationToken.None));
         await Assert.That(exception.ParameterName).IsEqualTo("Name");
-    }
-
-    [Test]
-    [Arguments("5+-*10")]
-    [Arguments("5+*10")]
-    [Arguments("5/-*10")]
-    public void Should_Throw_Issue_195(string expressionString)
-    {
-        var expression = new Expression(expressionString);
-        Assert.Throws<NCalcParserException>(() =>
-            expression.Evaluate(CancellationToken.None));
-    }
-
-    [Test]
-    public void Should_Throw_Issue_208()
-    {
-        var expression = new Expression("1.3,4.5");
-        Assert.Throws<NCalcParserException>(() =>
-            expression.Evaluate(CancellationToken.None));
-    }
-
-    [Test]
-    public void ShouldThrowExceptionWhenNullOrEmpty()
-    {
-        Assert.Throws<NCalcException>(() =>
-            new Expression("").Evaluate(CancellationToken.None));
-        Assert.Throws<NCalcException>(() =>
-            new Expression((string)null).Evaluate(CancellationToken.None));
-    }
-
-    [Test]
-    public void DateAdditionShouldThrowException()
-    {
-        var exp = new Expression("[a] + [b]");
-        exp.Parameters["a"] = DateTime.Now;
-        exp.Parameters["b"] = DateTime.Now.Date;
-
-        Assert.Throws<InvalidOperationException>(() => exp.Evaluate(CancellationToken.None));
     }
 
     [Test]

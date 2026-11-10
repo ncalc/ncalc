@@ -1,0 +1,57 @@
+- name: Ifs_With_Improper_Arguments_Should_Throw_Exceptions
+  throws: NCalcEvaluationException
+  cases:
+  - input: ifs()
+  - input: ifs([divider] > 0)
+  - input: ifs([divider] > 0, [divider] / [divided])
+  - input: ifs([divider] > 0, [divider] / [divided], [divider < 0], [divider] + [divided])
+- name: Should_Throw_Parse_Exception
+  throws: NCalcParserException
+  cases:
+  - input: . + 2
+  - input: (3 + 2
+  - input: 42a
+  - input: 42a.3
+  - input: 42.3a
+  - input: 42a.3b
+  - input: 42.3e-5a
+  - input: 42 + [a + 10
+  - input: 42 a
+  - input: 42 '
+  - input: Abs(-1) ]
+  - input: 42. 3
+  - input: 42 .3
+  - input: 42 . 3
+- name: Should_Throw_Issue_195
+  throws: NCalcParserException
+  cases:
+  - input: 5+-*10
+  - input: 5+*10
+  - input: 5/-*10
+- name: Should_Throw_Issue_208
+  throws: NCalcParserException
+  cases:
+  - input: 1.3,4.5
+- name: ShouldThrowExceptionWhenNullOrEmpty
+  throws: NCalcException
+  cases:
+  - input: ''
+  - input: null
+- name: Should_Display_Error_If_UncompatibleTypes
+  throws: InvalidOperationException
+  cases:
+  - input: (a > b) + 10
+    parameters:
+      a: 1
+      b: 2
+- name: DateAdditionShouldThrowException
+  throws: InvalidOperationException
+  cases:
+  - input: '[a] + [b]'
+    parameters:
+      a:
+        type: DateTime
+        value: '2025-01-02T12:34:56'
+      b:
+        type: DateTime
+        value: '2025-01-02T00:00:00'
