@@ -139,7 +139,7 @@ public class YamlTestDataTests
     [Test]
     public async Task ShouldHaveSuiteForEveryYamlFile()
     {
-        var files = Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "TestData"), "*.yml")
+        var files = Directory.GetFiles(Path.Join(AppContext.BaseDirectory, "TestData"), "*.yml")
             .Select(Path.GetFileNameWithoutExtension).Order(StringComparer.Ordinal).ToArray();
         var suites = typeof(YamlTestDataTests).Assembly.GetTypes()
             .Where(type => type.BaseType is { IsGenericType: true } parent &&
@@ -175,5 +175,84 @@ public class YamlTestDataTests
         await Assert.That(second.Evaluate(CancellationToken.None)).IsEqualTo(6);
         await Assert.That(testCase.Parameters["h"]).IsEqualTo(3);
         await Assert.That(((Expression)testCase.Parameters["surface"]).Parameters["l"]).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task ShouldReadConfigurationFlagsAndDefaults()
+    {
+        const string yaml = """
+            - name: Configuration
+              cases:
+                - input: '1'
+                  output: 1
+                  configuration:
+                    cacheEnabled: false
+                    parsing:
+                      allowCharValues: true
+                      disallowSingleEquals: true
+                      argumentSeparator: Comma, Semicolon
+                      floatingPointNumberType: Decimal
+                      integerNumberType: Int64
+                    evaluation:
+                      ignoreCaseAtBuiltInFunctions: true
+                      iterateParameters: true
+                      allowNullParameter: true
+                      stringConcat: true
+                      noStringTypeCoercion: true
+                      allowNullOrEmptyExpressions: true
+                      arithmeticNullOrEmptyStringAsZero: true
+                      strictTypeMatching: true
+                      concurrentAsyncEvaluation: true
+                      stringComparer: ordinal
+                      math:
+                        floatingPointNumberType: Decimal
+                        integerNumberType: Int64
+                        allowBooleanCalculation: true
+                        overflowProtection: true
+                        midpointRounding: AwayFromZero
+                - input: '1'
+                  output: 1
+                  configuration: {}
+            """;
+        var cases = YamlTestData.ReadCases(yaml, "schema").ToArray();
+        var configuration = cases[0].Configuration;
+        await Assert.That(configuration.CacheEnabled).IsFalse();
+        await Assert.That(configuration.Parsing.AllowCharValues).IsTrue();
+        await Assert.That(configuration.Parsing.DisallowSingleEquals).IsTrue();
+        await Assert.That(configuration.Parsing.ArgumentSeparator).IsEqualTo(ArgumentSeparator.Comma | ArgumentSeparator.Semicolon);
+        await Assert.That(configuration.Parsing.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
+        await Assert.That(configuration.Parsing.IntegerNumberType).IsEqualTo(IntegerNumberType.Int64);
+        var evaluation = configuration.Evaluation;
+        await Assert.That(evaluation.IgnoreCaseAtBuiltInFunctions).IsTrue();
+        await Assert.That(evaluation.IterateParameters).IsTrue();
+        await Assert.That(evaluation.AllowNullParameter).IsTrue();
+        await Assert.That(evaluation.StringConcat).IsTrue();
+        await Assert.That(evaluation.NoStringTypeCoercion).IsTrue();
+        await Assert.That(evaluation.AllowNullOrEmptyExpressions).IsTrue();
+        await Assert.That(evaluation.ArithmeticNullOrEmptyStringAsZero).IsTrue();
+        await Assert.That(evaluation.StrictTypeMatching).IsTrue();
+        await Assert.That(evaluation.ConcurrentAsyncEvaluation).IsTrue();
+        await Assert.That(evaluation.StringComparer).IsEqualTo(StringComparer.Ordinal);
+        await Assert.That(evaluation.Math.FloatingPointNumberType).IsEqualTo(FloatingPointNumberType.Decimal);
+        await Assert.That(evaluation.Math.IntegerNumberType).IsEqualTo(IntegerNumberType.Int64);
+        await Assert.That(evaluation.Math.AllowBooleanCalculation).IsTrue();
+        await Assert.That(evaluation.Math.OverflowProtection).IsTrue();
+        await Assert.That(evaluation.Math.MidpointRounding).IsEqualTo(MidpointRounding.AwayFromZero);
+        var defaults = cases[1].Configuration;
+        await Assert.That(defaults.CacheEnabled).IsTrue();
+        await Assert.That(defaults.Parsing.ArgumentSeparator).IsEqualTo(ArgumentSeparator.Comma);
+        await Assert.That(defaults.Evaluation.AllowNullParameter).IsFalse();
+        await Assert.That(defaults.Evaluation.Math.MidpointRounding).IsEqualTo(MidpointRounding.ToEven);
+    }
+
+    [Test]
+    [Arguments("{ typo: true }")]
+    [Arguments("{ parsing: { typo: true } }")]
+    [Arguments("{ evaluation: { typo: true } }")]
+    [Arguments("{ evaluation: { math: { typo: true } } }")]
+    public void ShouldRejectUnknownConfigurationProperties(string configuration)
+    {
+        var yaml = $"- name: Typo\n  configuration: {configuration}\n  cases: [{{ input: '1', output: 1 }}]";
+        Assert.Throws<InvalidDataException>(() => YamlTestData.ReadCases(yaml, "schema").ToArray());
     }
 }

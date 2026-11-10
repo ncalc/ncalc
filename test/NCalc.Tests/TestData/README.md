@@ -48,7 +48,9 @@ value. Each case receives its own parameters and configuration.
 
 Configuration uses `ExpressionConfiguration` property names in camelCase
 (`parsing`, `evaluation`, `evaluation.math`, `cacheEnabled`). Unknown properties
-fail discovery instead of silently using defaults.
+fail discovery instead of silently using defaults. Configuration objects are
+created directly from YAML nodes, without reflection, so discovery also works
+in Native AOT.
 
 Each YAML case appears once in the explorer. By default, that test runs both
 synchronous and asynchronous evaluation against the same expectation. Each

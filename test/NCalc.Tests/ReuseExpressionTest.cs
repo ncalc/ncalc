@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
+using NCalc.Exceptions;
 
 namespace NCalc.Tests
 {
@@ -7,25 +8,17 @@ namespace NCalc.Tests
         [Test]
         public async Task ShouldAllowReuseAfterFail()
         {
-            var e = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.None, null, CultureInfo.InvariantCulture);
+            // Other culture tests cache this same text; exercise recovery from an actual parse failure.
+            var e = new Expression("#27.05.2025 12:00:00#", ExpressionOptions.NoCache, null, CultureInfo.InvariantCulture);
 
-            try
-            {
-                e.Evaluate(CancellationToken.None);
-                Assert.Fail("Assertion failure");
-            }
-            catch (Exception)
-            {
-                await Assert.That(e.HasErrors(CancellationToken.None)).IsTrue();
+            Assert.Throws<NCalcParserException>(() => e.Evaluate(CancellationToken.None));
+            await Assert.That(e.HasErrors(CancellationToken.None)).IsTrue();
 
-                e.CultureInfo = CultureInfo.GetCultureInfo("ru-RU");
+            e.CultureInfo = CultureInfo.GetCultureInfo("ru-RU");
 
-                var res = e.Evaluate(CancellationToken.None);
-
-                var expected = new DateTime(2025, 05, 27, 12, 0, 0);
-                await Assert.That(res).IsEqualTo(expected);
-                await Assert.That(e.HasErrors(CancellationToken.None)).IsFalse();
-            }
+            var result = e.Evaluate(CancellationToken.None);
+            await Assert.That(result).IsEqualTo(new DateTime(2025, 5, 27, 12, 0, 0));
+            await Assert.That(e.HasErrors(CancellationToken.None)).IsFalse();
         }
 
         [Test]

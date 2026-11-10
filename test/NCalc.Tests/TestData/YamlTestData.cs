@@ -1,10 +1,8 @@
 #nullable enable
 using NCalc.Exceptions;
+using NCalc.Helpers;
 using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
 using YamlDotNet.RepresentationModel;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace NCalc.Tests.TestData;
 
@@ -35,21 +33,17 @@ public sealed class ExpressionTestCase
 
 public static class YamlTestData
 {
-    private static readonly IDeserializer ConfigurationDeserializer = new DeserializerBuilder()
-        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-        .WithTypeConverter(new StringComparerConverter())
-        .Build();
-
     public static IEnumerable<ExpressionTestCase> GetCases(string suite)
     {
-        var file = Path.Combine(AppContext.BaseDirectory, "TestData", $"{suite}.yml");
+        var file = Path.Join(AppContext.BaseDirectory, "TestData", $"{suite}.yml");
         return ReadCases(File.ReadAllText(file), suite);
     }
 
     public static IEnumerable<ExpressionTestCase> ReadCases(string yaml, string suite)
     {
         var stream = new YamlStream();
-        stream.Load(new StringReader(yaml));
+        using var reader = new StringReader(yaml);
+        stream.Load(reader);
         if (stream.Documents.Count != 1 ||
             stream.Documents[0].RootNode is not YamlSequenceNode { Children.Count: > 0 } cases)
             throw new InvalidDataException($"{suite}: expected a non-empty sequence of test cases.");
@@ -148,10 +142,86 @@ public static class YamlTestData
 
     private static ExpressionConfiguration ReadConfiguration(YamlNode node)
     {
-        using var writer = new StringWriter(CultureInfo.InvariantCulture);
-        new YamlStream(new YamlDocument(node)).Save(writer, false);
-        return ConfigurationDeserializer.Deserialize<ExpressionConfiguration>(writer.ToString());
+        var mapping = (YamlMappingNode)node;
+        CheckKeys(mapping, "parsing", "evaluation", "cacheEnabled");
+        return new ExpressionConfiguration(
+            ReadParsingOptions(Child(mapping, "parsing")),
+            ReadEvaluationOptions(Child(mapping, "evaluation")),
+            ReadBoolean(mapping, "cacheEnabled", true));
     }
+
+    private static LogicalExpressionParserOptions ReadParsingOptions(YamlMappingNode mapping)
+    {
+        CheckKeys(mapping, "allowCharValues", "disallowSingleEquals", "floatingPointNumberType",
+            "integerNumberType", "argumentSeparator");
+        return new LogicalExpressionParserOptions
+        {
+            AllowCharValues = ReadBoolean(mapping, "allowCharValues"),
+            DisallowSingleEquals = ReadBoolean(mapping, "disallowSingleEquals"),
+            FloatingPointNumberType = ReadEnum(mapping, "floatingPointNumberType", FloatingPointNumberType.Double),
+            IntegerNumberType = ReadEnum(mapping, "integerNumberType", IntegerNumberType.Int32),
+            ArgumentSeparator = ReadEnum(mapping, "argumentSeparator", ArgumentSeparator.Comma)
+        };
+    }
+
+    private static ExpressionEvaluationOptions ReadEvaluationOptions(YamlMappingNode mapping)
+    {
+        CheckKeys(mapping, "ignoreCaseAtBuiltInFunctions", "iterateParameters", "allowNullParameter",
+            "stringConcat", "noStringTypeCoercion", "allowNullOrEmptyExpressions",
+            "arithmeticNullOrEmptyStringAsZero", "strictTypeMatching", "concurrentAsyncEvaluation",
+            "math", "stringComparer");
+        return new ExpressionEvaluationOptions
+        {
+            IgnoreCaseAtBuiltInFunctions = ReadBoolean(mapping, "ignoreCaseAtBuiltInFunctions"),
+            IterateParameters = ReadBoolean(mapping, "iterateParameters"),
+            AllowNullParameter = ReadBoolean(mapping, "allowNullParameter"),
+            StringConcat = ReadBoolean(mapping, "stringConcat"),
+            NoStringTypeCoercion = ReadBoolean(mapping, "noStringTypeCoercion"),
+            AllowNullOrEmptyExpressions = ReadBoolean(mapping, "allowNullOrEmptyExpressions"),
+            ArithmeticNullOrEmptyStringAsZero = ReadBoolean(mapping, "arithmeticNullOrEmptyStringAsZero"),
+            StrictTypeMatching = ReadBoolean(mapping, "strictTypeMatching"),
+            ConcurrentAsyncEvaluation = ReadBoolean(mapping, "concurrentAsyncEvaluation"),
+            Math = ReadMathOptions(Child(mapping, "math")),
+            StringComparer = mapping.Children.TryGetValue("stringComparer", out var comparer)
+                ? ReadStringComparer(Scalar(comparer)) : StringComparer.CurrentCulture
+        };
+    }
+
+    private static MathOptions ReadMathOptions(YamlMappingNode mapping)
+    {
+        CheckKeys(mapping, "floatingPointNumberType", "integerNumberType", "allowBooleanCalculation",
+            "overflowProtection", "midpointRounding");
+        return new MathOptions
+        {
+            FloatingPointNumberType = ReadEnum(mapping, "floatingPointNumberType", FloatingPointNumberType.Double),
+            IntegerNumberType = ReadEnum(mapping, "integerNumberType", IntegerNumberType.Int32),
+            AllowBooleanCalculation = ReadBoolean(mapping, "allowBooleanCalculation"),
+            OverflowProtection = ReadBoolean(mapping, "overflowProtection"),
+            MidpointRounding = ReadEnum(mapping, "midpointRounding", MidpointRounding.ToEven)
+        };
+    }
+
+    private static YamlMappingNode Child(YamlMappingNode mapping, string key) =>
+        mapping.Children.TryGetValue(key, out var child) ? (YamlMappingNode)child : new YamlMappingNode();
+
+    private static bool ReadBoolean(YamlMappingNode mapping, string key, bool defaultValue = false) =>
+        mapping.Children.TryGetValue(key, out var value)
+            ? bool.Parse(Scalar(value)) : defaultValue;
+
+    private static T ReadEnum<T>(YamlMappingNode mapping, string key, T defaultValue) where T : struct, Enum =>
+        mapping.Children.TryGetValue(key, out var value)
+            ? Enum.Parse<T>(Scalar(value), ignoreCase: true) : defaultValue;
+
+    private static StringComparer ReadStringComparer(string name) => name switch
+    {
+        "ordinal" => StringComparer.Ordinal,
+        "ordinalIgnoreCase" => StringComparer.OrdinalIgnoreCase,
+        "currentCulture" => StringComparer.CurrentCulture,
+        "currentCultureIgnoreCase" => StringComparer.CurrentCultureIgnoreCase,
+        "invariantCulture" => StringComparer.InvariantCulture,
+        "invariantCultureIgnoreCase" => StringComparer.InvariantCultureIgnoreCase,
+        _ => throw new InvalidDataException($"Unknown string comparer '{name}'.")
+    };
 
     private static object? ReadValue(YamlNode node)
     {
@@ -228,25 +298,5 @@ public static class YamlTestData
             if (!allowed.Contains(key, StringComparer.Ordinal))
                 throw new InvalidDataException($"Unknown YAML test data property '{key}'.");
         }
-    }
-
-    private sealed class StringComparerConverter : IYamlTypeConverter
-    {
-        public bool Accepts(Type type) => type == typeof(StringComparer);
-
-        public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer) =>
-            parser.Consume<Scalar>().Value switch
-            {
-                "ordinal" => StringComparer.Ordinal,
-                "ordinalIgnoreCase" => StringComparer.OrdinalIgnoreCase,
-                "currentCulture" => StringComparer.CurrentCulture,
-                "currentCultureIgnoreCase" => StringComparer.CurrentCultureIgnoreCase,
-                "invariantCulture" => StringComparer.InvariantCulture,
-                "invariantCultureIgnoreCase" => StringComparer.InvariantCultureIgnoreCase,
-                var name => throw new InvalidDataException($"Unknown string comparer '{name}'.")
-            };
-
-        public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer) =>
-            throw new NotSupportedException();
     }
 }
