@@ -6,36 +6,6 @@ namespace NCalc.Tests;
 [Property("Category", "Serialization")]
 public class SerializationTests
 {
-    [Test]
-    [MethodDataSource(typeof(WaterLevelCheckTestData), "GetEnumerator")]
-    public async Task SerializeAndDeserializeShouldWork(string expression, bool expected, double inputValue)
-    {
-        var compiled = LogicalExpressionFactory.Create(expression, cancellationToken: CancellationToken.None);
-        var serialized = JsonSerializer.Serialize(compiled, NCalcTestJsonContext.Default.LogicalExpression);
-        var deserialized = JsonSerializer.Deserialize(serialized, NCalcTestJsonContext.Default.LogicalExpression);
-
-        var exp = new Expression(deserialized, ExpressionOptions.NoCache)
-        {
-            Parameters =
-            {
-                { "waterlevel", inputValue }
-            }
-        };
-
-        object evaluated;
-        try
-        {
-            evaluated = exp.Evaluate(CancellationToken.None);
-        }
-        catch
-        {
-            evaluated = false;
-        }
-
-        // Assert
-        await Assert.That(evaluated).IsEqualTo(expected);
-    }
-
 #if NET
     [Test]
     public async Task SystemTextJsonPolymorphicSerializeAndDeserializeShouldWork()
@@ -46,19 +16,6 @@ public class SerializationTests
         await Assert.That(deserialized is BinaryExpression).IsTrue();
     }
 
-    [Test]
-    public async Task CoalesceExpressionShouldSerializeAndDeserialize()
-    {
-        var logicalExpression = LogicalExpressionFactory.Create("[value] ?? 'fallback'", cancellationToken: CancellationToken.None);
-        var json = JsonSerializer.Serialize(logicalExpression, NCalcTestJsonContext.Default.LogicalExpression);
-        var deserialized = JsonSerializer.Deserialize(json, NCalcTestJsonContext.Default.LogicalExpression);
-        var expression = new Expression(deserialized!)
-        {
-            Parameters = { ["value"] = null }
-        };
-
-        await Assert.That(expression.Evaluate(CancellationToken.None)).IsEqualTo("fallback");
-    }
 #endif
 
     [Test]
@@ -155,40 +112,6 @@ public class SerializationTests
     }
 
     [Test]
-    public async Task ShouldSerializeExpressionWithParameterValues()
-    {
-        var expression = new Expression("[ValueA] + [ValueB]");
-        expression.Parameters["ValueA"] = 10;
-        expression.Parameters["ValueB"] = 15;
-
-        await Assert.That(expression.ToExpressionString(evaluateParameters: true)).IsEqualTo("10 + 15");
-    }
-
-    [Test]
-    public async Task ShouldNotSerializeExpressionWithParameterValuesByDefault()
-    {
-        var expression = new Expression("[ValueA] + [ValueB]");
-        expression.Parameters["ValueA"] = 10;
-        expression.Parameters["ValueB"] = 15;
-
-        await Assert.That(expression.ToExpressionString()).IsEqualTo("([ValueA]) + ([ValueB])");
-    }
-
-    [Test]
-    public async Task ShouldSerializeLogicalExpressionWithContextParameterValues()
-    {
-        var context = new ExpressionContext(new Dictionary<string, object>
-        {
-            ["ValueA"] = 10,
-            ["ValueB"] = 15
-        });
-
-        var expression = new Expression("[ValueA] + [ValueB]", context);
-
-        await Assert.That(expression.ToExpressionString(evaluateParameters: true, cancellationToken: CancellationToken.None)).IsEqualTo("10 + 15");
-    }
-
-    [Test]
     public async Task ShouldSerializeExpressionWithDynamicParameterValues()
     {
         var expression = new Expression("[ValueA] + [ValueB]")
@@ -204,20 +127,6 @@ public class SerializationTests
         };
 
         await Assert.That(expression.ToExpressionString(evaluateParameters: true)).IsEqualTo("10 + 15");
-    }
-
-    [Test]
-    public async Task ShouldKeepUnknownParametersWhenSerializingWithParameterValues()
-    {
-        var expression = new Expression("[ValueA] + [ValueB]")
-        {
-            Parameters =
-            {
-                ["ValueA"] = 10
-            }
-        };
-
-        await Assert.That(expression.ToExpressionString(evaluateParameters: true)).IsEqualTo("10 + [ValueB]");
     }
 
     [Test]

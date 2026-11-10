@@ -1,0 +1,81 @@
+- name: Should_Evaluate_In_Operator_When_Parameter_And_Literals_Have_Different_Types_Issue_586
+  parameters:
+    quantity:
+      type: Int16
+      value: '12'
+  resultType: bool
+  cases:
+  - input: quantity in (1,2,3,12)
+    output: true
+- name: ShouldEvaluateInOperatorWithList
+  parameters:
+    PageState: Insert
+  resultType: bool
+  cases:
+  - input: '{PageState} in (''Insert'',''Update'')'
+    output: true
+- name: ShouldEvaluateInOperatorWithString
+  parameters:
+    PageState: Insert
+  resultType: bool
+  cases:
+  - input: '{PageState} in ''Insert a quote, you must.'''
+    output: true
+- name: ShouldEvaluateNotInOperator
+  configuration:
+    evaluation:
+      stringComparer: currentCultureIgnoreCase
+  parameters:
+    PageState: Import
+  resultType: bool
+  cases:
+  - input: '{PageState} in (''INSERT'',''UPDATE'')'
+    output: false
+- name: InOperatorShouldRespectStringComparer
+  configuration:
+    evaluation:
+      stringComparer: currentCultureIgnoreCase
+  parameters:
+    PageState: Insert
+  resultType: bool
+  cases:
+  - input: '{PageState} in (''INSERT'',''UPDATE'')'
+    output: true
+- name: ShouldEvaluateTrueInOperatorWithObjects
+  parameters:
+    tap_int_status: 5
+  resultType: bool
+  cases:
+  - input: '{tap_int_status} in (5)'
+    output: true
+- name: ShouldEvaluateFalseInOperatorWithObjects
+  parameters:
+    PageState: Insert
+  resultType: bool
+  cases:
+  - input: '{PageState} in 4'
+    output: false
+- name: ShouldEvaluateIntInOperatorWithParameters
+  parameters:
+    x: 3
+    y:
+      type: Int32[]
+      value:
+      - 1
+      - 2
+      - 3
+  cases:
+  - input: '{x} in {y}'
+    output: true
+- name: ShouldEvaluateStringInOperatorWithIntParameters
+  parameters:
+    x: '3'
+    y:
+      type: Int32[]
+      value:
+      - 1
+      - 2
+      - 3
+  cases:
+  - input: '{x} in {y}'
+    output: true

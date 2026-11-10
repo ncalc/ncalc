@@ -1,0 +1,35 @@
+- name: Factorial_Of_Zero
+  cases:
+  - input: 0!
+    output: 1
+- name: Factorial_Of_Positive_Number
+  cases:
+  - input: 5!
+    output: 120
+- name: Multiple_Factorials
+  cases:
+  - input: 3!!
+    output: 720
+- name: Factorial_With_Addition
+  cases:
+  - input: 3! + 2
+    output: 8
+- name: Factorial_With_Exponential
+  cases:
+  - input: 3! ** 2
+    output: 36.0
+- name: Factorial_In_Parentheses
+  cases:
+  - input: (4)! + 1
+    output: 25
+- name: Complex_Expression
+  cases:
+  - input: 2 + 3! * 2
+    output: 14
+- name: Should_Reject_Factorial_Inputs_Above_The_Safe_Limit
+  throws: ArgumentOutOfRangeException
+  cases:
+  - input: 171!
+  - input: 99999999999999!
+  - input: 9223372036854775807!
+  - input: 1.5e16!

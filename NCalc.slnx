@@ -11,6 +11,7 @@
     <File Path="CHANGELOG.md" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
     <File Path="README.md" />
     <File Path="version.json" />
   </Folder>

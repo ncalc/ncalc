@@ -1,6 +1,4 @@
-using NCalc.Extensions;
 using NCalc.Handlers;
-using System.Threading.Tasks;
 
 namespace NCalc.Tests;
 

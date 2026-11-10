@@ -1,0 +1,566 @@
+- name: BuiltInFunctions_Test
+  cases:
+  - input: Abs(-1)
+    output: 1.0
+  - input: Acos(1)
+    output: 0.0
+  - input: Asin(0)
+    output: 0.0
+  - input: Atan(0)
+    output: 0.0
+  - input: Ceiling(1.5)
+    output: 2.0
+  - input: Cos(0)
+    output: 1.0
+  - input: Exp(0)
+    output: 1.0
+  - input: Floor(1.5)
+    output: 1.0
+  - input: IEEERemainder(3,2)
+    output: -1.0
+  - input: Log(1,10)
+    output: 0.0
+  - input: Ln(1)
+    output: 0.0
+  - input: Log10(1)
+    output: 0.0
+  - input: Pow(3,2)
+    output: 9.0
+  - input: Round(3.222,2)
+    output: 3.22
+  - input: Sign(-10)
+    output: -1
+  - input: Sin(0)
+    output: 0.0
+  - input: Sqrt(4)
+    output: 2.0
+  - input: Tan(0)
+    output: 0.0
+  - input: Truncate(1.7)
+    output: 1.0
+  - input: Atan2(-1,0)
+    output: -1.5707963267948966
+  - input: Atan2(1,0)
+    output: 1.5707963267948966
+  - input: Atan2(0,-1)
+    output: 3.141592653589793
+  - input: Atan2(0,1)
+    output: 0.0
+  - input: Max(1,10)
+    output: 10
+  - input: Min(1,10)
+    output: 1
+  - input: if(true,1,2)
+    output: 1
+  - input: in(2,1,2)
+    output: true
+  - input: ifs(false,1,2)
+    output: 2
+  - input: isNull('')
+    output: false
+  - input: isNullOrEmpty('')
+    output: true
+  - input: isNullOrEmpty('NCalc')
+    output: false
+  - input: EscapeLike('100%')
+    output: 100\%
+- name: ShouldHandleNullCheckBuiltInFunctions
+  parameters:
+    value: null
+  cases:
+  - input: isNull([value])
+    output: true
+  - input: isNullOrEmpty([value])
+    output: true
+- name: IncorrectCalculation_NCalcAsync_Issue_4
+  cases:
+  - input: (1604326026000-1604325747000)/60000
+    output: 4.65
+- name: ShouldParseScientificNotation
+  cases:
+  - input: 1.22e1
+    output: 12.2
+  - input: 1e2
+    output: 100.0
+  - input: 1e+2
+    output: 100.0
+  - input: 1e-2
+    output: 0.01
+  - input: '.1e-2'
+    output: 0.001
+  - input: 1e10
+    output: 10000000000.0
+- name: ShouldHandleLongValues
+  cases:
+  - input: 40000000000+1
+    output:
+      type: Int64
+      value: '40000000001'
+- name: ShouldCompareLongValues
+  resultType: bool
+  cases:
+  - input: (0=1500000)||(((0+2200000000)-1500000)<0)
+    output: false
+- name: Overflow_Issue_190
+  configuration:
+    parsing:
+      floatingPointNumberType: Decimal
+    evaluation:
+      math:
+        floatingPointNumberType: Decimal
+  cases:
+  - input: '-79228162514264337593543950335'
+    output:
+      type: Decimal
+      value: '-79228162514264337593543950335'
+- name: ShouldOptionallyCalculateWithBoolean
+  configuration:
+    evaluation:
+      math:
+        allowBooleanCalculation: true
+  parameters:
+    X1: 1
+  cases:
+  - input: (X1 = 1)/2
+    output: 0.5
+  - input: (X1 = 1)/2
+    output: 0.5
+    resultType: double
+    compileToLambda: true
+  - input: (X1 = 1)*2
+    output: 2
+  - input: (X1 = 1)*2
+    output: 2.0
+    resultType: double
+    compileToLambda: true
+  - input: (X1 = 1)+1
+    output: 2
+  - input: (X1 = 1)+1
+    output: 2.0
+    resultType: double
+    compileToLambda: true
+  - input: (X1 = 1)-1
+    output: 0
+  - input: (X1 = 1)-1
+    output: 0.0
+    resultType: double
+    compileToLambda: true
+  - input: 2*(X1 = 1)
+    output: 2
+  - input: 2*(X1 = 1)
+    output: 2.0
+    resultType: double
+    compileToLambda: true
+  - input: 2/(X1 = 1)
+    output: 2.0
+  - input: 2/(X1 = 1)
+    output: 2.0
+    resultType: double
+    compileToLambda: true
+  - input: 1+(X1 = 1)
+    output: 2
+  - input: 1+(X1 = 1)
+    output: 2.0
+    resultType: double
+    compileToLambda: true
+  - input: true-(X1 = 1)
+    output: 0
+  - input: true-(X1 = 1)
+    output: 0.0
+    resultType: double
+    compileToLambda: true
+  - input: true-(X1 = true - false)
+    output: 0
+  - input: true-(X1 = true - false)
+    output: 0.0
+    resultType: double
+    compileToLambda: true
+- name: Should_Evaluate_Floor_Of_Double_Max_Value
+  cases:
+  - input: Floor(1.7976931348623157E+308)
+    output: 1.7976931348623157e+308
+- name: Should_Correctly_Parse_Floating_Point_Numbers
+  cases:
+  - input: '.05'
+    output: 0.05
+  - input: '0.05'
+    output: 0.05
+  - input: '0.005'
+    output: 0.005
+  - input: '.0'
+    output: 0.0
+- name: Should_Not_Overflow_Bitwise
+  cases:
+  - input: 131055 ^ 8
+    output:
+      type: UInt64
+      value: '131047'
+  - input: 524288 | 128
+    output:
+      type: UInt64
+      value: '524416'
+  - input: 262143 & 131055
+    output:
+      type: UInt64
+      value: '131055'
+  - input: 262143 << 2
+    output:
+      type: UInt64
+      value: '1048572'
+  - input: 262143 >> 2
+    output:
+      type: UInt64
+      value: '65535'
+- name: ShouldHandleCharAddition
+  configuration:
+    cacheEnabled: false
+  cases:
+  - input: 3 + '3'
+    output: 54
+    configuration:
+      parsing:
+        allowCharValues: true
+  - input: 3 + '3'
+    output: 6.0
+  - input: '''4'' + ''2'''
+    output: 102
+    configuration:
+      parsing:
+        allowCharValues: true
+  - input: '''4'' + ''2'''
+    output: '42'
+    configuration:
+      evaluation:
+        stringConcat: true
+  - input: '''4'' + ''2'''
+    output: 6.0
+- name: ShouldUseArithmeticNullOrEmptyStringAsZero
+  configuration:
+    evaluation:
+      allowNullParameter: true
+      arithmeticNullOrEmptyStringAsZero: true
+    cacheEnabled: false
+  cases:
+  - input: 1 + ''
+    output: 1
+  - input: ''''' + 1'
+    output: 1
+  - input: 1 + null
+    output: 1
+  - input: null + 1
+    output: 1
+  - input: 1 - ''
+    output: 1
+  - input: ''''' - 1'
+    output: -1
+  - input: 1 - null
+    output: 1
+  - input: null - 1
+    output: -1
+  - input: 2 * ''
+    output: 0
+  - input: ''''' * 2'
+    output: 0
+  - input: 2 * null
+    output: 0
+  - input: null * 2
+    output: 0
+  - input: ''''' / 2'
+    output: 0.0
+  - input: null / 2
+    output: 0.0
+  - input: ''''' % 2'
+    output: 0
+  - input: null % 2
+    output: 0
+  - input: ''''' + '''''
+    output: 0
+- name: DivideNullShouldBeNull
+  configuration:
+    evaluation:
+      allowNullParameter: true
+  parameters:
+    a: null
+    b: 2
+  cases:
+  - input: a / b
+    output: null
+- name: ShouldAllowIntegerWithUlongMath
+  parameters:
+    b:
+      type: UInt64
+      value: '1'
+  cases:
+  - input: a + b
+    output:
+      type: UInt64
+      value: '11'
+    parameters:
+      a:
+        type: SByte
+        value: '10'
+  - input: a + b
+    output:
+      type: UInt64
+      value: '11'
+    parameters:
+      a:
+        type: Int16
+        value: '10'
+  - input: a + b
+    output:
+      type: UInt64
+      value: '11'
+    parameters:
+      a: 10
+  - input: a + b
+    output:
+      type: UInt64
+      value: '11'
+    parameters:
+      a:
+        type: Int64
+        value: '10'
+- name: ShouldAddSignedAndUnsignedShorts
+  parameters:
+    a:
+      type: Int16
+    b:
+      type: UInt16
+      value: '65535'
+  cases:
+  - input: a + b
+    output: 32768
+    parameters:
+      a:
+        value: '-32767'
+  - input: a + b
+    output: 32767
+    parameters:
+      a:
+        value: '-32768'
+  - input: a + b
+    output: 65534
+    parameters:
+      a:
+        value: '-1'
+  - input: a + b
+    output: 65537
+    parameters:
+      a:
+        value: '2'
+- name: ShouldSubtractSignedAndUnsignedShorts
+  parameters:
+    a:
+      type: Int16
+      value: '1'
+    b:
+      type: UInt16
+      value: '65535'
+  cases:
+  - input: a - b
+    output: -65534
+- name: ShouldSubtractSignedAndUnsignedInts
+  parameters:
+    a: 1
+    b:
+      type: UInt32
+      value: '4294967295'
+  cases:
+  - input: a - b
+    output:
+      type: Int64
+      value: '-4294967294'
+- name: ShouldAddToOutOfBoundsShorts
+  parameters:
+    a:
+      type: Int16
+      value: '32767'
+    b:
+      type: Int16
+      value: '32767'
+  cases:
+  - input: a + b
+    output: 65534
+- name: ShouldSubtractToOutOfBoundsShorts
+  parameters:
+    a:
+      type: Int16
+      value: '-32768'
+    b:
+      type: Int16
+      value: '32767'
+  cases:
+  - input: a - b
+    output: -65535
+- name: ShouldAllowLongAsDefault
+  configuration:
+    parsing:
+      integerNumberType: Int64
+    evaluation:
+      math:
+        integerNumberType: Int64
+  cases:
+  - input: 10000000*1000
+    output:
+      type: Int64
+      value: '10000000000'
+- name: ShouldBeDoubleWithLongAsDefault
+  configuration:
+    parsing:
+      integerNumberType: Int64
+    evaluation:
+      math:
+        integerNumberType: Int64
+  cases:
+  - input: 10000000.1*1000
+    output: 10000000100.0
+- name: ShouldAddWithParenthesis
+  parameters:
+    ml500: 2
+    ml250: 0
+    ml120: 1
+    ml60: 0
+    ml30: 3
+    ml10: 0
+    ml1: 10
+    ml05: 4
+  resultType: double
+  cases:
+  - input: (500 * {ml500}) + (250 * {ml250}) + (120 * {ml120}) + (60 * {ml60}) + (30 * {ml30}) + (10 * {ml10}) +
+      (1 * {ml1}) + (0.5 * {ml05})
+    output: 1222.0
+- name: ShouldNotChangeDoublePrecision
+  cases:
+  - input: Floor(12e+100)
+    output: 1.2e+101
+- name: Should_Handle_Overflow_Int
+  throws: OverflowException
+  configuration:
+    evaluation:
+      math:
+        overflowProtection: true
+  cases:
+  - input: '[a] + [b]'
+    parameters:
+      a: 2147483647
+      b: 2147483647
+  - input: '[a] - [b]'
+    parameters:
+      a: -2147483648
+      b: 2147483647
+  - input: '[a] * [b]'
+    parameters:
+      a: 2147483647
+      b: 2147483647
+- name: Should_Handle_Overflow_Double
+  throws: OverflowException
+  configuration:
+    evaluation:
+      math:
+        overflowProtection: true
+  cases:
+  - input: '[a] + [b]'
+    parameters:
+      a:
+        type: Double
+        value: '1.7976931348623157e+308'
+      b:
+        type: Double
+        value: '1.7976931348623157e+308'
+  - input: '[a] - [b]'
+    parameters:
+      a:
+        type: Double
+        value: '-1.7976931348623157e+308'
+      b:
+        type: Double
+        value: '1.7976931348623157e+308'
+  - input: '[a] * [b]'
+    parameters:
+      a:
+        type: Double
+        value: '1.7976931348623157e+308'
+      b:
+        type: Double
+        value: '1.7976931348623157e+308'
+  - input: '[a] / [b]'
+    parameters:
+      a:
+        type: Double
+        value: '-1.7976931348623157e+308'
+      b:
+        type: Double
+        value: '0.001'
+- name: Should_Handle_Overflow_Float
+  throws: OverflowException
+  configuration:
+    evaluation:
+      math:
+        overflowProtection: true
+  cases:
+  - input: '[a] + [b]'
+    parameters:
+      a:
+        type: Single
+        value: '3.4028235E+38'
+      b:
+        type: Single
+        value: '3.4028235E+38'
+  - input: '[a] - [b]'
+    parameters:
+      a:
+        type: Single
+        value: '-3.4028235E+38'
+      b:
+        type: Single
+        value: '3.4028235E+38'
+  - input: '[a] * [b]'
+    parameters:
+      a:
+        type: Single
+        value: '3.4028235E+38'
+      b:
+        type: Single
+        value: '3.4028235E+38'
+  - input: '[a] / [b]'
+    parameters:
+      a:
+        type: Single
+        value: '-3.4028235E+38'
+      b:
+        type: Single
+        value: '0.001'
+- name: ShouldNotConvertRealTypes
+  cases:
+  - input: x/2
+    output:
+      type: Single
+      value: '1'
+    parameters:
+      x:
+        type: Single
+        value: '2'
+  - input: x/2
+    output: 1.0
+    parameters:
+      x: 2.0
+  - input: x/2
+    output:
+      type: Decimal
+      value: '1'
+    parameters:
+      x:
+        type: Decimal
+        value: '2'
+  - input: a / b * 100
+    output:
+      type: Decimal
+      value: '100'
+    parameters:
+      a:
+        type: Decimal
+        value: '20'
+      b:
+        type: Decimal
+        value: '20'

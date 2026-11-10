@@ -1,0 +1,44 @@
+- name: Should_Parse_Time
+  cases:
+  - input: '#20:42:12#'
+    output:
+      type: TimeSpan
+      value: '20:42:12'
+- name: Should_Parse_Date
+  cases:
+  - input: '#01/01/2001#'
+    output:
+      type: DateTime
+      value: '2001-01-01T00:00:00.0000000'
+- name: Should_Parse_Date_Time
+  cases:
+  - input: '#2022/12/31 08:00:00#'
+    output:
+      type: DateTime
+      value: '2022-12-31T08:00:00.0000000'
+- name: ShouldHandleTimespanFractionalPart
+  cases:
+  - input: '#12:00:00.333#'
+    output:
+      type: TimeSpan
+      value: '12:00:00.3330000'
+  - input: '#12:00:00,333#'
+    output:
+      type: TimeSpan
+      value: '12:00:00.3330000'
+    culture: de-DE
+- name: ShouldHandleDateTimeFractionalPart
+  cases:
+  - input: '#05/27/2025 12:00:00.333#'
+    output:
+      type: DateTime
+      value: '2025-05-27T12:00:00.3330000'
+  - input: '#27.05.2025 12:00:00,333#'
+    output:
+      type: DateTime
+      value: '2025-05-27T12:00:00.3330000'
+    culture: de-DE
+- name: Should_Fail_With_Wrong_DateTime_Separator
+  throws: NCalcParserException
+  cases:
+  - input: '#2022.12.31 08.00.00#'

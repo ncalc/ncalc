@@ -1,0 +1,242 @@
+- name: Should_Evaluate_Not_Unary_Operator
+  cases:
+  - input: NOT true
+    output: false
+- name: ShouldEvaluateOperators
+  cases:
+  - input: '!true'
+    output: false
+  - input: not false
+    output: true
+  - input: Not false
+    output: true
+  - input: NOT false
+    output: true
+  - input: '-10'
+    output: -10
+  - input: '+20'
+    output: 20
+  - input: 2**-1
+    output: 0.5
+  - input: 2**+2
+    output: 4.0
+  - input: 2 * 3
+    output: 6
+  - input: 6 / 2
+    output: 3.0
+  - input: 7 % 2
+    output: 1
+  - input: 2 + 3
+    output: 5
+  - input: 2 - 1
+    output: 1
+  - input: 1 < 2
+    output: true
+  - input: 1 > 2
+    output: false
+  - input: 1 <= 2
+    output: true
+  - input: 1 <= 1
+    output: true
+  - input: 1 >= 2
+    output: false
+  - input: 1 >= 1
+    output: true
+  - input: 1 = 1
+    output: true
+  - input: 1 == 1
+    output: true
+  - input: 1 != 1
+    output: false
+  - input: 1 <> 1
+    output: false
+  - input: 1 & 1
+    output:
+      type: UInt64
+      value: '1'
+  - input: 1 | 1
+    output:
+      type: UInt64
+      value: '1'
+  - input: 1 ^ 1
+    output:
+      type: UInt64
+      value: '0'
+  - input: ~1
+    output:
+      type: UInt64
+      value: '18446744073709551614'
+  - input: 2 >> 1
+    output:
+      type: UInt64
+      value: '1'
+  - input: 2 << 1
+    output:
+      type: UInt64
+      value: '4'
+  - input: true && false
+    output: false
+  - input: True and False
+    output: false
+  - input: tRue aNd faLse
+    output: false
+  - input: TRUE ANd fALSE
+    output: false
+  - input: true AND FALSE
+    output: false
+  - input: true || false
+    output: true
+  - input: true Or false
+    output: true
+  - input: true OR false
+    output: true
+  - input: if(true, 0, 1)
+    output: 0
+  - input: if(false, 0, 1)
+    output: 1
+- name: ShouldHandleOperatorsPriority
+  cases:
+  - input: 2+2+2+2
+    output: 8
+  - input: 2*2*2*2
+    output: 16
+  - input: 2*2+2
+    output: 6
+  - input: 2+2*2
+    output: 6
+  - input: 1 + 2 + 3 * 4 / 2
+    output: 9.0
+  - input: 18/2/2*3
+    output: 13.5
+  - input: -1 ** 2
+    output: -1.0
+  - input: (-1) ** 2
+    output: 1.0
+  - input: 2 ** 3 ** 2
+    output: 512.0
+  - input: 2 ** 3 ** 2 ** 0
+    output: 8.0
+  - input: 2 ** 3!
+    output: 64.0
+  - input: (2 ** 3) ** 2
+    output: 64.0
+  - input: 2 * 3 ** 2
+    output: 18.0
+  - input: 2 ** 4 / 2
+    output: 8.0
+- name: Should_Compare_Bool_Issue_122
+  parameters:
+    foo: 'true'
+  resultType: bool
+  cases:
+  - input: foo = true
+    output: true
+- name: Should_Short_Circuit_Boolean_Expressions
+  parameters:
+    a: 0
+  cases:
+  - input: ([a] != 0) && ([b]/[a]>2)
+    output: false
+- name: ShouldEvaluateCoalesceOperator
+  cases:
+  - input: null ?? true
+    output: true
+    configuration:
+      evaluation:
+        allowNullParameter: true
+  - input: '[foo] ?? true'
+    output: true
+    parameters:
+      foo: null
+  - input: '[foo] ?? true'
+    output: false
+    parameters:
+      foo: false
+- name: ShouldHandleSimpleBitwiseOperations
+  cases:
+  - input: 0 | 0
+    output:
+      type: UInt64
+      value: '0'
+  - input: 0 | 1
+    output:
+      type: UInt64
+      value: '1'
+  - input: 1 | 0
+    output:
+      type: UInt64
+      value: '1'
+  - input: 0 & 0
+    output:
+      type: UInt64
+      value: '0'
+  - input: 0 & 1
+    output:
+      type: UInt64
+      value: '0'
+  - input: 1 & 0
+    output:
+      type: UInt64
+      value: '0'
+  - input: 0 ^ 0
+    output:
+      type: UInt64
+      value: '0'
+  - input: 0 ^ 1
+    output:
+      type: UInt64
+      value: '1'
+  - input: 1 ^ 0
+    output:
+      type: UInt64
+      value: '1'
+- name: ShouldRespectBitwiseOperatorPrecedence
+  cases:
+  - input: 1 = 1 ^ 2 = 2 || 3 = 3
+    output: true
+  - input: 1 = 1 ^ 2 = 2 && 2 = 1
+    output: false
+- name: Should_Use_IEEE754_Semantics_For_DoubleNaN_Comparisons
+  parameters:
+    amount:
+      type: Double
+      value: NaN
+  resultType: bool
+  cases:
+  - input: amount < 0
+    output: false
+  - input: amount <= amount
+    output: false
+  - input: amount == amount
+    output: false
+  - input: amount != amount
+    output: true
+- name: Should_Use_IEEE754_Semantics_For_Computed_And_FloatNaN_Comparisons
+  resultType: bool
+  cases:
+  - input: (0.0 / 0.0) < 0
+    output: false
+  - input: (0.0 / 0.0) != (0.0 / 0.0)
+    output: true
+  - input: amount <= 0
+    output: false
+    parameters:
+      amount:
+        type: Single
+        value: NaN
+- name: Should_Use_Correct_BitwiseXOr_133
+  cases:
+  - input: 1 ^ 2
+    output: 1 ^ 2
+    operation: serialize
+  - input: 1 ^ 2
+    output:
+      type: UInt64
+      value: '3'
+- name: ShouldRespectCoalescePrecedence
+  cases:
+  - input: '[a] ?? [b] ? 1 : 2'
+    output: 2
+    parameters:
+      a: false
+      b: true

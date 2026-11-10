@@ -1,0 +1,27 @@
+- name: Expression_Should_Support_Custom_Separators_End_To_End
+  resultType: int
+  cases:
+  - input: Max(1, 2)
+    output: 2
+  - input: Max(1; 2)
+    output: 2
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+  - input: Min(5, 3)
+    output: 3
+  - input: Min(5; 3)
+    output: 3
+    configuration:
+      parsing:
+        argumentSeparator: Semicolon
+- name: Expression_Should_Handle_Parameters_With_Custom_Separators
+  configuration:
+    parsing:
+      argumentSeparator: Semicolon
+  parameters:
+    x: 5
+    y: 10
+  cases:
+  - input: Max(x; y)
+    output: 10

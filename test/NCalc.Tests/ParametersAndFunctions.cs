@@ -327,19 +327,4 @@ public class ParametersAndFunctions
         _ = expression.Evaluate(CancellationToken.None);
         await Assert.That(count).IsEqualTo(3);
     }
-
-    [Test]
-    public async Task MaxShouldWorkWithUShortAndShortTypes()
-    {
-        const ushort a = ushort.MaxValue;
-        const short b = short.MaxValue;
-
-        const int expected = ushort.MaxValue;
-
-        await Assert.That("Max([a], [b])").Expression(new Dictionary<string, object>
-        {
-            ["a"] = a,
-            ["b"] = b
-        }).IsEqualTo(expected);
-    }
 }

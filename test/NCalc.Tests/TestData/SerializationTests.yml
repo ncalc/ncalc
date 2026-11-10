@@ -1,0 +1,67 @@
+- name: ShouldRoundTrip
+  configuration:
+    cacheEnabled: false
+  cases:
+  - input: (waterlevel > 1 AND waterlevel <= 3)
+    output: false
+    parameters:
+      waterlevel: 3.2
+  - input: (waterlevel > 3 AND waterlevel <= 5)
+    output: true
+    parameters:
+      waterlevel: 3.2
+  - input: (waterlevel > 1 AND waterlevel <= 3)
+    output: false
+    parameters:
+      waterlevel: 3.1
+  - input: (waterlevel > 3 AND waterlevel <= 5)
+    output: true
+    parameters:
+      waterlevel: 3.1
+  - input: (3 < waterlevel AND 5 >= waterlevel)
+    output: true
+    parameters:
+      waterlevel: 3.1
+  - input: (3.2 < waterlevel AND 5.3 >= waterlevel)
+    output: true
+    parameters:
+      waterlevel: 4.0
+  operation: roundTrip
+- name: CoalesceExpressionShouldSerializeAndDeserialize
+  operation: roundTrip
+  cases:
+  - input: '[value] ?? ''fallback'''
+    output: fallback
+    parameters:
+      value: null
+- name: ShouldSerializeExpressionWithParameterValues
+  operation: serializeWithParameters
+  parameters:
+    ValueA: 10
+    ValueB: 15
+  cases:
+  - input: '[ValueA] + [ValueB]'
+    output: 10 + 15
+- name: ShouldNotSerializeExpressionWithParameterValuesByDefault
+  operation: serialize
+  parameters:
+    ValueA: 10
+    ValueB: 15
+  cases:
+  - input: '[ValueA] + [ValueB]'
+    output: ([ValueA]) + ([ValueB])
+- name: ShouldSerializeLogicalExpressionWithContextParameterValues
+  operation: serializeWithParameters
+  parameters:
+    ValueA: 10
+    ValueB: 15
+  cases:
+  - input: '[ValueA] + [ValueB]'
+    output: 10 + 15
+- name: ShouldKeepUnknownParametersWhenSerializingWithParameterValues
+  operation: serializeWithParameters
+  parameters:
+    ValueA: 10
+  cases:
+  - input: '[ValueA] + [ValueB]'
+    output: 10 + [ValueB]

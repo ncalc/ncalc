@@ -1,0 +1,11 @@
+- name: MaxShouldWorkWithUShortAndShortTypes
+  parameters:
+    a:
+      type: UInt16
+      value: '65535'
+    b:
+      type: Int16
+      value: '32767'
+  cases:
+  - input: Max([a], [b])
+    output: 65535

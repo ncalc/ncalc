@@ -20,6 +20,7 @@
 		<PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.16.1" />
 		<PackageVersion Include="System.ValueTuple" Version="4.6.2" Condition="'$(TargetFramework)' == 'net462'" />
 		<PackageVersion Include="TUnit" Version="1.63.0" />
+		<PackageVersion Include="YamlDotNet" Version="18.1.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net462' Or '$(TargetFramework)' == 'netstandard2.0'">
