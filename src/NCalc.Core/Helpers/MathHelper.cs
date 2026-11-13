@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using ExtendedNumerics;
 
 namespace NCalc.Helpers;
 
@@ -286,22 +285,47 @@ public static class MathHelper
     public static object Pow(object? a, object? b, MathOptions options, CultureInfo cultureInfo)
     {
         if (a is decimal aDecimal)
-        {
-            var @base = new BigDecimal(aDecimal);
-            var exponent = new BigInteger(ConvertToDecimal(b, cultureInfo));
-
-            return (decimal)BigDecimal.Pow(@base, exponent);
-        }
+            return Pow(aDecimal, ConvertToDecimal(b, cultureInfo));
 
         if (options.FloatingPointNumberType is FloatingPointNumberType.Decimal)
-        {
-            var @base = new BigDecimal(ConvertToDecimal(a, cultureInfo));
-            var exponent = new BigInteger(ConvertToDecimal(b, cultureInfo));
-
-            return (decimal)BigDecimal.Pow(@base, exponent);
-        }
+            return Pow(ConvertToDecimal(a, cultureInfo), ConvertToDecimal(b, cultureInfo));
 
         return Math.Pow(ConvertToDouble(a, cultureInfo), ConvertToDouble(b, cultureInfo));
+    }
+
+    /// <summary>
+    /// Raises a decimal to a power. An integral exponent is computed by squaring in decimal arithmetic, so the
+    /// cost is logarithmic in the exponent and a result outside the decimal range throws an
+    /// <see cref="OverflowException"/> as soon as it is reached. Every intermediate product is a smaller power
+    /// of the same base, so the result is exact whenever the exact power fits in a decimal. A fractional
+    /// exponent is computed with <see cref="Math.Pow(double, double)"/>.
+    /// </summary>
+    public static decimal Pow(decimal @base, decimal exponent)
+    {
+        if (exponent != decimal.Truncate(exponent))
+            return (decimal)Math.Pow((double)@base, (double)exponent);
+
+        if (exponent < 0)
+        {
+            if (@base == 0)
+                throw new ArgumentException("Cannot raise zero to a negative power.", nameof(@base));
+
+            @base = 1 / @base;
+            exponent = -exponent;
+        }
+
+        var result = 1m;
+        while (exponent > 0)
+        {
+            if (exponent % 2 == 1)
+                result *= @base;
+
+            exponent = decimal.Truncate(exponent / 2);
+            if (exponent > 0)
+                @base *= @base;
+        }
+
+        return result;
     }
 
     public static object Round(object? a, object? b, MidpointRounding rounding, MathOptions options, CultureInfo cultureInfo)

@@ -241,4 +241,59 @@ public class DecimalsTests
         var res = expr.Evaluate(CancellationToken.None);
         await Assert.That(res).IsEqualTo(double.PositiveInfinity);
     }
+
+    [Test]
+    [Arguments("Pow(2, 10)", "1024")]
+    [Arguments("Pow(1.5, 2)", "2.25")]
+    [Arguments("Pow(-2, 3)", "-8")]
+    [Arguments("Pow(3, 0)", "1")]
+    [Arguments("Pow(2, -2)", "0.25")]
+    [Arguments("Pow(1.5, -1)", "0.6666666666666666666666666667")]
+    [Arguments("Pow(0.5, -95)", "39614081257132168796771975168")]
+    [Arguments("Pow(1.1, 30)", "17.449402268886407318558803754")]
+    [Arguments("Pow(0.5, 100)", "0")]
+    [Arguments("1.1 ** 2", "1.21")]
+    public async Task ShouldPowDecimalsWithIntegralExponents(string expression, string expected)
+    {
+        var e = new Expression(expression, ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
+        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo(decimal.Parse(expected, CultureInfo.InvariantCulture));
+    }
+
+    [Test]
+    [Timeout(5_000)]
+    [Arguments("Pow(0.5, 2147483647)")]
+    [Arguments("Pow(0.5, 100000000000000000000)")]
+    [Arguments("Pow(-1, 100000000000000000001)")]
+    public async Task ShouldPowDecimalsWithHugeExponentsQuickly(string expression, CancellationToken cancellationToken)
+    {
+        // The exact power has billions of digits; computing it before rounding to a decimal held a thread for hours.
+        var e = new Expression(expression, ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
+        var expected = expression.StartsWith("Pow(-1") ? -1m : 0m;
+        await Assert.That(e.Evaluate(cancellationToken)).IsEqualTo(expected);
+    }
+
+    [Test]
+    [Arguments("Pow(2, 0.5)", 2d, 0.5d)]
+    [Arguments("Pow(1.05, 2.5)", 1.05d, 2.5d)]
+    [Arguments("Pow(9, -0.5)", 9d, -0.5d)]
+    public async Task ShouldPowDecimalsWithFractionalExponents(string expression, double @base, double exponent)
+    {
+        // The fraction used to be truncated away, so Pow(1.05, 2.5) was 1.05 squared.
+        var e = new Expression(expression, ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
+        await Assert.That(e.Evaluate(CancellationToken.None)).IsEqualTo((decimal)Math.Pow(@base, exponent));
+    }
+
+    [Test]
+    public async Task ShouldThrowWhenADecimalPowLeavesTheDecimalRange()
+    {
+        var e = new Expression("Pow(10, 30)", ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
+        await Assert.That(() => e.Evaluate(CancellationToken.None)).Throws<OverflowException>();
+    }
+
+    [Test]
+    public async Task ShouldThrowWhenRaisingDecimalZeroToANegativePower()
+    {
+        var e = new Expression("Pow(0, -2)", ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
+        await Assert.That(() => e.Evaluate(CancellationToken.None)).Throws<ArgumentException>();
+    }
 }
