@@ -33,7 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ExtendedNumerics.BigDecimal" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     </ItemGroup>
     <ItemGroup>

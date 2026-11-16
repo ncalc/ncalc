@@ -1,4 +1,4 @@
-﻿#if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
 #nullable enable
 using NCalc.LambdaCompilation;
 using NCalc.Tests.Attributes;
@@ -702,6 +702,23 @@ public class LambdaTests
         var e = new Expression("Pow(3.1, 2)", ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
         var lambda = e.ToLambda<decimal>(CancellationToken.None);
         await Assert.That(lambda()).IsEqualTo(9.61m);
+    }
+
+    [Test]
+    [Timeout(5_000)]
+    public async Task ShouldPowDecimalsWithAHugeExponentQuickly(CancellationToken cancellationToken)
+    {
+        var e = new Expression("Pow(0.5, 2147483647)", ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
+        var lambda = e.ToLambda<decimal>(cancellationToken);
+        await Assert.That(lambda()).IsEqualTo(0m);
+    }
+
+    [Test]
+    public async Task ShouldPowDecimalsWithAFractionalExponent()
+    {
+        var e = new Expression("Pow(1.05, 2.5)", ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
+        var lambda = e.ToLambda<decimal>(CancellationToken.None);
+        await Assert.That(lambda()).IsEqualTo((decimal)Math.Pow(1.05, 2.5));
     }
 
     [Test]

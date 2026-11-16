@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-using System.Reflection;
-using ExtendedNumerics;
+﻿using System.Reflection;
 using NCalc.Exceptions;
 using NCalc.Helpers;
 using NCalc.LambdaCompilation.Reflection;
@@ -476,15 +474,9 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             arg0 = LinqExpression.Convert(left, typeof(decimal));
             arg1 = LinqExpression.Convert(right, typeof(decimal));
 
-            var @base = LinqExpression.Convert(arg0, typeof(BigDecimal));
-            var exponent = LinqExpression.Convert(arg1, typeof(BigInteger));
-
-            var methodInfo = typeof(BigDecimal).GetMethod("Pow", [typeof(BigDecimal), typeof(BigInteger)]);
+            var methodInfo = typeof(MathHelper).GetMethod(nameof(MathHelper.Pow), [typeof(decimal), typeof(decimal)]);
             if (methodInfo != null)
-            {
-                var result = LinqExpression.Call(methodInfo, @base, exponent);
-                return LinqExpression.Convert(result, typeof(decimal));
-            }
+                return LinqExpression.Call(methodInfo, arg0, arg1);
         }
 
         arg0 = LinqExpression.Convert(left, typeof(double));
