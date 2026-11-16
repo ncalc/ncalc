@@ -294,6 +294,6 @@ public class DecimalsTests
     public async Task ShouldThrowWhenRaisingDecimalZeroToANegativePower()
     {
         var e = new Expression("Pow(0, -2)", ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
-        await Assert.That(() => e.Evaluate(CancellationToken.None)).Throws<ArgumentException>();
+        await Assert.That(() => e.Evaluate(CancellationToken.None)).Throws<DivideByZeroException>();
     }
 }

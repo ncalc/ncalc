@@ -297,8 +297,9 @@ public static class MathHelper
     /// Raises a decimal to a power. An integral exponent is computed by squaring in decimal arithmetic, so the
     /// cost is logarithmic in the exponent and a result outside the decimal range throws an
     /// <see cref="OverflowException"/> as soon as it is reached. Every intermediate product is a smaller power
-    /// of the same base, so the result is exact whenever the exact power fits in a decimal. A fractional
-    /// exponent is computed with <see cref="Math.Pow(double, double)"/>.
+    /// of the same base, so the result is exact whenever the exact power fits in a decimal. Zero raised to a
+    /// negative power is one over zero and throws a <see cref="DivideByZeroException"/>, like decimal division.
+    /// A fractional exponent is computed with <see cref="Math.Pow(double, double)"/>.
     /// </summary>
     public static decimal Pow(decimal @base, decimal exponent)
     {
@@ -308,7 +309,7 @@ public static class MathHelper
         if (exponent < 0)
         {
             if (@base == 0)
-                throw new ArgumentException("Cannot raise zero to a negative power.", nameof(@base));
+                throw new DivideByZeroException("Cannot raise zero to a negative power.");
 
             @base = 1 / @base;
             exponent = -exponent;
