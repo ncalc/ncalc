@@ -152,13 +152,11 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             // Exceptional handling
             case var s when string.Equals(s, "Max", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
-                arg0 = LinqExpression.Convert(args[0], typeof(double));
-                arg1 = LinqExpression.Convert(args[1], typeof(double));
+                (arg0, arg1) = ConvertToFloatingPointType(args[0], args[1]);
                 return LinqExpression.Condition(LinqExpression.GreaterThan(arg0, arg1), arg0, arg1);
             case var s when string.Equals(s, "Min", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
-                arg0 = LinqExpression.Convert(args[0], typeof(double));
-                arg1 = LinqExpression.Convert(args[1], typeof(double));
+                (arg0, arg1) = ConvertToFloatingPointType(args[0], args[1]);
                 return LinqExpression.Condition(LinqExpression.LessThan(arg0, arg1), arg0, arg1);
             case var s when string.Equals(s, "Pow", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
@@ -167,16 +165,13 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
             case var s when string.Equals(s, "Round", comparisonType):
                 CheckArgumentsLengthForFunction(functionName, function.Parameters.Count, 2);
 
-                if (args[0].Type == typeof(decimal))
-                    arg0 = LinqExpression.Convert(args[0], typeof(decimal));
-                else
-                    arg0 = LinqExpression.Convert(args[0], typeof(double));
-
+                var roundDecimal = args[0].Type == typeof(decimal);
+                arg0 = LinqExpression.Convert(args[0], roundDecimal ? typeof(decimal) : typeof(double));
                 arg1 = LinqExpression.Convert(args[1], typeof(int));
 
                 var rounding = _options.Math.MidpointRounding;
-                return LinqExpression.Call(MathFunctionHelper.Functions["Round"].First().MethodInfo, arg0, arg1,
-                    LinqExpression.Constant(rounding));
+                var roundMethod = MathFunctionHelper.Functions["Round"].First(_ => _.DecimalSupport == roundDecimal).MethodInfo;
+                return LinqExpression.Call(roundMethod, arg0, arg1, LinqExpression.Constant(rounding));
             case var s when string.Equals(s, "if", comparisonType):
                 var numberTypePriority = new[] { typeof(double), typeof(float), typeof(long), typeof(int), typeof(short) };
                 var index1 = Array.IndexOf(numberTypePriority, args[1].Type);
@@ -241,6 +236,13 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
                 }
 
                 throw new MissingMethodException($"method not found: {functionName}");
+        }
+
+        // A decimal argument keeps the comparison in decimal so its digits survive; anything else compares as double.
+        static (Linq.UnaryExpression, Linq.UnaryExpression) ConvertToFloatingPointType(LinqExpression a, LinqExpression b)
+        {
+            var type = a.Type == typeof(decimal) || b.Type == typeof(decimal) ? typeof(decimal) : typeof(double);
+            return (LinqExpression.Convert(a, type), LinqExpression.Convert(b, type));
         }
 
         static void CheckArgumentsLengthForFunction(string funcStr, int argsNum, int argsNeed)
