@@ -1,4 +1,4 @@
-namespace NCalc.Helpers;
+﻿namespace NCalc.Helpers;
 
 public sealed class MathOptions
 {
@@ -20,6 +20,12 @@ public sealed class MathOptions
     /// <summary>
     /// Checks arithmetic binary operations for overflow.
     /// </summary>
+    /// <remarks>
+    /// Without this option the binary operators <c>+</c>, <c>-</c>, <c>*</c> and <c>/</c> follow C# semantics and
+    /// wrap around on overflow. The factorial operator is not affected by this option: a factorial that leaves the
+    /// range of its type always throws an <see cref="OverflowException"/>, because a wrapped factorial is never a
+    /// meaningful value.
+    /// </remarks>
     public bool OverflowProtection { get; init; }
 
     /// <summary>
