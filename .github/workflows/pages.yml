@@ -13,8 +13,6 @@ permissions:
 
 jobs:
   publish-pages:
-    environment:
-      name: github-pages
     runs-on: ubuntu-latest
     env:
       PLAYGROUND_PUBLISH_DIR: artifacts/playground-publish/wwwroot
@@ -72,6 +70,3 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: artifacts/pages
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
