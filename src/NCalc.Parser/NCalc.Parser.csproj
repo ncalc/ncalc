@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <!-- .NET Framework consumers use the .NET Standard 2.0 asset. -->
-        <TargetFrameworks>netstandard2.0;net8.0;net10.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net8.0;net10.0;net11.0</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
