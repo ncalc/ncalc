@@ -34,6 +34,7 @@ jobs:
       - name: Build and Generate Documentation
         env:
           DocFx: true # Workaround https://github.com/dotnet/docfx/issues/10808
+          DOTNET_MULTILEVEL_LOOKUP: 0
         run: |
           dotnet tool update -g docfx
           cd docs
@@ -41,11 +42,15 @@ jobs:
           docfx build
 
       - name: Restore Playground Workloads
+        env:
+          DOTNET_MULTILEVEL_LOOKUP: 0
         run: |
-          dotnet workload install wasm-tools
           dotnet workload restore example/NCalc.Playground/NCalc.Playground.csproj
+          dotnet workload install wasm-tools-net10
 
       - name: Publish Playground
+        env:
+          DOTNET_MULTILEVEL_LOOKUP: 0
         run: |
           dotnet publish example/NCalc.Playground/NCalc.Playground.csproj --configuration Release --output artifacts/playground-publish -p:WasmBuildNative=true
 
