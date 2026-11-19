@@ -128,6 +128,8 @@ public class SerializationTests
         await Assert.That(new ValueExpression(1.234).ToExpressionString()).IsEqualTo("1.234");
         await Assert.That(new ValueExpression("hello").ToExpressionString()).IsEqualTo("'hello'");
         await Assert.That(new ValueExpression('c').ToExpressionString()).IsEqualTo("'c'");
+        await Assert.That(new ValueExpression(new Guid("8a7b6c5d-1234-4abc-9def-0123456789ab")).ToExpressionString())
+            .IsEqualTo("8a7b6c5d-1234-4abc-9def-0123456789ab");
         await Assert.That(new ValueExpression(new DateTime(2009, 1, 1)).ToExpressionString()).IsEqualTo("#" + new DateTime(2009, 1, 1) + "#");
     }
 
@@ -162,6 +164,30 @@ public class SerializationTests
         expression.Parameters["ValueB"] = 15;
 
         await Assert.That(expression.ToExpressionString(evaluateParameters: true)).IsEqualTo("10 + 15");
+    }
+
+    [Test]
+    public async Task ShouldSerializeGuidLiteralsSoTheyParseBack()
+    {
+        var logicalExpression = LogicalExpressionFactory.Create(
+            "8a7b6c5d-1234-4abc-9def-0123456789ab = 8a7b6c5d12344abc9def0123456789ab",
+            cancellationToken: CancellationToken.None);
+
+        var serialized = logicalExpression.ToExpressionString();
+
+        await Assert.That(serialized)
+            .IsEqualTo("8a7b6c5d-1234-4abc-9def-0123456789ab = 8a7b6c5d-1234-4abc-9def-0123456789ab");
+        await Assert.That(new Expression(serialized).Evaluate(CancellationToken.None)).IsEqualTo(true);
+    }
+
+    [Test]
+    public async Task ShouldSerializeExpressionWithGuidParameterValue()
+    {
+        var expression = new Expression("[Id] = [Other]");
+        expression.Parameters["Id"] = new Guid("8a7b6c5d-1234-4abc-9def-0123456789ab");
+
+        await Assert.That(expression.ToExpressionString(evaluateParameters: true))
+            .IsEqualTo("8a7b6c5d-1234-4abc-9def-0123456789ab = [Other]");
     }
 
     [Test]

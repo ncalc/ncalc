@@ -75,7 +75,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
     {
         return expression.Type switch
         {
-            ValueType.Boolean or ValueType.Integer => $"{expression.Value} ",
+            ValueType.Boolean or ValueType.Integer or ValueType.Guid => $"{expression.Value} ",
             ValueType.DateTime or ValueType.TimeSpan => $"#{expression.Value}# ",
             ValueType.Float => $"{((IFormattable)expression.Value!).ToString(null, _numberFormatInfo)} ",
             ValueType.String or ValueType.Char => $"'{expression.Value}' ",
