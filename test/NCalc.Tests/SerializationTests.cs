@@ -181,6 +181,30 @@ public class SerializationTests
     }
 
     [Test]
+    [Arguments("'it\\'s'")]
+    [Arguments("'C:\\\\temp\\\\new'")]
+    [Arguments("'line1\\r\\nline2'")]
+    public async Task ShouldSerializeStringLiteralsSoTheyParseBack(string source)
+    {
+        var logicalExpression = LogicalExpressionFactory.Create(source, cancellationToken: CancellationToken.None);
+
+        var serialized = logicalExpression.ToExpressionString();
+
+        await Assert.That(new Expression(serialized).Evaluate(CancellationToken.None))
+            .IsEqualTo(new Expression(source).Evaluate(CancellationToken.None));
+    }
+
+    [Test]
+    public async Task ShouldEscapeStringParameterValues()
+    {
+        var expression = new Expression("[Name] = 'x'");
+        expression.Parameters["Name"] = "O'Brien";
+
+        await Assert.That(expression.ToExpressionString(evaluateParameters: true))
+            .IsEqualTo("'O\\'Brien' = 'x'");
+    }
+
+    [Test]
     public async Task ShouldSerializeExpressionWithGuidParameterValue()
     {
         var expression = new Expression("[Id] = [Other]");

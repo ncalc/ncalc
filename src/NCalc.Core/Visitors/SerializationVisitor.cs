@@ -78,9 +78,40 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
             ValueType.Boolean or ValueType.Integer or ValueType.Guid => $"{expression.Value} ",
             ValueType.DateTime or ValueType.TimeSpan => $"#{expression.Value}# ",
             ValueType.Float => $"{((IFormattable)expression.Value!).ToString(null, _numberFormatInfo)} ",
-            ValueType.String or ValueType.Char => $"'{expression.Value}' ",
+            ValueType.String or ValueType.Char => $"'{EscapeString(Convert.ToString(expression.Value, CultureInfo.InvariantCulture))}' ",
             _ => "",
         };
+    }
+
+    private static string EscapeString(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+
+        var builder = new StringBuilder(value!.Length);
+        foreach (var c in value)
+        {
+            switch (c)
+            {
+                case '\\':
+                    builder.Append("\\\\");
+                    break;
+                case '\'':
+                    builder.Append("\\'");
+                    break;
+                case '\r':
+                    builder.Append("\\r");
+                    break;
+                case '\n':
+                    builder.Append("\\n");
+                    break;
+                default:
+                    builder.Append(c);
+                    break;
+            }
+        }
+
+        return builder.ToString();
     }
 
     public virtual string Visit(Function function)
