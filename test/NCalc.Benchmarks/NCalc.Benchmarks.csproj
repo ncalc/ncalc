@@ -14,8 +14,19 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
-    <PackageReference Include="Parlot" />
+    <PackageReference Include="Parlot" GeneratePathProperty="true" />
   </ItemGroup>
+
+	<ItemGroup Condition="'$(PkgParlot)' != ''">
+		<None Include="$(PkgParlot)\lib\net8.0\Parlot.dll"
+			  CopyToOutputDirectory="PreserveNewest"
+			  Link="parlot-net8\Parlot.dll"
+			  Visible="false" />
+		<None Include="$(PkgParlot)\lib\net10.0\Parlot.dll"
+			  CopyToOutputDirectory="PreserveNewest"
+			  Link="parlot-net10\Parlot.dll"
+			  Visible="false" />
+	</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Plugins\NCalc.LambdaCompilation\NCalc.LambdaCompilation.csproj" />
