@@ -287,30 +287,29 @@ public static partial class LogicalExpressionParser
             .SkipAnd(OneOf(dateAndTime, date, time))
             .AndSkip(Literals.Char('#')).Named("DateTimeLiteral");
 
-        var eightHexSequence = Terms.AnyOf(Character.HexDigits, 8, 8);
+        var eightHexSequence = Literals.AnyOf(Character.HexDigits, 8, 8);
+        var fourHexSequence = Literals.AnyOf(Character.HexDigits, 4, 4);
+        var twelveHexSequence = Literals.AnyOf(Character.HexDigits, 12, 12);
+        var twentyFourHexSequence = Literals.AnyOf(Character.HexDigits, 24, 24);
+        var hyphen = Literals.Char('-');
 
-        var fourHexSequence = Terms.AnyOf(Character.HexDigits, 4, 4);
+        var hyphenatedTail = hyphen
+            .And(fourHexSequence)
+            .And(hyphen)
+            .And(fourHexSequence)
+            .And(hyphen)
+            .And(fourHexSequence)
+            .And(hyphen)
+            .And(twelveHexSequence)
+            .Then(static _ => 0);
 
-        var twelveHexSequence = Terms.AnyOf(Character.HexDigits, 12, 12);
-
-        var thirtyTwoHexSequence = Terms.AnyOf(Character.HexDigits, 32, 32);
-
-        var guidWithHyphens = Capture(eightHexSequence
-                .And(minus)
-                .And(fourHexSequence)
-                .And(minus)
-                .And(fourHexSequence)
-                .And(minus)
-                .And(fourHexSequence)
-                .And(minus)
-                .And(twelveHexSequence))
-            .Then(static value => ParseGuid(value.Span));
-
-        var guidWithoutHyphens = thirtyTwoHexSequence
+        var unhyphenatedTail = twentyFourHexSequence
             .AndSkip(Not(decimalOrDoubleNumber))
-            .Then(static value => ParseGuid(value.Span));
+            .Then(static _ => 0);
 
-        var guid = OneOf(guidWithHyphens, guidWithoutHyphens).Named("Guid");
+        var guid = SkipWhiteSpace(Capture(eightHexSequence.And(OneOf(hyphenatedTail, unhyphenatedTail))))
+            .Then(static value => ParseGuid(value.Span))
+            .Named("Guid");
 
         var intOrLong = OneOf(intNumber, longNumber);
         var integralNumber = If(
