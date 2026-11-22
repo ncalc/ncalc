@@ -46,49 +46,59 @@ public static partial class LogicalExpressionParser
 
     private static LogicalExpression ParseGuid(ReadOnlySpan<char> value)
     {
-#if NET6_0_OR_GREATER
         return new ValueExpression(Guid.Parse(value));
-#else
-        return new ValueExpression(Guid.Parse(value.ToString()));
-#endif
     }
 
-    private static LogicalExpression ParseDate(string first, string second, string third, CultureInfo culture)
+    private static LogicalExpression ParseDate(ReadOnlySpan<char> first, ReadOnlySpan<char> second, ReadOnlySpan<char> third, CultureInfo culture)
     {
         var separator = culture.DateTimeFormat.DateSeparator;
-        if (DateTime.TryParse($"{first}{separator}{second}{separator}{third}",
-                culture, DateTimeStyles.None, out var result))
-        {
+
+#if NET6_0_OR_GREATER
+        var value = $"{first}{separator}{second}{separator}{third}";
+#else
+        var value = $"{first.ToString()}{separator}{second.ToString()}{separator}{third.ToString()}";
+#endif
+
+        if (DateTime.TryParse(value, culture, DateTimeStyles.None, out var result))
             return new ValueExpression(result);
-        }
 
         throw new FormatException("Invalid DateTime format.");
     }
 
-    private static LogicalExpression ParseTime(string hour, string minute, string second, string fraction, CultureInfo culture)
+    private static LogicalExpression ParseTime(ReadOnlySpan<char> hour, ReadOnlySpan<char> minute, ReadOnlySpan<char> second, ReadOnlySpan<char> fraction, CultureInfo culture)
     {
-        var separator = culture.DateTimeFormat.TimeSeparator;
-        var value = $"{hour}{separator}{minute}{separator}{second}";
-        if (fraction.Length == 0 && TimeSpan.TryParse(value, culture, out var result))
-            return new ValueExpression(result);
+        var timeSeparator = culture.DateTimeFormat.TimeSeparator;
+        var decSeparator = fraction.IsEmpty ? string.Empty : culture.NumberFormat.NumberDecimalSeparator;
 
-        if (TimeSpan.TryParse($"{value}{culture.NumberFormat.NumberDecimalSeparator}{fraction}", culture, out result))
+#if NET6_0_OR_GREATER
+        var value = $"{hour}{timeSeparator}{minute}{timeSeparator}{second}{decSeparator}{fraction}";
+#else
+        string fractionVal = fraction.IsEmpty ? string.Empty : fraction.ToString();
+        var value = $"{hour.ToString()}{timeSeparator}{minute.ToString()}{timeSeparator}{second.ToString()}{decSeparator}{fractionVal}";
+#endif
+
+        if (TimeSpan.TryParse(value, culture, out var result))
             return new ValueExpression(result);
 
         throw new FormatException("Invalid TimeSpan format.");
     }
 
     private static LogicalExpression ParseDateAndTime(
-        string first, string second, string third, string hour, string minute, string seconds, string fraction,
+        ReadOnlySpan<char> first, ReadOnlySpan<char> second, ReadOnlySpan<char> third, ReadOnlySpan<char> hour, ReadOnlySpan<char> minute, ReadOnlySpan<char> seconds, ReadOnlySpan<char> fraction,
         CultureInfo culture)
     {
         var dateSeparator = culture.DateTimeFormat.DateSeparator;
         var timeSeparator = culture.DateTimeFormat.TimeSeparator;
-        var value = $"{first}{dateSeparator}{second}{dateSeparator}{third} {hour}{timeSeparator}{minute}{timeSeparator}{seconds}";
-        if (fraction.Length == 0 && DateTime.TryParse(value, culture, DateTimeStyles.None, out var result))
-            return new ValueExpression(result);
+        var decSeparator = fraction.IsEmpty ? string.Empty : culture.NumberFormat.NumberDecimalSeparator;
 
-        if (DateTime.TryParse($"{value}{culture.NumberFormat.NumberDecimalSeparator}{fraction}", culture, DateTimeStyles.None, out result))
+#if NET6_0_OR_GREATER
+        var value = $"{first}{dateSeparator}{second}{dateSeparator}{third} {hour}{timeSeparator}{minute}{timeSeparator}{seconds}{decSeparator}{fraction}";
+#else
+        string fractionVal = fraction.IsEmpty ? string.Empty : fraction.ToString();
+        var value =  $"{first.ToString()}{dateSeparator}{second.ToString()}{dateSeparator}{third.ToString()} {hour.ToString()}{timeSeparator}{minute.ToString()}{timeSeparator}{seconds.ToString()}{decSeparator}{fractionVal}";
+#endif
+
+        if (DateTime.TryParse(value, culture, DateTimeStyles.None, out var result))
             return new ValueExpression(result);
 
         throw new FormatException("Invalid DateTime format.");

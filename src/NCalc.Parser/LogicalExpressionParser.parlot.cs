@@ -260,7 +260,7 @@ public static partial class LogicalExpressionParser
 
         // date => number/number/number
         var date = dateDefinition.Then(value => ParseDate(
-            value.Item1.ToString(), value.Item2.ToString(), value.Item3.ToString(), cultureInfo)).Named("Date");
+            value.Item1.Span, value.Item2.Span, value.Item3.Span, cultureInfo)).Named("Date");
 
         // time => number:number:number{.fractional}
         var timeDefinition = charIsNumber
@@ -269,17 +269,17 @@ public static partial class LogicalExpressionParser
             .AndSkip(timeSeparator)
             .And(charIsNumber)
             .AndSkip(decimalSeparator.Optional())
-            .And(charIsNumber.Optional().Then(static value => value.HasValue ? value.Value.ToString() : string.Empty));
+            .And(charIsNumber.Optional().Then(static value => value.HasValue ? value.Value : TextSpan.Empty));
 
         var time = timeDefinition.Then(value => ParseTime(
-            value.Item1.ToString(), value.Item2.ToString(), value.Item3.ToString(), value.Item4, cultureInfo)).Named("Time");
+            value.Item1.Span, value.Item2.Span, value.Item3.Span, value.Item4.Span, cultureInfo)).Named("Time");
 
         // dateAndTime => number/number/number number:number:number{.fractional}
         var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition)
             .Then(value => ParseDateAndTime(
-                value.Item1.ToString(), value.Item2.ToString(), value.Item3.ToString(),
-                value.Item4.Item1.ToString(), value.Item4.Item2.ToString(), value.Item4.Item3.ToString(),
-                value.Item4.Item4, cultureInfo)).Named("DateAndTime");
+                value.Item1.Span, value.Item2.Span, value.Item3.Span,
+                value.Item4.Item1.Span, value.Item4.Item2.Span, value.Item4.Item3.Span,
+                value.Item4.Item4.Span, cultureInfo)).Named("DateAndTime");
 
         // datetime => '#' dateAndTime | date | time  '#';
         var dateTime = Terms
