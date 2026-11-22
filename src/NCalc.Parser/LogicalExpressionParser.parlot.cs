@@ -20,32 +20,43 @@ public static partial class LogicalExpressionParser
     {
         var openingDelimiter = Terms.Char(quote);
         var closingDelimiter = Literals.Char(quote);
+        var plainText = quote == '\'' ? Literals.NoneOf("'\\\r\n") : Literals.NoneOf("\"\\\r\n");
+
+        // string without '\'
+        var plainString = plainText
+            .AndSkip(closingDelimiter)
+            .Then(static value => value.ToString());
+
+        // string with '\'
         var escapedUnicode = Literals.Text("\\u")
             .SkipAnd(Literals.Pattern(Character.IsHexDigit, 4, 4))
             .Then(static value => char.ConvertFromUtf32(Convert.ToInt32(value.ToString(), 16)));
         var escapedCharacter = Literals.Char('\\')
-            .And(Literals.Pattern(_ => true, 1, 1))
+            .And(Literals.Pattern(static _ => true, 1, 1))
             .Then(static value =>
             {
-                var escaped = value.Item2.ToString();
-                return escaped switch
+                var ch = value.Item2.Span[0];
+                return ch switch
                 {
-                    "\\" => "\\",
-                    "'" => "'",
-                    "\"" => "\"",
-                    "n" => "\n",
-                    "r" => "\r",
-                    "t" => "\t",
-                    "b" => "\b",
-                    "f" => "\f",
-                    _ => "\\" + escaped
+                    '\\' => "\\",
+                    '\'' => "'",
+                    '"' => "\"",
+                    'n' => "\n",
+                    'r' => "\r",
+                    't' => "\t",
+                    'b' => "\b",
+                    'f' => "\f",
+                    _ => "\\" + ch
                 };
             });
-        var text = Literals.NoneOf(quote == '\'' ? "'\\\r\n" : "\"\\\r\n")
-            .Then(static value => value.ToString());
 
-        return Between(openingDelimiter, ZeroOrMany(OneOf(escapedUnicode, escapedCharacter, text)), closingDelimiter)
+        var text = plainText.Then(static value => value.ToString());
+
+        var escapedString = ZeroOrMany(OneOf(escapedUnicode, escapedCharacter, text))
+            .AndSkip(closingDelimiter)
             .Then(static values => string.Concat(values));
+
+        return openingDelimiter.SkipAnd(OneOf(plainString, escapedString));
     }
 
 #if !PARLOT_FLUENT
