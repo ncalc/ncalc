@@ -130,7 +130,6 @@ public class SerializationTests
         await Assert.That(new ValueExpression('c').ToExpressionString()).IsEqualTo("'c'");
         await Assert.That(new ValueExpression(new Guid("8a7b6c5d-1234-4abc-9def-0123456789ab")).ToExpressionString())
             .IsEqualTo("8a7b6c5d-1234-4abc-9def-0123456789ab");
-        await Assert.That(new ValueExpression(new DateTime(2009, 1, 1)).ToExpressionString()).IsEqualTo("#" + new DateTime(2009, 1, 1) + "#");
     }
 
     [Test]
@@ -192,6 +191,79 @@ public class SerializationTests
 
         await Assert.That(new Expression(serialized).Evaluate(CancellationToken.None))
             .IsEqualTo(new Expression(source).Evaluate(CancellationToken.None));
+    }
+
+    [Test]
+    [Arguments("", "#01/01/2009 00:00:00#")]
+    [Arguments("en-US", "#1/1/2009 00:00:00#")]
+    [Arguments("de-DE", "#01.01.2009 00:00:00#")]
+    [Arguments("ja-JP", "#2009/01/01 00:00:00#")]
+    public async Task ShouldSerializeDateTimeValuesInTheCurrentCulture(string culture, string expected)
+    {
+        var oldCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+
+        try
+        {
+            await Assert.That(new ValueExpression(new DateTime(2009, 1, 1)).ToExpressionString()).IsEqualTo(expected);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = oldCulture;
+        }
+    }
+
+    [Test]
+    [Arguments("")]
+    [Arguments("en-US")]
+    [Arguments("de-DE")]
+    [Arguments("zh-TW")]
+    [Arguments("ko-KR")]
+    public async Task ShouldSerializeDateTimeValuesSoTheyParseBack(string culture)
+    {
+        var oldCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+
+        try
+        {
+            foreach (var value in new[]
+                     {
+                         new DateTime(2009, 1, 1),
+                         new DateTime(2026, 11, 22, 15, 4, 5),
+                         new DateTime(2026, 11, 22, 15, 4, 5, 250)
+                     })
+            {
+                var serialized = new ValueExpression(value).ToExpressionString();
+
+                await Assert.That(new Expression(serialized).Evaluate(CancellationToken.None)).IsEqualTo(value);
+            }
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = oldCulture;
+        }
+    }
+
+    [Test]
+    public async Task ShouldSerializeDateTimeParameterValuesSoTheyParseBack()
+    {
+        var oldCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+        try
+        {
+            var expression = new Expression("[Due] > #11/1/2026#");
+            expression.Parameters["Due"] = new DateTime(2026, 11, 22, 15, 4, 5);
+
+            var serialized = expression.ToExpressionString(evaluateParameters: true);
+
+            await Assert.That(serialized).IsEqualTo("#11/22/2026 15:04:05# > #11/1/2026 00:00:00#");
+            await Assert.That((bool)new Expression(serialized).Evaluate(CancellationToken.None)!).IsTrue();
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = oldCulture;
+        }
     }
 
     [Test]
