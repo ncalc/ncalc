@@ -31,10 +31,10 @@ public static partial class LogicalExpressionParser
     private static LogicalExpression ParseSingleQuotedString(ReadOnlySpan<char> span, bool allowCharValues)
     {
         var text = DecodeUnicodeIfNeeded(span);
-        if (text.Length == 1 && allowCharValues)
-            return new ValueExpression(text[0]);
 
-        return new ValueExpression(text);
+        return allowCharValues && text.Length == 1
+            ? new ValueExpression(text[0])
+            : new ValueExpression(text);
     }
 
     private static LogicalExpression ParseDoubleQuotedString(ReadOnlySpan<char> span)
