@@ -16,48 +16,13 @@ namespace NCalc;
 public static partial class LogicalExpressionParser
 #endif
 {
-    private static Parser<string> CreateStringParser(char quote)
-    {
-        var openingDelimiter = Terms.Char(quote);
-        var closingDelimiter = Literals.Char(quote);
-        var plainText = quote == '\'' ? Literals.NoneOf("'\\\r\n") : Literals.NoneOf("\"\\\r\n");
-
-        // string without '\'
-        var plainString = plainText
-            .AndSkip(closingDelimiter)
-            .Then(static value => value.ToString());
-
-        // string with '\'
-        var escapedUnicode = Literals.Text("\\u")
-            .SkipAnd(Literals.Pattern(Character.IsHexDigit, 4, 4))
-            .Then(static value => char.ConvertFromUtf32(Convert.ToInt32(value.ToString(), 16)));
-        var escapedCharacter = Literals.Char('\\')
-            .And(Literals.Pattern(static _ => true, 1, 1))
-            .Then(static value =>
-            {
-                var ch = value.Item2.Span[0];
-                return ch switch
-                {
-                    '\\' => "\\",
-                    '\'' => "'",
-                    '"' => "\"",
-                    'n' => "\n",
-                    'r' => "\r",
-                    't' => "\t",
-                    'b' => "\b",
-                    'f' => "\f",
-                    _ => "\\" + ch
-                };
-            });
-
-        var text = plainText.Then(static value => value.ToString());
-
-        var escapedString = ZeroOrMany(OneOf(escapedUnicode, escapedCharacter, text))
-            .AndSkip(closingDelimiter)
-            .Then(static values => string.Concat(values));
-
-        return openingDelimiter.SkipAnd(OneOf(plainString, escapedString));
-    }
+    private const StringEscapes NCalcStringEscapes =
+        StringEscapes.Unicode |
+        StringEscapes.Quotes |
+        StringEscapes.NewLineAndTab |
+        StringEscapes.BackspaceAndFormFeed |
+        StringEscapes.KeepUnknown |
+        StringEscapes.SingleLine;
 
 #if !PARLOT_FLUENT
     [GenerateParser(nameof(TryParseCore))]
@@ -241,12 +206,19 @@ public static partial class LogicalExpressionParser
         var booleanFalse = Terms.Keyword("false", true)
             .Then<LogicalExpression>(static _ => False).Named("False");
 
-        var singleQuotesStringValue = CreateStringParser('\'')
-            .Then(value => ParseSingleQuotedString(value, options.AllowCharValues))
+        var singleQuotesStringValue = Terms.String(StringLiteralQuotes.Single, NCalcStringEscapes)
+            .Then<LogicalExpression>(value =>
+            {
+                if (value.Length == 1 && options.AllowCharValues)
+                    return new ValueExpression(value.Span[0]);
+
+                return new ValueExpression(value.ToString());
+            })
             .Named("SingleQuotedString");
 
-        var doubleQuotesStringValue = CreateStringParser('"')
-            .Then<LogicalExpression>(CreateValueExpression).Named("DoubleQuotedString");
+        var doubleQuotesStringValue = Terms.String(StringLiteralQuotes.Double, NCalcStringEscapes)
+            .Then<LogicalExpression>(static value => new ValueExpression(value.ToString()))
+            .Named("DoubleQuotedString");;
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue).Named("String");
 
