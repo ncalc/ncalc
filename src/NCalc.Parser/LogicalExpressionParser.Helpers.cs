@@ -5,7 +5,6 @@ namespace NCalc.Benchmarks;
 
 internal static partial class FluentExpressionParser
 #else
-
 namespace NCalc;
 
 public static partial class LogicalExpressionParser
@@ -28,14 +27,6 @@ public static partial class LogicalExpressionParser
         return UnicodeEscapeRegex.Replace(text, static match =>
             ((char)Convert.ToInt32(match.Groups[1].Value, 16)).ToString());
     }
-
-    private static LogicalExpression ParseSingleQuotedString(string value, bool allowCharValues)
-    {
-        return allowCharValues && value.Length == 1
-            ? new ValueExpression(value[0])
-            : new ValueExpression(value);
-    }
-
     private static LogicalExpression CreateValueExpression(int value) => new ValueExpression(value);
     private static LogicalExpression CreateValueExpression(long value) => new ValueExpression(value);
     private static LogicalExpression CreateValueExpression(decimal value) => new ValueExpression(value);
