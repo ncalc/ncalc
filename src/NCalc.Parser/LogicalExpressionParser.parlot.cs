@@ -206,18 +206,11 @@ public static partial class LogicalExpressionParser
             .Then<LogicalExpression>(static _ => False).Named("False");
 
         var singleQuotesStringValue = Terms.String(StringLiteralQuotes.Single, NCalcStringEscapes)
-            .Then<LogicalExpression>(value =>
-            {
-                var text = DecodeUnicodeIfNeeded(value.Span);
-                if (text.Length == 1 && options.AllowCharValues)
-                    return new ValueExpression(text[0]);
-
-                return new ValueExpression(text);
-            })
+            .Then(value => ParseSingleQuotedString(value.Span, options.AllowCharValues))
             .Named("SingleQuotedString");
 
         var doubleQuotesStringValue = Terms.String(StringLiteralQuotes.Double, NCalcStringEscapes)
-            .Then<LogicalExpression>(static value => new ValueExpression(DecodeUnicodeIfNeeded(value.Span)))
+            .Then(static value => ParseDoubleQuotedString(value.Span))
             .Named("DoubleQuotedString");
 
         var stringValue = OneOf(singleQuotesStringValue, doubleQuotesStringValue).Named("String");

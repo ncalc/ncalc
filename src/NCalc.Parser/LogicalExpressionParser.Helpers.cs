@@ -27,6 +27,21 @@ public static partial class LogicalExpressionParser
         return UnicodeEscapeRegex.Replace(text, static match =>
             ((char)Convert.ToInt32(match.Groups[1].Value, 16)).ToString());
     }
+
+    internal static LogicalExpression ParseSingleQuotedString(ReadOnlySpan<char> span, bool allowCharValues)
+    {
+        var text = DecodeUnicodeIfNeeded(span);
+        if (text.Length == 1 && allowCharValues)
+            return new ValueExpression(text[0]);
+
+        return new ValueExpression(text);
+    }
+
+    internal static LogicalExpression ParseDoubleQuotedString(ReadOnlySpan<char> span)
+    {
+        return new ValueExpression(DecodeUnicodeIfNeeded(span));
+    }
+
     private static LogicalExpression CreateValueExpression(int value) => new ValueExpression(value);
     private static LogicalExpression CreateValueExpression(long value) => new ValueExpression(value);
     private static LogicalExpression CreateValueExpression(decimal value) => new ValueExpression(value);
