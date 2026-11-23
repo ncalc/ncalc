@@ -28,7 +28,7 @@ public static partial class LogicalExpressionParser
             ((char)Convert.ToInt32(match.Groups[1].Value, 16)).ToString());
     }
 
-    internal static LogicalExpression ParseSingleQuotedString(ReadOnlySpan<char> span, bool allowCharValues)
+    private static LogicalExpression ParseSingleQuotedString(ReadOnlySpan<char> span, bool allowCharValues)
     {
         var text = DecodeUnicodeIfNeeded(span);
         if (text.Length == 1 && allowCharValues)
@@ -37,7 +37,7 @@ public static partial class LogicalExpressionParser
         return new ValueExpression(text);
     }
 
-    internal static LogicalExpression ParseDoubleQuotedString(ReadOnlySpan<char> span)
+    private static LogicalExpression ParseDoubleQuotedString(ReadOnlySpan<char> span)
     {
         return new ValueExpression(DecodeUnicodeIfNeeded(span));
     }
