@@ -1,8 +1,11 @@
+using System.Text.RegularExpressions;
+
 #if PARLOT_FLUENT
 namespace NCalc.Benchmarks;
 
 internal static partial class FluentExpressionParser
 #else
+
 namespace NCalc;
 
 public static partial class LogicalExpressionParser
@@ -13,6 +16,18 @@ public static partial class LogicalExpressionParser
 
     private const double MinDecDouble = (double)decimal.MinValue;
     private const double MaxDecDouble = (double)decimal.MaxValue;
+
+    private static readonly Regex UnicodeEscapeRegex = new(@"\\u([0-9a-fA-F]{4})", RegexOptions.Compiled);
+
+    private static string DecodeUnicodeIfNeeded(ReadOnlySpan<char> span)
+    {
+        var text = span.ToString();
+        if (!text.Contains("\\u", StringComparison.Ordinal))
+            return text;
+
+        return UnicodeEscapeRegex.Replace(text, static match =>
+            ((char)Convert.ToInt32(match.Groups[1].Value, 16)).ToString());
+    }
 
     private static LogicalExpression ParseSingleQuotedString(string value, bool allowCharValues)
     {
