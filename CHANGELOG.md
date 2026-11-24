@@ -1,3 +1,22 @@
+# 7.5.0
+* Use ArgumentNullException.ThrowIfNull on modern frameworks by @Bykiev in https://github.com/ncalc/ncalc/pull/635
+* Compute decimal Pow by squaring instead of the exact BigDecimal power by @MilanJa in https://github.com/ncalc/ncalc/pull/640
+* Add .NET 11 targets by @Bykiev in https://github.com/ncalc/ncalc/pull/642
+* Serialize Guid values in ToExpressionString by @vtxe02023274 in https://github.com/ncalc/ncalc/pull/645
+* Escape quotes, backslashes and line breaks in serialized strings by @vtxe02023274 in https://github.com/ncalc/ncalc/pull/646
+* Optimize Guid parsing by @Bykiev in https://github.com/ncalc/ncalc/pull/652
+* Parlot v2.5.0 by @Bykiev in https://github.com/ncalc/ncalc/pull/647
+* Optimize string parsing by @Bykiev in https://github.com/ncalc/ncalc/pull/653
+* Improve DT parser performance by @Bykiev in https://github.com/ncalc/ncalc/pull/649
+* Optimize not parser by @Bykiev in https://github.com/ncalc/ncalc/pull/650
+* check InvalidOperatorSequence only at root expression by @Bykiev in https://github.com/ncalc/ncalc/pull/651
+* Serialize DateTime values in a shape the date literal parser accepts by @vtxe02023274 in https://github.com/ncalc/ncalc/pull/648
+* Throw on factorial overflow and keep decimals in lambda Round, Max and Min by @MilanJa in https://github.com/ncalc/ncalc/pull/641
+
+## New Contributors
+* @MilanJa made their first contribution in https://github.com/ncalc/ncalc/pull/640
+* @vtxe02023274 made their first contribution in https://github.com/ncalc/ncalc/pull/645
+
 # 7.4.0
 * Use Parlot 2.2 and its operator tables and string pools by @sebastienros in https://github.com/ncalc/ncalc/pull/633
 
