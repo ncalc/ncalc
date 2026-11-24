@@ -234,10 +234,6 @@ public static partial class LogicalExpressionParser
             .AndSkip(dateSeparator)
             .And(charIsNumber);
 
-        // date => number/number/number
-        var date = dateDefinition.Then(value => ParseDate(
-            value.Item1.ToString(), value.Item2.ToString(), value.Item3.ToString(), cultureInfo)).Named("Date");
-
         // time => number:number:number{.fractional}
         var timeDefinition = charIsNumber
             .AndSkip(timeSeparator)
@@ -245,22 +241,26 @@ public static partial class LogicalExpressionParser
             .AndSkip(timeSeparator)
             .And(charIsNumber)
             .AndSkip(decimalSeparator.Optional())
-            .And(charIsNumber.Optional().Then(static value => value.HasValue ? value.Value.ToString() : string.Empty));
+            .And(charIsNumber.Optional().Then(static value => value.HasValue ? value.Value : TextSpan.Empty));
+
+        var dateOrDateTime = dateDefinition
+            .And(Literals.WhiteSpace().SkipAnd(timeDefinition).Optional())
+            .Then(value => value.Item4.TryGetValue(out var t)
+                ? ParseDateAndTime(
+                    value.Item1.Span, value.Item2.Span, value.Item3.Span,
+                    t.Item1.Span, t.Item2.Span, t.Item3.Span,
+                    t.Item4.Span, cultureInfo)
+                : ParseDate(
+                    value.Item1.Span, value.Item2.Span, value.Item3.Span, cultureInfo))
+            .Named("DateOrDateTime");
 
         var time = timeDefinition.Then(value => ParseTime(
-            value.Item1.ToString(), value.Item2.ToString(), value.Item3.ToString(), value.Item4, cultureInfo)).Named("Time");
+            value.Item1.Span, value.Item2.Span, value.Item3.Span, value.Item4.Span, cultureInfo)).Named("Time");
 
-        // dateAndTime => number/number/number number:number:number{.fractional}
-        var dateAndTime = dateDefinition.AndSkip(Literals.WhiteSpace()).And(timeDefinition)
-            .Then(value => ParseDateAndTime(
-                value.Item1.ToString(), value.Item2.ToString(), value.Item3.ToString(),
-                value.Item4.Item1.ToString(), value.Item4.Item2.ToString(), value.Item4.Item3.ToString(),
-                value.Item4.Item4, cultureInfo)).Named("DateAndTime");
-
-        // datetime => '#' dateAndTime | date | time  '#';
+        // datetime => '#' dateOrDateTime | time  '#';
         var dateTime = Terms
             .Char('#')
-            .SkipAnd(OneOf(dateAndTime, date, time))
+            .SkipAnd(OneOf(dateOrDateTime, time))
             .AndSkip(Literals.Char('#')).Named("DateTimeLiteral");
 
         var eightHexSequence = Literals.AnyOf(Character.HexDigits, 8, 8);
