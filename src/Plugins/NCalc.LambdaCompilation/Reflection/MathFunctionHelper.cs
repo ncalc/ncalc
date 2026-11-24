@@ -60,6 +60,13 @@ public static class MathFunctionHelper
                     new MathMethodInfo
                     {
                         MethodInfo = typeof(Math).GetMethod(nameof(Math.Round),
+                            [typeof(decimal), typeof(int), typeof(MidpointRounding)])!,
+                        ArgumentCount = 2,
+                        DecimalSupport = true
+                    },
+                    new MathMethodInfo
+                    {
+                        MethodInfo = typeof(Math).GetMethod(nameof(Math.Round),
                             [typeof(double), typeof(int), typeof(MidpointRounding)])!,
                         ArgumentCount = 2,
                         DecimalSupport = false

@@ -443,6 +443,12 @@ public static class MathHelper
         };
     }
 
+    /// <summary>
+    /// Computes the factorial of an integral value, keeping the type of the input. The input is limited to
+    /// <c>170</c>, the largest factorial a <see cref="double"/> can hold. An <see cref="int"/>, <see cref="long"/>
+    /// or <see cref="decimal"/> product that leaves the range of its type throws an <see cref="OverflowException"/>
+    /// instead of silently wrapping around.
+    /// </summary>
     public static object Factorial(object? result)
     {
         return result switch
@@ -577,16 +583,66 @@ public static class MathHelper
         var r = one;
 
         for (var i = one + one; i <= n; i++)
-            r *= i;
+            r = checked(r * i);
 
         return r;
     }
 #else
-    private static dynamic CalculateFactorial(dynamic n)
+    private static int CalculateFactorial(int n)
     {
         var r = 1;
 
-        for (var i = 1 + 1; i <= n; i++)
+        for (var i = 2; i <= n; i++)
+            r = checked(r * i);
+
+        return r;
+    }
+
+    private static long CalculateFactorial(long n)
+    {
+        var r = 1L;
+
+        for (var i = 2L; i <= n; i++)
+            r = checked(r * i);
+
+        return r;
+    }
+
+    private static float CalculateFactorial(float n)
+    {
+        var r = 1f;
+
+        for (var i = 2f; i <= n; i++)
+            r *= i;
+
+        return r;
+    }
+
+    private static double CalculateFactorial(double n)
+    {
+        var r = 1d;
+
+        for (var i = 2d; i <= n; i++)
+            r *= i;
+
+        return r;
+    }
+
+    private static decimal CalculateFactorial(decimal n)
+    {
+        var r = 1m;
+
+        for (var i = 2m; i <= n; i++)
+            r *= i;
+
+        return r;
+    }
+
+    private static BigInteger CalculateFactorial(BigInteger n)
+    {
+        var r = BigInteger.One;
+
+        for (var i = new BigInteger(2); i <= n; i++)
             r *= i;
 
         return r;

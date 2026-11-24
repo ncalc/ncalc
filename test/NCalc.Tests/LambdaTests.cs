@@ -1,4 +1,4 @@
-#if NET8_0_OR_GREATER
+﻿#if NET8_0_OR_GREATER
 #nullable enable
 using NCalc.LambdaCompilation;
 using NCalc.Tests.Attributes;
@@ -719,6 +719,39 @@ public class LambdaTests
         var e = new Expression("Pow(1.05, 2.5)", ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
         var lambda = e.ToLambda<decimal>(CancellationToken.None);
         await Assert.That(lambda()).IsEqualTo((decimal)Math.Pow(1.05, 2.5));
+    }
+
+    [Test]
+    [Arguments("Round(1.25, 1)", "1.2")]
+    [Arguments("Round(1.35, 1)", "1.4")]
+    [Arguments("Round(1234567890.123456789, 5)", "1234567890.12346")]
+    public async Task ShouldRoundDecimals(string expression, string expected)
+    {
+        // Building the lambda used to fail because the decimal argument was passed to Math.Round(double, ...).
+        var e = new Expression(expression, ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
+        var lambda = e.ToLambda<decimal>(CancellationToken.None);
+        await Assert.That(lambda()).IsEqualTo(decimal.Parse(expected, CultureInfo.InvariantCulture));
+    }
+
+    [Test]
+    public async Task ShouldRoundDecimalsAwayFromZeroWhenConfigured()
+    {
+        var e = new Expression("Round(1.25, 1)", ExpressionOptions.DecimalAsDefault | ExpressionOptions.RoundAwayFromZero, null, CultureInfo.InvariantCulture);
+        var lambda = e.ToLambda<decimal>(CancellationToken.None);
+        await Assert.That(lambda()).IsEqualTo(1.3m);
+    }
+
+    [Test]
+    [Arguments("Max(1234567890.1234567891, 1)", "1234567890.1234567891")]
+    [Arguments("Max(2, 1234567890.1234567891)", "1234567890.1234567891")]
+    [Arguments("Min(1234567890.1234567891, 1234567890.1234567892)", "1234567890.1234567891")]
+    [Arguments("Min(2, 1.5)", "1.5")]
+    public async Task ShouldKeepDecimalPrecisionInMaxAndMin(string expression, string expected)
+    {
+        // Max and Min used to compare as doubles, which cannot hold these digits.
+        var e = new Expression(expression, ExpressionOptions.DecimalAsDefault, null, CultureInfo.InvariantCulture);
+        var lambda = e.ToLambda<decimal>(CancellationToken.None);
+        await Assert.That(lambda()).IsEqualTo(decimal.Parse(expected, CultureInfo.InvariantCulture));
     }
 
     [Test]
