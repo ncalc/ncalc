@@ -36,34 +36,40 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(BinaryExpression expression)
     {
-        var binaryEventArgs = new BinaryEventArgs(expression, this, CreateAsyncEvaluationVisitor(), CancellationToken);
-        OnEvaluateBinary(binaryEventArgs);
-
-        if (binaryEventArgs.HasResult)
-            return binaryEventArgs.Result;
-
-        if (expression.Type == BinaryExpressionType.And)
+        if (context.EvaluateBinaryHandler != null || GetType() != typeof(EvaluationVisitor))
         {
-            return Convert.ToBoolean(binaryEventArgs.LeftValue(), cultureInfo) &&
-                   Convert.ToBoolean(binaryEventArgs.RightValue(), cultureInfo);
+            var binaryEventArgs = new BinaryEventArgs(expression, this, CreateAsyncEvaluationVisitor(), CancellationToken);
+            OnEvaluateBinary(binaryEventArgs);
+
+            if (binaryEventArgs.HasResult)
+                return binaryEventArgs.Result;
+
+            return EvaluateBinaryCore(expression.Type, binaryEventArgs);
         }
 
-        if (expression.Type == BinaryExpressionType.Or)
+        return EvaluateBinaryCore(expression.Type, expression.LeftExpression, expression.RightExpression);
+    }
+
+    private object? EvaluateBinaryCore(BinaryExpressionType type, BinaryEventArgs args)
+    {
+        return type switch
         {
-            return Convert.ToBoolean(binaryEventArgs.LeftValue(), cultureInfo) ||
-                   Convert.ToBoolean(binaryEventArgs.RightValue(), cultureInfo);
-        }
+            BinaryExpressionType.And => Convert.ToBoolean(args.LeftValue(), cultureInfo) && Convert.ToBoolean(args.RightValue(), cultureInfo),
+            BinaryExpressionType.Or => Convert.ToBoolean(args.LeftValue(), cultureInfo) || Convert.ToBoolean(args.RightValue(), cultureInfo),
+            BinaryExpressionType.Coalesce => args.LeftValue() ?? args.RightValue(),
+            _ => EvaluationVisitorHelper.EvaluateBinary(type, args.LeftValue(), args.RightValue(), options, cultureInfo)
+        };
+    }
 
-        if (expression.Type == BinaryExpressionType.Coalesce)
+    private object? EvaluateBinaryCore(BinaryExpressionType type, LogicalExpression left, LogicalExpression right)
+    {
+        return type switch
         {
-            var leftValue = binaryEventArgs.LeftValue();
-            return leftValue ?? binaryEventArgs.RightValue();
-        }
-
-        var left = binaryEventArgs.LeftValue();
-        var right = binaryEventArgs.RightValue();
-
-        return EvaluationVisitorHelper.EvaluateBinary(expression.Type, left, right, options, cultureInfo);
+            BinaryExpressionType.And => Convert.ToBoolean(left.Accept(this), cultureInfo) && Convert.ToBoolean(right.Accept(this), cultureInfo),
+            BinaryExpressionType.Or => Convert.ToBoolean(left.Accept(this), cultureInfo) || Convert.ToBoolean(right.Accept(this), cultureInfo),
+            BinaryExpressionType.Coalesce => left.Accept(this) ?? right.Accept(this),
+            _ => EvaluationVisitorHelper.EvaluateBinary(type, left.Accept(this), right.Accept(this), options, cultureInfo)
+        };
     }
 
     public virtual object? Visit(UnaryExpression expression)
@@ -76,6 +82,11 @@ public class EvaluationVisitor(
     public virtual object? Visit(Function function)
     {
         var functionName = function.Identifier.Name;
+        var hasHandler = context.EvaluateFunctionHandler != null || GetType() != typeof(EvaluationVisitor);
+        var hasCustomFunction = context.Functions.TryGetValue(functionName, out var expressionFunction);
+
+        var asyncVisitor = (hasHandler || hasCustomFunction) ? CreateAsyncEvaluationVisitor() : null!;
+
         var functionData = new FunctionData(
             function.Identifier.Id,
             function.Parameters,
@@ -83,17 +94,20 @@ public class EvaluationVisitor(
             options,
             cultureInfo,
             this,
-            CreateAsyncEvaluationVisitor(),
+            asyncVisitor,
             CancellationToken);
-        var functionArgs = new FunctionEventArgs(functionData);
 
-        OnEvaluateFunction(functionName, functionArgs);
+        if (hasHandler)
+        {
+            var functionArgs = new FunctionEventArgs(functionData);
+            OnEvaluateFunction(functionName, functionArgs);
 
-        if (functionArgs.HasResult)
-            return functionArgs.Result;
+            if (functionArgs.HasResult)
+                return functionArgs.Result;
+        }
 
-        if (context.Functions.TryGetValue(functionName, out var expressionFunction))
-            return expressionFunction(functionData);
+        if (hasCustomFunction)
+            return expressionFunction!(functionData);
 
         return BuiltInFunctionHelper.Evaluate(functionName, functionData);
     }
@@ -139,12 +153,14 @@ public class EvaluationVisitor(
     {
         var identifierName = identifier.Name;
 
-        var parameterArgs = new ParameterEventArgs(identifier.Id, CancellationToken);
+        if (context.EvaluateParameterHandler != null)
+        {
+            var parameterArgs = new ParameterEventArgs(identifier.Id, CancellationToken);
+            context.EvaluateParameterHandler(identifierName, parameterArgs);
 
-        context.EvaluateParameterHandler?.Invoke(identifierName, parameterArgs);
-
-        if (parameterArgs.HasResult)
-            return parameterArgs.Result;
+            if (parameterArgs.HasResult)
+                return parameterArgs.Result;
+        }
 
         if (context.Parameters.TryGetValue(identifierName, out var parameter))
         {
