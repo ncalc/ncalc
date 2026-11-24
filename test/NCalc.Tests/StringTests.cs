@@ -1,3 +1,5 @@
+using NCalc.Exceptions;
+
 namespace NCalc.Tests;
 
 [Property("Category", "Strings")]
@@ -17,9 +19,30 @@ public class StringTests
     [Arguments("'hello'", @"'\'hello\''")]
     [Arguments(" ' hel lo ' ", @"' \' hel lo \' '")]
     [Arguments("hel\nlo", @"'hel\nlo'")]
+    [Arguments("hello\nworld", @"'hello\nworld'")]
+    [Arguments("hello\r\nworld", "\"hello\\r\\nworld\"")]
+    [Arguments("tab\there\b\f", @"'tab\there\b\f'")]
+    [Arguments(@"C:\Temp\unknown\z", @"'C:\Temp\unknown\z'")]
+    [Arguments(@"\", @"'\\'")]
+    [Arguments(@"It's ""ok""", @"'It\'s ""ok""'")]
+    [Arguments("Say \"hi\" and 'bye'", "\"Say \\\"hi\\\" and \\'bye\\'\"")]
     public async Task ShouldEscapeCharacters(string expected, string expression)
     {
         await Assert.That(expression).Expression().IsEqualTo(expected);
+    }
+
+    [Test]
+    [Arguments("'line1\nline2'")]
+    [Arguments("'line1\rline2'")]
+    [Arguments("'line1\r\nline2'")]
+    [Arguments("\"line1\nline2\"")]
+    [Arguments("\"line1\rline2\"")]
+    [Arguments("\"line1\r\nline2\"")]
+    public void ShouldFailOnRawNewLinesInStrings(string expressionText)
+    {
+        var expression = new Expression(expressionText);
+
+        Assert.Throws<NCalcParserException>(() => expression.Evaluate());
     }
 
     [Test]

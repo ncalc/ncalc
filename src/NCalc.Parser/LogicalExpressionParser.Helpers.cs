@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 #if PARLOT_FLUENT
 namespace NCalc.Benchmarks;
 
@@ -14,11 +16,30 @@ public static partial class LogicalExpressionParser
     private const double MinDecDouble = (double)decimal.MinValue;
     private const double MaxDecDouble = (double)decimal.MaxValue;
 
-    private static LogicalExpression ParseSingleQuotedString(string value, bool allowCharValues)
+    private static readonly Regex UnicodeEscapeRegex = new(@"\\u([0-9a-fA-F]{4})", RegexOptions.Compiled);
+
+    private static string DecodeUnicodeIfNeeded(ReadOnlySpan<char> span)
     {
-        return allowCharValues && value.Length == 1
-            ? new ValueExpression(value[0])
-            : new ValueExpression(value);
+        var text = span.ToString();
+        if (!text.Contains("\\u", StringComparison.Ordinal))
+            return text;
+
+        return UnicodeEscapeRegex.Replace(text, static match =>
+            ((char)Convert.ToInt32(match.Groups[1].Value, 16)).ToString());
+    }
+
+    private static LogicalExpression ParseSingleQuotedString(ReadOnlySpan<char> span, bool allowCharValues)
+    {
+        var text = DecodeUnicodeIfNeeded(span);
+
+        return allowCharValues && text.Length == 1
+            ? new ValueExpression(text[0])
+            : new ValueExpression(text);
+    }
+
+    private static LogicalExpression ParseDoubleQuotedString(ReadOnlySpan<char> span)
+    {
+        return new ValueExpression(DecodeUnicodeIfNeeded(span));
     }
 
     private static LogicalExpression CreateValueExpression(int value) => new ValueExpression(value);
