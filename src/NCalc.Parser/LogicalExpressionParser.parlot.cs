@@ -155,9 +155,12 @@ public static partial class LogicalExpressionParser
 
         var identifier = Terms.Identifier();
 
+        var whiteSpaceOrOpenParen = OneOf(Literals.WhiteSpace(), Capture(Not(Not(openParen))));
+
         var not = OneOf(
-            Terms.Keyword("NOT", true).AndSkip(OneOf(Literals.WhiteSpace(), Not(AnyCharBefore(openParen)))),
+            Terms.Keyword("NOT", true).AndSkip(whiteSpaceOrOpenParen),
             Terms.Text("!"));
+
         var and = OneOf(Terms.Keyword("AND", true), Terms.Text("&&"));
         var or = OneOf(Terms.Keyword("OR", true), Terms.Text("||"));
 
