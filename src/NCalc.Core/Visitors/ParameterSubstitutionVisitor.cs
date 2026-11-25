@@ -37,10 +37,10 @@ public class ParameterSubstitutionVisitor(ExpressionContext context, ExpressionE
             return true;
         }
 
-        if (context.Parameters.TryGetValue(identifierName, out value))
+        if (context.TryGetParameter(identifierName, out value))
             return true;
 
-        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+        if (context.TryGetDynamicParameter(identifierName, out var dynamicParameter))
         {
             value = dynamicParameter(new ParameterData(identifier.Id, context, cancellationToken));
             return true;
