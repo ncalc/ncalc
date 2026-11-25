@@ -9,13 +9,13 @@ public class FunctionData(
     ExpressionContext context,
     ExpressionEvaluationOptions evaluationOptions,
     CultureInfo cultureInfo,
-    ILogicalExpressionVisitor<object?> syncVisitor,
+    ILogicalExpressionVisitor<object?>? syncVisitor,
     ILogicalExpressionVisitor<Task<object?>>? asyncVisitor,
     CancellationToken cancellationToken)
     : IReadOnlyList<LogicalExpression>
 {
     private LogicalExpressionList Arguments { get; } = arguments;
-    private ILogicalExpressionVisitor<object?> SyncVisitor { get; } = syncVisitor;
+    private ILogicalExpressionVisitor<object?>? SyncVisitor { get; } = syncVisitor;
     private ILogicalExpressionVisitor<Task<object?>>? AsyncVisitor { get; } = asyncVisitor;
 
     public Guid Id { get; } = id;
@@ -38,6 +38,9 @@ public class FunctionData(
 
     public object? Evaluate(int index)
     {
+        if (SyncVisitor is null)
+            throw new NCalcEvaluationException("Cannot evaluate synchronously because the synchronous visitor is not available.");
+
         return Arguments[index].Accept(SyncVisitor);
     }
     public int Count => Arguments.Count;
