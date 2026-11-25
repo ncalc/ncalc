@@ -51,8 +51,9 @@ public static class LikeOperatorHelper
         if (value == null || pattern == null)
             return false;
 
-        //todo: i dont like this
-        if (!TypeHelper.IsOrdinal(stringComparer))
+        var comparison = CharacterComparison.For(stringComparer);
+
+        if (!comparison.IsOrdinal)
         {
             value = value.Normalize(NormalizationForm.FormC);
             pattern = pattern.Normalize(NormalizationForm.FormC);
@@ -90,11 +91,7 @@ public static class LikeOperatorHelper
                     patternAdvance++;
                 }
 
-                var charactersEqual = stringComparer.Equals(
-                    value.Substring(valueIndex, 1),
-                    pattern.Substring(literalIndex, 1));
-
-                if (charactersEqual)
+                if (comparison.CharactersEqual(value, valueIndex, pattern, literalIndex))
                 {
                     valueIndex++;
                     patternIndex += patternAdvance;
@@ -113,5 +110,75 @@ public static class LikeOperatorHelper
             patternIndex++;
 
         return patternIndex == pattern.Length;
+    }
+
+    /// <summary>
+    /// Compares single characters of the value and the pattern the way the configured <see cref="StringComparer"/>
+    /// compares one-character strings, without allocating those strings. The well-known ordinal and culture
+    /// comparers are recognized up front; any other comparer falls back to comparing substrings.
+    /// </summary>
+    private readonly struct CharacterComparison
+    {
+        private enum Mode
+        {
+            Ordinal,
+            OrdinalIgnoreCase,
+            Culture,
+            Custom
+        }
+
+        private readonly Mode _mode;
+        private readonly CompareInfo? _compareInfo;
+        private readonly CompareOptions _compareOptions;
+        private readonly StringComparer? _comparer;
+
+        private CharacterComparison(Mode mode, CompareInfo? compareInfo, CompareOptions compareOptions, StringComparer? comparer)
+        {
+            _mode = mode;
+            _compareInfo = compareInfo;
+            _compareOptions = compareOptions;
+            _comparer = comparer;
+        }
+
+        public bool IsOrdinal => _mode is Mode.Ordinal or Mode.OrdinalIgnoreCase;
+
+        public static CharacterComparison For(StringComparer comparer)
+        {
+            if (ReferenceEquals(comparer, StringComparer.Ordinal))
+                return new CharacterComparison(Mode.Ordinal, null, CompareOptions.None, null);
+
+            if (ReferenceEquals(comparer, StringComparer.OrdinalIgnoreCase))
+                return new CharacterComparison(Mode.OrdinalIgnoreCase, null, CompareOptions.None, null);
+
+            // The culture-aware comparers compare equal to another instance built for the same culture and options.
+            var currentCulture = CultureInfo.CurrentCulture;
+            if (comparer.Equals(StringComparer.CurrentCulture))
+                return Culture(currentCulture, CompareOptions.None);
+
+            if (comparer.Equals(StringComparer.CurrentCultureIgnoreCase))
+                return Culture(currentCulture, CompareOptions.IgnoreCase);
+
+            if (comparer.Equals(StringComparer.InvariantCulture))
+                return Culture(CultureInfo.InvariantCulture, CompareOptions.None);
+
+            if (comparer.Equals(StringComparer.InvariantCultureIgnoreCase))
+                return Culture(CultureInfo.InvariantCulture, CompareOptions.IgnoreCase);
+
+            return new CharacterComparison(Mode.Custom, null, CompareOptions.None, comparer);
+
+            static CharacterComparison Culture(CultureInfo culture, CompareOptions options) =>
+                new(Mode.Culture, culture.CompareInfo, options, null);
+        }
+
+        public bool CharactersEqual(string value, int valueIndex, string pattern, int patternIndex)
+        {
+            return _mode switch
+            {
+                Mode.Ordinal => value[valueIndex] == pattern[patternIndex],
+                Mode.OrdinalIgnoreCase => char.ToUpperInvariant(value[valueIndex]) == char.ToUpperInvariant(pattern[patternIndex]),
+                Mode.Culture => _compareInfo!.Compare(value, valueIndex, 1, pattern, patternIndex, 1, _compareOptions) == 0,
+                _ => _comparer!.Equals(value.Substring(valueIndex, 1), pattern.Substring(patternIndex, 1))
+            };
+        }
     }
 }
