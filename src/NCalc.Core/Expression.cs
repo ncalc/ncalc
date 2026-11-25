@@ -199,13 +199,13 @@ public class Expression
         LogicalExpressionFactory = logicalExpressionFactory;
     }
 
-    public Expression(string? expression, CultureInfo cultureInfo) : this(new ExpressionConfiguration(),
+    public Expression(string? expression, CultureInfo cultureInfo) : this(ExpressionConfiguration.Default,
         new ExpressionContext(), cultureInfo)
     {
         ExpressionString = expression;
     }
 
-    public Expression(string? expression, ExpressionContext context) : this(new ExpressionConfiguration(), context, CultureInfo.CurrentCulture)
+    public Expression(string? expression, ExpressionContext context) : this(ExpressionConfiguration.Default, context, CultureInfo.CurrentCulture)
     {
         ExpressionString = expression;
     }
@@ -216,7 +216,7 @@ public class Expression
         ExpressionContext? context = null,
         CultureInfo? cultureInfo = null,
         IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(
-        configuration ?? new ExpressionConfiguration(), context ?? new ExpressionContext(),
+        configuration ?? ExpressionConfiguration.Default, context ?? new ExpressionContext(),
         cultureInfo ?? CultureInfo.CurrentCulture, evaluationVisitorFactory)
     {
         ExpressionString = expression;
@@ -227,7 +227,7 @@ public class Expression
         ExpressionContext? context = null,
         CultureInfo? cultureInfo = null,
         IEvaluationVisitorFactory? evaluationVisitorFactory = null) : this(
-        configuration ?? new ExpressionConfiguration(), context ?? new ExpressionContext(),
+        configuration ?? ExpressionConfiguration.Default, context ?? new ExpressionContext(),
         cultureInfo ?? CultureInfo.CurrentCulture, evaluationVisitorFactory)
     {
         ArgumentNullException.ThrowIfNull(logicalExpression);
