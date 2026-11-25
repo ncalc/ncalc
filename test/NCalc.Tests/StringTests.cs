@@ -24,6 +24,11 @@ public class StringTests
     [Arguments("tab\there\b\f", @"'tab\there\b\f'")]
     [Arguments(@"C:\Temp\unknown\z", @"'C:\Temp\unknown\z'")]
     [Arguments(@"\", @"'\\'")]
+    [Arguments(@"\u0041", @"'\\u0041'")]
+    [Arguments(@"\u0041", "\"\\\\u0041\"")]
+    [Arguments(@"C:\users\u0041", @"'C:\\users\\u0041'")]
+    [Arguments(@"\u12G4", @"'\u12G4'")]
+    [Arguments(@"\u12", @"'\u12'")]
     [Arguments(@"It's ""ok""", @"'It\'s ""ok""'")]
     [Arguments("Say \"hi\" and 'bye'", "\"Say \\\"hi\\\" and \\'bye\\'\"")]
     public async Task ShouldEscapeCharacters(string expected, string expression)

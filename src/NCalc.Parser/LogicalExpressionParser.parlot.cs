@@ -208,11 +208,11 @@ public static partial class LogicalExpressionParser
         var booleanFalse = Terms.Keyword("false", true)
             .Then<LogicalExpression>(static _ => False).Named("False");
 
-        var singleQuotesStringValue = Terms.String(StringLiteralQuotes.Single, NCalcStringEscapes)
+        var singleQuotesStringValue = Terms.String(StringLiteralQuotes.Single, NCalcStringEscapes, returnDecoded: false)
             .Then(value => ParseSingleQuotedString(value.Span, options.AllowCharValues))
             .Named("SingleQuotedString");
 
-        var doubleQuotesStringValue = Terms.String(StringLiteralQuotes.Double, NCalcStringEscapes)
+        var doubleQuotesStringValue = Terms.String(StringLiteralQuotes.Double, NCalcStringEscapes, returnDecoded: false)
             .Then(static value => ParseDoubleQuotedString(value.Span))
             .Named("DoubleQuotedString");
 

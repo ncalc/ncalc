@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+using System.Text;
 
 #if PARLOT_FLUENT
 namespace NCalc.Benchmarks;
@@ -16,21 +16,99 @@ public static partial class LogicalExpressionParser
     private const double MinDecDouble = (double)decimal.MinValue;
     private const double MaxDecDouble = (double)decimal.MaxValue;
 
-    private static readonly Regex UnicodeEscapeRegex = new(@"\\u([0-9a-fA-F]{4})", RegexOptions.Compiled);
-
-    private static string DecodeUnicodeIfNeeded(ReadOnlySpan<char> span)
+    // The string parsers return the text between the quotes as it is, so that the escape sequences,
+    // \uXXXX included, are decoded in a single pass and an escaped backslash is never read again.
+    private static string DecodeString(ReadOnlySpan<char> span)
     {
-        var text = span.ToString();
-        if (!text.Contains("\\u", StringComparison.Ordinal))
-            return text;
+        var index = span.IndexOf('\\');
+        if (index == -1)
+            return span.ToString();
 
-        return UnicodeEscapeRegex.Replace(text, static match =>
-            ((char)Convert.ToInt32(match.Groups[1].Value, 16)).ToString());
+        var builder = new StringBuilder(span.Length);
+
+        for (var i = 0; i < index; i++)
+            builder.Append(span[i]);
+
+        // The parser only accepts a backslash that is followed by another char
+        for (var i = index; i < span.Length; i++)
+        {
+            var c = span[i];
+
+            if (c != '\\')
+            {
+                builder.Append(c);
+                continue;
+            }
+
+            var next = span[++i];
+
+            switch (next)
+            {
+                case '\\':
+                case '\'':
+                case '"':
+                    builder.Append(next);
+                    break;
+                case 'n':
+                    builder.Append('\n');
+                    break;
+                case 'r':
+                    builder.Append('\r');
+                    break;
+                case 't':
+                    builder.Append('\t');
+                    break;
+                case 'b':
+                    builder.Append('\b');
+                    break;
+                case 'f':
+                    builder.Append('\f');
+                    break;
+                case 'u' when TryReadHex4(span, i + 1, out var code):
+                    builder.Append(code);
+                    i += 4;
+                    break;
+                default:
+                    builder.Append('\\').Append(next);
+                    break;
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool TryReadHex4(ReadOnlySpan<char> span, int start, out char value)
+    {
+        value = default;
+
+        if (start + 4 > span.Length)
+            return false;
+
+        var code = 0;
+        for (var i = start; i < start + 4; i++)
+        {
+            var c = span[i];
+            int digit;
+
+            if (c is >= '0' and <= '9')
+                digit = c - '0';
+            else if (c is >= 'a' and <= 'f')
+                digit = c - 'a' + 10;
+            else if (c is >= 'A' and <= 'F')
+                digit = c - 'A' + 10;
+            else
+                return false;
+
+            code = code * 16 + digit;
+        }
+
+        value = (char)code;
+        return true;
     }
 
     private static LogicalExpression ParseSingleQuotedString(ReadOnlySpan<char> span, bool allowCharValues)
     {
-        var text = DecodeUnicodeIfNeeded(span);
+        var text = DecodeString(span);
 
         return allowCharValues && text.Length == 1
             ? new ValueExpression(text[0])
@@ -39,7 +117,7 @@ public static partial class LogicalExpressionParser
 
     private static LogicalExpression ParseDoubleQuotedString(ReadOnlySpan<char> span)
     {
-        return new ValueExpression(DecodeUnicodeIfNeeded(span));
+        return new ValueExpression(DecodeString(span));
     }
 
     private static LogicalExpression CreateValueExpression(int value) => new ValueExpression(value);
