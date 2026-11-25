@@ -176,10 +176,10 @@ public static class BuiltInFunctionHelper
                     await functionData.EvaluateAsync(i),
                     functionData.EvaluationOptions.StringComparer,
                     functionData.CultureInfo) == ComparisonResult.Equal)
-                return true;
+                return BoxedValues.True;
         }
 
-        return false;
+        return BoxedValues.False;
     }
 
     private static object? EvaluateIfs(FunctionData functionData)
