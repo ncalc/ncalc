@@ -1,4 +1,6 @@
-﻿namespace NCalc.Visitors;
+using System.Runtime.CompilerServices;
+
+namespace NCalc.Visitors;
 
 /// <summary>
 /// Visitor dedicated to extract <see cref="Identifier"/> names from a <see cref="LogicalExpression"/>.
@@ -9,6 +11,7 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
 
     public List<string> Visit(LogicalExpressionList list)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var parameters = new List<string>();
         foreach (var value in list)
         {
@@ -27,11 +30,15 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
         return parameters;
     }
 
-    public List<string> Visit(UnaryExpression expression) =>
-        expression.Expression.Accept(this);
+    public List<string> Visit(UnaryExpression expression)
+    {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
+        return expression.Expression.Accept(this);
+    }
 
     public List<string> Visit(BinaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var leftParameters = expression.LeftExpression.Accept(this);
         var rightParameters = expression.RightExpression.Accept(this);
 
@@ -41,6 +48,7 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
 
     public List<string> Visit(TernaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var leftParameters = expression.LeftExpression.Accept(this);
         var middleParameters = expression.MiddleExpression.Accept(this);
         var rightParameters = expression.RightExpression.Accept(this);
@@ -52,6 +60,7 @@ public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<
 
     public List<string> Visit(Function function)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var parameters = new List<string>();
 
         var innerParameters = function.Parameters.Accept(this);

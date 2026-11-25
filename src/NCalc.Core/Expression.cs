@@ -279,6 +279,10 @@ public class Expression
         {
             throw new NCalcEvaluationException("Error evaluating expression.", exception);
         }
+        catch (InsufficientExecutionStackException exception)
+        {
+            throw new NCalcEvaluationException("The expression is nested too deeply to evaluate.", exception);
+        }
     }
 
     /// <summary>
@@ -319,6 +323,10 @@ public class Expression
         catch (InvalidCastException exception)
         {
             throw new NCalcEvaluationException("Error evaluating expression.", exception);
+        }
+        catch (InsufficientExecutionStackException exception)
+        {
+            throw new NCalcEvaluationException("The expression is nested too deeply to evaluate.", exception);
         }
     }
 

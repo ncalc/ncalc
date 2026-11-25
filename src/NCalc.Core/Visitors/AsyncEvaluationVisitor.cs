@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
@@ -27,6 +28,7 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(TernaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         // Evaluates the left expression and saves the value
         var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this), cultureInfo);
 
@@ -40,6 +42,7 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(BinaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var binaryEventArgs = new BinaryEventArgs(expression, CreateEvaluationVisitor(), this, CancellationToken);
         await OnEvaluateBinaryAsync(binaryEventArgs);
 
@@ -85,6 +88,7 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(UnaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         // Recursively evaluates the underlying expression
         var result = await expression.Expression.Accept(this);
 
@@ -93,6 +97,7 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(Function function)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         // Don't call parameters right now, instead let the function do it as needed.
         // Some parameters shouldn't be called, for instance, in a if(), the "not" value might be a division by zero
         // Evaluating every value could produce unexpected behaviour
@@ -136,6 +141,7 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(LogicalExpressionList list)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         if (list.Count == 0) return Array.Empty<object?>();
 
         if (options.ConcurrentAsyncEvaluation)
