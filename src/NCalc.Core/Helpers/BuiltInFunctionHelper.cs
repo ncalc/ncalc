@@ -33,8 +33,8 @@ public static class BuiltInFunctionHelper
         new("if", EvaluateIf, EvaluateIfAsync),
         new("in", EvaluateIn, EvaluateInAsync),
         new("ifs", EvaluateIfs, EvaluateIfsAsync),
-        Unary("isNull", static (value, _) => value is null),
-        Unary("isNullOrEmpty", static (value, _) => value is null or ""),
+        Unary("isNull", static (value, _) => BoxedValues.Box(value is null)),
+        Unary("isNullOrEmpty", static (value, _) => BoxedValues.Box(value is null or "")),
         Unary("EscapeLike", static (value, data) =>
             LikeOperatorHelper.EscapeLike(Convert.ToString(value, data.CultureInfo) ?? string.Empty))
     ]).ToFrozenSet();
@@ -157,10 +157,10 @@ public static class BuiltInFunctionHelper
                     functionData.Evaluate(i),
                     functionData.EvaluationOptions.StringComparer,
                     functionData.CultureInfo) == ComparisonResult.Equal)
-                return true;
+                return BoxedValues.True;
         }
 
-        return false;
+        return BoxedValues.False;
     }
 
     private static async ValueTask<object?> EvaluateInAsync(FunctionData functionData)
