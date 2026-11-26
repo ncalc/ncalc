@@ -135,6 +135,32 @@ public sealed class ExpressionContext
         return false;
     }
 
+    /// <summary>
+    /// Copies this context's parameters into <paramref name="child"/> so a nested expression can resolve them.
+    /// Dictionaries that were never created on either side are left alone.
+    /// </summary>
+    internal void ShareParametersWith(ExpressionContext child)
+    {
+        CopyEntries(_parameters, ref child._parameters);
+        CopyEntries(_dynamicParameters, ref child._dynamicParameters);
+        CopyEntries(_asyncParameters, ref child._asyncParameters);
+    }
+
+    /// <summary>
+    /// Attaches the handlers of <paramref name="parent"/> to this context until the returned scope is disposed.
+    /// </summary>
+    internal ParentHandlerScope AttachHandlersFrom(ExpressionContext parent) => new(this, parent);
+
+    private static void CopyEntries<TValue>(IDictionary<string, TValue>? source, ref IDictionary<string, TValue>? target)
+    {
+        if (source is null || source.Count == 0)
+            return;
+
+        var destination = target ?? GetOrCreate(ref target);
+        foreach (var entry in source)
+            destination[entry.Key] = entry.Value;
+    }
+
     private static IDictionary<string, TValue> GetOrCreate<TValue>(ref IDictionary<string, TValue>? field)
     {
         var created = new Dictionary<string, TValue>();

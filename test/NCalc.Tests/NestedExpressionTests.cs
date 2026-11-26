@@ -1,3 +1,5 @@
+using NCalc.Exceptions;
+
 namespace NCalc.Tests;
 
 public class NestedExpressionTests
@@ -93,5 +95,54 @@ public class NestedExpressionTests
 
         await Assert.That(parent.Evaluate(CancellationToken.None)).IsEqualTo(10);
         await Assert.That(parent.Evaluate(CancellationToken.None)).IsEqualTo(10);
+    }
+    [Test]
+    public async Task Should_Detach_Parent_Handlers_From_The_Child_Expression_After_Evaluation()
+    {
+        var child = new Expression("g()");
+        var parent = new Expression("[inner]");
+        parent.Parameters["inner"] = child;
+        parent.EvaluateFunction += (name, args) =>
+        {
+            if (name == "g")
+                args.Result = 1;
+        };
+
+        await Assert.That(parent.Evaluate(CancellationToken.None)).IsEqualTo(1);
+        await Assert.That(child.Context.EvaluateFunctionHandler).IsNull();
+        await Assert.That(() => child.Evaluate(CancellationToken.None)).Throws<NCalcFunctionNotFoundException>();
+    }
+
+    [Test]
+    public async Task Should_Detach_Parent_Handlers_From_The_Child_Expression_After_Evaluating_Asynchronously()
+    {
+        var child = new Expression("g()");
+        var parent = new Expression("[inner]");
+        parent.Parameters["inner"] = child;
+        parent.EvaluateFunction += (name, args) =>
+        {
+            if (name == "g")
+                args.Result = 1;
+        };
+
+        await Assert.That(await parent.EvaluateAsync(CancellationToken.None)).IsEqualTo(1);
+        await Assert.That(child.Context.EvaluateFunctionHandler).IsNull();
+        await Assert.That(() => child.Evaluate(CancellationToken.None)).Throws<NCalcFunctionNotFoundException>();
+    }
+
+    [Test]
+    public async Task Should_Detach_Parent_Handlers_From_The_Child_Expression_When_Evaluation_Throws()
+    {
+        var child = new Expression("g()");
+        var parent = new Expression("[inner]");
+        parent.Parameters["inner"] = child;
+        parent.EvaluateFunction += (name, _) =>
+        {
+            if (name == "g")
+                throw new InvalidOperationException("boom");
+        };
+
+        await Assert.That(() => parent.Evaluate(CancellationToken.None)).Throws<InvalidOperationException>();
+        await Assert.That(child.Context.EvaluateFunctionHandler).IsNull();
     }
 }

@@ -155,10 +155,7 @@ public class EvaluationVisitor(
         if (context.TryGetParameter(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
-            {
-                ShareParametersWithChildExpression(expression);
-                return expression;
-            }
+                return EvaluateChildExpression(expression);
 
             return parameter;
         }
@@ -175,40 +172,15 @@ public class EvaluationVisitor(
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    private void ShareParametersWithChildExpression(Expression expression)
+    private object? EvaluateChildExpression(Expression expression)
     {
-        CopyEntries(context.Parameters, expression.Parameters);
-        CopyEntries(context.DynamicParameters, expression.DynamicParameters);
-        CopyEntries(context.AsyncParameters, expression.AsyncParameters);
-
+        var childContext = expression.Context;
+        context.ShareParametersWith(childContext);
         expression.SetEvaluationVisitorFactory(EvaluationVisitorFactory);
 
-        // The child is shared again on every evaluation of the parent, so a handler is removed before it is added.
-        // Adding it unconditionally grew the child's subscription list by one entry per evaluation, and the handler
-        // ran once more each time.
-        var childContext = expression.Context;
-        childContext.EvaluateFunctionHandler = Share(childContext.EvaluateFunctionHandler, context.EvaluateFunctionHandler);
-        childContext.EvaluateAsyncFunctionHandler = Share(childContext.EvaluateAsyncFunctionHandler, context.EvaluateAsyncFunctionHandler);
-        childContext.EvaluateParameterHandler = Share(childContext.EvaluateParameterHandler, context.EvaluateParameterHandler);
-        childContext.EvaluateAsyncParameterHandler = Share(childContext.EvaluateAsyncParameterHandler, context.EvaluateAsyncParameterHandler);
-        childContext.EvaluateBinaryHandler = Share(childContext.EvaluateBinaryHandler, context.EvaluateBinaryHandler);
-        childContext.EvaluateBinaryAsyncHandler = Share(childContext.EvaluateBinaryAsyncHandler, context.EvaluateBinaryAsyncHandler);
-    }
-
-    private static void CopyEntries<TValue>(IDictionary<string, TValue> source, IDictionary<string, TValue> target)
-    {
-        if (source.Count == 0)
-            return;
-
-        foreach (var entry in source)
-            target[entry.Key] = entry.Value;
-    }
-
-    private static THandler? Share<THandler>(THandler? child, THandler? parent) where THandler : Delegate
-    {
-        if (parent is null)
-            return child;
-
-        return (THandler?)Delegate.Combine(Delegate.Remove(child, parent), parent);
+        using (childContext.AttachHandlersFrom(context))
+        {
+            return expression.Evaluate(CancellationToken);
+        }
     }
 }
