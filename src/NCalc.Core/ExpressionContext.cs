@@ -1,5 +1,6 @@
 using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using NCalc.Handlers;
 
 namespace NCalc;
@@ -7,9 +8,23 @@ namespace NCalc;
 /// <summary>
 /// Per-evaluation runtime state, including parameters, functions, and event handlers.
 /// </summary>
+/// <remarks>
+/// The parameter and function dictionaries are created the first time they are read. Most expressions use only one
+/// of them, or none, so creating all five up front was the largest allocation of a new <see cref="Expression"/>.
+/// </remarks>
 public sealed class ExpressionContext
 {
-    public IDictionary<string, object?> Parameters { get; init; }
+    private IDictionary<string, object?>? _parameters;
+    private IDictionary<string, ExpressionParameter>? _dynamicParameters;
+    private IDictionary<string, AsyncExpressionParameter>? _asyncParameters;
+    private IDictionary<string, ExpressionFunction>? _functions;
+    private IDictionary<string, AsyncExpressionFunction>? _asyncFunctions;
+
+    public IDictionary<string, object?> Parameters
+    {
+        get => _parameters ?? GetOrCreate(ref _parameters);
+        init => _parameters = value;
+    }
 
     [Obsolete("Please use Parameters instead.")]
     public IDictionary<string, object?> StaticParameters
@@ -18,10 +33,29 @@ public sealed class ExpressionContext
         init => Parameters = value;
     }
 
-    public IDictionary<string, ExpressionParameter> DynamicParameters { get; init; }
-    public IDictionary<string, AsyncExpressionParameter> AsyncParameters { get; init; }
-    public IDictionary<string, ExpressionFunction> Functions { get; init; }
-    public IDictionary<string, AsyncExpressionFunction> AsyncFunctions { get; init; }
+    public IDictionary<string, ExpressionParameter> DynamicParameters
+    {
+        get => _dynamicParameters ?? GetOrCreate(ref _dynamicParameters);
+        init => _dynamicParameters = value;
+    }
+
+    public IDictionary<string, AsyncExpressionParameter> AsyncParameters
+    {
+        get => _asyncParameters ?? GetOrCreate(ref _asyncParameters);
+        init => _asyncParameters = value;
+    }
+
+    public IDictionary<string, ExpressionFunction> Functions
+    {
+        get => _functions ?? GetOrCreate(ref _functions);
+        init => _functions = value;
+    }
+
+    public IDictionary<string, AsyncExpressionFunction> AsyncFunctions
+    {
+        get => _asyncFunctions ?? GetOrCreate(ref _asyncFunctions);
+        init => _asyncFunctions = value;
+    }
 
     public EvaluateBinaryHandler? EvaluateBinaryHandler { get; set; }
     public EvaluateBinaryAsyncHandler? EvaluateBinaryAsyncHandler { get; set; }
@@ -41,11 +75,11 @@ public sealed class ExpressionContext
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        Parameters = CopyDictionary(context.Parameters);
-        DynamicParameters = CopyDictionary(context.DynamicParameters);
-        AsyncParameters = CopyDictionary(context.AsyncParameters);
-        Functions = CopyDictionary(context.Functions);
-        AsyncFunctions = CopyDictionary(context.AsyncFunctions);
+        _parameters = CopyDictionary(context._parameters);
+        _dynamicParameters = CopyDictionary(context._dynamicParameters);
+        _asyncParameters = CopyDictionary(context._asyncParameters);
+        _functions = CopyDictionary(context._functions);
+        _asyncFunctions = CopyDictionary(context._asyncFunctions);
 
         EvaluateBinaryHandler = context.EvaluateBinaryHandler;
         EvaluateBinaryAsyncHandler = context.EvaluateBinaryAsyncHandler;
@@ -63,16 +97,54 @@ public sealed class ExpressionContext
         IDictionary<string, AsyncExpressionFunction>? asyncFunctions = null,
         IDictionary<string, AsyncExpressionParameter>? asyncParameters = null)
     {
-        Parameters = parameters ?? new Dictionary<string, object?>();
-        DynamicParameters = dynamicParameters ?? new Dictionary<string, ExpressionParameter>();
-        AsyncParameters = asyncParameters ?? new Dictionary<string, AsyncExpressionParameter>();
-        Functions = functions ?? new Dictionary<string, ExpressionFunction>();
-        AsyncFunctions = asyncFunctions ?? new Dictionary<string, AsyncExpressionFunction>();
+        _parameters = parameters;
+        _dynamicParameters = dynamicParameters;
+        _asyncParameters = asyncParameters;
+        _functions = functions;
+        _asyncFunctions = asyncFunctions;
     }
 
-    private static IDictionary<string, TValue> CopyDictionary<TValue>(IDictionary<string, TValue> source)
+    internal bool TryGetParameter(string name, out object? value)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        if (_parameters is { } parameters)
+            return parameters.TryGetValue(name, out value);
+
+        value = null;
+        return false;
+    }
+
+    internal bool TryGetDynamicParameter(string name, [NotNullWhen(true)] out ExpressionParameter? value) =>
+        TryGet(_dynamicParameters, name, out value);
+
+    internal bool TryGetAsyncParameter(string name, [NotNullWhen(true)] out AsyncExpressionParameter? value) =>
+        TryGet(_asyncParameters, name, out value);
+
+    internal bool TryGetFunction(string name, [NotNullWhen(true)] out ExpressionFunction? value) =>
+        TryGet(_functions, name, out value);
+
+    internal bool TryGetAsyncFunction(string name, [NotNullWhen(true)] out AsyncExpressionFunction? value) =>
+        TryGet(_asyncFunctions, name, out value);
+
+    // A lookup in a dictionary that was never created is a miss; it does not create the dictionary.
+    private static bool TryGet<TValue>(IDictionary<string, TValue>? dictionary, string name, out TValue? value)
+    {
+        if (dictionary is not null)
+            return dictionary.TryGetValue(name, out value);
+
+        value = default;
+        return false;
+    }
+
+    private static IDictionary<string, TValue> GetOrCreate<TValue>(ref IDictionary<string, TValue>? field)
+    {
+        var created = new Dictionary<string, TValue>();
+        return Interlocked.CompareExchange(ref field, created, null) ?? created;
+    }
+
+    private static IDictionary<string, TValue>? CopyDictionary<TValue>(IDictionary<string, TValue>? source)
+    {
+        if (source is null)
+            return null;
 
         return source switch
         {

@@ -97,7 +97,7 @@ public class EvaluationVisitor(
         if (functionArgs.HasResult)
             return functionArgs.Result;
 
-        if (context.Functions.TryGetValue(functionName, out var expressionFunction))
+        if (context.TryGetFunction(functionName, out var expressionFunction))
             return expressionFunction(functionData);
 
         return BuiltInFunctionHelper.Evaluate(functionName, functionData);
@@ -152,7 +152,7 @@ public class EvaluationVisitor(
         if (parameterArgs.HasResult)
             return parameterArgs.Result;
 
-        if (context.Parameters.TryGetValue(identifierName, out var parameter))
+        if (context.TryGetParameter(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
             {
@@ -163,7 +163,7 @@ public class EvaluationVisitor(
             return parameter;
         }
 
-        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+        if (context.TryGetDynamicParameter(identifierName, out var dynamicParameter))
             return dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken));
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
