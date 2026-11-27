@@ -163,7 +163,7 @@ public static class EvaluationHelper
     {
         return expression.Type switch
         {
-            UnaryExpressionType.Not => !Convert.ToBoolean(result, cultureInfo),
+            UnaryExpressionType.Not => BoxedValues.Box(!Convert.ToBoolean(result, cultureInfo)),
             UnaryExpressionType.Negate => result switch
             {
                 double doubleValue => -doubleValue,

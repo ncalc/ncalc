@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
@@ -27,6 +28,7 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(TernaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var left = Convert.ToBoolean(expression.LeftExpression.Accept(this), cultureInfo);
 
         return left
@@ -36,6 +38,8 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(BinaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
+
         if (context.EvaluateBinaryHandler != null || GetType() != typeof(EvaluationVisitor))
         {
             var binaryEventArgs = new BinaryEventArgs(expression, this, CreateAsyncEvaluationVisitor(), CancellationToken);
@@ -54,8 +58,8 @@ public class EvaluationVisitor(
     {
         return type switch
         {
-            BinaryExpressionType.And => Convert.ToBoolean(args.LeftValue(), cultureInfo) && Convert.ToBoolean(args.RightValue(), cultureInfo),
-            BinaryExpressionType.Or => Convert.ToBoolean(args.LeftValue(), cultureInfo) || Convert.ToBoolean(args.RightValue(), cultureInfo),
+            BinaryExpressionType.And => BoxedValues.Box(Convert.ToBoolean(args.LeftValue(), cultureInfo) && Convert.ToBoolean(args.RightValue(), cultureInfo)),
+            BinaryExpressionType.Or => BoxedValues.Box(Convert.ToBoolean(args.LeftValue(), cultureInfo) || Convert.ToBoolean(args.RightValue(), cultureInfo)),
             BinaryExpressionType.Coalesce => args.LeftValue() ?? args.RightValue(),
                 _ => EvaluationVisitorHelper.EvaluateBinary(type, args.LeftValue(), args.RightValue(), options, cultureInfo)
         };
@@ -65,8 +69,8 @@ public class EvaluationVisitor(
     {
         return type switch
         {
-            BinaryExpressionType.And => Convert.ToBoolean(left.Accept(this), cultureInfo) && Convert.ToBoolean(right.Accept(this), cultureInfo),
-            BinaryExpressionType.Or => Convert.ToBoolean(left.Accept(this), cultureInfo) || Convert.ToBoolean(right.Accept(this), cultureInfo),
+            BinaryExpressionType.And => BoxedValues.Box(Convert.ToBoolean(left.Accept(this), cultureInfo) && Convert.ToBoolean(right.Accept(this), cultureInfo)),
+            BinaryExpressionType.Or => BoxedValues.Box(Convert.ToBoolean(left.Accept(this), cultureInfo) || Convert.ToBoolean(right.Accept(this), cultureInfo)),
             BinaryExpressionType.Coalesce => left.Accept(this) ?? right.Accept(this),
                 _ => EvaluationVisitorHelper.EvaluateBinary(type, left.Accept(this), right.Accept(this), options, cultureInfo)
         };
@@ -74,6 +78,7 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(UnaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var result = expression.Expression.Accept(this);
 
         return Unary(expression, result, options, cultureInfo);
@@ -81,6 +86,7 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(Function function)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var functionName = function.Identifier.Name;
         var hasHandler = context.EvaluateFunctionHandler != null || GetType() != typeof(EvaluationVisitor);
 
@@ -107,7 +113,7 @@ public class EvaluationVisitor(
             if (functionArgs.HasResult)
                 return functionArgs.Result;
 
-            context.Functions.TryGetValue(functionName, out expressionFunction);
+            context.TryGetFunction(functionName, out expressionFunction);
         }
 
         if (expressionFunction != null)
@@ -127,6 +133,7 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(LogicalExpressionList list)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         if (list.Count == 0)
             return Array.Empty<object?>();
 
@@ -166,18 +173,15 @@ public class EvaluationVisitor(
                 return parameterArgs.Result;
         }
 
-        if (context.Parameters.TryGetValue(identifierName, out var parameter))
+        if (context.TryGetParameter(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
-            {
-                ShareParametersWithChildExpression(expression);
-                return expression;
-            }
+                return EvaluateChildExpression(expression);
 
             return parameter;
         }
 
-        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+        if (context.TryGetDynamicParameter(identifierName, out var dynamicParameter))
             return dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken));
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
@@ -189,24 +193,15 @@ public class EvaluationVisitor(
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    private void ShareParametersWithChildExpression(Expression expression)
+    private object? EvaluateChildExpression(Expression expression)
     {
-        foreach (var parameter in context.Parameters)
-            expression.Parameters[parameter.Key] = parameter.Value;
-
-        foreach (var parameter in context.DynamicParameters)
-            expression.DynamicParameters[parameter.Key] = parameter.Value;
-
-        foreach (var parameter in context.AsyncParameters)
-            expression.AsyncParameters[parameter.Key] = parameter.Value;
-
+        var childContext = expression.Context;
+        context.ShareParametersWith(childContext);
         expression.SetEvaluationVisitorFactory(EvaluationVisitorFactory);
 
-        expression.EvaluateFunction += context.EvaluateFunctionHandler;
-        expression.EvaluateAsyncFunction += context.EvaluateAsyncFunctionHandler;
-        expression.EvaluateParameter += context.EvaluateParameterHandler;
-        expression.EvaluateAsyncParameter += context.EvaluateAsyncParameterHandler;
-        expression.EvaluateBinary += context.EvaluateBinaryHandler;
-        expression.EvaluateBinaryAsync += context.EvaluateBinaryAsyncHandler;
+        using (childContext.AttachHandlersFrom(context))
+        {
+            return expression.Evaluate(CancellationToken);
+        }
     }
 }

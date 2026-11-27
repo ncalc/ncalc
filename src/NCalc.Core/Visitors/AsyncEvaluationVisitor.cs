@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
@@ -27,6 +28,7 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(TernaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         // Evaluates the left expression and saves the value
         var left = Convert.ToBoolean(await expression.LeftExpression.Accept(this), cultureInfo);
 
@@ -40,6 +42,8 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(BinaryExpression expression)
     {
+		RuntimeHelpers.EnsureSufficientExecutionStack();
+
         if (context.EvaluateBinaryHandler != null ||
             context.EvaluateBinaryAsyncHandler != null ||
             GetType() != typeof(AsyncEvaluationVisitor))
@@ -60,8 +64,8 @@ public class AsyncEvaluationVisitor(
     {
         return type switch
         {
-            BinaryExpressionType.And => Convert.ToBoolean(await args.LeftValueAsync(), cultureInfo) && Convert.ToBoolean(await args.RightValueAsync(), cultureInfo),
-            BinaryExpressionType.Or => Convert.ToBoolean(await args.LeftValueAsync(), cultureInfo) || Convert.ToBoolean(await args.RightValueAsync(), cultureInfo),
+            BinaryExpressionType.And => BoxedValues.Box(Convert.ToBoolean(await args.LeftValueAsync(), cultureInfo) && Convert.ToBoolean(await args.RightValueAsync(), cultureInfo)),
+            BinaryExpressionType.Or => BoxedValues.Box(Convert.ToBoolean(await args.LeftValueAsync(), cultureInfo) || Convert.ToBoolean(await args.RightValueAsync(), cultureInfo)),
             BinaryExpressionType.Coalesce => await args.LeftValueAsync() ?? await args.RightValueAsync(),
                 _ => await EvaluateStandardBinaryAsync(type, args)
         };
@@ -71,8 +75,8 @@ public class AsyncEvaluationVisitor(
     {
         return type switch
         {
-            BinaryExpressionType.And => Convert.ToBoolean(await left.Accept(this), cultureInfo) && Convert.ToBoolean(await right.Accept(this), cultureInfo),
-            BinaryExpressionType.Or => Convert.ToBoolean(await left.Accept(this), cultureInfo) || Convert.ToBoolean(await right.Accept(this), cultureInfo),
+            BinaryExpressionType.And => BoxedValues.Box(Convert.ToBoolean(await left.Accept(this), cultureInfo) && Convert.ToBoolean(await right.Accept(this), cultureInfo)),
+            BinaryExpressionType.Or => BoxedValues.Box(Convert.ToBoolean(await left.Accept(this), cultureInfo) || Convert.ToBoolean(await right.Accept(this), cultureInfo)),
             BinaryExpressionType.Coalesce => await left.Accept(this) ?? await right.Accept(this),
                 _ => await EvaluateStandardBinaryAsync(type, left, right)
         };
@@ -110,6 +114,7 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(UnaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         // Recursively evaluates the underlying expression
         var result = await expression.Expression.Accept(this);
 
@@ -118,6 +123,8 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(Function function)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
+
         var functionName = function.Identifier.Name;
         var hasHandler = context.EvaluateFunctionHandler != null ||
                          context.EvaluateAsyncFunctionHandler != null ||
@@ -153,15 +160,15 @@ public class AsyncEvaluationVisitor(
             if (functionArgs.HasResult)
                 return functionArgs.Result;
 
-            context.Functions.TryGetValue(functionName, out expressionFunction);
-            context.AsyncFunctions.TryGetValue(functionName, out asyncExpressionFunction);
+            context.TryGetFunction(functionName, out expressionFunction);
+            context.TryGetAsyncFunction(functionName, out asyncExpressionFunction);
         }
 
         if (expressionFunction != null)
             return expressionFunction(functionData);
 
         if (asyncExpressionFunction != null)
-            return await asyncExpressionFunction(functionData);
+            return asyncExpressionFunction(functionData);
 
         return await BuiltInFunctionHelper.EvaluateAsync(functionName, functionData);
     }
@@ -179,6 +186,7 @@ public class AsyncEvaluationVisitor(
 
     public virtual async Task<object?> Visit(LogicalExpressionList list)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         if (list.Count == 0) return Array.Empty<object?>();
 
         if (options.ConcurrentAsyncEvaluation)
@@ -233,21 +241,18 @@ public class AsyncEvaluationVisitor(
                 return parameterArgs.Result;
         }
 
-        if (context.Parameters.TryGetValue(identifierName, out var parameter))
+        if (context.TryGetParameter(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
-            {
-                ShareParametersWithChildExpression(expression);
-                return expression;
-            }
+                return await EvaluateChildExpressionAsync(expression);
 
             return parameter;
         }
 
-        if (context.DynamicParameters.TryGetValue(identifierName, out var dynamicParameter))
+        if (context.TryGetDynamicParameter(identifierName, out var dynamicParameter))
             return dynamicParameter(new ParameterData(identifier.Id, context, CancellationToken));
 
-        if (context.AsyncParameters.TryGetValue(identifierName, out var asyncParameter))
+        if (context.TryGetAsyncParameter(identifierName, out var asyncParameter))
             return await asyncParameter(new ParameterData(identifier.Id, context, CancellationToken));
 
         if (identifierName.Equals("null", StringComparison.InvariantCultureIgnoreCase) &&
@@ -259,24 +264,15 @@ public class AsyncEvaluationVisitor(
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    private void ShareParametersWithChildExpression(Expression expression)
+    private async Task<object?> EvaluateChildExpressionAsync(Expression expression)
     {
-        foreach (var parameter in context.Parameters)
-            expression.Parameters[parameter.Key] = parameter.Value;
-
-        foreach (var parameter in context.DynamicParameters)
-            expression.DynamicParameters[parameter.Key] = parameter.Value;
-
-        foreach (var parameter in context.AsyncParameters)
-            expression.AsyncParameters[parameter.Key] = parameter.Value;
-
+        var childContext = expression.Context;
+        context.ShareParametersWith(childContext);
         expression.SetEvaluationVisitorFactory(EvaluationVisitorFactory);
 
-        expression.EvaluateFunction += context.EvaluateFunctionHandler;
-        expression.EvaluateAsyncFunction += context.EvaluateAsyncFunctionHandler;
-        expression.EvaluateParameter += context.EvaluateParameterHandler;
-        expression.EvaluateAsyncParameter += context.EvaluateAsyncParameterHandler;
-        expression.EvaluateBinary += context.EvaluateBinaryHandler;
-        expression.EvaluateBinaryAsync += context.EvaluateBinaryAsyncHandler;
+        using (childContext.AttachHandlersFrom(context))
+        {
+            return await expression.EvaluateAsync(CancellationToken);
+        }
     }
 }

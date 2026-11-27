@@ -17,22 +17,22 @@ internal static class EvaluationVisitorHelper
                 return EvaluationHelper.Div(left, right, options, cultureInfo);
 
             case BinaryExpressionType.Equal:
-                return Compare(left, right, ComparisonType.Equal, options, cultureInfo);
+                return BoxedValues.Box(Compare(left, right, ComparisonType.Equal, options, cultureInfo));
 
             case BinaryExpressionType.Greater:
-                return Compare(left, right, ComparisonType.Greater, options, cultureInfo);
+                return BoxedValues.Box(Compare(left, right, ComparisonType.Greater, options, cultureInfo));
 
             case BinaryExpressionType.GreaterOrEqual:
-                return Compare(left, right, ComparisonType.GreaterOrEqual, options, cultureInfo);
+                return BoxedValues.Box(Compare(left, right, ComparisonType.GreaterOrEqual, options, cultureInfo));
 
             case BinaryExpressionType.Lesser:
-                return Compare(left, right, ComparisonType.Lesser, options, cultureInfo);
+                return BoxedValues.Box(Compare(left, right, ComparisonType.Lesser, options, cultureInfo));
 
             case BinaryExpressionType.LesserOrEqual:
-                return Compare(left, right, ComparisonType.LesserOrEqual, options, cultureInfo);
+                return BoxedValues.Box(Compare(left, right, ComparisonType.LesserOrEqual, options, cultureInfo));
 
             case BinaryExpressionType.NotEqual:
-                return Compare(left, right, ComparisonType.NotEqual, options, cultureInfo);
+                return BoxedValues.Box(Compare(left, right, ComparisonType.NotEqual, options, cultureInfo));
 
             case BinaryExpressionType.Minus:
                 return EvaluationHelper.Minus(left, right, options, cultureInfo);
@@ -70,16 +70,16 @@ internal static class EvaluationVisitorHelper
                 return MathHelper.Pow(left, right, options.Math, cultureInfo);
 
             case BinaryExpressionType.In:
-                return EvaluationHelper.In(right, left, options, cultureInfo);
+                return BoxedValues.Box(EvaluationHelper.In(right, left, options, cultureInfo));
 
             case BinaryExpressionType.NotIn:
-                return !EvaluationHelper.In(right, left, options, cultureInfo);
+                return BoxedValues.Box(!EvaluationHelper.In(right, left, options, cultureInfo));
 
             case BinaryExpressionType.Like:
-                return LikeOperatorHelper.Like(left, right, options.StringComparer);
+                return BoxedValues.Box(LikeOperatorHelper.Like(left, right, options.StringComparer));
 
             case BinaryExpressionType.NotLike:
-                return !LikeOperatorHelper.Like(left, right, options.StringComparer);
+                return BoxedValues.Box(!LikeOperatorHelper.Like(left, right, options.StringComparer));
 
             default:
                 return null;

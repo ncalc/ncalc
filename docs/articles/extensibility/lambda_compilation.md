@@ -47,6 +47,12 @@ to improve the compilation performance (which is 10-40x times faster than .Compi
 
 `AppContext.SetSwitch("NCalc.UseSystemLinqCompiler", true)` 
 
+## Deeply Nested Expressions
+`ToLambda` and `ToLinqExpression` walk the expression tree recursively. When the tree is too deep for the stack of
+the current thread, they throw a <xref:NCalc.Exceptions.NCalcEvaluationException> whose `InnerException` is an
+`InsufficientExecutionStackException`, instead of overflowing the stack.
+See [Handling Errors](../evaluation/handling_errors.md#deeply-nested-expressions).
+
 ## Performance
 You should cache the result of `Expression.ToLambda<T>()`. Evaluation is faster, but compiling the lambda is still expensive.
 See [benchmarks](../project/benchmarks.md) for more info.

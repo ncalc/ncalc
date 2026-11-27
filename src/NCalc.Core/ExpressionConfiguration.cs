@@ -7,6 +7,12 @@ namespace NCalc;
 /// </summary>
 public sealed class ExpressionConfiguration
 {
+    /// <summary>
+    /// The configuration an <see cref="Expression"/> uses when none is given. The configuration and the option
+    /// objects it holds are immutable, so one instance is shared by every such expression.
+    /// </summary>
+    public static ExpressionConfiguration Default { get; } = new();
+
     public LogicalExpressionParserOptions Parsing { get; init; }
 
     public ExpressionEvaluationOptions Evaluation { get; init; }
@@ -31,17 +37,20 @@ public sealed class ExpressionConfiguration
 
     public static ExpressionConfiguration FromOptions(ExpressionOptions options)
     {
-        return new ExpressionConfiguration
-        {
-            CacheEnabled = !options.HasFlag(ExpressionOptions.NoCache),
-            Parsing = new LogicalExpressionParserOptions
+        if (options == ExpressionOptions.None)
+            return Default;
+
+        // The option objects are passed to the constructor; an object initializer on the default constructor would
+        // build a second set of them only to replace it.
+        return new ExpressionConfiguration(
+            new LogicalExpressionParserOptions
             {
                 AllowCharValues = options.HasFlag(ExpressionOptions.AllowCharValues),
                 DisallowSingleEquals = options.HasFlag(ExpressionOptions.DisallowSingleEquals),
                 FloatingPointNumberType = GetFloatingPointNumberType(options),
                 IntegerNumberType = GetIntegerNumberType(options)
             },
-            Evaluation = new ExpressionEvaluationOptions
+            new ExpressionEvaluationOptions
             {
                 IgnoreCaseAtBuiltInFunctions = options.HasFlag(ExpressionOptions.IgnoreCaseAtBuiltInFunctions),
                 IterateParameters = options.HasFlag(ExpressionOptions.IterateParameters),
@@ -65,8 +74,8 @@ public sealed class ExpressionConfiguration
                 StringComparer = GetStringComparer(options),
 
                 ConcurrentAsyncEvaluation = options.HasFlag(ExpressionOptions.ConcurrentAsyncEvaluation)
-            }
-        };
+            },
+            cacheEnabled: !options.HasFlag(ExpressionOptions.NoCache));
     }
 
     private static FloatingPointNumberType GetFloatingPointNumberType(ExpressionOptions options)
