@@ -168,7 +168,7 @@ public class AsyncEvaluationVisitor(
             return expressionFunction(functionData);
 
         if (asyncExpressionFunction != null)
-            return asyncExpressionFunction(functionData);
+            return await asyncExpressionFunction(functionData);
 
         return await BuiltInFunctionHelper.EvaluateAsync(functionName, functionData);
     }
