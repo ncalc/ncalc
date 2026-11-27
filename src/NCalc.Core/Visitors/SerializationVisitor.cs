@@ -1,4 +1,6 @@
-﻿namespace NCalc.Visitors;
+using System.Runtime.CompilerServices;
+
+namespace NCalc.Visitors;
 
 /// <summary>
 /// Class responsible to converting a <see cref="LogicalExpression"/> into a <see cref="string"/> representation.
@@ -12,6 +14,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public virtual string Visit(TernaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         string result = EncapsulateNoValue(expression.LeftExpression) + "? ";
         result += EncapsulateNoValue(expression.MiddleExpression) + ": ";
         result += EncapsulateNoValue(expression.RightExpression);
@@ -21,6 +24,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public virtual string Visit(BinaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         string result = EncapsulateNoValue(expression.LeftExpression);
 
         result += expression.Type switch
@@ -59,6 +63,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public virtual string Visit(UnaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         string result = expression.Type switch
         {
             UnaryExpressionType.Not => "!",
@@ -155,6 +160,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public virtual string Visit(Function function)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var resultBuilder = new StringBuilder(function.Identifier.Name + '(');
 
         for (int i = 0; i < function.Parameters.Count; i++)
@@ -183,6 +189,7 @@ public class SerializationVisitor : ILogicalExpressionVisitor<string>
 
     public virtual string Visit(LogicalExpressionList list)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var resultBuilder = new StringBuilder("(");
         for (var i = 0; i < list.Count; i++)
         {

@@ -76,7 +76,17 @@ public static class LambdaCompilationExtensions
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            var body = expression.LogicalExpression.Accept(visitor);
+
+            LinqExpression body;
+            try
+            {
+                body = expression.LogicalExpression.Accept(visitor);
+            }
+            catch (InsufficientExecutionStackException exception)
+            {
+                throw new NCalcEvaluationException("The expression is nested too deeply to compile.", exception);
+            }
+
             if (!IsSameType(body, typeof(TResult)))
             {
                 body = LinqExpression.Convert(body, typeof(TResult));

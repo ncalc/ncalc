@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using NCalc.Exceptions;
 using NCalc.Helpers;
 using NCalc.LambdaCompilation.Reflection;
@@ -44,6 +45,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
     public LinqExpression Visit(TernaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var conditional = expression.LeftExpression.Accept(this);
         var ifTrue = expression.MiddleExpression.Accept(this);
         var ifFalse = expression.RightExpression.Accept(this);
@@ -53,6 +55,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
     public LinqExpression Visit(BinaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var left = expression.LeftExpression.Accept(this);
         var right = expression.RightExpression.Accept(this);
 
@@ -111,6 +114,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
     public LinqExpression Visit(UnaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var operand = expression.Expression.Accept(this);
 
         return expression.Type switch
@@ -130,6 +134,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
     public LinqExpression Visit(Function function)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var args = new LinqExpression[function.Parameters.Count];
         for (var i = 0; i < function.Parameters.Count; i++)
         {
@@ -293,6 +298,7 @@ public sealed class LambdaExpressionVisitor : ILogicalExpressionVisitor<LinqExpr
 
     public LinqExpression Visit(LogicalExpressionList list)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var newList = LinqExpression.New(typeof(List<object>));
         return LinqExpression.ListInit(newList,
             list.Select(e => LinqExpression.Convert(e.Accept(this), typeof(object)))

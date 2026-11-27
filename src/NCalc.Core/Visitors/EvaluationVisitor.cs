@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using NCalc.Factories;
 using NCalc.Handlers;
 using NCalc.Helpers;
@@ -27,6 +28,7 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(TernaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var left = Convert.ToBoolean(expression.LeftExpression.Accept(this), cultureInfo);
 
         return left
@@ -36,6 +38,7 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(BinaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var binaryEventArgs = new BinaryEventArgs(expression, this, CreateAsyncEvaluationVisitor(), CancellationToken);
         OnEvaluateBinary(binaryEventArgs);
 
@@ -68,6 +71,7 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(UnaryExpression expression)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var result = expression.Expression.Accept(this);
 
         return Unary(expression, result, options, cultureInfo);
@@ -75,6 +79,7 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(Function function)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         var functionName = function.Identifier.Name;
         var functionData = new FunctionData(
             function.Identifier.Id,
@@ -109,6 +114,7 @@ public class EvaluationVisitor(
 
     public virtual object? Visit(LogicalExpressionList list)
     {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
         if (list.Count == 0)
             return Array.Empty<object?>();
 
