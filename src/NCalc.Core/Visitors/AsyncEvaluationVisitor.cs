@@ -51,13 +51,14 @@ public class AsyncEvaluationVisitor(
 
         if (expression.Type == BinaryExpressionType.And)
         {
-            return Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), cultureInfo) &&
-                   Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), cultureInfo);
+            return BoxedValues.Box(Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), cultureInfo) &&
+                Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), cultureInfo));
         }
 
         if (expression.Type == BinaryExpressionType.Or)
         {
-            return Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), cultureInfo) || Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), cultureInfo);
+            return BoxedValues.Box(Convert.ToBoolean(await binaryEventArgs.LeftValueAsync(), cultureInfo) ||
+                Convert.ToBoolean(await binaryEventArgs.RightValueAsync(), cultureInfo));
         }
 
         if (expression.Type == BinaryExpressionType.Coalesce)

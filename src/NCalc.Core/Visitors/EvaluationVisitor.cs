@@ -47,14 +47,14 @@ public class EvaluationVisitor(
 
         if (expression.Type == BinaryExpressionType.And)
         {
-            return Convert.ToBoolean(binaryEventArgs.LeftValue(), cultureInfo) &&
-                   Convert.ToBoolean(binaryEventArgs.RightValue(), cultureInfo);
+            return BoxedValues.Box(Convert.ToBoolean(binaryEventArgs.LeftValue(), cultureInfo) &&
+                   Convert.ToBoolean(binaryEventArgs.RightValue(), cultureInfo));
         }
 
         if (expression.Type == BinaryExpressionType.Or)
         {
-            return Convert.ToBoolean(binaryEventArgs.LeftValue(), cultureInfo) ||
-                   Convert.ToBoolean(binaryEventArgs.RightValue(), cultureInfo);
+            return BoxedValues.Box(Convert.ToBoolean(binaryEventArgs.LeftValue(), cultureInfo) ||
+                   Convert.ToBoolean(binaryEventArgs.RightValue(), cultureInfo));
         }
 
         if (expression.Type == BinaryExpressionType.Coalesce)
