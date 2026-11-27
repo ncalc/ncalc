@@ -194,6 +194,16 @@ public class SerializationTests
     }
 
     [Test]
+    [Arguments(@"\u0041")]
+    [Arguments(@"C:\users\u0041")]
+    public async Task ShouldSerializeBackslashFollowedByUnicodeLikeTextSoItParsesBack(string value)
+    {
+        var serialized = new ValueExpression(value).ToExpressionString();
+
+        await Assert.That(new Expression(serialized).Evaluate(CancellationToken.None)).IsEqualTo(value);
+    }
+
+    [Test]
     [Arguments("", "#01/01/2009 00:00:00#")]
     [Arguments("en-US", "#1/1/2009 00:00:00#")]
     [Arguments("de-DE", "#01.01.2009 00:00:00#")]
