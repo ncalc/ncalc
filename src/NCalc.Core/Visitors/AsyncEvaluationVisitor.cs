@@ -135,8 +135,8 @@ public class AsyncEvaluationVisitor(
 
         if (!hasHandler)
         {
-            context.Functions.TryGetValue(functionName, out expressionFunction);
-            context.AsyncFunctions.TryGetValue(functionName, out asyncExpressionFunction);
+            context.TryGetFunction(functionName, out expressionFunction);
+            context.TryGetAsyncFunction(functionName, out asyncExpressionFunction);
         }
 
         var syncVisitor = (hasHandler || expressionFunction != null || asyncExpressionFunction != null)

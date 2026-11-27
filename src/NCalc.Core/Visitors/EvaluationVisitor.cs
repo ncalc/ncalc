@@ -92,7 +92,7 @@ public class EvaluationVisitor(
 
         ExpressionFunction? expressionFunction = null;
         if (!hasHandler)
-            context.Functions.TryGetValue(functionName, out expressionFunction);
+            context.TryGetFunction(functionName, out expressionFunction);
 
         var asyncVisitor = (hasHandler || expressionFunction != null) ? CreateAsyncEvaluationVisitor() : null;
         var functionData = new FunctionData(
