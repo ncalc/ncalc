@@ -155,10 +155,7 @@ public class EvaluationVisitor(
         if (context.TryGetParameter(identifierName, out var parameter))
         {
             if (parameter is Expression expression)
-            {
-                ShareParametersWithChildExpression(expression);
-                return expression;
-            }
+                return EvaluateChildExpression(expression);
 
             return parameter;
         }
@@ -175,24 +172,15 @@ public class EvaluationVisitor(
         throw new NCalcParameterNotDefinedException(identifierName);
     }
 
-    private void ShareParametersWithChildExpression(Expression expression)
+    private object? EvaluateChildExpression(Expression expression)
     {
-        foreach (var parameter in context.Parameters)
-            expression.Parameters[parameter.Key] = parameter.Value;
-
-        foreach (var parameter in context.DynamicParameters)
-            expression.DynamicParameters[parameter.Key] = parameter.Value;
-
-        foreach (var parameter in context.AsyncParameters)
-            expression.AsyncParameters[parameter.Key] = parameter.Value;
-
+        var childContext = expression.Context;
+        context.ShareParametersWith(childContext);
         expression.SetEvaluationVisitorFactory(EvaluationVisitorFactory);
 
-        expression.EvaluateFunction += context.EvaluateFunctionHandler;
-        expression.EvaluateAsyncFunction += context.EvaluateAsyncFunctionHandler;
-        expression.EvaluateParameter += context.EvaluateParameterHandler;
-        expression.EvaluateAsyncParameter += context.EvaluateAsyncParameterHandler;
-        expression.EvaluateBinary += context.EvaluateBinaryHandler;
-        expression.EvaluateBinaryAsync += context.EvaluateBinaryAsyncHandler;
+        using (childContext.AttachHandlersFrom(context))
+        {
+            return expression.Evaluate(CancellationToken);
+        }
     }
 }
