@@ -1,73 +1,72 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace NCalc.Visitors;
 
 /// <summary>
 /// Visitor dedicated to extract <see cref="Identifier"/> names from a <see cref="LogicalExpression"/>.
 /// </summary>
+/// <remarks>
+/// Names are returned in order of first appearance, without duplicates. The tree is walked once into a single
+/// result list; merging and de-duplicating a list at every node made the cost grow with the depth of the tree
+/// times its width.
+/// </remarks>
 public sealed class ParameterExtractionVisitor : ILogicalExpressionVisitor<List<string>>
 {
     public List<string> Visit(Identifier identifier) => [identifier.Name];
 
-    public List<string> Visit(LogicalExpressionList list)
-    {
-        RuntimeHelpers.EnsureSufficientExecutionStack();
-        var parameters = new List<string>();
-        foreach (var value in list)
-        {
-            if (value is Identifier identifier)
-            {
-                if (!parameters.Contains(identifier.Name))
-                {
-                    parameters.Add(identifier.Name);
-                }
-            }
-            else
-            {
-                parameters.AddRange(value.Accept(this));
-            }
-        }
-        return parameters;
-    }
+    public List<string> Visit(LogicalExpressionList list) => Collect(list);
 
-    public List<string> Visit(UnaryExpression expression)
-    {
-        RuntimeHelpers.EnsureSufficientExecutionStack();
-        return expression.Expression.Accept(this);
-    }
+    public List<string> Visit(UnaryExpression expression) => Collect(expression);
 
-    public List<string> Visit(BinaryExpression expression)
-    {
-        RuntimeHelpers.EnsureSufficientExecutionStack();
-        var leftParameters = expression.LeftExpression.Accept(this);
-        var rightParameters = expression.RightExpression.Accept(this);
+    public List<string> Visit(BinaryExpression expression) => Collect(expression);
 
-        leftParameters.AddRange(rightParameters);
-        return leftParameters.Distinct().ToList();
-    }
+    public List<string> Visit(TernaryExpression expression) => Collect(expression);
 
-    public List<string> Visit(TernaryExpression expression)
-    {
-        RuntimeHelpers.EnsureSufficientExecutionStack();
-        var leftParameters = expression.LeftExpression.Accept(this);
-        var middleParameters = expression.MiddleExpression.Accept(this);
-        var rightParameters = expression.RightExpression.Accept(this);
-
-        leftParameters.AddRange(middleParameters);
-        leftParameters.AddRange(rightParameters);
-        return leftParameters.Distinct().ToList();
-    }
-
-    public List<string> Visit(Function function)
-    {
-        RuntimeHelpers.EnsureSufficientExecutionStack();
-        var parameters = new List<string>();
-
-        var innerParameters = function.Parameters.Accept(this);
-        parameters.AddRange(innerParameters);
-
-        return parameters.Distinct().ToList();
-    }
+    public List<string> Visit(Function function) => Collect(function);
 
     public List<string> Visit(ValueExpression expression) => [];
+
+    private static List<string> Collect(LogicalExpression root)
+    {
+        var names = new List<string>();
+        Collect(root, names);
+        return names;
+    }
+
+    private static void Collect(LogicalExpression expression, List<string> names)
+    {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
+
+        switch (expression)
+        {
+            case Identifier identifier:
+                if (!names.Contains(identifier.Name))
+                    names.Add(identifier.Name);
+                break;
+
+            case UnaryExpression unary:
+                Collect(unary.Expression, names);
+                break;
+
+            case BinaryExpression binary:
+                Collect(binary.LeftExpression, names);
+                Collect(binary.RightExpression, names);
+                break;
+
+            case TernaryExpression ternary:
+                Collect(ternary.LeftExpression, names);
+                Collect(ternary.MiddleExpression, names);
+                Collect(ternary.RightExpression, names);
+                break;
+
+            case Function function:
+                Collect(function.Parameters, names);
+                break;
+
+            case LogicalExpressionList list:
+                foreach (var item in list)
+                    Collect(item, names);
+                break;
+        }
+    }
 }
